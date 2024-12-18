@@ -1,0 +1,13 @@
+﻿<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<ItemGroup Condition="'$(Configuration)' == 'DEBUG'">
+		<Reference Include="Aether.RimWorld.Lib">
+			<HintPath>$(MSBuildThisFileDirectory)..\lib\debug\Aether.RimWorld.Lib.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'RELEASE'">
+		<Reference Include="Aether.RimWorld.Lib">
+			<HintPath>$(MSBuildThisFileDirectory)..\lib\release\Aether.RimWorld.Lib.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+</Project>

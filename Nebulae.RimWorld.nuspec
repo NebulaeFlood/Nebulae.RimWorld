@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+	<metadata>
+		<id>Nebulae.RimWorld</id>
+		<version>1.0.0</version>
+		<authors>NubulaeFlood</authors>
+		<license type="file">LICENSE.txt</license>
+		<licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+		<readme>README.md</readme>
+		<description>A personal lib for RimWorld mods.</description>
+		<copyright>Copyright (c) 2024 NubulaeFlood</copyright>
+		<tags>RimWorld, Mod</tags>
+		<repository type="git" url="https://github.com/NebulaeFlood/Nebulae.RimWorld" />
+		<dependencies>
+			<group targetFramework=".NETFramework4.7.2">
+				<dependency id="Krafs.Rimworld.Ref" version="1.5.4297" exclude="Build,Analyzers" />
+				<dependency id="Lib.Harmony" version="2.3.3" exclude="Build,Analyzers" />
+			</group>
+		</dependencies>
+		<frameworkAssemblies>
+			<frameworkAssembly assemblyName="System.Runtime" targetFramework=".NETFramework4.7.2" />
+		</frameworkAssemblies>
+	</metadata>
+	<files>
+		<file src="Nebulae.RimWorld\bin\Debug\net472\Nebulae.RimWorld.dll" target="lib\debug\Nebulae.RimWorld.dll" />
+		<file src="Nebulae.RimWorld\bin\Debug\net472\Nebulae.RimWorld.pdb" target="lib\debug\Nebulae.RimWorld.pdb" />
+		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.dll" target="lib\release\Nebulae.RimWorld.dll" />
+		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.pdb" target="lib\release\Nebulae.RimWorld.pdb" />
+		<file src="Nebulae.RimWorld\bin\Nebulae.RimWorld.xml" target="lib\Nebulae.RimWorld.xml" />
+		<file src="LICENSE.txt" target="LICENSE.txt" />
+		<file src="README.md" target="README.md" />
+		<file src="Nebulae.RimWorld.targets" target="build\Nebulae.RimWorld.targets" />
+	</files>
+</package>

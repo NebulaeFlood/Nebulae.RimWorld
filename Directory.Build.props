@@ -2,8 +2,6 @@
 
 	<PropertyGroup>
 		<TargetFramework>net472</TargetFramework>
-		<GenerateDocumentationFile>False</GenerateDocumentationFile>
-		<PackageOutputPath>$(MSBuildThisFileDirectory)packages</PackageOutputPath>
 		
 		<Authors>NubulaeFlood</Authors>
 		<Description>A personal lib for RimWorld mods.</Description>
