@@ -1,0 +1,24 @@
+<Project>
+
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<PackageOutputPath>$(MSBuildThisFileDirectory)packages</PackageOutputPath>
+		
+		<Authors>NubulaeFlood</Authors>
+		<Description>A personal lib for RimWorld mods.</Description>
+		
+		<PublishRepositoryUrl>True</PublishRepositoryUrl>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<ContinuousIntegrationBuild>True</ContinuousIntegrationBuild>
+		<EmbedUntrackedSources>True</EmbedUntrackedSources>
+		
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/NebulaeFlood/Aether.RimWorld.Lib</RepositoryUrl>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageTags>RimWorld Mod</PackageTags>
+		<Copyright>Copyright (c) 2024 NubulaeFlood</Copyright>
+	</PropertyGroup>
+	
+</Project>
