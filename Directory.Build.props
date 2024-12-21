@@ -1,7 +1,8 @@
 <Project>
 
 	<PropertyGroup>
-		<TargetFramework>net472</TargetFramework>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<DocumentationFile>bin\$(MSBuildProjectName).xml</DocumentationFile>
 		
 		<Authors>NubulaeFlood</Authors>
 		<Description>A personal lib for RimWorld mods.</Description>

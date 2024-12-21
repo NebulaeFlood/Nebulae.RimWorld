@@ -10,4 +10,10 @@
     <PackageReference Include="Nebulae.RimWorld" Version="1.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controls\Panels\" />
+    <Folder Include="Windows\" />
+    <Folder Include="Controls\Geomerties\" />
+  </ItemGroup>
+
 </Project>
