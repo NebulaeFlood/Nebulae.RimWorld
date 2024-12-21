@@ -14,7 +14,7 @@
 		<dependencies>
 			<group targetFramework=".NETFramework4.7.2">
 				<dependency id="Krafs.Rimworld.Ref" version="1.5.4297" exclude="Build,Analyzers" />
-				<dependency id="Lib.Harmony" version="2.3.3" exclude="Build,Analyzers" />
+				<!-- <dependency id="Lib.Harmony" version="2.3.3" exclude="Build,Analyzers" /> -->
 			</group>
 		</dependencies>
 		<frameworkAssemblies>
