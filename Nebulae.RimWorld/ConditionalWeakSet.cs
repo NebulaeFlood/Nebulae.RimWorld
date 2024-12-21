@@ -1,29 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Nebulae.RimWorld
 {
     /// <summary>
-    /// 弱引用集合
+    /// 表示一个弱引用的集合，当集合中的对象不再被引用时，会被自动回收。
     /// </summary>
-    /// <typeparam name="T">集合内元素的类型</typeparam>
-    /// <remarks>
-    /// 已被回收的对象不会出现在集合中。<para/>
-    /// 该集合内元素具有唯一性。<para/>
-    /// </remarks>
-    public class WeakCollection<T> where T : class
+    /// <typeparam name="T">集合中的元素类型</typeparam>
+    public class ConditionalWeakSet<T> where T : class
     {
         private readonly HashSet<Entry> _entries;
 
 
+        //------------------------------------------------------
+        //
+        //  Constructors
+        //
+        //------------------------------------------------------
+
+        #region Constructors
+
         /// <summary>
-        /// 初始化 <see cref="WeakCollection{T}"/> 的新实例
+        /// 初始化 <see cref="ConditionalWeakSet{T}"/> 的新实例
         /// </summary>
-        public WeakCollection()
+        public ConditionalWeakSet()
         {
-            _entries = new HashSet<Entry>();
+            _entries = new HashSet<Entry>(new EntryEqualityComparer());
         }
 
+        /// <summary>
+        /// 初始化 <see cref="ConditionalWeakSet{T}"/> 的新实例
+        /// </summary>
+        /// <param name="collection">要向集合添加的对象</param>
+        public ConditionalWeakSet(IEnumerable<T> collection)
+        {
+            _entries = new HashSet<Entry>(new EntryEqualityComparer());
+            foreach (var item in collection)
+            {
+                Add(item);
+            }
+        }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Methods
 
         /// <summary>
         /// 向集合添加指定的元素
@@ -72,7 +101,7 @@ namespace Nebulae.RimWorld
 
             foreach (var entry in _entries)
             {
-                if (entry.Value.TryGetTarget(out var value))
+                if (entry.Reference.TryGetTarget(out var value))
                 {
                     if (match(value))
                     {
@@ -103,7 +132,7 @@ namespace Nebulae.RimWorld
 
             foreach (var entry in _entries)
             {
-                if (entry.Value.TryGetTarget(out var value))
+                if (entry.Reference.TryGetTarget(out var value))
                 {
                     results.Add(value);
                 }
@@ -148,10 +177,12 @@ namespace Nebulae.RimWorld
                 actualValue = default;
                 return false;
             }
+            ClearDeadEntry();
 
+#if NET472_OR_GREATER
             if (_entries.TryGetValue(new Entry(equalValue), out Entry entry))
             {
-                entry.Value.TryGetTarget(out actualValue);
+                entry.Reference.TryGetTarget(out actualValue);
                 return true;
             }
             else
@@ -159,70 +190,87 @@ namespace Nebulae.RimWorld
                 actualValue = default;
                 return false;
             }
+#else
+            foreach (var entry in _entries)
+            {
+                if (entry.Reference.TryGetTarget(out T target) && ReferenceEquals(target, equalValue))
+                {
+                    actualValue = target;
+                    return true;
+                }
+            }
+            actualValue = default;
+            return false;
+#endif
         }
+        #endregion
+
 
         /// <summary>
         /// 移除关联对象已被回收的条目
         /// </summary>
-        private void ClearDeadEntry() => _entries.RemoveWhere(x => !x.Value.TryGetTarget(out _));
+        private void ClearDeadEntry() => _entries.RemoveWhere(x => !x.Reference.TryGetTarget(out _));
 
 
         /// <summary>
-        /// 集合存储元素的条目
+        /// 集合的条目
         /// </summary>
-        private struct Entry
+        private readonly struct Entry : IEquatable<Entry>
         {
             /// <summary>
-            /// 条目的值的哈希码
-            /// </summary>
-            private int _hashCode;
-
-            /// <summary>
-            /// 条目存储的元素
-            /// </summary>
-            public WeakReference<T> Value;
+            /// 条目关联对象的弱引用
+            /// </summary> 
+            internal readonly WeakReference<T> Reference;
 
 
             /// <summary>
             /// 初始化 <see cref="Entry"/> 的新实例
             /// </summary>
-            /// <param name="value">条目的值</param>
-            public Entry(T value)
+            /// <param name="target"></param>
+            internal Entry(T target)
             {
-                Value = new WeakReference<T>(value);
-                _hashCode = value.GetHashCode();
+                Reference = new WeakReference<T>(target);
             }
 
 
-            /// <summary>
-            /// 确定指定对象是否等于当前对象
-            /// </summary>
-            /// <param name="obj">要与当前对象进行比较的对象</param>
-            /// <returns>如果指定的对象等于当前对象，则为 <see langword="true"/>；反之则为 <see langword="false"/>。</returns>
+            public bool Equals(Entry other)
+            {
+                if (Reference.TryGetTarget(out T targetA) && Reference.TryGetTarget(out T targetB))
+                {
+                    return ReferenceEquals(targetA, targetB);
+                }
+                return !Reference.TryGetTarget(out T _) && !other.Reference.TryGetTarget(out T _);
+            }
+
             public override bool Equals(object obj)
             {
-                if (obj is Entry entry)
+                if (obj is Entry other)
                 {
-                    if (Value.TryGetTarget(out T targetA) && entry.Value.TryGetTarget(out T targetB))
+                    if (Reference.TryGetTarget(out T targetA) && Reference.TryGetTarget(out T targetB))
                     {
                         return ReferenceEquals(targetA, targetB);
                     }
-                    return !Value.TryGetTarget(out _) && !entry.Value.TryGetTarget(out _);
+                    return !Reference.TryGetTarget(out T _) && !other.Reference.TryGetTarget(out T _);
                 }
                 return base.Equals(obj);
             }
 
-            /// <summary>
-            /// 哈希函数
-            /// </summary>
-            /// <returns>当前对象的哈希代码</returns>
             public override int GetHashCode()
             {
-                if (Value.TryGetTarget(out T target))
-                {
-                    _hashCode = target.GetHashCode();
-                }
-                return _hashCode;
+                return Reference.TryGetTarget(out T target) ? target.GetHashCode() : 0;
+            }
+        }
+
+
+        private class EntryEqualityComparer : EqualityComparer<Entry>
+        {
+            public override bool Equals(Entry x, Entry y)
+            {
+                return x.Equals(y);
+            }
+            public override int GetHashCode(Entry obj)
+            {
+                return obj.GetHashCode();
             }
         }
     }

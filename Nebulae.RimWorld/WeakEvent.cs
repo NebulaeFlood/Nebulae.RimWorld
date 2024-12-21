@@ -34,7 +34,7 @@ namespace Nebulae.RimWorld
         /// <summary>
         /// 订阅事件的对象
         /// </summary>
-        private readonly WeakCollection<object> _subcribers;
+        private readonly ConditionalWeakSet<object> _subcribers;
 
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Nebulae.RimWorld
         {
             _lock = new object();
             _handlers = new ConditionalWeakTable<object, HandlerCollection>();
-            _subcribers = new WeakCollection<object>();
+            _subcribers = new ConditionalWeakSet<object>();
         }
 
 
