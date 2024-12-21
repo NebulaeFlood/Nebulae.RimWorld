@@ -1,13 +1,13 @@
 ﻿<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup Condition="'$(Configuration)' == 'DEBUG'">
-		<Reference Include="Nebulae.RimWorld">
-			<HintPath>$(MSBuildThisFileDirectory)..\ref\debug\Nebulae.RimWorld.dll</HintPath>
+		<Reference Include="Nebulae.RimWorld.UI">
+			<HintPath>$(MSBuildThisFileDirectory)..\ref\debug\Nebulae.RimWorld.UI.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)' == 'RELEASE'">
-		<Reference Include="Nebulae.RimWorld">
-			<HintPath>$(MSBuildThisFileDirectory)..\ref\release\Nebulae.RimWorld.dll</HintPath>
+		<Reference Include="Nebulae.RimWorld.UI">
+			<HintPath>$(MSBuildThisFileDirectory)..\ref\release\Nebulae.RimWorld.UI.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 </Project>

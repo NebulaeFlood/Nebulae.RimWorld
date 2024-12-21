@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
 	<metadata>
-		<id>Nebulae.RimWorld</id>
-		<version>1.0.3</version>
+		<id>Nebulae.RimWorld.UI</id>
+		<version>1.0.2</version>
 		<authors>NubulaeFlood</authors>
 		<license type="file">LICENSE.txt</license>
 		<licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
@@ -14,7 +14,7 @@
 		<dependencies>
 			<group targetFramework=".NETFramework4.7.2">
 				<dependency id="Krafs.Rimworld.Ref" version="1.5.4297" exclude="Build,Analyzers" />
-				<!-- <dependency id="Lib.Harmony" version="2.3.3" exclude="Build,Analyzers" /> -->
+				<dependency id="Lib.Harmony" version="2.3.3" exclude="Build,Analyzers" />
 			</group>
 		</dependencies>
 		<frameworkAssemblies>
@@ -22,14 +22,14 @@
 		</frameworkAssemblies>
 	</metadata>
 	<files>
-		<file src="Nebulae.RimWorld\bin\Debug\net472\Nebulae.RimWorld.dll" target="ref\debug\Nebulae.RimWorld.dll" />
-		<file src="Nebulae.RimWorld\bin\Debug\net472\Nebulae.RimWorld.pdb" target="ref\debug\Nebulae.RimWorld.pdb" />
-		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.dll" target="ref\release\Nebulae.RimWorld.dll" />
-		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.pdb" target="ref\release\Nebulae.RimWorld.pdb" />
-		<file src="Nebulae.RimWorld\bin\Nebulae.RimWorld.xml" target="ref\debug\Nebulae.RimWorld.xml" />
-		<file src="Nebulae.RimWorld\bin\Nebulae.RimWorld.xml" target="ref\release\Nebulae.RimWorld.xml" />
+		<file src="Nebulae.RimWorld.UI\bin\Debug\net472\Nebulae.RimWorld.UI.dll" target="ref\debug\Nebulae.RimWorld.UI.dll" />
+		<file src="Nebulae.RimWorld.UI\bin\Debug\net472\Nebulae.RimWorld.UI.pdb" target="ref\debug\Nebulae.RimWorld.UI.pdb" />
+		<file src="Nebulae.RimWorld.UI\bin\Release\net472\Nebulae.RimWorld.UI.dll" target="ref\release\Nebulae.RimWorld.UI.dll" />
+		<file src="Nebulae.RimWorld.UI\bin\Release\net472\Nebulae.RimWorld.UI.pdb" target="ref\release\Nebulae.RimWorld.UI.pdb" />
+		<file src="Nebulae.RimWorld.UI\bin\Nebulae.RimWorld.UI.xml" target="ref\debug\Nebulae.RimWorld.UI.xml" />
+		<file src="Nebulae.RimWorld.UI\bin\Nebulae.RimWorld.UI.xml" target="ref\release\Nebulae.RimWorld.UI.xml" />
 		<file src="LICENSE.txt" target="LICENSE.txt" />
 		<file src="README.md" target="README.md" />
-		<file src="Nebulae.RimWorld.targets" target="build\Nebulae.RimWorld.targets" />
+		<file src="Nebulae.RimWorld.UI.targets" target="build\Nebulae.RimWorld.UI.targets" />
 	</files>
 </package>
