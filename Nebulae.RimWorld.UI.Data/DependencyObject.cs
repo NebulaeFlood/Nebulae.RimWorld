@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Design;
 
-namespace Nebulae.RimWorld.UI
+namespace Nebulae.RimWorld.UI.Data
 {
     /// <summary>
     /// 依赖对象
@@ -58,7 +57,7 @@ namespace Nebulae.RimWorld.UI
 
             if (TryGetValueEntry(property, out EffectiveValueEntry valueEntry))
             {
-                if (valueEntry.Value != GetDefaultValue(property))
+                if (valueEntry.Value != GetPropertyMetadata(property)._defaultValue)
                 {
                     SetValueEntry(property, valueEntry.Value);
                 }
@@ -92,7 +91,7 @@ namespace Nebulae.RimWorld.UI
             {
                 return valueEntry.EffectiveValue;
             }
-            return GetDefaultValue(property);
+            return GetPropertyMetadata(property)._defaultValue;
         }
 
         /// <summary>
@@ -112,7 +111,7 @@ namespace Nebulae.RimWorld.UI
                 throw new ArgumentNullException(nameof(property));
             }
 
-            if(!property.ValidateValue(value))
+            if (!property.ValidateValue(value))
             {
                 value = CoerceValue(property, value);
             }
@@ -136,7 +135,7 @@ namespace Nebulae.RimWorld.UI
             {
                 value = CoerceValue(property, value);
             }
-            SetValueEntry(property, CoerceValue(property, value));
+            SetValueEntry(property, value);
         }
 
         #endregion
@@ -152,13 +151,13 @@ namespace Nebulae.RimWorld.UI
 
         private object CoerceValue(DependencyProperty property, object value)
         {
-            PropertyMetadata metadata = property.GetMetadata(_currentType);
+            PropertyMetadata metadata = GetPropertyMetadata(property);
 
             object coercedValue = metadata.CoerceValue(this, value);
-            if(!property.ValidateValue(coercedValue))
+            if (!property.ValidateValue(coercedValue))
             {
                 property.ThrowInvalidCoercedValueException(coercedValue);
-            }    
+            }
             return coercedValue;
         }
 
@@ -181,13 +180,14 @@ namespace Nebulae.RimWorld.UI
                     _effectiveAttachedValues[property] = newEntry;
                 }
 
-                PropertyMetadata metadata = property.GetMetadata(_currentType);
+                PropertyMetadata metadata = GetPropertyMetadata(property);
                 metadata.NotifyPropertyChanged(this,
                     new DependencyPropertyChangedEventArgs(property, metadata, valueEntry, newEntry));
             }
             else
             {
-                oldValue = GetDefaultValue(property);
+                PropertyMetadata metadata = GetPropertyMetadata(property);
+                oldValue = metadata._defaultValue;
                 if (oldValue == value) { return; }
 
                 EffectiveValueEntry newEntry = new EffectiveValueEntry(valueEntry.Value, value);
@@ -200,15 +200,21 @@ namespace Nebulae.RimWorld.UI
                     _effectiveAttachedValues.Add(property, newEntry);
                 }
 
-                PropertyMetadata metadata = property.GetMetadata(_currentType);
                 metadata.NotifyPropertyChanged(this,
                     new DependencyPropertyChangedEventArgs(property, metadata, new EffectiveValueEntry(oldValue), newEntry));
             }
         }
 
-        private object GetDefaultValue(DependencyProperty property)
+        private PropertyMetadata GetPropertyMetadata(DependencyProperty property)
         {
-            return property.GetMetadata(_currentType)._defaultValue;
+            if (property.TryGetMetadata(_currentType, out PropertyMetadata metadata))
+            {
+                return metadata;
+            }
+            else
+            {
+                throw new InvalidOperationException($"{property.OwnerType}{property.Name} is not a registed property for {_currentType}.");
+            }
         }
 
         private void SetValueEntry(DependencyProperty property, object value)
@@ -229,13 +235,14 @@ namespace Nebulae.RimWorld.UI
                     _effectiveAttachedValues[property] = newEntry;
                 }
 
-                PropertyMetadata metadata = property.GetMetadata(_currentType);
+                PropertyMetadata metadata = GetPropertyMetadata(property);
                 metadata.NotifyPropertyChanged(this,
                     new DependencyPropertyChangedEventArgs(property, metadata, valueEntry, newEntry));
             }
             else
             {
-                oldValue = GetDefaultValue(property);
+                PropertyMetadata metadata = GetPropertyMetadata(property);
+                oldValue = metadata._defaultValue;
                 if (oldValue == value) { return; }
 
                 EffectiveValueEntry newEntry = new EffectiveValueEntry(value);
@@ -249,7 +256,6 @@ namespace Nebulae.RimWorld.UI
                     _effectiveAttachedValues.Add(property, new EffectiveValueEntry(value));
                 }
 
-                PropertyMetadata metadata = property.GetMetadata(_currentType);
                 metadata.NotifyPropertyChanged(this,
                     new DependencyPropertyChangedEventArgs(property, metadata, new EffectiveValueEntry(oldValue), newEntry));
             }
@@ -261,7 +267,6 @@ namespace Nebulae.RimWorld.UI
                 ? _effectiveAttachedValues.TryGetValue(property, out valueEntry)
                 : _effectiveValues.TryGetValue(property, out valueEntry);
         }
-
 
         #endregion
     }

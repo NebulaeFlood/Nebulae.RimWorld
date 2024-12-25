@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{E5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nebulae.RimWorld.UI", "Nebulae.RimWorld.UI\Nebulae.RimWorld.UI.csproj", "{87B04158-94F2-441C-A3D8-0CE675F2F9F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nebulae.RimWorld.UI.Data", "Nebulae.RimWorld.UI.Data\Nebulae.RimWorld.UI.Data.csproj", "{D15398EB-85E7-4AEE-B9BC-BE9A9BEA274E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{87B04158-94F2-441C-A3D8-0CE675F2F9F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87B04158-94F2-441C-A3D8-0CE675F2F9F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87B04158-94F2-441C-A3D8-0CE675F2F9F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D15398EB-85E7-4AEE-B9BC-BE9A9BEA274E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D15398EB-85E7-4AEE-B9BC-BE9A9BEA274E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D15398EB-85E7-4AEE-B9BC-BE9A9BEA274E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D15398EB-85E7-4AEE-B9BC-BE9A9BEA274E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

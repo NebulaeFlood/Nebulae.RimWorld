@@ -16,4 +16,8 @@
     <Folder Include="Controls\Geomerties\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Nebulae.RimWorld.UI.Data\Nebulae.RimWorld.UI.Data.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Nebulae.RimWorld.UI
+﻿namespace Nebulae.RimWorld.UI.Data
 {
     /// <summary>
     /// 依赖属性的值更改后的事件数据
@@ -38,6 +34,7 @@ namespace Nebulae.RimWorld.UI
         /// 初始化 <see cref="DependencyPropertyChangedEventArgs"/> 的新实例
         /// </summary>
         /// <param name="property">更改的属性</param>
+        /// <param name="metadata">属性元数据</param>
         /// <param name="oldEntry">旧的有效项</param>
         /// <param name="newEntry">新的有效项</param>
         internal DependencyPropertyChangedEventArgs(DependencyProperty property, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry newEntry)

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Nebulae.RimWorld.UI
+﻿namespace Nebulae.RimWorld.UI.Data
 {
     /// <summary>
     /// 依赖属性帮助类

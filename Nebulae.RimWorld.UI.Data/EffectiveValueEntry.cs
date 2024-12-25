@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Nebulae.RimWorld.UI
+﻿namespace Nebulae.RimWorld.UI.Data
 {
     /// <summary>
     /// 有效值条目
     /// </summary>
-    internal struct EffectiveValueEntry : IEquatable<EffectiveValueEntry>
+    internal struct EffectiveValueEntry
     {
         /// <summary>
         /// 是否正在临时修改属性值
@@ -51,18 +47,6 @@ namespace Nebulae.RimWorld.UI
             IsModifying = true;
             TempraryValue = tmpraryValue;
             Value = value;
-        }
-
-
-        public bool Equals(EffectiveValueEntry other)
-        {
-            return IsModifying == other.IsModifying && Value == other.Value && TempraryValue == other.TempraryValue;
-        }
-
-
-        public override bool Equals(object obj)
-        {
-            return obj is EffectiveValueEntry entry && Equals(entry);
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Nebulae.RimWorld.UI
+namespace Nebulae.RimWorld.UI.Data
 {
     /// <summary>
     /// 表示设置给依赖属性的值需要转换类型时调用的方法
@@ -24,6 +22,8 @@ namespace Nebulae.RimWorld.UI
     /// </summary>
     public class PropertyMetadata
     {
+        internal event PropertyChangedCallback PropertyChanged;
+
         /// <summary>
         /// 强制转换回调函数
         /// </summary>
@@ -127,6 +127,7 @@ namespace Nebulae.RimWorld.UI
         {
             OnProertyChanged(obj, args);
             _propertyChangedCallback?.Invoke(obj, args);
+            PropertyChanged?.Invoke(obj, args);
         }
 
 
