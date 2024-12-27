@@ -8,6 +8,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 单选按钮控件
     /// </summary>
+    [StaticConstructorOnStartup]
     public class RadioButton : ToggleButton
     {
         /// <summary>

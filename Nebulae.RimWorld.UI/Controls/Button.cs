@@ -8,6 +8,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 按钮控件
     /// </summary>
+    [StaticConstructorOnStartup]
     public class Button : ButtonBase
     {
         /// <summary>
