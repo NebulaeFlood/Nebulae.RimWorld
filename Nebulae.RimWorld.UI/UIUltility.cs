@@ -17,12 +17,12 @@ namespace Nebulae.RimWorld.UI
         #region Global Variables
 
         /// <summary>
-        /// 屏幕高度
+        /// 游戏窗口客户区高度
         /// </summary>
         public static float ScreenHeight => Verse.UI.screenHeight;
 
         /// <summary>
-        /// 屏幕宽度
+        /// 游戏窗口客户区宽度
         /// </summary>
         public static float ScreenWidth => Verse.UI.screenWidth;
 
