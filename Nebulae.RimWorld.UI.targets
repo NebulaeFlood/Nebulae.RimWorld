@@ -2,12 +2,14 @@
 	<ItemGroup Condition="'$(Configuration)' == 'DEBUG'">
 		<Reference Include="Nebulae.RimWorld.UI">
 			<HintPath>$(MSBuildThisFileDirectory)..\ref\debug\Nebulae.RimWorld.UI.dll</HintPath>
+			<HintPath>$(MSBuildThisFileDirectory)..\ref\debug\Nebulae.RimWorld.UI.Data.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)' == 'RELEASE'">
 		<Reference Include="Nebulae.RimWorld.UI">
 			<HintPath>$(MSBuildThisFileDirectory)..\ref\release\Nebulae.RimWorld.UI.dll</HintPath>
+			<HintPath>$(MSBuildThisFileDirectory)..\ref\debug\Nebulae.RimWorld.UI.Data.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
 	<metadata>
 		<id>Nebulae.RimWorld</id>
-		<version>1.0.3</version>
+		<version>1.0.4</version>
 		<authors>NubulaeFlood</authors>
 		<license type="file">LICENSE.txt</license>
 		<licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
@@ -22,14 +22,10 @@
 		</frameworkAssemblies>
 	</metadata>
 	<files>
-		<file src="Nebulae.RimWorld\bin\Debug\net472\Nebulae.RimWorld.dll" target="ref\debug\Nebulae.RimWorld.dll" />
-		<file src="Nebulae.RimWorld\bin\Debug\net472\Nebulae.RimWorld.pdb" target="ref\debug\Nebulae.RimWorld.pdb" />
-		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.dll" target="ref\release\Nebulae.RimWorld.dll" />
-		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.pdb" target="ref\release\Nebulae.RimWorld.pdb" />
-		<file src="Nebulae.RimWorld\bin\Nebulae.RimWorld.xml" target="ref\debug\Nebulae.RimWorld.xml" />
-		<file src="Nebulae.RimWorld\bin\Nebulae.RimWorld.xml" target="ref\release\Nebulae.RimWorld.xml" />
+		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.dll" target="lib\net472\Nebulae.RimWorld.dll" />
+		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.pdb" target="lib\net472\Nebulae.RimWorld.pdb" />
+		<file src="Nebulae.RimWorld\bin\Nebulae.RimWorld.xml" target="lib\net472\Nebulae.RimWorld.xml" />
 		<file src="LICENSE.txt" target="LICENSE.txt" />
 		<file src="README.md" target="README.md" />
-		<file src="Nebulae.RimWorld.targets" target="build\Nebulae.RimWorld.targets" />
 	</files>
 </package>

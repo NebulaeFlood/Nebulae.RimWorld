@@ -18,9 +18,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{E59FE941-9995-428D-846D-D9B5F640997A}"
 	ProjectSection(SolutionItems) = preProject
 		Nebulae.RimWorld.nuspec = Nebulae.RimWorld.nuspec
-		Nebulae.RimWorld.targets = Nebulae.RimWorld.targets
 		Nebulae.RimWorld.UI.nuspec = Nebulae.RimWorld.UI.nuspec
-		Nebulae.RimWorld.UI.targets = Nebulae.RimWorld.UI.targets
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nebulae.RimWorld.UI", "Nebulae.RimWorld.UI\Nebulae.RimWorld.UI.csproj", "{87B04158-94F2-441C-A3D8-0CE675F2F9F4}"

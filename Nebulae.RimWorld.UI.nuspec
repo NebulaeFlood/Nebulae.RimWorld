@@ -15,6 +15,7 @@
 			<group targetFramework=".NETFramework4.7.2">
 				<dependency id="Krafs.Rimworld.Ref" version="1.5.4297" exclude="Build,Analyzers" />
 				<dependency id="Lib.Harmony" version="2.3.3" exclude="Build,Analyzers" />
+				<dependency id="Nebulae.RimWorld" version="1.0.4" exclude="Build,Analyzers" />
 			</group>
 		</dependencies>
 		<frameworkAssemblies>
@@ -22,14 +23,15 @@
 		</frameworkAssemblies>
 	</metadata>
 	<files>
-		<file src="Nebulae.RimWorld.UI\bin\Debug\net472\Nebulae.RimWorld.UI.dll" target="ref\debug\Nebulae.RimWorld.UI.dll" />
-		<file src="Nebulae.RimWorld.UI\bin\Debug\net472\Nebulae.RimWorld.UI.pdb" target="ref\debug\Nebulae.RimWorld.UI.pdb" />
-		<file src="Nebulae.RimWorld.UI\bin\Release\net472\Nebulae.RimWorld.UI.dll" target="ref\release\Nebulae.RimWorld.UI.dll" />
-		<file src="Nebulae.RimWorld.UI\bin\Release\net472\Nebulae.RimWorld.UI.pdb" target="ref\release\Nebulae.RimWorld.UI.pdb" />
-		<file src="Nebulae.RimWorld.UI\bin\Nebulae.RimWorld.UI.xml" target="ref\debug\Nebulae.RimWorld.UI.xml" />
-		<file src="Nebulae.RimWorld.UI\bin\Nebulae.RimWorld.UI.xml" target="ref\release\Nebulae.RimWorld.UI.xml" />
+		<file src="Nebulae.RimWorld.UI\bin\Release\net472\Nebulae.RimWorld.UI.dll" target="lib\net472\Nebulae.RimWorld.UI.dll" />
+		<file src="Nebulae.RimWorld.UI\bin\Release\net472\Nebulae.RimWorld.UI.pdb" target="lib\net472\Nebulae.RimWorld.UI.pdb" />
+		<file src="Nebulae.RimWorld.UI\bin\Nebulae.RimWorld.UI.xml" target="lib\net472\Nebulae.RimWorld.UI.xml" />
+
+		<file src="Nebulae.RimWorld.UI.Data\bin\Release\net472\Nebulae.RimWorld.UI.Data.dll" target="lib\net472\Nebulae.RimWorld.UI.Data.dll" />
+		<file src="Nebulae.RimWorld.UI.Data\bin\Release\net472\Nebulae.RimWorld.UI.Data.pdb" target="lib\net472\Nebulae.RimWorld.UI.Data.pdb" />
+		<file src="Nebulae.RimWorld.UI.Data\bin\Nebulae.RimWorld.UI.Data.xml" target="lib\net472\Nebulae.RimWorld.UI.Data.xml" />
+
 		<file src="LICENSE.txt" target="LICENSE.txt" />
 		<file src="README.md" target="README.md" />
-		<file src="Nebulae.RimWorld.UI.targets" target="build\Nebulae.RimWorld.UI.targets" />
 	</files>
 </package>
