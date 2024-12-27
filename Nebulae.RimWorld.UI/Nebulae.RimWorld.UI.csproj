@@ -1,23 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.5.4297" />
-    <PackageReference Include="Lib.Harmony" Version="2.3.3" />
-    <PackageReference Include="Nebulae.RimWorld" Version="1.0.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Krafs.Rimworld.Ref" Version="1.5.4297" />
+		<PackageReference Include="Lib.Harmony" Version="2.3.3" />
+		<PackageReference Include="Nebulae.RimWorld" Version="1.0.4" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controls\Panels\" />
-    <Folder Include="Windows\" />
-    <Folder Include="Controls\Geomerties\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Windows\" />
+		<Folder Include="Patches\" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Nebulae.RimWorld.UI.Data\Nebulae.RimWorld.UI.Data.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Nebulae.RimWorld.UI.Data\Nebulae.RimWorld.UI.Data.csproj">
+			<PrivateAssets>all</PrivateAssets>
+		</ProjectReference>
+	</ItemGroup>
 
 </Project>

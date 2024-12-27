@@ -1,5 +1,4 @@
-﻿using Nebulae.RimWorld.Utilities;
-using UnityEngine;
+﻿using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -11,11 +10,11 @@ namespace Nebulae.RimWorld.UI
     {
         //------------------------------------------------------
         //
-        //  Game Window Client Area Size
+        //  Global Variables
         //
         //------------------------------------------------------
 
-        #region Game Window Client Area Size
+        #region Global Variables
 
         /// <summary>
         /// 屏幕高度
@@ -142,30 +141,6 @@ namespace Nebulae.RimWorld.UI
         }
 
         /// <summary>
-        /// 判断矩形是否水平方向上相交
-        /// </summary>
-        /// <param name="rect">判断是否相交的矩形</param>
-        /// <param name="another">判断是否相交的矩形</param>
-        /// <returns>矩形是否水平方向上相交。</returns>
-        public static bool IsIntersectingHorizontallyWith(this Rect rect, Rect another)
-        {
-            float anotherRight = another.x + another.width;
-            return rect.x.IsInRange(another.x, anotherRight) || (rect.x + rect.width).IsInRange(another.x, anotherRight);
-        }
-
-        /// <summary>
-        /// 判断矩形是否垂直方向上相交
-        /// </summary>
-        /// <param name="rect">判断是否相交的矩形</param>
-        /// <param name="another">判断是否相交的矩形</param>
-        /// <returns>矩形是否垂直方向上相交。</returns>
-        public static bool IsIntersectingVerticallyWith(this Rect rect, Rect another)
-        {
-            float anotherBottom = another.y + another.height;
-            return rect.y.IsInRange(another.y, anotherBottom) || (rect.y + rect.height).IsInRange(another.y, anotherBottom);
-        }
-
-        /// <summary>
         /// 判断矩形是否仅有位置发生变化
         /// </summary>
         /// <param name="rect">要判断的矩形</param>
@@ -174,6 +149,16 @@ namespace Nebulae.RimWorld.UI
         public static bool IsPositionOnlyChanged(this Rect rect, Rect previousRect)
         {
             return rect.width == previousRect.width && rect.height == previousRect.height && (rect.x != previousRect.x || rect.y != previousRect.y);
+        }
+
+        /// <summary>
+        /// 判断按钮交互结果是否能触发按钮
+        /// </summary>
+        /// <param name="result">按钮交互结果</param>
+        /// <returns>按钮交互结果是否能触发按钮。</returns>
+        public static bool IsPressed(this Widgets.DraggableResult result)
+        {
+            return result is Widgets.DraggableResult.Pressed || result is Widgets.DraggableResult.DraggedThenPressed;
         }
 
         /// <summary>

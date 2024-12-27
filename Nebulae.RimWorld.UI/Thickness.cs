@@ -29,7 +29,7 @@ namespace Nebulae.RimWorld.UI
         /// <summary>
         /// 获取此 <see cref="Thickness"/> 结构的上边距
         /// </summary>
-        public readonly float Top;  
+        public readonly float Top;
         /// <summary>
         /// 获取此 <see cref="Thickness"/> 结构的右边距
         /// </summary>

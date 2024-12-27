@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Nebulae.RimWorld.UI.Data;
 using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
-    /// 所有控件的基类，定义了控件的共同行为
+    /// 所有控件的基类，定义了控件的共同特性
     /// </summary>
     public abstract class Control : DependencyObject
     {
@@ -47,24 +43,6 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Public Properties
 
-        #region Child
-        /// <summary>
-        /// 获取或设置控件的子控件
-        /// </summary>
-        public Control Child
-        {
-            get { return (Control)GetValue(ChildProperty); }
-            set { SetValue(ChildProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="Child"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty ChildProperty =
-            DependencyProperty.Register(nameof(Child), typeof(Control), typeof(Control),
-                new ControlPropertyMetadata());
-        #endregion
-
         /// <summary>
         /// 排布控件后控件需要占用的布局区域
         /// </summary>
@@ -92,7 +70,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty HorizontalAlignmentProperty =
             DependencyProperty.Register(nameof(HorizontalAlignment), typeof(HorizontalAlignment), typeof(Control),
-                new ControlPropertyMetadata(HorizontalAlignment.Center, ControlPropertyMetadataFlag.Arrange));
+                new ControlPropertyMetadata(HorizontalAlignment.Stretch, ControlPropertyMetadataFlag.Arrange));
         #endregion
 
         /// <summary>
@@ -127,24 +105,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 控件名称
         /// </summary>
         public string Name { get; set; }
-
-        #region Parent
-        /// <summary>
-        /// 获取或设置
-        /// </summary>
-        public Control Parent
-        {
-            get { return (Control)GetValue(ParentProperty); }
-            set { SetValue(ParentProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="Parent"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty ParentProperty =
-            DependencyProperty.Register(nameof(Parent), typeof(Control), typeof(Control),
-                new ControlPropertyMetadata());
-        #endregion
 
         /// <summary>
         /// 控件最终呈现区域
@@ -181,7 +141,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty VerticalAlignmentProperty =
             DependencyProperty.Register(nameof(VerticalAlignment), typeof(VerticalAlignment), typeof(Control),
-                new ControlPropertyMetadata(VerticalAlignment.Center, ControlPropertyMetadataFlag.Arrange));
+                new ControlPropertyMetadata(VerticalAlignment.Stretch, ControlPropertyMetadataFlag.Arrange));
         #endregion
 
         #region Visibility
@@ -363,7 +323,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="availableRect">允许排布的区域</param>
         /// <returns>控件需要占用的布局区域。</returns>
-        protected virtual Rect ArrangeCore(Rect availableRect) => 
+        protected virtual Rect ArrangeCore(Rect availableRect) =>
             (DesiredSize - Margin).AlignRectToArea(availableRect, HorizontalAlignment, VerticalAlignment);
 
         /// <summary>

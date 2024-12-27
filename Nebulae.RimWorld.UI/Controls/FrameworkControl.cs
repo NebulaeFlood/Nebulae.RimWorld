@@ -1,16 +1,12 @@
-﻿using Nebulae.RimWorld.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.Utilities;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
-    /// 可自由设置宽高的控件的基类，定义了其共同行为
+    /// 可自由设置宽高的控件的基类，定义了其共同特性
     /// </summary>
-    public abstract class FramewrokControl : Control
+    public abstract class FrameworkControl : Control
     {
         //------------------------------------------------------
         //
@@ -35,7 +31,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 标识 <see cref="Height"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty HeightProperty =
-            DependencyProperty.Register(nameof(Height), typeof(float), typeof(FramewrokControl),
+            DependencyProperty.Register(nameof(Height), typeof(float), typeof(FrameworkControl),
                 new ControlPropertyMetadata(1f, ControlPropertyMetadataFlag.Measure),
                 ValidateSize);
         #endregion
@@ -54,7 +50,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 标识 <see cref="Width"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty WidthProperty =
-            DependencyProperty.Register(nameof(Width), typeof(float), typeof(FramewrokControl),
+            DependencyProperty.Register(nameof(Width), typeof(float), typeof(FrameworkControl),
                 new ControlPropertyMetadata(1f, ControlPropertyMetadataFlag.Measure),
                 ValidateSize);
         #endregion
@@ -74,12 +70,11 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
-        static FramewrokControl()
+        /// <summary>
+        /// 为 <see cref="FrameworkControl"/> 派生类实现基本初始化
+        /// </summary>
+        protected FrameworkControl()
         {
-            HorizontalAlignmentProperty.OverrideMetadata(typeof(FramewrokControl),
-                new ControlPropertyMetadata(HorizontalAlignment.Stretch, ControlPropertyMetadataFlag.Arrange));
-            VerticalAlignmentProperty.OverrideMetadata(typeof(FramewrokControl),
-                new ControlPropertyMetadata(VerticalAlignment.Stretch, ControlPropertyMetadataFlag.Arrange));
         }
 
 
@@ -90,7 +85,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (HorizontalAlignment is HorizontalAlignment.Stretch)
             {
-                desiredWidth = availableSize.Width.IsInfinity() 
+                desiredWidth = availableSize.Width.IsInfinity()
                     ? UIUltility.ScreenWidth
                     : availableSize.Width;
             }
