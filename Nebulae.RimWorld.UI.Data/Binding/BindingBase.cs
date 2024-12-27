@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.Networking.Types;
-using Verse;
 
 namespace Nebulae.RimWorld.UI.Data.Binding
 {
@@ -230,11 +223,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             _isBinding = false;
 
-            if(_sourcePropertyData != null)
+            if (_sourcePropertyData != null)
             {
                 _sourcePropertyData.PropertyChanged -= OnDependencySourceChanged;
             }
-            if(_targetPropertyData != null)
+            if (_targetPropertyData != null)
             {
                 _targetPropertyData.PropertyChanged -= OnDependencyTargetChanged;
             }

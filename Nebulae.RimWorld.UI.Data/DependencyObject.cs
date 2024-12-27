@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace Nebulae.RimWorld.UI.Data
 {
@@ -106,6 +105,7 @@ namespace Nebulae.RimWorld.UI.Data
         /// </remarks>
         public void ModifyValue(DependencyProperty property, object value)
         {
+            if (value.IsUnsetValue()) { return; }
             if (property is null)
             {
                 throw new ArgumentNullException(nameof(property));
@@ -114,6 +114,7 @@ namespace Nebulae.RimWorld.UI.Data
             if (!property.ValidateValue(value))
             {
                 value = CoerceValue(property, value);
+                if (value.IsUnsetValue()) { return; }
             }
             ModifyValueEntry(property, value);
         }
@@ -126,6 +127,7 @@ namespace Nebulae.RimWorld.UI.Data
         /// <exception cref="ArgumentNullException">当 <paramref name="property"/> 为 <see langword="null"/> 时发生。</exception>
         public void SetValue(DependencyProperty property, object value)
         {
+            if (value.IsUnsetValue()) { return; }
             if (property is null)
             {
                 throw new ArgumentNullException(nameof(property));
@@ -134,6 +136,7 @@ namespace Nebulae.RimWorld.UI.Data
             if (!property.ValidateValue(value))
             {
                 value = CoerceValue(property, value);
+                if (value.IsUnsetValue()) { return; }
             }
             SetValueEntry(property, value);
         }
@@ -154,6 +157,7 @@ namespace Nebulae.RimWorld.UI.Data
             PropertyMetadata metadata = GetPropertyMetadata(property);
 
             object coercedValue = metadata.CoerceValue(this, value);
+            if (coercedValue.IsUnsetValue()) { return coercedValue; }
             if (!property.ValidateValue(coercedValue))
             {
                 property.ThrowInvalidCoercedValueException(coercedValue);

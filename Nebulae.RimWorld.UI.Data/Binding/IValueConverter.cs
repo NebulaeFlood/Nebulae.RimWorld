@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nebulae.RimWorld.UI.Data.Binding
+﻿namespace Nebulae.RimWorld.UI.Data.Binding
 {
     /// <summary>
     /// 綁定源和目标的成员值的转换器

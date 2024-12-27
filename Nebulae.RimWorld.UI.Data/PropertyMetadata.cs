@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Nebulae.RimWorld.UI.Data
+﻿namespace Nebulae.RimWorld.UI.Data
 {
     /// <summary>
     /// 表示设置给依赖属性的值需要转换类型时调用的方法
