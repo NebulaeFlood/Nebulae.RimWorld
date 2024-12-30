@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Nebulae.RimWorld.UI.Data
 {
@@ -30,7 +31,7 @@ namespace Nebulae.RimWorld.UI.Data
 
         #region Private Static Fields
 
-        private static readonly Type _nullableType = typeof(Nullable<>);
+        private static readonly Type _nullableValueType = typeof(Nullable<>);
 
         /// <summary>
         /// 已注册的附加属性
@@ -54,43 +55,45 @@ namespace Nebulae.RimWorld.UI.Data
         #region Private Fields
 
         /// <summary>
-        /// 附加属性的元数据
-        /// </summary>
-        private readonly Dictionary<Type, PropertyMetadata> _attachedMetadata;
-
-        /// <summary>
         /// 依赖属性的默认元数据
         /// </summary>
         private readonly PropertyMetadata _defaultMetadata;
 
-        private readonly int _hashCode;
-
         /// <summary>
-        /// 依赖属性的元数据是否已被重写
+        /// 重写了依赖属性元数据的类型
         /// </summary>
-        private bool _isMetadataOverridden;
+        private SortedSet<DependencyObjectType> _overrideInfo;
 
         /// <summary>
         /// 依赖属性的元数据
         /// </summary>
-        private readonly Dictionary<Type, PropertyMetadata> _metadata;
+        private readonly Dictionary<DependencyObjectType, PropertyMetadata> _metadata = new Dictionary<DependencyObjectType, PropertyMetadata>();
 
-        private readonly string _name;
-
-        private readonly Type _ownerType;
+        /// <summary>
+        /// 临时的依赖属性元数据，存储继承的元数据
+        /// </summary>
+        private Dictionary<DependencyObjectType, PropertyMetadata> _temporaryMetadata;
 
         /// <summary>
         /// 属性验证回调函数
         /// </summary>
         private readonly ValidateValueCallback _validateValueCallback;
 
+        private readonly int _hashCode;
+        private readonly string _name;
+        private readonly Type _ownerType;
         private readonly Type _valueType;
+
+        private bool _isMetadataOverridden;
+        private bool _isMetadataTempDirty;
 
         #endregion
 
 
-        // 全部使用字段旨在大量读写属性时提供略微性能提升
-        internal readonly bool _isAttached;
+        /// <summary>
+        /// 指示该依赖属性是否为附加属性
+        /// </summary>
+        internal readonly bool IsAttached;
 
 
         //------------------------------------------------------
@@ -100,11 +103,6 @@ namespace Nebulae.RimWorld.UI.Data
         //------------------------------------------------------
 
         #region Public Properties
-
-        /// <summary>
-        /// 指示该依赖属性是否为附加属性
-        /// </summary>
-        public bool IsAttached => _isAttached;
 
         /// <summary>
         /// 依赖属性名称
@@ -141,8 +139,8 @@ namespace Nebulae.RimWorld.UI.Data
             ValidateValueCallback validateValueCallback,
             bool isAttached = false)
         {
-            _attachedMetadata = new Dictionary<Type, PropertyMetadata>();
-            _metadata = new Dictionary<Type, PropertyMetadata>();
+            IsAttached = isAttached;
+
             _isMetadataOverridden = false;
 
             _name = name;
@@ -150,7 +148,6 @@ namespace Nebulae.RimWorld.UI.Data
             _ownerType = ownerType;
             _defaultMetadata = defaultMetadata;
             _validateValueCallback = validateValueCallback;
-            _isAttached = isAttached;
 
             _hashCode = ownerType.GetHashCode() ^ name.GetHashCode();
         }
@@ -347,42 +344,80 @@ namespace Nebulae.RimWorld.UI.Data
         public override int GetHashCode() => _hashCode;
 
         /// <summary>
+        /// 获取依赖属性的元数据
+        /// </summary>
+        /// <param name="ownerType">拥有依赖属性的对象的类型</param>
+        /// <returns>依赖属性的元数据。</returns>
+        public PropertyMetadata GetMetadata(Type ownerType) => GetMetadata(DependencyObjectType.FromType(ownerType));
+
+        /// <summary>
+        /// 获取依赖属性与指定对象对应的元数据
+        /// </summary>
+        /// <param name="target">与要获取的元数据对应的对象。</param>
+        /// <returns>依赖属性的元数据。</returns>
+        public PropertyMetadata GetMetadata(DependencyObject target) => GetMetadata(target.DependencyType);
+
+        /// <summary>
         /// 重写依赖属性的元数据
         /// </summary>
         /// <param name="ownerType">拥有依赖属性的对象的类型</param>
         /// <param name="metadata">新的元数据</param>
-        /// <returns>如果重写成功，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        /// <remarks>仅当该依赖属性不属于 <paramref name="ownerType"/> 时，才可能返回 <see langword="false"/>。</remarks>
-        public bool OverrideMetadata(Type ownerType, PropertyMetadata metadata)
+        /// <exception cref="ArgumentNullException">当任意参数为 <see langword="null"/> 时发生。</exception>
+        /// <exception cref="InvalidOperationException">当 <paramref name="ownerType"/> 不拥有该依赖属性时发生。</exception>
+        public void OverrideMetadata(Type ownerType, PropertyMetadata metadata)
         {
+            if (ownerType is null)
+            {
+                throw new ArgumentNullException(nameof(ownerType));
+            }
+
             if (metadata is null)
             {
                 throw new ArgumentNullException(nameof(metadata));
             }
 
-            ValidateValue(metadata.DefaultValue);
+            if (IsAttached)
+            {
+                throw new InvalidOperationException($"Unable to override the _metadata of the attached property {_ownerType}.{_name}.");
+            }
 
-            _isMetadataOverridden = true;
-            if (_isAttached)
+            if (!ValidateValue(metadata.DefaultValue))
             {
-                _attachedMetadata[ownerType] = metadata;
-                return true;
+                ThrowInvalidValueException(metadata);
             }
-            else
+
+            if (!_ownerType.IsAssignableFrom(ownerType))
             {
-                if (ownerType == _ownerType || ownerType.IsSubclassOf(_ownerType))
-                {
-                    _metadata[ownerType] = metadata;
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                throw new InvalidOperationException($"The type {ownerType} must inherit {_ownerType} to override the _metadata of {_ownerType}.{_name}.");
             }
+
+            DependencyObjectType dType = DependencyObjectType.FromType(ownerType);
+            dType.Upgrade();
+
+            _metadata.Add(dType, metadata);
+
+            if (!_isMetadataOverridden)
+            {
+                _overrideInfo = new SortedSet<DependencyObjectType>(DependencyObjectType.Comparer);
+                _temporaryMetadata = new Dictionary<DependencyObjectType, PropertyMetadata>();
+
+                _isMetadataOverridden = true;
+            }
+
+            if (_isMetadataTempDirty)
+            {
+                _temporaryMetadata.Clear();
+                _isMetadataTempDirty = false;
+            }
+
+            _overrideInfo.Add(dType);
+            _temporaryMetadata.Add(dType, metadata);
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 返回依赖属性的名称
+        /// </summary>
+        /// <returns>依赖属性的名称。</returns>
         public override string ToString() => _name;
 
         /// <summary>
@@ -390,14 +425,12 @@ namespace Nebulae.RimWorld.UI.Data
         /// </summary>
         /// <param name="value">要验证的值</param>
         /// <returns>如果验证成功，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="value"/> 为 <see langword="null"/> 且 <see cref="ValueType"/> 不为可空类型时发生。</exception>
-        /// <exception cref="ArgumentException">当 <paramref name="value"/> 无法转换为 <see cref="ValueType"/> 或无法通过 <see cref="ValidateValueCallback"/> 的验证时发生。</exception>
         public bool ValidateValue(object value)
         {
             if (value is null)
             {
                 if (_valueType.IsValueType
-                    && !(_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == _nullableType))
+                    && !(_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == _nullableValueType))
                 {
                     return false;
                 }
@@ -429,23 +462,45 @@ namespace Nebulae.RimWorld.UI.Data
         /// 获取依赖属性的元数据
         /// </summary>
         /// <param name="ownerType">拥有依赖属性的对象的类型</param>
-        /// <param name="metadata">依赖属性的元数据</param>
-        /// <returns>如果成功获取，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        internal bool TryGetMetadata(Type ownerType, out PropertyMetadata metadata)
+        /// <returns>依赖属性的元数据。</returns>
+        internal PropertyMetadata GetMetadata(DependencyObjectType ownerType)
         {
-            if (!_isMetadataOverridden)
+            if (!_isMetadataOverridden
+                || _ownerType == ownerType.OriginalType
+                || IsAttached)
             {
-                if (_isAttached || _ownerType.IsAssignableFrom(ownerType))
+                return _defaultMetadata;
+            }
+
+            if (!_temporaryMetadata.TryGetValue(ownerType, out PropertyMetadata metadata)
+                && !TryMapType(ownerType, out metadata))
+            {
+                throw new InvalidOperationException($"The property {_ownerType}.{_name} is not a registed property for {ownerType.OriginalType}.");
+            }
+
+            return metadata;
+        }
+
+        internal bool TryMapType(DependencyObjectType dType, out PropertyMetadata metadata)
+        {
+            DependencyObjectType[] sortedInfo = _overrideInfo.ToArray();
+
+            DependencyObjectType potentialMapResult;
+            for (int i = 0; i < sortedInfo.Length; i++)
+            {
+                potentialMapResult = sortedInfo[i];
+                if (potentialMapResult.OriginalType.IsAssignableFrom(dType.OriginalType))
                 {
-                    metadata = _defaultMetadata;
+                    metadata = _metadata[potentialMapResult];
+                    _temporaryMetadata[dType] = metadata;
+
+                    _isMetadataTempDirty = true;
                     return true;
                 }
-                metadata = null;
-                return false;
             }
-            return _isAttached
-                ? _attachedMetadata.TryGetValue(ownerType, out metadata)
-                : _metadata.TryGetValue(ownerType, out metadata);
+
+            metadata = null;
+            return false;
         }
 
         internal void ThrowInvalidCoercedValueException(object value)
@@ -453,7 +508,7 @@ namespace Nebulae.RimWorld.UI.Data
             if (value is null)
             {
                 if (_valueType.IsValueType
-                    && !(_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == _nullableType))
+                    && !(_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == _nullableValueType))
                 {
                     throw new InvalidOperationException($"The coreced value is null, but {_ownerType}.{_name} can not be null.");
                 }
@@ -478,7 +533,7 @@ namespace Nebulae.RimWorld.UI.Data
             if (value is null)
             {
                 if (_valueType.IsValueType
-                    && !(_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == _nullableType))
+                    && !(_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == _nullableValueType))
                 {
                     throw new InvalidOperationException($"{_ownerType}.{_name} can not set to be null.");
                 }

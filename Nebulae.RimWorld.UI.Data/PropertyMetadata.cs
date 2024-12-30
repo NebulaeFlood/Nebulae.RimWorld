@@ -1,4 +1,6 @@
-﻿namespace Nebulae.RimWorld.UI.Data
+﻿using System;
+
+namespace Nebulae.RimWorld.UI.Data
 {
     /// <summary>
     /// 表示设置给依赖属性的值需要转换类型时调用的方法
@@ -16,6 +18,26 @@
     public delegate void PropertyChangedCallback(DependencyObject dp, DependencyPropertyChangedEventArgs args);
 
     /// <summary>
+    /// 元数据的特殊标记
+    /// </summary>
+    [Flags]
+    public enum MetadataFlag : int
+    {
+        /// <summary>
+        /// 无标记
+        /// </summary>
+        None = 0x00000000,
+        /// <summary>
+        /// 继承元数据的默认值
+        /// </summary>
+        InheritDefaultValue = 0x00000001,
+        /// <summary>
+        /// 允许继承 <see cref="PropertyChangedCallback"/>
+        /// </summary>
+        InheritablePropertyChangedCallback = 0x00000002
+    }
+
+    /// <summary>
     /// 属性元数据
     /// </summary>
     public class PropertyMetadata
@@ -25,21 +47,18 @@
         /// <summary>
         /// 强制转换回调函数
         /// </summary>
-        private readonly CoerceValueCallback _coerceValueCallback;
+        private CoerceValueCallback _coerceValueCallback;
 
         /// <summary>
         /// 属性更改回调函数
         /// </summary>
-        private readonly PropertyChangedCallback _propertyChangedCallback;
+        private PropertyChangedCallback _propertyChangedCallback;
+
+        private readonly MetadataFlag _flags;
 
 
-        internal readonly object _defaultValue;
-
-
-        /// <summary>
-        /// 属性默认值
-        /// </summary>
-        public object DefaultValue => _defaultValue;
+        internal object DefaultValue;
+        internal DependencyProperty Property;
 
 
         //------------------------------------------------------
@@ -53,18 +72,22 @@
         /// <summary>
         /// 初始化 <see cref="PropertyMetadata"/> 的新实例
         /// </summary>
-        public PropertyMetadata()
+        /// <param name="flags">元数据的特殊标记</param>
+        public PropertyMetadata(MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
-            _defaultValue = default;
+            DefaultValue = default;
+            _flags = flags;
         }
 
         /// <summary>
         /// 初始化 <see cref="PropertyMetadata"/> 的新实例
         /// </summary>
         /// <param name="defaultValue">属性默认值</param>
-        public PropertyMetadata(object defaultValue)
+        /// <param name="flags">元数据的特殊标记</param>
+        public PropertyMetadata(object defaultValue, MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
-            _defaultValue = defaultValue;
+            DefaultValue = defaultValue;
+            _flags = flags;
         }
 
         /// <summary>
@@ -72,10 +95,12 @@
         /// </summary>
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="propertyChangedCallback">属性更改回调函数</param>
-        public PropertyMetadata(object defaultValue, PropertyChangedCallback propertyChangedCallback)
+        /// <param name="flags">元数据的特殊标记</param>
+        public PropertyMetadata(object defaultValue, PropertyChangedCallback propertyChangedCallback, MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
-            _defaultValue = defaultValue;
+            DefaultValue = defaultValue;
             _propertyChangedCallback = propertyChangedCallback;
+            _flags = flags;
         }
 
         /// <summary>
@@ -83,10 +108,12 @@
         /// </summary>
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="coerceValueCallback">强制转换回调函数</param>
-        public PropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback)
+        /// <param name="flags">元数据的特殊标记</param>
+        public PropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
             _coerceValueCallback = coerceValueCallback;
-            _defaultValue = defaultValue;
+            DefaultValue = defaultValue;
+            _flags = flags;
         }
 
         /// <summary>
@@ -95,15 +122,38 @@
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="coerceValueCallback">强制转换回调函数</param>
         /// <param name="propertyChangedCallback">属性更改回调函数</param>
-        public PropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, PropertyChangedCallback propertyChangedCallback)
+        /// <param name="flags">元数据的特殊标记</param>
+        public PropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, PropertyChangedCallback propertyChangedCallback, MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
             _coerceValueCallback = coerceValueCallback;
-            _defaultValue = defaultValue;
+            DefaultValue = defaultValue;
             _propertyChangedCallback = propertyChangedCallback;
+            _flags = flags;
         }
 
         #endregion
 
+
+        /// <summary>
+        /// 获取属性的默认值
+        /// </summary>
+        /// <returns>属性的默认值。</returns>
+        public object GetDefaultValue() => DefaultValue;
+
+        /// <summary>
+        /// 获取元数据关联的依赖属性
+        /// </summary>
+        /// <returns>元数据关联的依赖属性。</returns>
+        public DependencyProperty GetProperty() => Property;
+
+
+        //------------------------------------------------------
+        //
+        //  Internal Methods
+        //
+        //------------------------------------------------------
+
+        #region Internal Methods
 
         /// <summary>
         /// 强制转换要设置给属性的值
@@ -117,23 +167,67 @@
         }
 
         /// <summary>
+        /// 将原元数据与该元数据合并
+        /// </summary>
+        /// <param name="baseMetadata">被合并的元数据</param>
+        internal void Merge(PropertyMetadata baseMetadata)
+        {
+            if (((baseMetadata._flags & MetadataFlag.InheritDefaultValue) != 0)
+                || DefaultValue is null)
+            {
+                DefaultValue = baseMetadata.DefaultValue;
+            }
+
+            if (((baseMetadata._flags & MetadataFlag.InheritablePropertyChangedCallback) != 0)
+                && baseMetadata._propertyChangedCallback != null)
+            {
+                Delegate[] baseDelegates = baseMetadata._propertyChangedCallback.GetInvocationList();
+                Delegate[] delegates = _propertyChangedCallback?.GetInvocationList() ?? Array.Empty<Delegate>();
+
+                _propertyChangedCallback = (PropertyChangedCallback)baseDelegates[0];
+                for (int i = 1; i < baseDelegates.Length; i++)
+                {
+                    _propertyChangedCallback += (PropertyChangedCallback)baseDelegates[i];
+                }
+                for (int i = 0; i < delegates.Length; i++)
+                {
+                    _propertyChangedCallback += (PropertyChangedCallback)delegates[i];
+                }
+            }
+
+            if (_coerceValueCallback == null)
+            {
+                _coerceValueCallback = baseMetadata._coerceValueCallback;
+            }
+        }
+
+        /// <summary>
         /// 通知属性更改
         /// </summary>
         /// <param name="obj">更改属性值的对象</param>
-        /// <param name="args">有关属性被更改的数据</param>
-        internal void NotifyPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        /// <param name="newEntry">新的有效项</param>
+        internal void NotifyPropertyChanged(DependencyObject obj, EffectiveValueEntry newEntry)
         {
-            OnProertyChanged(obj, args);
+            DependencyPropertyChangedEventArgs args = new DependencyPropertyChangedEventArgs(Property, this, newEntry);
+
             _propertyChangedCallback?.Invoke(obj, args);
             PropertyChanged?.Invoke(obj, args);
         }
 
-
         /// <summary>
-        /// 当属性值更改时调用
+        /// 通知属性更改
         /// </summary>
         /// <param name="obj">更改属性值的对象</param>
-        /// <param name="args">有关属性被更改的数据</param>
-        protected virtual void OnProertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args) { }
+        /// <param name="oldEntry">旧的有效项</param>
+        /// <param name="newEntry">新的有效项</param>
+        internal void NotifyPropertyChanged(DependencyObject obj, EffectiveValueEntry oldEntry, EffectiveValueEntry newEntry)
+        {
+            DependencyPropertyChangedEventArgs args = new DependencyPropertyChangedEventArgs(Property, this, oldEntry, newEntry);
+
+            _propertyChangedCallback?.Invoke(obj, args);
+            PropertyChanged?.Invoke(obj, args);
+        }
+
+        #endregion
     }
 }

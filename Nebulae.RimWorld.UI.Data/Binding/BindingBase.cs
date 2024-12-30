@@ -139,8 +139,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             if (source is DependencyObject dependencySource && sourcePath is DependencyProperty sourceProperty)
             {
-                sourceProperty.TryGetMetadata(_sourceType, out PropertyMetadata metadata);
-                _sourcePropertyData = metadata;
+                _sourcePropertyData = sourceProperty.GetMetadata(dependencySource.DependencyType);
                 _sourcePropertyData.PropertyChanged += OnDependencySourceChanged;
 
                 SourceMemberInfo = new BindingMemberInfo<TSource>(dependencySource, sourceProperty, _targetType);
@@ -162,8 +161,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             if (target is DependencyObject dependencyTarget && targetPath is DependencyProperty targetProperty)
             {
-                targetProperty.TryGetMetadata(_targetType, out PropertyMetadata metadata);
-                _targetPropertyData = metadata;
+                _targetPropertyData = targetProperty.GetMetadata(dependencyTarget.DependencyType);
                 _targetPropertyData.PropertyChanged += OnDependencyTargetChanged;
 
                 TargetMemberInfo = new BindingMemberInfo<TTarget>(dependencyTarget, targetProperty, _targetType);
