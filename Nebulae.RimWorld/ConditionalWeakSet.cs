@@ -163,6 +163,15 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
+        /// 将容量设置为包含的实际元素数
+        /// </summary>
+        public void TrimExcess()
+        {
+            ClearDeadEntry();
+            _entries.TrimExcess();
+        }
+
+        /// <summary>
         /// 尝试在集合中搜索指定元素
         /// </summary>
         /// <param name="equalValue">要搜索的元素</param>
@@ -177,7 +186,6 @@ namespace Nebulae.RimWorld
             }
             ClearDeadEntry();
 
-#if NET472_OR_GREATER
             if (_entries.TryGetValue(new Entry(equalValue), out Entry entry))
             {
                 entry.Reference.TryGetTarget(out actualValue);
@@ -188,18 +196,6 @@ namespace Nebulae.RimWorld
                 actualValue = default;
                 return false;
             }
-#else
-            foreach (var entry in _entries)
-            {
-                if (entry.Reference.TryGetTarget(out T target) && ReferenceEquals(target, equalValue))
-                {
-                    actualValue = target;
-                    return true;
-                }
-            }
-            actualValue = default;
-            return false;
-#endif
         }
         #endregion
 
