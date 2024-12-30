@@ -76,6 +76,7 @@ namespace Nebulae.RimWorld.UI.Data
         public PropertyMetadata(MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
             DefaultValue = default;
+
             _flags = flags;
         }
 
@@ -84,9 +85,12 @@ namespace Nebulae.RimWorld.UI.Data
         /// </summary>
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="flags">元数据的特殊标记</param>
-        public PropertyMetadata(object defaultValue, MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
+        public PropertyMetadata(
+            object defaultValue,
+            MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
             DefaultValue = defaultValue;
+
             _flags = flags;
         }
 
@@ -96,9 +100,13 @@ namespace Nebulae.RimWorld.UI.Data
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="propertyChangedCallback">属性更改回调函数</param>
         /// <param name="flags">元数据的特殊标记</param>
-        public PropertyMetadata(object defaultValue, PropertyChangedCallback propertyChangedCallback, MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
+        public PropertyMetadata(
+            object defaultValue,
+            PropertyChangedCallback propertyChangedCallback,
+            MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
             DefaultValue = defaultValue;
+
             _propertyChangedCallback = propertyChangedCallback;
             _flags = flags;
         }
@@ -109,10 +117,14 @@ namespace Nebulae.RimWorld.UI.Data
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="coerceValueCallback">强制转换回调函数</param>
         /// <param name="flags">元数据的特殊标记</param>
-        public PropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
+        public PropertyMetadata(
+            object defaultValue,
+            CoerceValueCallback coerceValueCallback,
+            MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
-            _coerceValueCallback = coerceValueCallback;
             DefaultValue = defaultValue;
+
+            _coerceValueCallback = coerceValueCallback;
             _flags = flags;
         }
 
@@ -123,10 +135,15 @@ namespace Nebulae.RimWorld.UI.Data
         /// <param name="coerceValueCallback">强制转换回调函数</param>
         /// <param name="propertyChangedCallback">属性更改回调函数</param>
         /// <param name="flags">元数据的特殊标记</param>
-        public PropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, PropertyChangedCallback propertyChangedCallback, MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
+        public PropertyMetadata(
+            object defaultValue,
+            CoerceValueCallback coerceValueCallback,
+            PropertyChangedCallback propertyChangedCallback,
+            MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
         {
-            _coerceValueCallback = coerceValueCallback;
             DefaultValue = defaultValue;
+
+            _coerceValueCallback = coerceValueCallback;
             _propertyChangedCallback = propertyChangedCallback;
             _flags = flags;
         }
@@ -147,30 +164,11 @@ namespace Nebulae.RimWorld.UI.Data
         public DependencyProperty GetProperty() => Property;
 
 
-        //------------------------------------------------------
-        //
-        //  Internal Methods
-        //
-        //------------------------------------------------------
-
-        #region Internal Methods
-
         /// <summary>
-        /// 强制转换要设置给属性的值
-        /// </summary>
-        /// <param name="obj">请求转换属性值的对象</param>
-        /// <param name="baseValue">要设置给属性的值</param>
-        /// <returns>转换后的值。</returns>
-        internal object CoerceValue(DependencyObject obj, object baseValue)
-        {
-            return _coerceValueCallback?.Invoke(obj, baseValue) ?? baseValue;
-        }
-
-        /// <summary>
-        /// 将原元数据与该元数据合并
+        /// 合并元数据
         /// </summary>
         /// <param name="baseMetadata">被合并的元数据</param>
-        internal void Merge(PropertyMetadata baseMetadata)
+        public virtual void MergeMetadata(PropertyMetadata baseMetadata)
         {
             if (((baseMetadata._flags & MetadataFlag.InheritDefaultValue) != 0)
                 || DefaultValue is null)
@@ -199,6 +197,28 @@ namespace Nebulae.RimWorld.UI.Data
             {
                 _coerceValueCallback = baseMetadata._coerceValueCallback;
             }
+
+            Property = baseMetadata.Property;
+        }
+
+
+        //------------------------------------------------------
+        //
+        //  Internal Methods
+        //
+        //------------------------------------------------------
+
+        #region Internal Methods
+
+        /// <summary>
+        /// 强制转换要设置给属性的值
+        /// </summary>
+        /// <param name="obj">请求转换属性值的对象</param>
+        /// <param name="baseValue">要设置给属性的值</param>
+        /// <returns>转换后的值。</returns>
+        internal object CoerceValue(DependencyObject obj, object baseValue)
+        {
+            return _coerceValueCallback?.Invoke(obj, baseValue) ?? baseValue;
         }
 
         /// <summary>
@@ -206,12 +226,15 @@ namespace Nebulae.RimWorld.UI.Data
         /// </summary>
         /// <param name="obj">更改属性值的对象</param>
         /// <param name="newEntry">新的有效项</param>
-        internal void NotifyPropertyChanged(DependencyObject obj, EffectiveValueEntry newEntry)
+        /// <returns>有关属性更改的数据。</returns>
+        internal DependencyPropertyChangedEventArgs NotifyPropertyChanged(DependencyObject obj, EffectiveValueEntry newEntry)
         {
             DependencyPropertyChangedEventArgs args = new DependencyPropertyChangedEventArgs(Property, this, newEntry);
 
             _propertyChangedCallback?.Invoke(obj, args);
             PropertyChanged?.Invoke(obj, args);
+
+            return args;
         }
 
         /// <summary>
@@ -220,12 +243,15 @@ namespace Nebulae.RimWorld.UI.Data
         /// <param name="obj">更改属性值的对象</param>
         /// <param name="oldEntry">旧的有效项</param>
         /// <param name="newEntry">新的有效项</param>
-        internal void NotifyPropertyChanged(DependencyObject obj, EffectiveValueEntry oldEntry, EffectiveValueEntry newEntry)
+        /// <returns>有关属性更改的数据。</returns>
+        internal DependencyPropertyChangedEventArgs NotifyPropertyChanged(DependencyObject obj, EffectiveValueEntry oldEntry, EffectiveValueEntry newEntry)
         {
             DependencyPropertyChangedEventArgs args = new DependencyPropertyChangedEventArgs(Property, this, oldEntry, newEntry);
 
             _propertyChangedCallback?.Invoke(obj, args);
             PropertyChanged?.Invoke(obj, args);
+
+            return args;
         }
 
         #endregion

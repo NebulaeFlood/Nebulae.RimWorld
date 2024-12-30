@@ -8,14 +8,19 @@
         private readonly EffectiveValueEntry _newEntry;
         private readonly EffectiveValueEntry _oldEntry;
 
-        private readonly PropertyMetadata _metadata;
         private readonly bool _overriddenDefault;
 
 
         /// <summary>
         /// 属性的元数据
         /// </summary>
-        public PropertyMetadata Metadata => _metadata;
+        public readonly PropertyMetadata Metadata;
+
+        /// <summary>
+        /// 值被更改的属性
+        /// </summary>
+        public readonly DependencyProperty Property;
+
         /// <summary>
         /// 属性的新值
         /// </summary>
@@ -24,12 +29,7 @@
         /// <summary>
         /// 属性的旧值
         /// </summary>
-        public object OldValue => _overriddenDefault ? _metadata.DefaultValue : _oldEntry.EffectiveValue;
-
-        /// <summary>
-        /// 值被更改的属性
-        /// </summary>
-        public DependencyProperty Property { get; }
+        public object OldValue => _overriddenDefault ? Metadata.DefaultValue : _oldEntry.EffectiveValue;
 
 
         /// <summary>
@@ -40,9 +40,8 @@
         /// <param name="newEntry">新的有效项</param>
         internal DependencyPropertyChangedEventArgs(DependencyProperty property, PropertyMetadata metadata, EffectiveValueEntry newEntry)
         {
+            Metadata = metadata;
             Property = property;
-
-            _metadata = metadata;
 
             _oldEntry = default;
             _newEntry = newEntry;
@@ -59,9 +58,8 @@
         /// <param name="newEntry">新的有效项</param>
         internal DependencyPropertyChangedEventArgs(DependencyProperty property, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry newEntry)
         {
+            Metadata = metadata;
             Property = property;
-
-            _metadata = metadata;
 
             _oldEntry = oldEntry;
             _newEntry = newEntry;

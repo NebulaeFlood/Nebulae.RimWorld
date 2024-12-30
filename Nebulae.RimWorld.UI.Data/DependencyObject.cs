@@ -130,6 +130,15 @@ namespace Nebulae.RimWorld.UI.Data
         #endregion
 
 
+        /// <summary>
+        /// 当前对象的依赖属性的值发生变化时执行的方法
+        /// </summary>
+        /// <param name="args">有关属性更改的数据</param>
+        protected virtual void OnPropertyChanged(DependencyPropertyChangedEventArgs args)
+        {
+        }
+
+
         //------------------------------------------------------
         //
         //  Private Methods
@@ -177,7 +186,9 @@ namespace Nebulae.RimWorld.UI.Data
 
                 _effectiveValues[property] = newEntry;
 
-                property.GetMetadata(DependencyType).NotifyPropertyChanged(this, oldEntry, newEntry);
+                OnPropertyChanged(property
+                    .GetMetadata(DependencyType)
+                    .NotifyPropertyChanged(this, oldEntry, newEntry));
             }
             else
             {
@@ -192,7 +203,8 @@ namespace Nebulae.RimWorld.UI.Data
 
                 _effectiveValues[property] = newEntry;
 
-                property.GetMetadata(DependencyType).NotifyPropertyChanged(this, newEntry);
+                OnPropertyChanged(metadata
+                    .NotifyPropertyChanged(this, newEntry));
             }
         }
 
