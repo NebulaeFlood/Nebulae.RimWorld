@@ -10,7 +10,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 所有按钮控件的基类，定义了其共同特性
     /// </summary>
-    public abstract class ButtonBase : FrameworkControl
+    public abstract class ButtonBase : ContentControl
     {
         #region Click
         private readonly WeakEvent<ButtonBase, EventArgs> click = new WeakEvent<ButtonBase, EventArgs>();
