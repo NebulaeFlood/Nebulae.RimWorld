@@ -32,7 +32,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty HeightProperty =
             DependencyProperty.Register(nameof(Height), typeof(float), typeof(FrameworkControl),
-                new ControlPropertyMetadata(1f, ControlPropertyMetadataFlag.Measure),
+                new ControlPropertyMetadata(1f, ControlRelation.Measure),
                 ValidateSize);
         #endregion
 
@@ -51,7 +51,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty WidthProperty =
             DependencyProperty.Register(nameof(Width), typeof(float), typeof(FrameworkControl),
-                new ControlPropertyMetadata(1f, ControlPropertyMetadataFlag.Measure),
+                new ControlPropertyMetadata(1f, ControlRelation.Measure),
                 ValidateSize);
         #endregion
 

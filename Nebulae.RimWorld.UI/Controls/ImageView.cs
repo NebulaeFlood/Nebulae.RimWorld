@@ -23,7 +23,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty ImageSourceProperty =
             DependencyProperty.Register(nameof(ImageSource), typeof(Texture2D), typeof(ImageView),
-                new ControlPropertyMetadata(null, ControlPropertyMetadataFlag.Measure));
+                new ControlPropertyMetadata(null, ControlRelation.Measure));
         #endregion
 
         #region ScaleMode
@@ -41,7 +41,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty ScaleModeProperty =
             DependencyProperty.Register(nameof(ScaleMode), typeof(ScaleMode), typeof(ImageView),
-                new ControlPropertyMetadata(ScaleMode.ScaleToFit, ControlPropertyMetadataFlag.Measure));
+                new ControlPropertyMetadata(ScaleMode.ScaleToFit, ControlRelation.Measure));
 
         private static void _OnScaleModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {

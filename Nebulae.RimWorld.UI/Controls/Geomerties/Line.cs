@@ -49,7 +49,7 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
         /// </summary>
         public static readonly DependencyProperty ThicknessProperty =
             DependencyProperty.Register(nameof(Thickness), typeof(float), typeof(Line),
-                new ControlPropertyMetadata(1f, ControlPropertyMetadataFlag.Measure));
+                new ControlPropertyMetadata(1f, ControlRelation.Measure));
         #endregion
 
         #region Orientation
@@ -67,7 +67,7 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
         /// </summary>
         public static readonly DependencyProperty OrientationProperty =
             DependencyProperty.Register(nameof(Orientation), typeof(Orientation), typeof(Line),
-                new ControlPropertyMetadata(Orientation.Horizontal, ControlPropertyMetadataFlag.Measure));
+                new ControlPropertyMetadata(Orientation.Horizontal, ControlRelation.Measure));
         #endregion
 
         #endregion

@@ -39,7 +39,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
             DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(Label),
-                new ControlPropertyMetadata(GameFont.Small, ControlPropertyMetadataFlag.Measure));
+                new ControlPropertyMetadata(GameFont.Small, ControlRelation.Measure));
         #endregion
 
         #region Text
@@ -57,7 +57,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty TextProperty =
             DependencyProperty.Register(nameof(Text), typeof(string), typeof(Label),
-                new ControlPropertyMetadata(string.Empty, ControlPropertyMetadataFlag.Measure));
+                new ControlPropertyMetadata(string.Empty, ControlRelation.Measure));
         #endregion
 
         #endregion

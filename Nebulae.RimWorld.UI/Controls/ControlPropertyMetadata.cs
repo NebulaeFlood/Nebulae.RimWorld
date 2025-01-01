@@ -4,10 +4,9 @@ using System;
 namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
-    /// <see cref="Control"/> 的属性的元数据的特殊标记
+    /// 对象与控件布局的关系
     /// </summary>
-    [Flags]
-    public enum ControlPropertyMetadataFlag : int
+    public enum ControlRelation : int
     {
         /// <summary>
         /// 无标记
@@ -24,11 +23,14 @@ namespace Nebulae.RimWorld.UI.Controls
     }
 
     /// <summary>
-    /// <see cref="Control"/> 的属性的元数据
+    /// <see cref="Control"/> 的依赖属性的元数据
     /// </summary>
     public class ControlPropertyMetadata : PropertyMetadata
     {
-        private readonly ControlPropertyMetadataFlag _flags;
+        /// <summary>
+        /// 依赖属性与控件的关系
+        /// </summary>
+        public readonly ControlRelation Relation;
 
         //------------------------------------------------------
         //
@@ -43,17 +45,20 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public ControlPropertyMetadata() : base()
         {
-            _flags = ControlPropertyMetadataFlag.None;
+            Relation = ControlRelation.None;
         }
 
         /// <summary>
         /// 初始化 <see cref="ControlPropertyMetadata"/> 的新实例
         /// </summary>
         /// <param name="defaultValue">属性默认值</param>
-        /// <param name="flags">属性的特殊标记</param>
-        public ControlPropertyMetadata(object defaultValue, ControlPropertyMetadataFlag flags = ControlPropertyMetadataFlag.None) : base(defaultValue)
+        /// <param name="flag">依赖属性与控件的关系</param>
+        public ControlPropertyMetadata(
+            object defaultValue,
+            ControlRelation flag = ControlRelation.None) 
+            : base(defaultValue)
         {
-            _flags = flags;
+            Relation = flag;
         }
 
         /// <summary>
@@ -62,9 +67,13 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="propertyChangedCallback">属性更改回调函数</param>
         /// <param name="flags">属性的特殊标记</param>
-        public ControlPropertyMetadata(object defaultValue, PropertyChangedCallback propertyChangedCallback, ControlPropertyMetadataFlag flags = ControlPropertyMetadataFlag.None) : base(defaultValue, propertyChangedCallback)
+        public ControlPropertyMetadata(
+            object defaultValue,
+            PropertyChangedCallback propertyChangedCallback,
+            ControlRelation flags = ControlRelation.None) 
+            : base(defaultValue, propertyChangedCallback)
         {
-            _flags = flags;
+            Relation = flags;
         }
 
         /// <summary>
@@ -73,9 +82,13 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="coerceValueCallback">强制转换回调函数</param>
         /// <param name="flags">属性的特殊标记</param>
-        public ControlPropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, ControlPropertyMetadataFlag flags = ControlPropertyMetadataFlag.None) : base(defaultValue, coerceValueCallback)
+        public ControlPropertyMetadata(
+            object defaultValue,
+            CoerceValueCallback coerceValueCallback,
+            ControlRelation flags = ControlRelation.None) 
+            : base(defaultValue, coerceValueCallback)
         {
-            _flags = flags;
+            Relation = flags;
         }
 
         /// <summary>
@@ -85,25 +98,16 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="coerceValueCallback">强制转换回调函数</param>
         /// <param name="propertyChangedCallback">属性更改回调函数</param>
         /// <param name="flags">属性的特殊标记</param>
-        public ControlPropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, PropertyChangedCallback propertyChangedCallback, ControlPropertyMetadataFlag flags = ControlPropertyMetadataFlag.None) : base(defaultValue, coerceValueCallback, propertyChangedCallback)
+        public ControlPropertyMetadata(
+            object defaultValue,
+            CoerceValueCallback coerceValueCallback,
+            PropertyChangedCallback propertyChangedCallback,
+            ControlRelation flags = ControlRelation.None) 
+            : base(defaultValue, coerceValueCallback, propertyChangedCallback)
         {
-            _flags = flags;
+            Relation = flags;
         }
 
         #endregion
-
-
-        /// <inheritdoc/>
-        protected override void OnProertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
-        {
-            if (_flags.HasFlag(ControlPropertyMetadataFlag.Measure))
-            {
-                ((Control)obj).InvalidateMeasure();
-            }
-            else if (_flags.HasFlag(ControlPropertyMetadataFlag.Arrange))
-            {
-                ((Control)obj).InvalidateArrange();
-            }
-        }
     }
 }

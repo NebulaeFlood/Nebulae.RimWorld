@@ -70,7 +70,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty HorizontalAlignmentProperty =
             DependencyProperty.Register(nameof(HorizontalAlignment), typeof(HorizontalAlignment), typeof(Control),
-                new ControlPropertyMetadata(HorizontalAlignment.Stretch, ControlPropertyMetadataFlag.Arrange));
+                new ControlPropertyMetadata(HorizontalAlignment.Center, ControlRelation.Arrange));
         #endregion
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty VerticalAlignmentProperty =
             DependencyProperty.Register(nameof(VerticalAlignment), typeof(VerticalAlignment), typeof(Control),
-                new ControlPropertyMetadata(VerticalAlignment.Stretch, ControlPropertyMetadataFlag.Arrange));
+                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Arrange));
         #endregion
 
         #region Visibility
