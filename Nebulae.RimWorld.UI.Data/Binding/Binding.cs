@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace Nebulae.RimWorld.UI.Data.Binding
@@ -31,7 +32,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="targetPath">绑定目标的成员</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        public Binding(
+        internal Binding(
             object source,
             object target,
             string sourcePath,
@@ -58,8 +59,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="targetPath">绑定目标的成员</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        public Binding(
-            DependencyProperty source,
+        internal Binding(
+            DependencyObject source,
             object target,
             DependencyProperty sourcePath,
             string targetPath,
@@ -85,7 +86,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="targetPath">绑定目标的成员</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        public Binding(
+        internal Binding(
             object source,
             DependencyObject target,
             string sourcePath,
@@ -112,7 +113,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="targetPath">绑定目标的成员</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        public Binding(
+        internal Binding(
             DependencyObject source,
             DependencyObject target,
             DependencyProperty sourcePath,
@@ -181,6 +182,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             if (!IsBindingValid) { return; }
 
             _cachedSourceValue = (T)e.NewValue;
+            if (_comparer.Equals(_cachedSourceValue, _cachedTargetValue))
+            {
+                return;
+            }
+
             _cachedTargetValue = _cachedSourceValue;
             if (TargetMemberInfo.IsStatic)
             {
@@ -198,6 +204,60 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             if (!IsBindingValid) { return; }
 
             _cachedSourceValue = (T)e.NewValue;
+            if (_comparer.Equals(_cachedSourceValue, _cachedTargetValue))
+            {
+                return;
+            }
+
+            _cachedTargetValue = _cachedSourceValue;
+            if (SourceMemberInfo.IsStatic)
+            {
+                SourceMemberInfo.StaticMemberSetter.Invoke(_cachedSourceValue);
+            }
+            else
+            {
+                SourceMemberInfo.MemberSetter.Invoke(Source.Target, _cachedSourceValue);
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (!IsBindingValid) { return; }
+
+            _cachedSourceValue = SourceMemberInfo.IsStatic
+                ? SourceMemberInfo.StaticMemberGetter.Invoke()
+                : SourceMemberInfo.MemberGetter.Invoke(sender);
+
+            if (_comparer.Equals(_cachedSourceValue, _cachedTargetValue))
+            {
+                return;
+            }
+
+            _cachedTargetValue = _cachedSourceValue;
+            if (TargetMemberInfo.IsStatic)
+            {
+                TargetMemberInfo.StaticMemberSetter.Invoke(_cachedSourceValue);
+            }
+            else
+            {
+                TargetMemberInfo.MemberSetter.Invoke(Target.Target, _cachedSourceValue);
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (!IsBindingValid || Mode is BindingMode.OneWay) { return; }
+
+            _cachedSourceValue = TargetMemberInfo.IsStatic
+                ? TargetMemberInfo.StaticMemberGetter.Invoke()
+                : TargetMemberInfo.MemberGetter.Invoke(sender);
+            if (_comparer.Equals(_cachedSourceValue, _cachedTargetValue))
+            {
+                return;
+            }
+
             _cachedTargetValue = _cachedSourceValue;
             if (SourceMemberInfo.IsStatic)
             {
@@ -242,7 +302,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="valueConverter">綁定源和目标的成员值的转换器</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        public Binding(
+        internal Binding(
             object source,
             object target,
             string sourcePath,
@@ -273,8 +333,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="valueConverter">綁定源和目标的成员值的转换器</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        public Binding(
-            DependencyProperty source,
+        internal Binding(
+            DependencyObject source,
             object target,
             DependencyProperty sourcePath,
             string targetPath,
@@ -304,7 +364,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="valueConverter">綁定源和目标的成员值的转换器</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        public Binding(
+        internal Binding(
             object source,
             DependencyObject target,
             string sourcePath,
@@ -335,7 +395,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="valueConverter">綁定源和目标的成员值的转换器</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        public Binding(
+        internal Binding(
             DependencyObject source,
             DependencyObject target,
             DependencyProperty sourcePath,
@@ -406,7 +466,13 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             if (!IsBindingValid) { return; }
 
             _cachedSourceValue = (TSource)e.NewValue;
-            _cachedTargetValue = _valueConverter.Convert(_cachedSourceValue);
+            TTarget convertedSourceValue = _valueConverter.Convert(_cachedSourceValue);
+            if (_targetComparer.Equals(convertedSourceValue, _cachedTargetValue))
+            {
+                return;
+            }
+
+            _cachedTargetValue = convertedSourceValue;
             if (TargetMemberInfo.IsStatic)
             {
                 TargetMemberInfo.StaticMemberSetter.Invoke(_cachedTargetValue);
@@ -423,6 +489,64 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             if (!IsBindingValid || Mode is BindingMode.OneWay) { return; }
 
             _cachedTargetValue = (TTarget)e.NewValue;
+            TSource convertedTargetValue = _valueConverter.ConvertBack(_cachedTargetValue);
+            if (_sourceComparer.Equals(convertedTargetValue, _cachedSourceValue))
+            {
+                return;
+            }
+
+            _cachedSourceValue = _valueConverter.ConvertBack(_cachedTargetValue);
+            if (SourceMemberInfo.IsStatic)
+            {
+                SourceMemberInfo.StaticMemberSetter.Invoke(_cachedSourceValue);
+            }
+            else
+            {
+                SourceMemberInfo.MemberSetter.Invoke(Source.Target, _cachedSourceValue);
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (!IsBindingValid || e.PropertyName != SourceMemberInfo.MemberName) { return; }
+
+            _cachedSourceValue = SourceMemberInfo.IsStatic
+                ? SourceMemberInfo.StaticMemberGetter.Invoke()
+                : SourceMemberInfo.MemberGetter.Invoke(sender);
+
+            TTarget convertedSourceValue = _valueConverter.Convert(_cachedSourceValue);
+            if (_targetComparer.Equals(convertedSourceValue, _cachedTargetValue))
+            {
+                return;
+            }
+
+            _cachedTargetValue = convertedSourceValue;
+            if (TargetMemberInfo.IsStatic)
+            {
+                TargetMemberInfo.StaticMemberSetter.Invoke(_cachedTargetValue);
+            }
+            else
+            {
+                TargetMemberInfo.MemberSetter.Invoke(Target.Target, _cachedTargetValue);
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (!IsBindingValid || Mode is BindingMode.OneWay || e.PropertyName != SourceMemberInfo.MemberName) { return; }
+
+            _cachedTargetValue = TargetMemberInfo.IsStatic
+                ? TargetMemberInfo.StaticMemberGetter.Invoke()
+                : TargetMemberInfo.MemberGetter.Invoke(sender);
+
+            TSource convertedTargetValue = _valueConverter.ConvertBack(_cachedTargetValue);
+            if (_sourceComparer.Equals(convertedTargetValue, _cachedSourceValue))
+            {
+                return;
+            }
+
             _cachedSourceValue = _valueConverter.ConvertBack(_cachedTargetValue);
             if (SourceMemberInfo.IsStatic)
             {

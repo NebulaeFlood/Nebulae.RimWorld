@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace Nebulae.RimWorld.UI.Data.Binding
@@ -102,11 +103,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         //------------------------------------------------------
         //
-        //  Constructors
+        //  Constructor
         //
         //------------------------------------------------------
 
-        #region Constructors
+        #region Constructor
 
         /// <summary>
         /// 为 <see cref="BindingBase{TSource, TTarget}"/> 派生类实现基本初始化
@@ -136,16 +137,19 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 throw new InvalidOperationException($"Binding from {_sourceType}.{sourcePath} to {_targetType}.{targetPath} has already exist.");
             }
 
-
             if (source is DependencyObject dependencySource && sourcePath is DependencyProperty sourceProperty)
             {
                 _sourcePropertyData = sourceProperty.GetMetadata(dependencySource.DependencyType);
                 _sourcePropertyData.PropertyChanged += OnDependencySourceChanged;
 
-                SourceMemberInfo = new BindingMemberInfo<TSource>(dependencySource, sourceProperty, _targetType);
+                SourceMemberInfo = new BindingMemberInfo<TSource>(sourceProperty, _targetType);
             }
             else
             {
+                if (source is INotifyPropertyChanged notifiableSource)
+                {
+                    notifiableSource.PropertyChanged += OnNotifiableSourceChanged;
+                }
                 SourceMemberInfo = new BindingMemberInfo<TSource>(_sourceType, _sourcePath, flags);
             }
 
@@ -158,16 +162,24 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 throw new InvalidOperationException($"Source property {_sourceType}.{sourcePath} must have set method for a TowWay binding.");
             }
 
-
-            if (target is DependencyObject dependencyTarget && targetPath is DependencyProperty targetProperty)
+            if (target is DependencyObject dependencyTarget 
+                && targetPath is DependencyProperty targetProperty)
             {
                 _targetPropertyData = targetProperty.GetMetadata(dependencyTarget.DependencyType);
-                _targetPropertyData.PropertyChanged += OnDependencyTargetChanged;
+                if(mode is BindingMode.TwoWay)
+                {
+                    _targetPropertyData.PropertyChanged += OnDependencyTargetChanged;
+                }
 
-                TargetMemberInfo = new BindingMemberInfo<TTarget>(dependencyTarget, targetProperty, _targetType);
+                TargetMemberInfo = new BindingMemberInfo<TTarget>(targetProperty, _targetType);
             }
             else
             {
+                if (target is INotifyPropertyChanged notifiableTarget 
+                    && mode is BindingMode.TwoWay)
+                {
+                    notifiableTarget.PropertyChanged += OnNotifiableTargetChanged;
+                }
                 TargetMemberInfo = new BindingMemberInfo<TTarget>(_targetType, _targetPath, flags);
             }
 
@@ -184,8 +196,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             {
                 Source = new WeakReference(source);
             }
-            if (target != null)
 
+            if (target != null)
             {
                 Target = new WeakReference(target);
             }
@@ -225,9 +237,20 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             {
                 _sourcePropertyData.PropertyChanged -= OnDependencySourceChanged;
             }
+
             if (_targetPropertyData != null)
             {
                 _targetPropertyData.PropertyChanged -= OnDependencyTargetChanged;
+            }
+
+            if (Source.Target is INotifyPropertyChanged notifiableSource)
+            {
+                notifiableSource.PropertyChanged -= OnNotifiableSourceChanged;
+            }
+
+            if (Target.Target is INotifyPropertyChanged notifiableTarget)
+            {
+                notifiableTarget.PropertyChanged -= OnNotifiableTargetChanged;
             }
         }
 
@@ -248,5 +271,19 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="sender">绑定目标</param>
         /// <param name="e">变化信息</param>
         protected abstract void OnDependencyTargetChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e);
+
+        /// <summary>
+        /// 当 <see cref="INotifyPropertyChanged"/> 绑定源成员变化执行的操作
+        /// </summary>
+        /// <param name="sender">绑定源</param>
+        /// <param name="e">变化信息</param>
+        protected abstract void OnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e);
+
+        /// <summary>
+        /// 当 <see cref="INotifyPropertyChanged"/> 绑定目标成员变化执行的操作
+        /// </summary>
+        /// <param name="sender">绑定目标</param>
+        /// <param name="e">变化信息</param>
+        protected abstract void OnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e);
     }
 }

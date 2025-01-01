@@ -16,6 +16,12 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         public readonly bool IsStatic;
 
         /// <summary>
+        /// 成员名称
+        /// </summary>
+        public readonly string MemberName;
+
+
+        /// <summary>
         /// 成员值获取器
         /// </summary>
         public readonly Func<object, T> MemberGetter;
@@ -103,20 +109,23 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             {
                 throw new InvalidOperationException($"Can not find any member named {memberName} in the type {ownerType}.");
             }
+
+            MemberName = memberName;
         }
 
         /// <summary>
         /// 初始化 <see cref="BindingMemberInfo{T}"/> 的新实例
         /// </summary>
-        /// <param name="owner">拥有被绑定成员的对象</param>
         /// <param name="property">被绑定成员</param>
         /// <param name="proeprtyType">被绑定成员的类型</param>
-        public BindingMemberInfo(DependencyObject owner, DependencyProperty property, Type proeprtyType) : this()
+        public BindingMemberInfo(DependencyProperty property, Type proeprtyType) : this()
         {
             IsStatic = false;
 
             MemberGetter = (obj) => (T)((DependencyObject)obj).GetValue(property);
             MemberSetter = (obj, val) => ((DependencyObject)obj).SetValue(property, val);
+
+            MemberName = property.Name;
         }
 
 
