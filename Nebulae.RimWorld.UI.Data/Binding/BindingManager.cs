@@ -53,42 +53,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             BindingMode mode,
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
         {
-            if (sourcePath is null)
-            {
-                throw new ArgumentNullException(nameof(sourcePath));
-            }
+            VerifyBindingInfo(source, target, sourcePath, targetPath);
 
-            if (targetPath is null)
-            {
-                throw new ArgumentNullException(nameof(targetPath));
-            }
-
-            bool sourceShouldBeDependencyObject = sourcePath is DependencyProperty;
-            if (sourceShouldBeDependencyObject
-                && !(source is DependencyObject))
-            {
-                throw new ArgumentException("The source must be a DependencyObject when the source path is a DependencyProperty.", nameof(source));
-            }
-
-            if (!sourceShouldBeDependencyObject
-                && !(sourcePath is string))
-            {
-                throw new ArgumentException("The source path must be a string of a member's name. When the source is a DependencyObject a DependencyProperty is also availabel.", nameof(sourcePath));
-            }
-
-            bool targetShouldBeDependencyObject = targetPath is DependencyProperty;
-            if (targetShouldBeDependencyObject
-                && !(target is DependencyObject))
-            {
-                throw new ArgumentException("The target must be a DependencyObject when the target path is a DependencyProperty.", nameof(target));
-            }
-
-            if(!targetShouldBeDependencyObject
-                && !(targetPath is string))
-            {
-                throw new ArgumentException("The target path must be a string of a member's name. When the target is a DependencyObject a DependencyProperty is also availabel.", nameof(targetPath));
-            }
-            
             return new Binding<T>(
                 source,
                 target,
@@ -129,6 +95,45 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             BindingMode mode,
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
         {
+            VerifyBindingInfo(source, target, sourcePath, targetPath);
+
+            if (valueConverter is null)
+            {
+                throw new ArgumentNullException(nameof(valueConverter), "A binding for different types must have a value converter.");
+            }
+
+            return new Binding<TSource,TTarget>(
+                source,
+                target,
+                sourcePath,
+                targetPath,
+                valueConverter,
+                mode,
+                flags);
+        }
+
+
+        internal static bool IsBinding(IBinding binding)
+        {
+            return _globalBindings.Contains(binding);
+        }
+
+        private static void VerifyBindingInfo(
+            object source,
+            object target,
+            object sourcePath,
+            object targetPath)
+        {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (target is null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
             if (sourcePath is null)
             {
                 throw new ArgumentNullException(nameof(sourcePath));
@@ -137,11 +142,6 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             if (targetPath is null)
             {
                 throw new ArgumentNullException(nameof(targetPath));
-            }
-
-            if (valueConverter is null)
-            {
-                throw new ArgumentNullException(nameof(valueConverter), "A binding for different types must have a value converter.");
             }
 
             bool sourceShouldBeDependencyObject = sourcePath is DependencyProperty;
@@ -169,21 +169,6 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             {
                 throw new ArgumentException("The target path must be a string of a member's name. When the target is a DependencyObject a DependencyProperty is also availabel.", nameof(targetPath));
             }
-
-            return new Binding<TSource,TTarget>(
-                source,
-                target,
-                sourcePath,
-                targetPath,
-                valueConverter,
-                mode,
-                flags);
-        }
-
-
-        internal static bool IsBinding(IBinding binding)
-        {
-            return _globalBindings.Contains(binding);
         }
     }
 }
