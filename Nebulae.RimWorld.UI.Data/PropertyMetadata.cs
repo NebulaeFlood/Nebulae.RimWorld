@@ -42,7 +42,16 @@ namespace Nebulae.RimWorld.UI.Data
     /// </summary>
     public class PropertyMetadata
     {
-        internal event PropertyChangedCallback PropertyChanged;
+        private readonly WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs> _propertyChanged = new WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs>();
+
+        internal event WeakEventHandler<DependencyObject, DependencyPropertyChangedEventArgs> PropertyChanged
+        {
+            add => _propertyChanged.Add(value);
+            remove => _propertyChanged.Remove(value);
+        }
+
+
+        private readonly MetadataFlag _flags;
 
         /// <summary>
         /// 强制转换回调函数
@@ -53,8 +62,6 @@ namespace Nebulae.RimWorld.UI.Data
         /// 属性更改回调函数
         /// </summary>
         private PropertyChangedCallback _propertyChangedCallback;
-
-        private readonly MetadataFlag _flags;
 
 
         internal object DefaultValue;
@@ -232,7 +239,7 @@ namespace Nebulae.RimWorld.UI.Data
             DependencyPropertyChangedEventArgs args = new DependencyPropertyChangedEventArgs(Property, this, newEntry);
 
             _propertyChangedCallback?.Invoke(obj, args);
-            PropertyChanged?.Invoke(obj, args);
+            _propertyChanged.Invoke(obj, args);
 
             return args;
         }
@@ -249,7 +256,7 @@ namespace Nebulae.RimWorld.UI.Data
             DependencyPropertyChangedEventArgs args = new DependencyPropertyChangedEventArgs(Property, this, oldEntry, newEntry);
 
             _propertyChangedCallback?.Invoke(obj, args);
-            PropertyChanged?.Invoke(obj, args);
+            _propertyChanged.Invoke(obj, args);
 
             return args;
         }

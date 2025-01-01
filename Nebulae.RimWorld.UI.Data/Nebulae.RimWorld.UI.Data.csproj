@@ -4,4 +4,8 @@
     <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Nebulae.RimWorld" Version="1.0.4" />
+  </ItemGroup>
+
 </Project>
