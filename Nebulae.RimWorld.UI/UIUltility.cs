@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using LudeonTK;
+using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Windows;
+using System.Collections.Generic;
+using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -118,26 +122,26 @@ namespace Nebulae.RimWorld.UI
         /// <returns>合并后的矩形。</returns>
         public static Rect CombineWith(this Rect rect, Rect anotherRect)
         {
-            rect.x = Mathf.Min(rect.x, anotherRect.x);
-            rect.y = Mathf.Min(rect.y, anotherRect.y);
-            rect.width = Mathf.Max(rect.x + rect.width, anotherRect.x + anotherRect.width) - rect.x;
-            rect.height = Mathf.Max(rect.y + rect.height, anotherRect.y + anotherRect.height) - rect.y;
-            return rect;
+            float left = Mathf.Min(rect.x, anotherRect.x);
+            float top = Mathf.Min(rect.y, anotherRect.y);
+            float right = Mathf.Max(rect.xMax, anotherRect.xMax);
+            float bottom = Mathf.Max(rect.yMax, anotherRect.yMax);
+            return new Rect(left, top, right - left, bottom - top);
         }
 
         /// <summary>
-        /// 将 <paramref name="rect"/> 限定在 <paramref name="bounds"/> 内部
+        /// 计算两个矩形的交集
         /// </summary>
-        /// <param name="rect">要限定的矩形</param>
-        /// <param name="bounds">被限定矩形的边界</param>
-        /// <returns>被限定后的矩形。</returns>
-        public static Rect ConstrainToBounds(this Rect rect, Rect bounds)
+        /// <param name="rect">第一个矩形</param>
+        /// <param name="anotherRect">第二个矩形</param>
+        /// <returns>俩个矩形的交集。</returns>
+        public static Rect IntersectWith(this Rect rect, Rect anotherRect)
         {
-            rect.x = Mathf.Max(rect.x, bounds.x);
-            rect.y = Mathf.Max(rect.y, bounds.y);
-            rect.width = Mathf.Min(rect.width, bounds.width);
-            rect.height = Mathf.Min(rect.height, bounds.height);
-            return rect;
+            float left = Mathf.Max(rect.x, anotherRect.x);
+            float top = Mathf.Max(rect.y, anotherRect.y);
+            float right = Mathf.Min(rect.xMax, anotherRect.xMax);
+            float bottom = Mathf.Min(rect.yMax, anotherRect.yMax);
+            return new Rect(left, top, right - left, bottom - top);
         }
 
         /// <summary>
@@ -158,7 +162,8 @@ namespace Nebulae.RimWorld.UI
         /// <returns>按钮交互结果是否能触发按钮。</returns>
         public static bool IsPressed(this Widgets.DraggableResult result)
         {
-            return result is Widgets.DraggableResult.Pressed || result is Widgets.DraggableResult.DraggedThenPressed;
+            return result is Widgets.DraggableResult.Pressed 
+                || result is Widgets.DraggableResult.DraggedThenPressed;
         }
 
         /// <summary>
