@@ -126,9 +126,9 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             BindingMode mode,
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
         {
-            _sourceType = typeof(TSource);
+            _sourceType = (source is Type sourceType) ? sourceType : source.GetType();
             _sourcePath = sourcePath.ToString();
-            _targetType = typeof(TTarget);
+            _targetType = (target is Type targetType) ? targetType : target.GetType();
             _targetPath = targetPath.ToString();
             _hashCode = _sourceType.GetHashCode() ^ _sourcePath.GetHashCode() ^ _targetType.GetHashCode() ^ _targetPath.GetHashCode();
 

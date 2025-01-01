@@ -35,89 +35,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         internal Binding(
             object source,
             object target,
-            string sourcePath,
-            string targetPath,
-            BindingMode mode,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-            : base(source, target, sourcePath, targetPath, mode, flags)
-        {
-            _cachedSourceValue = SourceMemberInfo.IsStatic
-                ? SourceMemberInfo.StaticMemberGetter.Invoke()
-                : SourceMemberInfo.MemberGetter.Invoke(source);
-            _cachedTargetValue = TargetMemberInfo.IsStatic
-                ? TargetMemberInfo.StaticMemberGetter.Invoke()
-                : TargetMemberInfo.MemberGetter.Invoke(target);
-            _comparer = EqualityComparer<T>.Default;
-        }
-
-        /// <summary>
-        /// 初始化 <see cref="Binding{T}"/> 的新实例
-        /// </summary>
-        /// <param name="source">绑定源</param>
-        /// <param name="target">绑定目标</param>
-        /// <param name="sourcePath">绑定源的成员</param>
-        /// <param name="targetPath">绑定目标的成员</param>
-        /// <param name="mode">绑定关系的类型</param>
-        /// <param name="flags">搜索成员的方式</param>
-        internal Binding(
-            DependencyObject source,
-            object target,
-            DependencyProperty sourcePath,
-            string targetPath,
-            BindingMode mode,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-            : base(source, target, sourcePath, targetPath, mode, flags)
-        {
-            _cachedSourceValue = SourceMemberInfo.IsStatic
-                ? SourceMemberInfo.StaticMemberGetter.Invoke()
-                : SourceMemberInfo.MemberGetter.Invoke(source);
-            _cachedTargetValue = TargetMemberInfo.IsStatic
-                ? TargetMemberInfo.StaticMemberGetter.Invoke()
-                : TargetMemberInfo.MemberGetter.Invoke(target);
-            _comparer = EqualityComparer<T>.Default;
-        }
-
-        /// <summary>
-        /// 初始化 <see cref="Binding{T}"/> 的新实例
-        /// </summary>
-        /// <param name="source">绑定源</param>
-        /// <param name="target">绑定目标</param>
-        /// <param name="sourcePath">绑定源的成员</param>
-        /// <param name="targetPath">绑定目标的成员</param>
-        /// <param name="mode">绑定关系的类型</param>
-        /// <param name="flags">搜索成员的方式</param>
-        internal Binding(
-            object source,
-            DependencyObject target,
-            string sourcePath,
-            DependencyProperty targetPath,
-            BindingMode mode,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-            : base(source, target, sourcePath, targetPath, mode, flags)
-        {
-            _cachedSourceValue = SourceMemberInfo.IsStatic
-                ? SourceMemberInfo.StaticMemberGetter.Invoke()
-                : SourceMemberInfo.MemberGetter.Invoke(source);
-            _cachedTargetValue = TargetMemberInfo.IsStatic
-                ? TargetMemberInfo.StaticMemberGetter.Invoke()
-                : TargetMemberInfo.MemberGetter.Invoke(target);
-            _comparer = EqualityComparer<T>.Default;
-        }
-
-        /// <summary>
-        /// 初始化 <see cref="Binding{T}"/> 的新实例
-        /// </summary>
-        /// <param name="source">绑定源</param>
-        /// <param name="target">绑定目标</param>
-        /// <param name="sourcePath">绑定源的成员</param>
-        /// <param name="targetPath">绑定目标的成员</param>
-        /// <param name="mode">绑定关系的类型</param>
-        /// <param name="flags">搜索成员的方式</param>
-        internal Binding(
-            DependencyObject source,
-            DependencyObject target,
-            DependencyProperty sourcePath,
-            DependencyProperty targetPath,
+            object sourcePath,
+            object targetPath,
             BindingMode mode,
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
             : base(source, target, sourcePath, targetPath, mode, flags)
@@ -286,11 +205,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         //------------------------------------------------------
         //
-        //  Constructors
+        //  Constructor
         //
         //------------------------------------------------------
 
-        #region Constructors
+        #region Constructor
 
         /// <summary>
         /// 初始化 <see cref="Binding{TSource, TTarget}"/> 的新实例
@@ -305,101 +224,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         internal Binding(
             object source,
             object target,
-            string sourcePath,
-            string targetPath,
-            IValueConverter<TSource, TTarget> valueConverter,
-            BindingMode mode,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-            : base(source, target, sourcePath, targetPath, mode, flags)
-        {
-            _cachedSourceValue = SourceMemberInfo.IsStatic
-                ? SourceMemberInfo.StaticMemberGetter.Invoke()
-                : SourceMemberInfo.MemberGetter.Invoke(source);
-            _cachedTargetValue = TargetMemberInfo.IsStatic
-                ? TargetMemberInfo.StaticMemberGetter.Invoke()
-                : TargetMemberInfo.MemberGetter.Invoke(target);
-            _sourceComparer = EqualityComparer<TSource>.Default;
-            _targetComparer = EqualityComparer<TTarget>.Default;
-            _valueConverter = valueConverter;
-        }
-
-        /// <summary>
-        /// 初始化 <see cref="Binding{TSource, TTarget}"/> 的新实例
-        /// </summary>
-        /// <param name="source">绑定源</param>
-        /// <param name="target">绑定目标</param>
-        /// <param name="sourcePath">绑定源的成员</param>
-        /// <param name="targetPath">绑定目标的成员</param>
-        /// <param name="valueConverter">綁定源和目标的成员值的转换器</param>
-        /// <param name="mode">绑定关系的类型</param>
-        /// <param name="flags">搜索成员的方式</param>
-        internal Binding(
-            DependencyObject source,
-            object target,
-            DependencyProperty sourcePath,
-            string targetPath,
-            IValueConverter<TSource, TTarget> valueConverter,
-            BindingMode mode,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-            : base(source, target, sourcePath, targetPath, mode, flags)
-        {
-            _cachedSourceValue = SourceMemberInfo.IsStatic
-                ? SourceMemberInfo.StaticMemberGetter.Invoke()
-                : SourceMemberInfo.MemberGetter.Invoke(source);
-            _cachedTargetValue = TargetMemberInfo.IsStatic
-                ? TargetMemberInfo.StaticMemberGetter.Invoke()
-                : TargetMemberInfo.MemberGetter.Invoke(target);
-            _sourceComparer = EqualityComparer<TSource>.Default;
-            _targetComparer = EqualityComparer<TTarget>.Default;
-            _valueConverter = valueConverter;
-        }
-
-        /// <summary>
-        /// 初始化 <see cref="Binding{TSource, TTarget}"/> 的新实例
-        /// </summary>
-        /// <param name="source">绑定源</param>
-        /// <param name="target">绑定目标</param>
-        /// <param name="sourcePath">绑定源的成员</param>
-        /// <param name="targetPath">绑定目标的成员</param>
-        /// <param name="valueConverter">綁定源和目标的成员值的转换器</param>
-        /// <param name="mode">绑定关系的类型</param>
-        /// <param name="flags">搜索成员的方式</param>
-        internal Binding(
-            object source,
-            DependencyObject target,
-            string sourcePath,
-            DependencyProperty targetPath,
-            IValueConverter<TSource, TTarget> valueConverter,
-            BindingMode mode,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-            : base(source, target, sourcePath, targetPath, mode, flags)
-        {
-            _cachedSourceValue = SourceMemberInfo.IsStatic
-                ? SourceMemberInfo.StaticMemberGetter.Invoke()
-                : SourceMemberInfo.MemberGetter.Invoke(source);
-            _cachedTargetValue = TargetMemberInfo.IsStatic
-                ? TargetMemberInfo.StaticMemberGetter.Invoke()
-                : TargetMemberInfo.MemberGetter.Invoke(target);
-            _sourceComparer = EqualityComparer<TSource>.Default;
-            _targetComparer = EqualityComparer<TTarget>.Default;
-            _valueConverter = valueConverter;
-        }
-
-        /// <summary>
-        /// 初始化 <see cref="Binding{TSource, TTarget}"/> 的新实例
-        /// </summary>
-        /// <param name="source">绑定源</param>
-        /// <param name="target">绑定目标</param>
-        /// <param name="sourcePath">绑定源的成员</param>
-        /// <param name="targetPath">绑定目标的成员</param>
-        /// <param name="valueConverter">綁定源和目标的成员值的转换器</param>
-        /// <param name="mode">绑定关系的类型</param>
-        /// <param name="flags">搜索成员的方式</param>
-        internal Binding(
-            DependencyObject source,
-            DependencyObject target,
-            DependencyProperty sourcePath,
-            DependencyProperty targetPath,
+            object sourcePath,
+            object targetPath,
             IValueConverter<TSource, TTarget> valueConverter,
             BindingMode mode,
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
@@ -417,6 +243,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         }
 
         #endregion
+
 
         /// <inheritdoc/>
         public override void Synchronize()
