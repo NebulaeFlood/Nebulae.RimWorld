@@ -52,33 +52,40 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             if (ownerType.GetProperty(memberName, flags) is PropertyInfo property)
             {
                 IsStatic = property.GetMethod?.IsStatic ?? property.SetMethod?.IsStatic
-                    ?? throw new InvalidOperationException($"Find a property {ownerType}.{memberName} without get and set method.");
+                ?? throw new InvalidOperationException($"Find a property {ownerType}.{memberName} without get and set method.");
 
-                if (IsStatic)
+                try
                 {
-                    if (property.GetMethod != null)
+                    if (IsStatic)
                     {
-                        StaticMemberGetter = (Func<T>)property.GetMethod
-                            .CreateDelegate(typeof(Func<T>));
+                        if (property.GetMethod != null)
+                        {
+                            StaticMemberGetter = (Func<T>)property.GetMethod
+                                .CreateDelegate(typeof(Func<T>));
+                        }
+                        if (property.SetMethod != null)
+                        {
+                            StaticMemberSetter = (Action<T>)property.SetMethod
+                                .CreateDelegate(typeof(Action<T>));
+                        }
                     }
-                    if (property.SetMethod != null)
+                    else
                     {
-                        StaticMemberSetter = (Action<T>)property.SetMethod
-                            .CreateDelegate(typeof(Action<T>));
+                        if (property.GetMethod != null)
+                        {
+                            MemberGetter = (Func<object, T>)property.GetMethod
+                                .CreateDelegate(typeof(Func<object, T>));
+                        }
+                        if (property.SetMethod != null)
+                        {
+                            MemberSetter = (Action<object, T>)property.SetMethod
+                                .CreateDelegate(typeof(Action<object, T>));
+                        }
                     }
                 }
-                else
+                catch (ArgumentException exception)
                 {
-                    if (property.GetMethod != null)
-                    {
-                        MemberGetter = (Func<object, T>)property.GetMethod
-                            .CreateDelegate(typeof(Func<object, T>));
-                    }
-                    if (property.SetMethod != null)
-                    {
-                        MemberSetter = (Action<object, T>)property.SetMethod
-                            .CreateDelegate(typeof(Action<object, T>));
-                    }
+                    throw new ArgumentException($"Caught an unexpected error, probably caused by trying to get the info of an DependencyProperty wrapper named {ownerType}.{property.Name}, try again by switch the path to the instance of DependencyProperty.", exception);
                 }
             }
             else if (ownerType.GetField(memberName, flags) is FieldInfo field)
@@ -123,7 +130,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             IsStatic = false;
 
             MemberGetter = (obj) => (T)((DependencyObject)obj).GetValue(property);
-            MemberSetter = (obj, val) => ((DependencyObject)obj).SetValue(property, val);
+            MemberSetter = (obj, val) => ((DependencyObject)obj).SetValueIntelligently(property, val);
 
             MemberName = property.Name;
         }

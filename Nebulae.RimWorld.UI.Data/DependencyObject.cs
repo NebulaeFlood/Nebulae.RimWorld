@@ -85,14 +85,14 @@ namespace Nebulae.RimWorld.UI.Data
         /// <exception cref="ArgumentNullException">当 <paramref name="property"/> 为 <see langword="null"/> 时发生。</exception>
         public void SetValue(DependencyProperty property, object value)
         {
-            if (ReferenceEquals(DependencyProperty.UnsetValue, value))
-            {
-                return;
-            }
-
             if (property is null)
             {
                 throw new ArgumentNullException(nameof(property));
+            }
+
+            if (ReferenceEquals(DependencyProperty.UnsetValue, value))
+            {
+                return;
             }
 
             if (!property.ValidateValue(value))
@@ -110,14 +110,14 @@ namespace Nebulae.RimWorld.UI.Data
         /// <exception cref="ArgumentNullException">当 <paramref name="property"/> 为 <see langword="null"/> 时发生。</exception>
         public void SetValueTemporarily(DependencyProperty property, object value)
         {
-            if (ReferenceEquals(DependencyProperty.UnsetValue, value))
-            {
-                return;
-            }
-
             if (property is null)
             {
                 throw new ArgumentNullException(nameof(property));
+            }
+
+            if (ReferenceEquals(DependencyProperty.UnsetValue, value))
+            {
+                return;
             }
 
             if (!property.ValidateValue(value))
@@ -136,6 +136,59 @@ namespace Nebulae.RimWorld.UI.Data
         /// <param name="args">有关属性更改的数据</param>
         protected virtual void OnPropertyChanged(DependencyPropertyChangedEventArgs args)
         {
+        }
+
+
+        internal void SetValueIntelligently(DependencyProperty property, object value)
+        {
+            if (property is null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
+            if (ReferenceEquals(DependencyProperty.UnsetValue, value))
+            {
+                return;
+            }
+
+            if (!property.ValidateValue(value))
+            {
+                value = CoerceValue(property, value);
+            }
+
+            object oldValue;
+            if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
+            {
+                oldValue = oldEntry.IsTemporary ? oldEntry.TemporaryValue : oldEntry.Value;
+
+                if (oldValue == value) { return; }
+
+                EffectiveValueEntry newEntry = oldEntry.IsTemporary
+                                    ? new EffectiveValueEntry(oldValue, value)
+                                    : new EffectiveValueEntry(value);
+
+                _effectiveValues[property] = newEntry;
+
+                OnPropertyChanged(property
+                    .GetMetadata(DependencyType)
+                    .NotifyPropertyChanged(this, oldEntry, newEntry));
+            }
+            else
+            {
+                PropertyMetadata metadata = property.GetMetadata(DependencyType);
+                oldValue = metadata.DefaultValue;
+
+                if (oldValue == value) { return; }
+
+                EffectiveValueEntry newEntry = oldEntry.IsTemporary
+                    ? new EffectiveValueEntry(oldValue, value)
+                    : new EffectiveValueEntry(value);
+
+                _effectiveValues[property] = newEntry;
+
+                OnPropertyChanged(metadata
+                    .NotifyPropertyChanged(this, newEntry));
+            }
         }
 
 
