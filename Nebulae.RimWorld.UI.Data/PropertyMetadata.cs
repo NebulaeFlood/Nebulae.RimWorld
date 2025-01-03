@@ -79,12 +79,11 @@ namespace Nebulae.RimWorld.UI.Data
         /// <summary>
         /// 初始化 <see cref="PropertyMetadata"/> 的新实例
         /// </summary>
-        /// <param name="flags">元数据的特殊标记</param>
-        public PropertyMetadata(MetadataFlag flags = MetadataFlag.InheritablePropertyChangedCallback)
+        public PropertyMetadata()
         {
             DefaultValue = default;
 
-            _flags = flags;
+            _flags = MetadataFlag.InheritablePropertyChangedCallback;
         }
 
         /// <summary>
