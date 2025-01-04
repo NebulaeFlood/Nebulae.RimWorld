@@ -80,5 +80,16 @@ namespace Nebulae.RimWorld.Utilities
         {
             return value.CompareTo(min) >= -1 && value.CompareTo(max) <= 1;
         }
+
+        /// <summary>
+        /// 将无穷替换为指定值
+        /// </summary>
+        /// <param name="value">可能被替换的数</param>
+        /// <param name="specificValue">替换无穷的数</param>
+        /// <returns>如果 <paramref name="value"/> 为无穷，返回 <paramref name="specificValue"/>；反之则返回 <paramref name="value"/>。</returns>
+        public static float ReplaceInfinityWith(this float value, float specificValue)
+        {
+            return float.IsInfinity(value) ? specificValue : value;
+        }
     }
 }
