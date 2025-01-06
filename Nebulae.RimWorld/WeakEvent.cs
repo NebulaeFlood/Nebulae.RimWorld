@@ -73,7 +73,7 @@ namespace Nebulae.RimWorld
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Subcriber of {this} can not have been garbage collected.");
+                    throw new InvalidOperationException($"Subcriber of {this} can not have been garbage collected or its Equals and GetHashCode methods are incorrect.");
                 }
             }
         }
