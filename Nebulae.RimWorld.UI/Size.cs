@@ -337,7 +337,7 @@ namespace Nebulae.RimWorld.UI
         /// <param name="size"><see cref="Size"/> 对象</param>
         /// <param name="divisor">除数</param>
         /// <returns>返回 <paramref name="size"/> 除以 <paramref name="divisor"/> 后的新 <see cref="Size"/> 对象。</returns>
-        public static Size operator /(Size size, float divisor) => Multiply(size, 1f / divisor);
+        public static Size operator /(Size size, float divisor) => new Size(size.Width / divisor, size.Height / divisor);
 
         /// <summary>
         /// 将 <see cref="Size"/> 对象与 <see cref="Thickness"/> 对象相加，返回新 <see cref="Size"/> 对象
