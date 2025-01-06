@@ -152,7 +152,9 @@ namespace Nebulae.RimWorld.UI
         /// <returns>矩形是否仅有位置发生变化。</returns>
         public static bool IsPositionOnlyChanged(this Rect rect, Rect previousRect)
         {
-            return rect.width == previousRect.width && rect.height == previousRect.height && (rect.x != previousRect.x || rect.y != previousRect.y);
+            return rect.width == previousRect.width
+                && rect.height == previousRect.height
+                && (rect.x != previousRect.x || rect.y != previousRect.y);
         }
 
         /// <summary>
@@ -174,7 +176,9 @@ namespace Nebulae.RimWorld.UI
         /// <returns>矩形是否仅有尺寸发生变化。</returns>
         public static bool IsSizeOnlyChanged(this Rect rect, Rect previousRect)
         {
-            return rect.x == previousRect.x && rect.y == previousRect.y && (rect.width != previousRect.width || rect.height != previousRect.height);
+            return rect.x == previousRect.x
+                && rect.y == previousRect.y
+                && (rect.width != previousRect.width || rect.height != previousRect.height);
         }
 
         /// <summary>
@@ -186,9 +190,11 @@ namespace Nebulae.RimWorld.UI
         /// <returns>坐标偏移后的矩形。</returns>
         public static Rect Offset(this Rect rect, float offsetX, float offsetY)
         {
-            rect.x += offsetX;
-            rect.y += offsetY;
-            return rect;
+            return new Rect(
+                rect.x + offsetX,
+                rect.y + offsetY,
+                rect.width,
+                rect.height);
         }
 
         /// <summary>

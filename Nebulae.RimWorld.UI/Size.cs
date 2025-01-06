@@ -362,8 +362,7 @@ namespace Nebulae.RimWorld.UI
         {
             return new Size(
                 size.Width - thickness.Left - thickness.Right,
-                size.Height - thickness.Top - thickness.Bottom
-                );
+                size.Height - thickness.Top - thickness.Bottom);
         }
 
 
