@@ -293,11 +293,11 @@ namespace Nebulae.RimWorld.UI
         /// <returns>返回添加 <paramref name="thickness"/> 后的 <see cref="Rect"/> 对象。</returns>
         public static Rect operator +(Rect rect, Thickness thickness)
         {
-            rect.x = Mathf.Max(rect.x - thickness.Left, 0f);
-            rect.y = Mathf.Max(rect.y - thickness.Top, 0f);
-            rect.width += thickness.Left + thickness.Right;
-            rect.height += thickness.Top + thickness.Bottom;
-            return rect;
+            float left = rect.x - thickness.Left;
+            float top = rect.y - thickness.Top;
+            float right = rect.xMax + thickness.Right;
+            float bottom = rect.yMax + thickness.Bottom;
+            return new Rect(left, top, right - left, bottom - top);
         }
 
         /// <summary>
@@ -308,11 +308,11 @@ namespace Nebulae.RimWorld.UI
         /// <returns>返回减去 <paramref name="thickness"/> 后的 新<see cref="Rect"/> 对象。</returns>
         public static Rect operator -(Rect rect, Thickness thickness)
         {
-            rect.x += thickness.Left;
-            rect.y += thickness.Top;
-            rect.width = Mathf.Max(rect.width - thickness.Left - thickness.Right, 0f);
-            rect.height = Mathf.Max(rect.height - thickness.Top - thickness.Bottom, 0f);
-            return rect;
+            float left = rect.x + thickness.Left;
+            float top = rect.y + thickness.Top;
+            float right = Mathf.Max(left, rect.xMax - thickness.Right);
+            float bottom = Mathf.Max(top, rect.yMax - thickness.Bottom);
+            return new Rect(left, top, right - left, bottom - top);
         }
 
 
