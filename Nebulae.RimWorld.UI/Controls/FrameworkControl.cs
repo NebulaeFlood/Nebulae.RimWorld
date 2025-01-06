@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.Utilities;
+using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
@@ -81,7 +82,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            float desiredWidth, desiredHeight;
+            float desiredWidth, desiredHeight;      
 
             if (HorizontalAlignment is HorizontalAlignment.Stretch)
             {
@@ -91,11 +92,11 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else
             {
-                desiredWidth = Width > 1f
-                    ? Width
-                    : (availableSize.Width.IsInfinity()
-                        ? UIUltility.ScreenWidth
-                        : availableSize.Width) * Width;
+                float width = Width.ReplaceInfinityWith(UIUltility.ScreenWidth);
+
+                desiredWidth = width > 1f
+                    ? Mathf.Min(width, availableSize.Width)
+                    : (availableSize.Width.ReplaceInfinityWith(UIUltility.ScreenWidth) * width);
             }
 
             if (VerticalAlignment is VerticalAlignment.Stretch)
@@ -106,11 +107,11 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else
             {
-                desiredHeight = Height > 1f
-                    ? Height
-                    : (availableSize.Height.IsInfinity()
-                        ? UIUltility.ScreenHeight
-                        : availableSize.Height) * Height;
+                float height = Height.ReplaceInfinityWith(UIUltility.ScreenHeight);
+
+                desiredHeight = height > 1f
+                    ? Mathf.Min(height, availableSize.Height)
+                    : (availableSize.Height.ReplaceInfinityWith(UIUltility.ScreenHeight) * height);
             }
 
             return new Size(desiredWidth, desiredHeight);
