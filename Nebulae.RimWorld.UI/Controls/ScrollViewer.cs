@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.Utilities;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Verse;
@@ -13,8 +11,17 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 使自身内容可滚动的控件
     /// </summary>
-    public class ScrollViewer : FrameworkControl
+    public class ScrollViewer : ContentControl
     {
+        private static readonly GUIStyle _backgroundStyle = GUI.skin.scrollView;
+
+        private static readonly GUIStyle _horizontalScrollBarStyle = GUI.skin.horizontalScrollbar;
+        private static readonly GUIStyle _horizontalScrollBarThumb = GUI.skin.horizontalScrollbarThumb;
+
+        private static readonly GUIStyle _verticalScrollBarStyle = GUI.skin.verticalScrollbar;
+        private static readonly GUIStyle _verticalScrollBarThumb = GUI.skin.verticalScrollbarThumb;
+
+
         //------------------------------------------------------
         //
         //  Private Fields
@@ -23,25 +30,19 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Private Fields
 
-        private Control _content;
+        private Control _contentControl;
+        private Size _contentSize;
 
-        private float _horizontalOffset;
-        private float _verticalOffset;
-        private float _viewHeight;
-        private float _viewWidth;
+        private bool _horizontalScroll = false;
 
-        private ScrollBarVisibility _horizontalScrollBarVisibility;
-        private ScrollBarVisibility _verticalScrollBarVisibility;
+        private bool _shouldDrawHorizontalScrollBar = false;
+        private bool _shouldDrawVerticalScrollBar = false;
+        private bool _shouldUpdateSegment = false;
 
-        private bool _horizontalScroll;
-
-        private GUIStyle _backgroundStyle;
-        private GUIStyle _horizontalScrollBarStyle;
-        private GUIStyle _verticalScrollBarStyle;
-
-        private bool _shouldDrawHorizontalScrollBar;
-        private bool _shouldDrawVerticalScrollBar;
-
+        private float _horizontalOffset = 0f;
+        private float _verticalOffset = 0f;
+        private float _viewHeight = 0f;
+        private float _viewWidth = 0f;
         #endregion
 
 
@@ -53,48 +54,23 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Public Properties
 
+        #region HorizontalScrollBarVisibility
         /// <summary>
-        /// 背景样式
-        /// </summary>
-        public GUIStyle BackgroundStyle
-        {
-            get => _backgroundStyle;
-            set => _backgroundStyle = value;
-        }
-
-        /// <summary>
-        /// 控件内容
-        /// </summary>
-        public Control Content
-        {
-            get => _content;
-            set => _content = value;
-        }
-
-        /// <summary>
-        /// 水平滚动条样式
-        /// </summary>
-        public GUIStyle HorizontalScrollBarStyle
-        {
-            get => _horizontalScrollBarStyle;
-            set
-            {
-                if (value is null || value == GUIStyle.none)
-                {
-                    throw new InvalidOperationException($"{typeof(ScrollViewer)}.{nameof(HorizontalScrollBarStyle)} can not set to be null or {typeof(GUIStyle)}.none.");
-                }
-                _horizontalScrollBarStyle = value;
-            }
-        }
-
-        /// <summary>
-        /// 水平滚动条可见性
+        /// 获取或设置水平滚动条可见性
         /// </summary>
         public ScrollBarVisibility HorizontalScrollBarVisibility
         {
-            get => _horizontalScrollBarVisibility;
-            set => _horizontalScrollBarVisibility = value;
+            get { return (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty); }
+            set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
         }
+
+        /// <summary>
+        /// 标识 <see cref="HorizontalScrollBarVisibility"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty HorizontalScrollBarVisibilityProperty =
+            DependencyProperty.Register(nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollViewer),
+                new ControlPropertyMetadata(ScrollBarVisibility.Auto, ControlRelation.Measure));
+        #endregion
 
         /// <summary>
         /// 默认使用水平滚动
@@ -105,30 +81,23 @@ namespace Nebulae.RimWorld.UI.Controls
             set => _horizontalScroll = value;
         }
 
+        #region VerticalScrollBarVisibility
         /// <summary>
-        /// 垂直滚动条样式
-        /// </summary>
-        public GUIStyle VerticalScrollBarStyle
-        {
-            get => _verticalScrollBarStyle;
-            set
-            {
-                if (value is null || value == GUIStyle.none)
-                {
-                    throw new InvalidOperationException($"{typeof(ScrollViewer)}.{nameof(VerticalScrollBarStyle)} can not set to be null or {typeof(GUIStyle)}.none.");
-                }
-                _verticalScrollBarStyle = value;
-            }
-        }
-
-        /// <summary>
-        /// 垂直滚动条可见性
+        /// 获取或设置垂直滚动条可见性
         /// </summary>
         public ScrollBarVisibility VerticalScrollBarVisibility
         {
-            get => _verticalScrollBarVisibility;
-            set => _verticalScrollBarVisibility = value;
+            get { return (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); }
+            set { SetValue(VerticalScrollBarVisibilityProperty, value); }
         }
+
+        /// <summary>
+        /// 标识 <see cref="VerticalScrollBarVisibility"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty VerticalScrollBarVisibilityProperty =
+            DependencyProperty.Register(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollViewer),
+                new ControlPropertyMetadata(ScrollBarVisibility.Auto, ControlRelation.Measure));
+        #endregion
 
         #endregion
 
@@ -138,66 +107,74 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public ScrollViewer()
         {
-            _horizontalOffset = 0f;
-            _verticalOffset = 0f;
-            _viewHeight = 0f;
-            _viewWidth = 0f;
-
-            _horizontalScroll = false;
-
-            _horizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-            _verticalScrollBarVisibility = ScrollBarVisibility.Auto;
-
-            _backgroundStyle = GUI.skin.scrollView;
-            _horizontalScrollBarStyle = GUI.skin.verticalScrollbar;
-            _verticalScrollBarStyle = GUI.skin.horizontalScrollbar;
-
-            _shouldDrawHorizontalScrollBar = false;
-            _shouldDrawVerticalScrollBar = false;
         }
 
+
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
 
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
-            _content?.Arrange(new Rect(0f, 0f, _viewWidth, _viewHeight));
+            _contentControl?.Arrange(new Rect(
+                0f,
+                0f,
+                Mathf.Max(_viewWidth, _contentSize.Width),
+                Mathf.Max(_viewHeight, _contentSize.Height)));
             return base.ArrangeCore(availableRect);
         }
 
         /// <inheritdoc/>
         protected override Rect DrawCore(Rect renderRect)
         {
+            #region BeginScrollViewer
+
             HandleSteamDeckTouchScreen(renderRect);
 
             EventType eventType = Event.current.type;
             if (eventType != EventType.Layout && eventType != EventType.Used)
             {
-                if (_content is null)
+                if (_contentControl is null)
                 {
                     if (_shouldDrawHorizontalScrollBar)
                     {
-                        GUI.HorizontalScrollbar(
-                            new Rect(renderRect.x, renderRect.yMax - (float)_horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight, renderRect.width, _horizontalScrollBarStyle.fixedHeight),
+                        DrawScrollBar(
+                            new Rect(renderRect.x,
+                                renderRect.y + _viewHeight + _horizontalScrollBarStyle.margin.top,
+                                renderRect.width,
+                                _horizontalScrollBarStyle.fixedHeight),
                             0f,
+                            _viewWidth,
                             0f,
-                            0f,
-                            renderRect.width);
+                            _viewWidth,
+                            isHorizontal: true);
                     }
+
                     if (_shouldDrawVerticalScrollBar)
                     {
-                        GUI.VerticalScrollbar(
-                            new Rect(renderRect.xMax - (float)_verticalScrollBarStyle.margin.left - _verticalScrollBarStyle.fixedWidth, renderRect.y, _verticalScrollBarStyle.fixedWidth, renderRect.height),
+                        DrawScrollBar(
+                            new Rect(
+                                renderRect.x + _viewWidth + _verticalScrollBarStyle.margin.right,
+                                renderRect.y,
+                                _verticalScrollBarStyle.fixedWidth,
+                                renderRect.height),
                             0f,
+                            _viewHeight,
                             0f,
-                            0f,
-                            0f);
+                            _viewHeight,
+                            isHorizontal: false);
                     }
                 }
                 else
                 {
                     if (eventType is EventType.Repaint)
                     {
-                        _backgroundStyle?.Draw(
+                        _backgroundStyle.Draw(
                             renderRect,
                             renderRect.Contains(Event.current.mousePosition),
                             false,
@@ -205,22 +182,22 @@ namespace Nebulae.RimWorld.UI.Controls
                             false);
                     }
 
-                    GUI.BeginClip(new Rect(
-                        _horizontalOffset + renderRect.x,
-                        _verticalOffset + renderRect.y,
-                        _viewWidth,
-                        _viewHeight));
-                    _content.Draw();
-                    GUI.EndClip();
-
                     if (_shouldDrawHorizontalScrollBar)
                     {
-                        _horizontalOffset = GUI.HorizontalScrollbar(
-                            new Rect(renderRect.x, renderRect.yMax - (float)_horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight, renderRect.width, _horizontalScrollBarStyle.fixedHeight),
+                        float horizontalOffset = DrawScrollBar(
+                            new Rect(
+                                renderRect.x,
+                                renderRect.y + _viewHeight + _horizontalScrollBarStyle.margin.top,
+                                _viewWidth,
+                                _horizontalScrollBarStyle.fixedHeight),
                             _horizontalOffset,
                             _viewWidth,
                             0f,
-                            renderRect.width);
+                            Mathf.Max(_contentSize.Width, _viewWidth),
+                            isHorizontal: true);
+
+                        _shouldUpdateSegment = _shouldUpdateSegment || _horizontalOffset != horizontalOffset;
+                        _horizontalOffset = horizontalOffset;
                     }
                     else
                     {
@@ -229,12 +206,20 @@ namespace Nebulae.RimWorld.UI.Controls
 
                     if (_shouldDrawVerticalScrollBar)
                     {
-                        _verticalOffset = GUI.VerticalScrollbar(
-                            new Rect(renderRect.xMax - (float)_verticalScrollBarStyle.margin.right - _verticalScrollBarStyle.fixedWidth, renderRect.y, _verticalScrollBarStyle.fixedWidth, renderRect.height),
+                        float verticalOffset = DrawScrollBar(
+                            new Rect(
+                                renderRect.x + _viewWidth + _verticalScrollBarStyle.margin.left,
+                                renderRect.y,
+                                _verticalScrollBarStyle.fixedWidth,
+                                _viewHeight),
                             _verticalOffset,
                             _viewHeight,
                             0f,
-                            renderRect.height);
+                            Mathf.Max(_contentSize.Height, _viewHeight),
+                            isHorizontal: false);
+
+                        _shouldUpdateSegment = _shouldUpdateSegment || _verticalOffset != verticalOffset;
+                        _verticalOffset = verticalOffset;
                     }
                     else
                     {
@@ -244,19 +229,62 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             UnityGUIBugsFixer.Notify_BeginScrollView();
+            GUI.BeginClip(new Rect(
+                renderRect.x,
+                renderRect.y,
+                _viewWidth,
+                _viewWidth));
+            GUI.BeginGroup(new Rect(
+                -_horizontalOffset,
+                -_verticalOffset,
+                _viewWidth + _horizontalOffset,
+                _viewHeight + _verticalOffset));
+
+            #endregion
+
+            if (_shouldUpdateSegment)
+            {
+                InvalidateSegment();
+                _shouldUpdateSegment = false;
+            }
+            _contentControl.Draw();
+
+            #region EndScrollViewer
+
+            GUI.EndGroup();
+            GUI.EndClip();
+            Widgets.mouseOverScrollViewStack.Pop();
+
+            if (Event.current.type == EventType.ScrollWheel
+                && renderRect.Contains(Event.current.mousePosition))
+            {
+                if (_horizontalScroll)
+                {
+                    _horizontalOffset = (_horizontalOffset + Event.current.delta.y * 20f).Clamp(0f, Mathf.Max(0f, _contentSize.Width - _viewWidth));
+                    _verticalOffset = (_verticalOffset + Event.current.delta.x * 20f).Clamp(0f, Mathf.Max(0f, _contentSize.Height - _viewHeight));
+                }
+                else
+                {
+                    _horizontalOffset = (_horizontalOffset + Event.current.delta.x * 20f).Clamp(0f, Mathf.Max(0f, _contentSize.Width - _viewWidth));
+                    _verticalOffset = (_verticalOffset + Event.current.delta.y * 20f).Clamp(0f, Mathf.Max(0f, _contentSize.Height - _viewHeight));
+                }
+                Event.current.Use();
+                _shouldUpdateSegment = true;
+            }
+            #endregion
+
             return renderRect;
         }
-
 
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
             Size desiredSize = base.MeasureCore(availableSize);
 
-            if (_content is null)
+            if (_contentControl is null)
             {
-                _shouldDrawHorizontalScrollBar = _horizontalScrollBarVisibility is ScrollBarVisibility.Visible;
-                _shouldDrawVerticalScrollBar = _verticalScrollBarVisibility is ScrollBarVisibility.Visible;
+                _shouldDrawHorizontalScrollBar = HorizontalScrollBarVisibility is ScrollBarVisibility.Visible;
+                _shouldDrawVerticalScrollBar = VerticalScrollBarVisibility is ScrollBarVisibility.Visible;
 
                 _viewHeight = _shouldDrawHorizontalScrollBar
                     ? desiredSize.Height - _horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight - _horizontalScrollBarStyle.margin.top
@@ -264,36 +292,38 @@ namespace Nebulae.RimWorld.UI.Controls
                 _viewWidth = _shouldDrawVerticalScrollBar
                     ? desiredSize.Width - _verticalScrollBarStyle.margin.left - _verticalScrollBarStyle.fixedWidth - _verticalScrollBarStyle.margin.right
                     : desiredSize.Width;
+
+                _contentSize = Size.Empty;
             }
             else
             {
                 float contentAvailableHeight = desiredSize.Height;
                 float contentAvailableWidth = desiredSize.Width;
-                if (_horizontalScrollBarVisibility is ScrollBarVisibility.Visible)
+                if (HorizontalScrollBarVisibility is ScrollBarVisibility.Visible)
                 {
                     contentAvailableHeight = contentAvailableHeight - _horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight - _horizontalScrollBarStyle.margin.top;
                     _shouldDrawHorizontalScrollBar = true;
                 }
-                if (_verticalScrollBarVisibility is ScrollBarVisibility.Visible)
+                if (VerticalScrollBarVisibility is ScrollBarVisibility.Visible)
                 {
                     contentAvailableWidth = contentAvailableWidth - _verticalScrollBarStyle.margin.left - _verticalScrollBarStyle.fixedWidth - _verticalScrollBarStyle.margin.right;
                     _shouldDrawVerticalScrollBar = true;
                 }
 
-                Size contentDesiredSize = _content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
+                _contentSize = _contentControl.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
 
                 bool shouldMeasureAgain = false;
-                if (!_shouldDrawHorizontalScrollBar 
-                    && _horizontalScrollBarVisibility != ScrollBarVisibility.Hidden 
-                    && contentDesiredSize.Width > contentAvailableWidth)
+                if (!_shouldDrawHorizontalScrollBar
+                    && HorizontalScrollBarVisibility != ScrollBarVisibility.Hidden
+                    && _contentSize.Width > contentAvailableWidth)
                 {
                     contentAvailableHeight = contentAvailableHeight - _horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight - _horizontalScrollBarStyle.margin.top;
                     shouldMeasureAgain = true;
                     _shouldDrawHorizontalScrollBar = true;
                 }
-                if (!_shouldDrawVerticalScrollBar 
-                    && _verticalScrollBarVisibility != ScrollBarVisibility.Hidden
-                    && contentDesiredSize.Height > contentAvailableHeight)
+                if (!_shouldDrawVerticalScrollBar
+                    && VerticalScrollBarVisibility != ScrollBarVisibility.Hidden
+                    && _contentSize.Height > contentAvailableHeight)
                 {
                     contentAvailableWidth = contentAvailableWidth - _verticalScrollBarStyle.margin.left - _verticalScrollBarStyle.fixedWidth - _verticalScrollBarStyle.margin.right;
                     shouldMeasureAgain = true;
@@ -302,23 +332,75 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 if (shouldMeasureAgain)
                 {
-                    _content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
+                    _contentSize = _contentControl.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
                 }
 
-                _viewHeight = contentAvailableWidth;
-                _viewWidth = contentAvailableHeight;
+                _viewHeight = contentAvailableHeight;
+                _viewWidth = contentAvailableWidth;
             }
 
             return desiredSize;
         }
 
+        /// <inheritdoc/>
+        protected override void OnContentChanged(object content)
+        {
+            if (content is Control control)
+            {
+                _contentControl = control;
+            }
+            else
+            {
+                _contentControl = null;
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override Rect SegmentCore() => new Rect(_horizontalOffset, _verticalOffset, _viewWidth, _viewHeight);
+
+        #endregion
+
+        private static float DrawScrollBar(
+            Rect renderRect,
+            float value,
+            float size,
+            float minValue,
+            float maxValue,
+            bool isHorizontal)
+        {
+            GUIStyle sliderStyle;
+            GUIStyle thumbStyle;
+
+            if (isHorizontal)
+            {
+                sliderStyle = _horizontalScrollBarStyle;
+                thumbStyle = _horizontalScrollBarThumb;
+            }
+            else
+            {
+                sliderStyle = _verticalScrollBarStyle;
+                thumbStyle = _verticalScrollBarThumb;
+            }
+
+            return GUI.Slider(renderRect,
+                value,
+                size,
+                minValue,
+                maxValue,
+                sliderStyle,
+                thumbStyle,
+                isHorizontal,
+                renderRect.GetHashCode());
+        }
 
         private void HandleSteamDeckTouchScreen(Rect renderRect)
         {
             Vector2 scrollPosition = new Vector2(_horizontalOffset, _verticalOffset);
             if (Widgets.mouseOverScrollViewStack.Count > 0)
             {
-                Widgets.mouseOverScrollViewStack.Push(Widgets.mouseOverScrollViewStack.Peek() && renderRect.Contains(Event.current.mousePosition));
+                Widgets.mouseOverScrollViewStack.Push(
+                    Widgets.mouseOverScrollViewStack.Peek()
+                    && renderRect.Contains(Event.current.mousePosition));
             }
             else
             {
