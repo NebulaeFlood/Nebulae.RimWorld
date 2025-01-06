@@ -71,7 +71,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 标识 <see cref="Value"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register(nameof(Value), typeof(float), typeof(NumberBox),
+            DependencyProperty.Register(nameof(Value), typeof(float), typeof(Slider),
                 new PropertyMetadata(0f));
         #endregion
 

@@ -38,7 +38,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 标识 <see cref="FontSize"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
-            DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(Label),
+            DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(TextBlock),
                 new ControlPropertyMetadata(GameFont.Small, ControlRelation.Measure));
         #endregion
 
@@ -56,7 +56,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 标识 <see cref="Text"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty TextProperty =
-            DependencyProperty.Register(nameof(Text), typeof(string), typeof(Label),
+            DependencyProperty.Register(nameof(Text), typeof(string), typeof(TextBlock),
                 new ControlPropertyMetadata(string.Empty, ControlRelation.Measure));
         #endregion
 

@@ -35,7 +35,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 标识 <see cref="ChildMaxHeight"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty ChildMaxHeightProperty =
-            DependencyProperty.Register(nameof(ChildMaxHeight), typeof(float), typeof(StackPanel),
+            DependencyProperty.Register(nameof(ChildMaxHeight), typeof(float), typeof(VirtualizingStackPanel),
                 new ControlPropertyMetadata(40f, ControlRelation.Measure));
         #endregion
 
@@ -53,7 +53,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 标识 <see cref="ChildMaxWidth"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty ChildMaxWidthProperty =
-            DependencyProperty.Register(nameof(ChildMaxWidth), typeof(float), typeof(StackPanel),
+            DependencyProperty.Register(nameof(ChildMaxWidth), typeof(float), typeof(VirtualizingStackPanel),
                 new ControlPropertyMetadata(float.PositiveInfinity, ControlRelation.Measure));
         #endregion
 
@@ -71,7 +71,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 标识 <see cref="Orientation"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty OrientationProperty =
-            DependencyProperty.Register(nameof(Orientation), typeof(Orientation), typeof(StackPanel),
+            DependencyProperty.Register(nameof(Orientation), typeof(Orientation), typeof(VirtualizingStackPanel),
                 new ControlPropertyMetadata(Orientation.Vertical, ControlRelation.Measure));
         #endregion
 

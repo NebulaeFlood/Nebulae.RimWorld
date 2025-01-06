@@ -11,8 +11,8 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class TextBox : FrameworkControl
     {
-        private bool _isReadOnly;
-        private bool _wrapText;
+        private bool _isReadOnly = false;
+        private bool _wrapText = true;
 
         //------------------------------------------------------
         //
@@ -36,7 +36,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 标识 <see cref="FontSize"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
-            DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(Label),
+            DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(TextBox),
                 new PropertyMetadata(GameFont.Small));
         #endregion
 
@@ -86,7 +86,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 标识 <see cref="Text"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty TextProperty =
-            DependencyProperty.Register(nameof(Text), typeof(string), typeof(Label),
+            DependencyProperty.Register(nameof(Text), typeof(string), typeof(TextBox),
                 new PropertyMetadata(string.Empty));
         #endregion
 
@@ -107,8 +107,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public TextBox()
         {
-            _isReadOnly = false;
-            _wrapText = true;
         }
 
 
