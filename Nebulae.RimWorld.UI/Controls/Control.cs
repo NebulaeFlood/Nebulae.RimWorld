@@ -18,19 +18,54 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Public Static Fields
 
         /// <summary>
+        /// 点击控件是否强制重新排布控件
+        /// </summary>
+        public static bool ClickForceArrange = false;
+
+        /// <summary>
+        /// 点击控件是否强制重新度量控件
+        /// </summary>
+        public static bool ClickForceMeasure = false;
+
+        /// <summary>
         /// 是否绘制控件绘制区域
         /// </summary>
-        public static bool drawRegion = false;
+        public static bool DrawRegion = false;
 
         /// <summary>
         /// 是否绘制控件占用区域
         /// </summary>
-        public static bool drawFullRegion = false;
+        public static bool DrawFullRegion = false;
 
         /// <summary>
         /// 是否使用提示框显示控件相关信息
         /// </summary>
-        public static bool showInfo = false;
+        public static bool ShowInfo = false;
+
+        #endregion
+
+
+        internal IFrame Container;
+        internal bool IsHolded;
+
+
+        //------------------------------------------------------
+        //
+        //  Privaet Fields
+        //
+        //------------------------------------------------------
+
+        #region Privaet Fields
+
+        private Rect _desiredRect;
+        private Size _desiredSize;
+        private bool _isArrangeValid;
+        private bool _isMeasureValid;
+        private string _name;
+        private Rect _renderedRect;
+        private Size _renderedSize;
+        private bool _showTooltip;
+        private string _tooltip;
 
         #endregion
 
@@ -47,13 +82,13 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 排布控件后控件需要占用的布局区域
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Arrange(Rect)"/>。</remarks>
-        public Rect DesiredRect { get; private set; }
+        public Rect DesiredRect => _desiredRect;
 
         /// <summary>
         /// 控件需要占用的布局尺寸
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Measure(Size)"/>。</remarks>
-        public Size DesiredSize { get; private set; }
+        public Size DesiredSize => _desiredSize;
 
         #region HorizontalAlignment
         /// <summary>
@@ -72,16 +107,6 @@ namespace Nebulae.RimWorld.UI.Controls
             DependencyProperty.Register(nameof(HorizontalAlignment), typeof(HorizontalAlignment), typeof(Control),
                 new ControlPropertyMetadata(HorizontalAlignment.Center, ControlRelation.Arrange));
         #endregion
-
-        /// <summary>
-        /// 控件布局是否有效
-        /// </summary>
-        public bool IsArrangeValid { get; private set; }
-
-        /// <summary>
-        /// 当前布局测量是否有效
-        /// </summary>
-        public bool IsMeasureValid { get; private set; }
 
         #region Margin
         /// <summary>
@@ -104,27 +129,39 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 控件名称
         /// </summary>
-        public string Name { get; set; }
+        public string Name
+        {
+            get => _name;
+            set => _name = value;
+        }
 
         /// <summary>
         /// 控件最终呈现区域
         /// </summary>
-        public Rect RenderedRect { get; private set; }
+        public Rect RenderedRect => _renderedRect;
 
         /// <summary>
         /// 控件最终呈现尺寸
         /// </summary>
-        public Size RenderedSize { get; private set; }
+        public Size RenderedSize => _renderedSize;
 
         /// <summary>
         /// 光标悬浮于控件上时是否显示提示框
         /// </summary>
-        public bool ShowTooltip { get; set; }
+        public bool ShowTooltip
+        {
+            get => _showTooltip;
+            set => _showTooltip = value;
+        }
 
         /// <summary>
         /// 提示框文字
         /// </summary>
-        public string Tooltip { get; set; }
+        public string Tooltip
+        {
+            get => _tooltip;
+            set => _tooltip = value;
+        }
 
         #region VerticalAlignment
         /// <summary>
@@ -165,16 +202,42 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
+        //------------------------------------------------------
+        //
+        //  Protected Properties
+        //
+        //------------------------------------------------------
+
+        #region Protected Properties
+
+        /// <summary>
+        /// 控件布局是否有效
+        /// </summary>
+        protected bool IsArrangeValid => _isArrangeValid;
+
+        /// <summary>
+        /// 控件度量是否有效
+        /// </summary>
+        protected bool IsMeasureValid => _isMeasureValid;
+
+        #endregion
+
+
         /// <summary>
         /// 为 <see cref="Control"/> 派生类实现基本初始化
         /// </summary>
         protected Control()
         {
-            IsArrangeValid = false;
-            IsMeasureValid = false;
-            Name = string.Empty;
-            ShowTooltip = false;
-            Tooltip = string.Empty;
+            _desiredRect = Rect.zero;
+            _desiredSize = Size.Empty;
+            _isArrangeValid = false;
+            _isMeasureValid = false;
+            _name = string.Empty;
+            _showTooltip = false;
+            _tooltip = string.Empty;
+
+            Container = null;
+            IsHolded = false;
         }
 
 
@@ -193,60 +256,90 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>控件需要占用的布局区域。</returns>
         public Rect Arrange(Rect availableRect)
         {
-            if (!IsMeasureValid) { Measure(availableRect); }
-            if (IsArrangeValid) { return DesiredRect; }
+            if (!_isMeasureValid)
+            {
+                Measure(availableRect);
+            }
+
+            if (_isArrangeValid)
+            {
+                return _desiredRect;
+            }
+
             if (!(Visibility is Visibility.Collapsed))
             {
-                DesiredRect = (ArrangeCore(availableRect - Margin) + Margin).Rounded();
+                _desiredRect = (ArrangeCore(availableRect - Margin) + Margin).Rounded();
             }
             else
             {
-                DesiredRect = new Rect(availableRect.x, availableRect.y, 0f, 0f);
+                _desiredRect = new Rect(availableRect.x, availableRect.y, 0f, 0f);
             }
-            IsArrangeValid = true;
-            return DesiredRect;
+
+            _isArrangeValid = true;
+            return _desiredRect;
         }
 
         /// <summary>
         /// 使用计算好的区域绘制控件
         /// </summary>
         /// <returns>实际绘制的区域。</returns>
+        /// <remarks>必须确保调用过 <see cref="Arrange(Rect)"/>，否则会引发不期望的行为。</remarks>
         public Rect Draw()
         {
-            Rect renderRect = DesiredRect - Margin;
-            if (Visibility is Visibility.Collapsed) { renderRect = new Rect(renderRect.x, renderRect.y, 0f, 0f); }
+            Rect renderRect = _desiredRect - Margin;
+
+            if (Visibility is Visibility.Collapsed)
+            {
+                renderRect = new Rect(renderRect.x, renderRect.y, 0f, 0f);
+            }
             else if (Visibility is Visibility.Visible)
             {
                 renderRect = DrawCore(renderRect);
-                if (ShowTooltip && !Tooltip.NullOrEmpty())
+                if (_showTooltip && !_tooltip.NullOrEmpty())
                 {
-                    TooltipHandler.TipRegion(renderRect, Tooltip);
+                    TooltipHandler.TipRegion(renderRect, _tooltip);
                 }
             }
 
             if (Prefs.DevMode && renderRect.size != Vector2.zero)
             {
-                if (drawRegion)
+                if (DrawRegion)
                 {
                     Widgets.DrawBox(renderRect);
                 }
-                if (drawFullRegion && (!drawRegion || Margin != 0f))
+
+                if (DrawFullRegion && (!DrawRegion || Margin != 0f))
                 {
-                    Widgets.DrawBox(DesiredRect, lineTexture: BaseContent.YellowTex);
+                    Widgets.DrawBox(_desiredRect, lineTexture: BaseContent.YellowTex);
                 }
-                if (showInfo)
+
+                if (ShowInfo)
                 {
-                    TooltipHandler.TipRegion(drawFullRegion ? DesiredRect : renderRect,
+                    TooltipHandler.TipRegion(DrawFullRegion ? _desiredRect : renderRect,
                         $"{this}\n" +
-                        $" - DesiredRect = {DesiredRect}\n" +
-                        $" - DesiredSize = {DesiredSize}\n" +
+                        $" - CursorPos = {Event.current.mousePosition}"+
+                        $" - DesiredRect = {_desiredRect}\n" +
+                        $" - DesiredSize = {_desiredSize}\n" +
                         $" - RenderedRect = {renderRect}\n" +
                         $" - Margin = {Margin}");
                 }
+
+                if (Event.current.type is EventType.MouseDown
+                    && Mouse.IsOver(Container?.Segment().IntersectWith(renderRect) ?? renderRect))
+                {
+                    if (ClickForceMeasure)
+                    {
+                        InvalidateMeasure();
+                    }
+                    else if (ClickForceArrange)
+                    {
+                        InvalidateArrange();
+                    }
+                }
             }
 
-            RenderedRect = renderRect;
-            RenderedSize = renderRect;
+            _renderedRect = renderRect;
+            _renderedSize = renderRect;
             return renderRect;
         }
 
@@ -257,8 +350,15 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>实际绘制的区域。</returns>
         public Rect Draw(Rect renderRect)
         {
-            if (!IsArrangeValid) { Arrange(renderRect); }
-            else if (!IsMeasureValid) { Measure(renderRect); }
+            if (!_isArrangeValid)
+            {
+                Arrange(renderRect);
+            }
+            else if (!_isMeasureValid)  // Arrange 方法执行时若 _isMeasureValid 为 false，将会自动调用 Measure 方法
+            {
+                Measure(renderRect);
+            }
+
             return Draw();
         }
 
@@ -267,8 +367,18 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public void InvalidateArrange()
         {
-            IsArrangeValid = false;
-            OnArrangeInvalidated();
+            if (_isArrangeValid)
+            {
+                _isArrangeValid = false;
+
+                // 控件度量无效，就说明已经调用过 Container 的 InvalidateMeasure 方法
+                if (_isMeasureValid && IsHolded)    
+                {
+                    Container.InvalidateArrange();
+                }
+
+                OnArrangeInvalidated();
+            }
         }
 
         /// <summary>
@@ -277,8 +387,22 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <remarks>这会导致控件布局也被无效化。</remarks>
         public void InvalidateMeasure()
         {
-            IsMeasureValid = false;
-            OnMeasureInvalidated();
+            if (_isMeasureValid)
+            {
+                _isMeasureValid = false;
+
+                if (IsHolded)
+                {
+                    Container.InvalidateMeasure();
+                }
+
+                OnMeasureInvalidated();
+            }
+
+            if (_isArrangeValid)
+            {
+                InvalidateArrange();
+            }
         }
 
         /// <summary>
@@ -288,24 +412,29 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>控件需要占用的布局尺寸。</returns>
         public Size Measure(Size availableSize)
         {
-            if (IsMeasureValid) { return DesiredSize; }
+            if (_isMeasureValid)
+            {
+                return _desiredSize;
+            }
+
             if (!(Visibility is Visibility.Collapsed))
             {
-                DesiredSize = (MeasureCore(availableSize - Margin) + Margin).Round();
+                _desiredSize = (MeasureCore(availableSize - Margin) + Margin).Round();
             }
             else
             {
-                DesiredSize = Size.Empty;
+                _desiredSize = Size.Empty;
             }
-            IsMeasureValid = true;
-            return DesiredSize;
+
+            _isMeasureValid = true;
+            return _desiredSize;
         }
 
         /// <summary>
         /// 返回表示当前对象的字符串
         /// </summary>
         /// <returns>表示当前对象的字符串。</returns>
-        public override string ToString() => Name.NullOrEmpty() ? base.ToString() : Name;
+        public override string ToString() => _name.NullOrEmpty() ? base.ToString() : _name;
 
         #endregion
 
@@ -324,7 +453,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="availableRect">允许排布的区域</param>
         /// <returns>控件需要占用的布局区域。</returns>
         protected virtual Rect ArrangeCore(Rect availableRect) =>
-            (DesiredSize - Margin).AlignRectToArea(availableRect, HorizontalAlignment, VerticalAlignment);
+            (_desiredSize - Margin).AlignRectToArea(availableRect, HorizontalAlignment, VerticalAlignment);
 
         /// <summary>
         /// 绘制控件
@@ -345,12 +474,52 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         protected virtual void OnArrangeInvalidated() { }
 
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args)
+        {
+            if (args.Metadata is ControlPropertyMetadata metadata)
+            {
+                if (metadata.Relation is ControlRelation.Measure)
+                {
+                    InvalidateMeasure();
+                }
+                else if (metadata.Relation is ControlRelation.Arrange)
+                {
+                    InvalidateArrange();
+                }
+            }
+        }
+
         /// <summary>
         /// 当控件度量被无效化后执行的操作
         /// </summary>
-        protected virtual void OnMeasureInvalidated()
+        protected virtual void OnMeasureInvalidated() { }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Internal Methods
+        //
+        //------------------------------------------------------
+
+        #region Internal Methods
+
+        internal void RemoveContainer()
         {
-            InvalidateArrange();
+            Container = null;
+            IsHolded = false;
+
+            InvalidateMeasure();
+        }
+
+        internal void SetContainer(IFrame container)
+        {
+            Container = container;
+            IsHolded = true;
+
+            InvalidateMeasure();
         }
 
         #endregion
