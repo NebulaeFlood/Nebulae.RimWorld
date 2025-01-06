@@ -23,9 +23,9 @@ namespace Nebulae.RimWorld.UI.Controls
         }
         #endregion
 
-        private Size _cachedContentSize;
-        private Rect _cachedIconRect;
-        private Rect _cachedTextRect;
+        private Size _cachedContentSize = Size.Empty;
+        private Rect _cachedIconRect = Rect.zero;
+        private Rect _cachedTextRect = Rect.zero;
         private Texture2D _checkedIcon;
         private Texture2D _indeterminateIcon;
         private Texture2D _uncheckedIcon;
@@ -106,7 +106,7 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected sealed override Rect DrawButton(Rect renderRect)
+        protected sealed override Rect DrawButton(Rect renderRect, bool isOver)
         {
             switch (Status)
             {

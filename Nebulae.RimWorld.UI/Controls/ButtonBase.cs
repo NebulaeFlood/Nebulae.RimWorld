@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Data;
 using RimWorld;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -25,10 +26,23 @@ namespace Nebulae.RimWorld.UI.Controls
         }
         #endregion
 
-        private SoundDef _clickSound;
-        private bool _isEnabled;
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private SoundDef _clickSound = SoundDefOf.Mouseover_Standard;
         private SoundDef _mouseOverSound;
-        private bool _playMouseOverSound;
+
+        private bool _isEnabled = true;
+        private bool _playMouseOverSound = true;
+
+        #endregion
+
 
 
         //------------------------------------------------------
@@ -119,9 +133,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         protected ButtonBase()
         {
-            _isEnabled = true;
-            _playMouseOverSound = true;
-            _mouseOverSound = SoundDefOf.Mouseover_Standard;
         }
 
 
@@ -129,23 +140,37 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 绘制按钮
         /// </summary>
         /// <param name="renderRect">允许绘制的区域</param>
+        /// <param name="isCursorOver">光标是否位于按钮上方</param>
         /// <returns>实际绘制的区域。</returns>
-        protected abstract Rect DrawButton(Rect renderRect);
+        protected abstract Rect DrawButton(Rect renderRect, bool isCursorOver);
 
         /// <inheritdoc/>
         protected sealed override Rect DrawCore(Rect renderRect)
         {
+            EventType eventType = Event.current.type;
+            Rect visiableRect = Segment().IntersectWith(renderRect);
+
+            bool isOver = Mouse.IsOver(visiableRect);
+
             Color currentColor = GUI.color;
             if (!_isEnabled)
             {
                 GUI.color = Widgets.InactiveColor;
             }
 
-            renderRect = DrawButton(renderRect);
+            renderRect = DrawButton(renderRect, isOver);
 
-            if (_playMouseOverSound) { MouseoverSounds.DoRegion(renderRect, _mouseOverSound); }
-            if (!_isEnabled) { return renderRect; }
-            if (GUI.Button(renderRect, string.Empty, Widgets.EmptyStyle))
+            if (_playMouseOverSound)
+            {
+                MouseoverSounds.DoRegion(visiableRect, _mouseOverSound);
+            }
+
+            if (!_isEnabled)
+            {
+                return renderRect;
+            }
+
+            if (isOver && eventType is EventType.MouseUp)
             {
                 OnClick();
                 click.Invoke(this, EventArgs.Empty);

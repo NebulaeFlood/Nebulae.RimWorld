@@ -141,21 +141,31 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected override Rect DrawButton(Rect renderRect)
+        protected override Rect DrawButton(Rect renderRect, bool isOver)
         {
             Color currentColor = GUI.color;
             GUI.color = _compositionColor;
 
             Texture2D background = _normalBackground;
-            if (Mouse.IsOver(renderRect))
+            if (isOver)
             {
                 background = _mouseOverBackground;
+
                 if (Input.GetMouseButton(0))
                 {
                     background = _pressedBackground;
                 }
             }
-            Widgets.DrawAtlas(renderRect, background);
+
+            if (_isTextureAtlas)
+            {
+                Widgets.DrawAtlas(renderRect, background);
+            }
+            else
+            {
+                GUI.DrawTexture(renderRect, background);
+            }
+
             GUI.color = currentColor;
 
             if (_icon != null)

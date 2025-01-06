@@ -39,10 +39,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     _group?.Remove(this);
                     _group = value;
-                    if (_group != null)
-                    {
-                        _group.Add(this);
-                    }
+                    _group?.Add(this);
                 }
             }
         }
