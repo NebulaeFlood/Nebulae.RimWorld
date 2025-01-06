@@ -14,11 +14,11 @@ namespace Nebulae.RimWorld.UI
     {
         //------------------------------------------------------
         //
-        //  Global Variables
+        //  Global Properties
         //
         //------------------------------------------------------
 
-        #region Global Variables
+        #region Global Properties
 
         /// <summary>
         /// 游戏窗口客户区高度
