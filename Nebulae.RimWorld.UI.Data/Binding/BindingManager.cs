@@ -49,7 +49,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             object target,
             string targetPath,
             BindingMode mode,
-            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance)
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public)
         {
             return Bind(source, sourcePath, target, targetPath, null, mode, flags);
         }
@@ -76,7 +76,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             string targetPath,
             IValueConverter converter,
             BindingMode mode,
-            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance)
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public)
         {
             if (source is null)
             {
@@ -118,7 +118,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             DependencyObject target,
             DependencyProperty targetPath,
             BindingMode mode,
-            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance)
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public)
         {
             return Bind(source, sourcePath, target, targetPath, null, mode, flags);
         }
@@ -145,7 +145,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             DependencyProperty targetPath,
             IValueConverter converter,
             BindingMode mode,
-            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance)
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public)
         {
             if (source is null)
             {
@@ -186,7 +186,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             object target,
             string targetPath,
             BindingMode mode,
-            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance)
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public)
         {
             return Bind(source, sourcePath, target, targetPath, null, mode, flags);
         }
@@ -213,7 +213,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             string targetPath,
             IValueConverter converter,
             BindingMode mode,
-            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance)
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public)
         {
             if (source is null)
             {
