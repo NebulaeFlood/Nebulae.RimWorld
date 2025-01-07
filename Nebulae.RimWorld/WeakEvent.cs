@@ -1,6 +1,6 @@
 ﻿// using System.ComponentModel;
 
-// Copyright(c) 2024 Walterlv
+// Copyright (c) 2019-2021 dotnet campus
 
 // "Anti 996" License Version 1.0 (Draft)
 
