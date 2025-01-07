@@ -84,7 +84,7 @@ namespace Nebulae.RimWorld.UI.Data
         private bool _isMetadataTempDirty;
 
         #endregion
-        
+
 
         //------------------------------------------------------
         //
@@ -211,14 +211,10 @@ namespace Nebulae.RimWorld.UI.Data
         /// <returns>如果相等，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public override bool Equals(object obj)
         {
-            if (obj is null) { return false; }
-            if (obj is DependencyProperty dependencyProperty)
-            {
-                return ReferenceEquals(this, dependencyProperty)
+            return obj is DependencyProperty dependencyProperty
+                && (ReferenceEquals(this, dependencyProperty)
                     || (_ownerType == dependencyProperty._ownerType
-                        && _name == dependencyProperty._name);
-            }
-            return base.Equals(obj);
+                        && _name == dependencyProperty._name));
         }
 
         /// <summary>
@@ -228,7 +224,6 @@ namespace Nebulae.RimWorld.UI.Data
         /// <returns>如果相等，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(DependencyProperty other)
         {
-            if (other is null) { return false; }
             return ReferenceEquals(this, other)
                 || (_ownerType == other._ownerType
                     && _name == other._name);
@@ -289,7 +284,7 @@ namespace Nebulae.RimWorld.UI.Data
             }
 
             DependencyObjectType dType = DependencyObjectType.FromType(ownerType);
-            dType.Upgrade();    
+            dType.Upgrade();
             metadata.MergeMetadata(GetMetadata(dType));
 
             _metadata.Add(dType, metadata);
@@ -518,7 +513,7 @@ namespace Nebulae.RimWorld.UI.Data
             public override string ToString() => _value;
 
             [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-            private string _value;
+            private readonly string _value;
         }
     }
 }

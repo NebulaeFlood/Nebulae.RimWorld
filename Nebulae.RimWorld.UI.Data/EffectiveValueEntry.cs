@@ -14,17 +14,17 @@ namespace Nebulae.RimWorld.UI.Data
         /// <summary>
         /// 是否正在临时修改属性值
         /// </summary>
-        internal bool IsTemporary;
+        internal readonly bool IsTemporary;
 
         /// <summary>
         /// 属性的临时值
         /// </summary>
-        internal object TemporaryValue;
+        internal readonly object TemporaryValue;
 
         /// <summary>
         /// 属性的值
         /// </summary>
-        internal object Value;
+        internal readonly object Value;
 
         /// <summary>
         /// 属性的有效值

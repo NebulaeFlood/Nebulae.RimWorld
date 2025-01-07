@@ -8,8 +8,6 @@
         private readonly EffectiveValueEntry _newEntry;
         private readonly EffectiveValueEntry _oldEntry;
 
-        private readonly bool _overriddenDefault;
-
 
         /// <summary>
         /// 属性的元数据
@@ -29,7 +27,7 @@
         /// <summary>
         /// 属性的旧值
         /// </summary>
-        public object OldValue => _overriddenDefault ? Metadata.DefaultValue : _oldEntry.EffectiveValue;
+        public object OldValue => _oldEntry.EffectiveValue;
 
 
         /// <summary>
@@ -43,10 +41,8 @@
             Metadata = metadata;
             Property = property;
 
-            _oldEntry = default;
+            _oldEntry = new EffectiveValueEntry(metadata.DefaultValue);
             _newEntry = newEntry;
-
-            _overriddenDefault = true;
         }
 
         /// <summary>
@@ -63,8 +59,6 @@
 
             _oldEntry = oldEntry;
             _newEntry = newEntry;
-
-            _overriddenDefault = false;
         }
     }
 }

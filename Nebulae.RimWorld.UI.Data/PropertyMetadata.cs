@@ -42,6 +42,7 @@ namespace Nebulae.RimWorld.UI.Data
     /// </summary>
     public class PropertyMetadata
     {
+        #region PropertyChanged
         private readonly WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs> _propertyChanged = new WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs>();
 
         internal event WeakEventHandler<DependencyObject, DependencyPropertyChangedEventArgs> PropertyChanged
@@ -49,7 +50,16 @@ namespace Nebulae.RimWorld.UI.Data
             add => _propertyChanged.Add(value);
             remove => _propertyChanged.Remove(value);
         }
+        #endregion
 
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
 
         private readonly MetadataFlag _flags;
 
@@ -62,6 +72,8 @@ namespace Nebulae.RimWorld.UI.Data
         /// 属性更改回调函数
         /// </summary>
         private PropertyChangedCallback _propertyChangedCallback;
+
+        #endregion
 
 
         internal object DefaultValue;
@@ -81,7 +93,7 @@ namespace Nebulae.RimWorld.UI.Data
         /// </summary>
         public PropertyMetadata()
         {
-            DefaultValue = default;
+            DefaultValue = null;
 
             _flags = MetadataFlag.InheritablePropertyChangedCallback;
         }
@@ -157,6 +169,14 @@ namespace Nebulae.RimWorld.UI.Data
         #endregion
 
 
+        //------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Methods
+
         /// <summary>
         /// 获取属性的默认值
         /// </summary>
@@ -168,7 +188,6 @@ namespace Nebulae.RimWorld.UI.Data
         /// </summary>
         /// <returns>元数据关联的依赖属性。</returns>
         public DependencyProperty GetProperty() => Property;
-
 
         /// <summary>
         /// 合并元数据
@@ -206,6 +225,8 @@ namespace Nebulae.RimWorld.UI.Data
 
             Property = baseMetadata.Property;
         }
+
+        #endregion
 
 
         //------------------------------------------------------

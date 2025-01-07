@@ -161,7 +161,7 @@ namespace Nebulae.RimWorld.UI.Data
             {
                 oldValue = oldEntry.IsTemporary ? oldEntry.TemporaryValue : oldEntry.Value;
 
-                if (oldValue == value) { return; }
+                if (oldValue.Equals(value)) { return; }
 
                 EffectiveValueEntry newEntry = oldEntry.IsTemporary
                                     ? new EffectiveValueEntry(oldValue, value)
@@ -178,7 +178,7 @@ namespace Nebulae.RimWorld.UI.Data
                 PropertyMetadata metadata = property.GetMetadata(DependencyType);
                 oldValue = metadata.DefaultValue;
 
-                if (oldValue == value) { return; }
+                if (oldValue.Equals(value)) { return; }
 
                 EffectiveValueEntry newEntry = oldEntry.IsTemporary
                     ? new EffectiveValueEntry(oldValue, value)
@@ -231,7 +231,7 @@ namespace Nebulae.RimWorld.UI.Data
             {
                 oldValue = oldEntry.IsTemporary ? oldEntry.TemporaryValue : oldEntry.Value;
 
-                if (oldValue == value) { return; }
+                if (oldValue.Equals(value)) { return; }
 
                 EffectiveValueEntry newEntry = isTemporary
                     ? new EffectiveValueEntry(oldValue, value)
@@ -248,7 +248,7 @@ namespace Nebulae.RimWorld.UI.Data
                 PropertyMetadata metadata = property.GetMetadata(DependencyType);
                 oldValue = metadata.DefaultValue;
 
-                if (oldValue == value) { return; }
+                if (oldValue.Equals(value)) { return; }
 
                 EffectiveValueEntry newEntry = isTemporary
                     ? new EffectiveValueEntry(oldValue, value)
