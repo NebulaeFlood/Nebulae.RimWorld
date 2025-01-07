@@ -152,7 +152,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 计算内容控件的可显示区域
         /// </summary>
         /// <returns>内容控件的可显示区域。</returns>
-        protected virtual Rect SegmentCore() => DesiredRect - Margin;
+        protected virtual Rect SegmentCore() => RenderedRect;
 
         #endregion
 

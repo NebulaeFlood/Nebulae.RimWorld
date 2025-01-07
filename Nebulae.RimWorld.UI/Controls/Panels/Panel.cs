@@ -177,11 +177,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             if (IsHolded)
             {
-                _cachedVisiableRect = Container.Segment().IntersectWith(DesiredRect - Margin);
+                _cachedVisiableRect = Container.Segment().IntersectWith(RenderedRect);
             }
             else
             {
-                _cachedVisiableRect = DesiredRect - Margin;
+                _cachedVisiableRect = RenderedRect;
             }
             _isSegmentValid = IsArrangeValid;
 
