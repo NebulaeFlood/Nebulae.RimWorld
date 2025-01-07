@@ -134,7 +134,37 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register(nameof(Value), typeof(float), typeof(NumberBox),
-                new PropertyMetadata(0f));
+                new PropertyMetadata(0f, OnValueChanged));
+
+        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            NumberBox numberBox = (NumberBox)d;
+
+            int decimalPartDigit = numberBox.DecimalPartDigit;
+            if (numberBox.DisplayAsPercent)
+            {
+                decimalPartDigit -= 2;
+                if (decimalPartDigit < 1)
+                {
+                    numberBox._buffer = $"{numberBox.Value * 100f}%";
+                }
+                else
+                {
+                    numberBox._buffer = string.Format("{0:F" + decimalPartDigit + "}%", numberBox.Value * 100f);
+                }
+            }
+            else
+            {
+                if (decimalPartDigit < 1)
+                {
+                    numberBox._buffer = numberBox.Value.ToString();
+                }
+                else
+                {
+                    numberBox._buffer = string.Format("{0:F" + decimalPartDigit + "}", numberBox.Value);
+                }
+            }
+        }
         #endregion
 
         #endregion
