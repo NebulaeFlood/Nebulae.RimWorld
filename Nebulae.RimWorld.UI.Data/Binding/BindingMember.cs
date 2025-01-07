@@ -17,6 +17,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         #region Pirvate Fields
 
+        private readonly int _hashCode;
+
         /// <summary>
         /// 成员值获取器
         /// </summary>
@@ -151,10 +153,6 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                         targetExp,
                         valueExp).Compile();
                 }
-
-                _target = IsStatic
-                    ? null
-                    : new WeakReference(target);
             }
             else if (member is FieldInfo field)
             {
@@ -183,14 +181,20 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                         targetExp,
                         valueExp).Compile();
                 }
-
-                _target = IsStatic
-                    ? null
-                    : new WeakReference(target);
             }
             else
             {
                 throw new ArgumentException("Binding member should be a property or a field.", nameof(member));
+            }
+
+            if (IsStatic)
+            {
+                _hashCode = MemberName.GetHashCode() ^ MemberType.GetHashCode();
+            }
+            else
+            {
+                _hashCode = target.GetHashCode() ^ MemberName.GetHashCode() ^ MemberType.GetHashCode();
+                _target = new WeakReference(target);
             }
         }
 
@@ -206,13 +210,14 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             IsStatic = false;
             IsWritable = true;
 
+            MemberName = property.Name;
+            MemberType = property.ValueType;
+
             _memberGetter = (obj) => ((DependencyObject)obj).GetValue(property);
             _memberSetter = (obj, val) => ((DependencyObject)obj).SetValueIntelligently(property, val);
 
+            _hashCode = target.GetHashCode() ^ MemberName.GetHashCode() ^ MemberType.GetHashCode();
             _target = new WeakReference(target);
-
-            MemberName = property.Name;
-            MemberType = property.ValueType;
         }
 
 
@@ -236,9 +241,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return IsStatic
-                ? MemberType.GetHashCode() ^ MemberName.GetHashCode()
-                : AssociatedObject.GetHashCode() ^ MemberType.GetHashCode() ^ MemberName.GetHashCode();
+            return _hashCode;
         }
     }
 }
