@@ -145,7 +145,7 @@ namespace Nebulae.RimWorld.UI.Windows
         }
 
         /// <inheritdoc/>
-        public Rect Segment() => windowRect;
+        public Rect Segment() => _windowContentRectCache;
 
         /// <summary>
         /// 开始呈现窗口
