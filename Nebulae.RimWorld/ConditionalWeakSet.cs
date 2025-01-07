@@ -25,7 +25,7 @@ namespace Nebulae.RimWorld
         /// </summary>
         public ConditionalWeakSet()
         {
-            _entries = new HashSet<Entry>(new EntryEqualityComparer());
+            _entries = new HashSet<Entry>();
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Nebulae.RimWorld
         /// <param name="collection">要向集合添加的对象</param>
         public ConditionalWeakSet(IEnumerable<T> collection)
         {
-            _entries = new HashSet<Entry>(new EntryEqualityComparer());
+            _entries = new HashSet<Entry>();
             foreach (var item in collection)
             {
                 Add(item);
@@ -88,66 +88,6 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 获取集合中满足条件的元素
-        /// </summary>
-        /// <param name="match">条件表达式</param>
-        /// <returns>集合中满足条件的元素</returns>
-        public List<T> GetWhere(Predicate<T> match)
-        {
-            List<T> results = new List<T>();
-            List<Entry> deadEntries = new List<Entry>();
-
-            foreach (var entry in _entries)
-            {
-                if (entry.Reference.TryGetTarget(out var value))
-                {
-                    if (match(value))
-                    {
-                        results.Add(value);
-                    }
-                }
-                else
-                {
-                    deadEntries.Add(entry);
-                }
-            }
-
-            for (int i = 0; i < deadEntries.Count; i++)
-            {
-                _entries.Remove(deadEntries[i]);
-            }
-            return results;
-        }
-
-        /// <summary>
-        /// 获取集合中未被回收的元素
-        /// </summary>
-        /// <returns>集合中未被回收的元素</returns>
-        public List<T> GetWhereAlive()
-        {
-            List<T> results = new List<T>();
-            List<Entry> deadEntries = new List<Entry>();
-
-            foreach (var entry in _entries)
-            {
-                if (entry.Reference.TryGetTarget(out var value))
-                {
-                    results.Add(value);
-                }
-                else
-                {
-                    deadEntries.Add(entry);
-                }
-            }
-
-            for (int i = 0; i < deadEntries.Count; i++)
-            {
-                _entries.Remove(deadEntries[i]);
-            }
-            return results;
-        }
-
-        /// <summary>
         /// 从集合中移除指定元素
         /// </summary>
         /// <param name="item">要移除的元素</param>
@@ -196,6 +136,66 @@ namespace Nebulae.RimWorld
                 actualValue = default;
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 获取集合中满足条件的元素
+        /// </summary>
+        /// <param name="match">条件表达式</param>
+        /// <returns>集合中满足条件的元素</returns>
+        public List<T> Where(Predicate<T> match)
+        {
+            List<T> results = new List<T>();
+            List<Entry> deadEntries = new List<Entry>();
+
+            foreach (var entry in _entries)
+            {
+                if (entry.Reference.TryGetTarget(out var value))
+                {
+                    if (match(value))
+                    {
+                        results.Add(value);
+                    }
+                }
+                else
+                {
+                    deadEntries.Add(entry);
+                }
+            }
+
+            for (int i = 0; i < deadEntries.Count; i++)
+            {
+                _entries.Remove(deadEntries[i]);
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// 获取集合中未被回收的元素
+        /// </summary>
+        /// <returns>集合中未被回收的元素</returns>
+        public List<T> WhereAlive()
+        {
+            List<T> results = new List<T>();
+            List<Entry> deadEntries = new List<Entry>();
+
+            foreach (var entry in _entries)
+            {
+                if (entry.Reference.TryGetTarget(out var value))
+                {
+                    results.Add(value);
+                }
+                else
+                {
+                    deadEntries.Add(entry);
+                }
+            }
+
+            for (int i = 0; i < deadEntries.Count; i++)
+            {
+                _entries.Remove(deadEntries[i]);
+            }
+            return results;
         }
         #endregion
 
@@ -246,25 +246,12 @@ namespace Nebulae.RimWorld
                     }
                     return !Reference.TryGetTarget(out T _) && !other.Reference.TryGetTarget(out T _);
                 }
-                return base.Equals(obj);
+                return false;
             }
 
             public override int GetHashCode()
             {
                 return Reference.TryGetTarget(out T target) ? target.GetHashCode() : 0;
-            }
-        }
-
-
-        private class EntryEqualityComparer : EqualityComparer<Entry>
-        {
-            public override bool Equals(Entry x, Entry y)
-            {
-                return x.Equals(y);
-            }
-            public override int GetHashCode(Entry obj)
-            {
-                return obj.GetHashCode();
             }
         }
     }

@@ -87,7 +87,7 @@ namespace Nebulae.RimWorld
         {
             lock (_lock)
             {
-                List<object> aliveSbucribers = _subcribers.GetWhereAlive();
+                List<object> aliveSbucribers = _subcribers.WhereAlive();
                 if (aliveSbucribers.Count > 0)
                 {
                     for (int i = 0; i < aliveSbucribers.Count; i++)
@@ -152,10 +152,10 @@ namespace Nebulae.RimWorld
             }
 
             /// <summary>
-            /// 
+            /// 调用事件处理器
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="args"></param>
+            /// <param name="sender">事件的发送者</param>
+            /// <param name="args">事件数据</param>
             public void Invoke(TSender sender, TArgs args)
             {
                 LinkedListNode<Entry> node = _invocationList.Last;
@@ -167,9 +167,9 @@ namespace Nebulae.RimWorld
             }
 
             /// <summary>
-            /// 
+            /// 移除事件处理器
             /// </summary>
-            /// <param name="eventHandler"></param>
+            /// <param name="eventHandler">要移除的事件处理器</param>
             public void Remove(WeakEventHandler<TSender, TArgs> eventHandler)
             {
                 _invocationList.Remove(new Entry(eventHandler));
@@ -209,11 +209,8 @@ namespace Nebulae.RimWorld
                 /// <returns>如果指定的对象等于当前对象，则为 <see langword="true"/>；反之则为 <see langword="false"/>。</returns>
                 public override bool Equals(object obj)
                 {
-                    if (obj is Entry entry)
-                    {
-                        return ReferenceEquals(Info, entry.Info);
-                    }
-                    return base.Equals(obj);
+                    return obj is Entry entry
+                        && ReferenceEquals(Info, entry.Info);
                 }
 
                 /// <summary>
