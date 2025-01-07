@@ -1,16 +1,22 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Reflection;
+using static UnityEngine.GraphicsBuffer;
+using UnityEngine.Networking.Types;
+using System.Collections.Generic;
+using Verse;
+using Nebulae.RimWorld.UI.Data.Binding.Converters;
 
 namespace Nebulae.RimWorld.UI.Data.Binding
 {
     /// <summary>
     /// 表示对象指定成员间的绑定关系的基类，定义了其共同行为
     /// </summary>
-    /// <typeparam name="TSource">绑定源成员值的类型</typeparam>
-    /// <typeparam name="TTarget">绑定目标成员值的类型</typeparam>
-    public abstract class BindingBase<TSource, TTarget> : IBinding, IEquatable<BindingBase<TSource, TTarget>>
+    public abstract class BindingBase : IEquatable<BindingBase>
     {
+        private static readonly Dictionary<ConverterKey, IValueConverter> _createdConverters = new Dictionary<ConverterKey, IValueConverter>();
+
+
         //------------------------------------------------------
         //
         //  Private Fields
@@ -20,12 +26,15 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         #region Private Fields
 
         private readonly int _hashCode;
-        private readonly Type _sourceType;
-        private readonly PropertyMetadata _sourcePropertyData;
+
         private readonly string _sourcePath;
-        private readonly Type _targetType;
-        private readonly PropertyMetadata _targetPropertyData;
+        private readonly Type _sourceType;
+
         private readonly string _targetPath;
+        private readonly Type _targetType;
+
+        private readonly PropertyMetadata _sourcePropertyData;
+        private readonly PropertyMetadata _targetPropertyData;
 
         private bool _isBinding;
 
@@ -41,197 +50,175 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         #region Protected Fields
 
         /// <summary>
-        /// 绑定源
+        /// 成员间的转换器
         /// </summary>
-        protected readonly WeakReference Source;
-
-        /// <summary>
-        /// 绑定源成员的信息
-        /// </summary>
-        protected readonly BindingMemberInfo<TSource> SourceMemberInfo;
-
-        /// <summary>
-        /// 绑定目标
-        /// </summary>
-        protected readonly WeakReference Target;
-
-        /// <summary>
-        /// 绑定目标成员的信息
-        /// </summary>
-        protected readonly BindingMemberInfo<TTarget> TargetMemberInfo;
+        protected readonly IValueConverter Converter;
 
         /// <summary>
         /// 绑定关系的类型
         /// </summary>
         protected readonly BindingMode Mode;
 
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Public Property
-        //
-        //------------------------------------------------------
-
-        #region Public Property
-
-        /// <inheritdoc/>
-        public bool IsBindingValid
-        {
-            get
-            {
-                if (!_isBinding) { return false; }
-                if ((!SourceMemberInfo.IsStatic && !Source.IsAlive)
-                    || (!TargetMemberInfo.IsStatic && !Target.IsAlive))
-                {
-                    Unbind();
-                    return false;
-                }
-                return true;
-            }
-        }
-
-        /// <inheritdoc/>
-        public Type SourceType => _sourceType;
-
-        /// <inheritdoc/>
-        public Type TargetType => _targetType;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Constructor
-        //
-        //------------------------------------------------------
-
-        #region Constructor
+        /// <summary>
+        /// 成员间是否需要使用 <see cref="Converter"/>
+        /// </summary>
+        /// <remarks>若为 <see langword="false"/>，<see cref="Converter"/> = <see langword="null"/>。</remarks>
+        protected readonly bool ShouldConvert;
 
         /// <summary>
-        /// 为 <see cref="BindingBase{TSource, TTarget}"/> 派生类实现基本初始化
+        /// 绑定源成员的信息
+        /// </summary>
+        protected readonly BindingMember SourceMember;
+
+        /// <summary>
+        /// 绑定目标成员的信息
+        /// </summary>
+        protected readonly BindingMember TargetMember;
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Public Properties
+        //
+        //------------------------------------------------------
+
+        #region Public Properties
+
+        /// <summary>
+        /// 绑定关系是否存在
+        /// </summary>
+        public bool IsBinding => _isBinding;
+
+        /// <summary>
+        /// 绑定对象是否支持绑定
+        /// </summary>
+        public bool IsBindingValid => SourceMember.IsAlive && TargetMember.IsAlive;
+
+        #endregion
+
+
+        /// <summary>
+        /// 为 <see cref="BindingBase"/> 派生类实现基本初始化
         /// </summary>
         /// <param name="source">绑定源</param>
-        /// <param name="target">绑定目标</param>
         /// <param name="sourcePath">绑定源的成员</param>
+        /// <param name="target">绑定目标</param>
         /// <param name="targetPath">绑定目标的成员</param>
+        /// <param name="converter">成员间的值转换器</param>
         /// <param name="mode">绑定关系的类型</param>
-        /// <param name="flags">搜索成员的方式</param>
+        /// <exception cref="InvalidOperationException">当绑定的成员不满足绑定关系的条件时发生。</exception>
         protected BindingBase(
             object source,
-            object target,
             object sourcePath,
+            object target,
             object targetPath,
-            BindingMode mode,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
+            IValueConverter converter,
+            BindingMode mode)
         {
-            _sourceType = (source is Type sourceType) ? sourceType : source.GetType();
-            _sourcePath = sourcePath.ToString();
-            _targetType = (target is Type targetType) ? targetType : target.GetType();
-            _targetPath = targetPath.ToString();
-            _hashCode = _sourceType.GetHashCode() ^ _sourcePath.GetHashCode() ^ _targetType.GetHashCode() ^ _targetPath.GetHashCode();
-
-            if (BindingManager.IsBinding(this))
+            if (sourcePath is MemberInfo sourceMember)
             {
-                throw new InvalidOperationException($"Binding from {_sourceType}.{sourcePath} to {_targetType}.{targetPath} has already exist.");
-            }
+                _sourcePath = sourceMember.Name;
+                _sourceType = sourceMember.DeclaringType;
 
-            if (source is DependencyObject dependencySource && sourcePath is DependencyProperty sourceProperty)
-            {
-                _sourcePropertyData = sourceProperty.GetMetadata(dependencySource.DependencyType);
-                _sourcePropertyData.PropertyChanged += OnDependencySourceChanged;
-
-                SourceMemberInfo = new BindingMemberInfo<TSource>(sourceProperty, _targetType);
+                SourceMember = new BindingMember(source, sourceMember);
             }
             else
             {
-                if (source is INotifyPropertyChanged notifiableSource)
-                {
-                    notifiableSource.PropertyChanged += OnNotifiableSourceChanged;
-                }
-                SourceMemberInfo = new BindingMemberInfo<TSource>(_sourceType, _sourcePath, flags);
+                DependencyProperty sourceProperty = (DependencyProperty)sourcePath;
+
+                _sourcePath = sourceProperty.Name;
+                _sourcePropertyData = sourceProperty.GetMetadata((DependencyObject)source);
+                _sourceType = sourceProperty.OwnerType;
+
+                SourceMember = new BindingMember(source, sourceProperty);
             }
 
-            if (!SourceMemberInfo.IsReadable())
+            if (!SourceMember.IsReadable)
             {
-                throw new InvalidOperationException($"Source property {_sourceType}.{sourcePath} must have get method.");
+                throw new InvalidOperationException($"Source member {_sourceType}.{_sourcePath} must be readable.");
             }
-            else if (mode is BindingMode.TwoWay && !SourceMemberInfo.IsWritable())
+            else if (mode is BindingMode.TwoWay && !SourceMember.IsWritable)
             {
-                throw new InvalidOperationException($"Source property {_sourceType}.{sourcePath} must have set method for a TowWay binding.");
+                throw new InvalidOperationException($"Source member {_sourceType}.{_sourcePath} must be writable for a TowWay binding.");
             }
 
-            if (target is DependencyObject dependencyTarget 
-                && targetPath is DependencyProperty targetProperty)
+            if (targetPath is MemberInfo targetMember)
             {
-                _targetPropertyData = targetProperty.GetMetadata(dependencyTarget.DependencyType);
-                if(mode is BindingMode.TwoWay)
-                {
-                    _targetPropertyData.PropertyChanged += OnDependencyTargetChanged;
-                }
+                _targetPath = targetMember.Name;
+                _targetType = targetMember.DeclaringType;
 
-                TargetMemberInfo = new BindingMemberInfo<TTarget>(targetProperty, _targetType);
+                TargetMember = new BindingMember(target, targetMember);
             }
             else
             {
-                if (target is INotifyPropertyChanged notifiableTarget 
-                    && mode is BindingMode.TwoWay)
-                {
-                    notifiableTarget.PropertyChanged += OnNotifiableTargetChanged;
-                }
-                TargetMemberInfo = new BindingMemberInfo<TTarget>(_targetType, _targetPath, flags);
+                DependencyProperty targetProperty = (DependencyProperty)targetPath;
+
+                _targetPath = targetProperty.Name;
+                _targetPropertyData = targetProperty.GetMetadata((DependencyObject)target);
+                _targetType = targetProperty.OwnerType;
+
+                TargetMember = new BindingMember(target, targetProperty);
             }
 
-            if (!TargetMemberInfo.IsWritable())
+            if (!TargetMember.IsWritable)
             {
-                throw new InvalidOperationException($"Target property {_targetType}.{targetPath} must have set method.");
+                throw new InvalidOperationException($"Target member {_targetType}.{_targetPath} must be writable.");
             }
-            else if (mode is BindingMode.TwoWay && !TargetMemberInfo.IsReadable())
+            else if (mode is BindingMode.TwoWay && !TargetMember.IsReadable)
             {
-                throw new InvalidOperationException($"Target property {_targetType}.{targetPath} must have get method for a TwoWay binding.");
-            }
-
-            if (source != null)
-            {
-                Source = new WeakReference(source);
-            }
-
-            if (target != null)
-            {
-                Target = new WeakReference(target);
+                throw new InvalidOperationException($"Target member {_targetType}.{_targetPath} must be readable for a TowWay binding.");
             }
 
             Mode = mode;
+            Converter = converter
+                ?? CreateDefaultConverter(SourceMember.MemberType, TargetMember.MemberType);
+            ShouldConvert = !(Converter is null);
 
-            _isBinding = true;
+            _hashCode = SourceMember.GetHashCode() ^ TargetMember.GetHashCode();
+
+            Bind(source, sourcePath, target, targetPath);
         }
 
-        #endregion
 
+        //------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Methods
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            return obj is BindingBase<TSource, TTarget> other
-                && _sourceType == other._sourceType && _targetType == other._targetType
-                && _sourcePath == other._sourcePath && _targetPath == other._targetPath;
+            return ReferenceEquals(this, obj)
+                || (obj is BindingBase other
+                    && SourceMember.Equals(other.SourceMember)
+                    && TargetMember.Equals(other.TargetMember));
         }
 
         /// <inheritdoc/>
-        public bool Equals(BindingBase<TSource, TTarget> other)
+        public bool Equals(BindingBase other)
         {
-            return _sourceType == other._sourceType && _targetType == other._targetType
-                && _sourcePath == other._sourcePath && _targetPath == other._targetPath;
+            return ReferenceEquals(this, other)
+                || (SourceMember.Equals(other.SourceMember)
+                    && TargetMember.Equals(other.TargetMember));
         }
 
         /// <inheritdoc/>
         public override int GetHashCode() => _hashCode;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 取消对象成员间的绑定关系
+        /// </summary>
         public void Unbind()
         {
-            _isBinding = false;
+            if (!_isBinding)
+            {
+                return;
+            }
 
             if (_sourcePropertyData != null)
             {
@@ -243,20 +230,37 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 _targetPropertyData.PropertyChanged -= OnDependencyTargetChanged;
             }
 
-            if (Source.Target is INotifyPropertyChanged notifiableSource)
+            if (Mode is BindingMode.TwoWay)
             {
-                notifiableSource.PropertyChanged -= OnNotifiableSourceChanged;
+                if (SourceMember.AssociatedObject is INotifyPropertyChanged notifiableSource)
+                {
+                    notifiableSource.PropertyChanged -= OnNotifiableSourceChanged;
+                }
+
+                if (TargetMember.AssociatedObject is INotifyPropertyChanged notifiableTarget)
+                {
+                    notifiableTarget.PropertyChanged -= OnNotifiableTargetChanged;
+                }
             }
 
-            if (Target.Target is INotifyPropertyChanged notifiableTarget)
-            {
-                notifiableTarget.PropertyChanged -= OnNotifiableTargetChanged;
-            }
+            _isBinding = false;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 强制以当前绑定模式同步绑定对象的值
+        /// </summary>
         public abstract void Synchronize();
 
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
 
         /// <summary>
         /// 当 <see cref="DependencyObject"/> 绑定源成员变化执行的操作
@@ -285,5 +289,106 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="sender">绑定目标</param>
         /// <param name="e">变化信息</param>
         protected abstract void OnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e);
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Methods
+
+        private void Bind(
+            object source,
+            object sourcePath,
+            object target,
+            object targetPath)
+        {
+            if (source is INotifyPropertyChanged notifiableSource)
+            {
+                notifiableSource.PropertyChanged += OnNotifiableSourceChanged;
+            }
+            else if (sourcePath is DependencyProperty)
+            {
+                _sourcePropertyData.PropertyChanged += OnDependencySourceChanged;
+            }
+
+            if (Mode is BindingMode.TwoWay)
+            {
+                if (target is INotifyPropertyChanged notifiableTarget)
+                {
+                    notifiableTarget.PropertyChanged += OnNotifiableTargetChanged;
+                }
+                else if (targetPath is DependencyProperty)
+                {
+                    _targetPropertyData.PropertyChanged += OnDependencyTargetChanged;
+                }
+            }
+
+            _isBinding = true;
+        }
+
+        private static IValueConverter CreateDefaultConverter(Type sourceType, Type targetType)
+        {
+            if (sourceType == targetType)
+            {
+                return null;
+            }
+
+            ConverterKey key = new ConverterKey(sourceType, targetType);
+            if (!_createdConverters.TryGetValue(key, out IValueConverter converter))
+            {
+                if (SystemConvertUtility.CanConvert(sourceType, targetType))
+                {
+                    converter = new SystemConverter(sourceType, targetType);
+                }
+                else
+                {
+                    throw new InvalidCastException($"Default binding converter can not cast type {sourceType} to type {targetType}.");
+                }
+
+                _createdConverters.Add(key, converter);
+            }
+
+            return converter;
+        }
+
+        #endregion
+
+
+        private readonly struct ConverterKey : IEquatable<ConverterKey>
+        {
+            private readonly int _hashCode;
+            private readonly Type _sourceType;
+            private readonly Type _targetType;
+
+            internal ConverterKey(Type sourceType, Type targetType)
+            {
+                _hashCode = sourceType.GetHashCode() ^ targetType.GetHashCode();
+                _sourceType = sourceType;
+                _targetType = targetType;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is ConverterKey other
+                    && _sourceType == other._sourceType
+                    && _targetType == other._targetType;
+            }
+
+            public bool Equals(ConverterKey other)
+            {
+                return _sourceType == other._sourceType
+                    && _targetType == other._targetType;
+            }
+
+            public override int GetHashCode()
+            {
+                return _hashCode;
+            }
+        }
     }
 }
