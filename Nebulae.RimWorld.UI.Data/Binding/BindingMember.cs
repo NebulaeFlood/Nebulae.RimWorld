@@ -123,6 +123,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             {
                 // SetMethod can not be null when GetMethod is null.
                 IsStatic = property.GetMethod?.IsStatic ?? property.SetMethod.IsStatic;
+                MemberName = property.Name;
                 MemberType = property.PropertyType;
 
                 ParameterExpression targetExp = Expression.Parameter(typeof(object), "target");
@@ -159,6 +160,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             {
                 IsReadable = true;
                 IsStatic = field.IsStatic;
+                MemberName = field.Name;
                 MemberType = field.FieldType;
 
                 ParameterExpression targetExp = Expression.Parameter(typeof(object), "target");
@@ -218,7 +220,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         public override bool Equals(object obj)
         {
             return obj is BindingMember other
-                && AssociatedObject == other.AssociatedObject
+                && ReferenceEquals(AssociatedObject, other.AssociatedObject)
                 && MemberName == other.MemberName
                 && MemberType == other.MemberType;
         }
@@ -226,7 +228,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <inheritdoc/>
         public bool Equals(BindingMember other)
         {
-            return AssociatedObject == other.AssociatedObject
+            return ReferenceEquals(AssociatedObject, other.AssociatedObject)
                 && MemberName == other.MemberName
                 && MemberType == other.MemberType;
         }
