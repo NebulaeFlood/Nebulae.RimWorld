@@ -11,10 +11,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Windows\" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\Nebulae.RimWorld.UI.Data\Nebulae.RimWorld.UI.Data.csproj">
 			<PrivateAssets>all</PrivateAssets>
 		</ProjectReference>
