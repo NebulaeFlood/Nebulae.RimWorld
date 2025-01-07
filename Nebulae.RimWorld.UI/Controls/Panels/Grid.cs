@@ -82,7 +82,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </remarks>
         public Grid Set(Control[,] controls)
         {
-            if (RowCount != controls.Length)
+            if (RowCount != controls.Rank + 1)
             {
                 throw new ArgumentException("The row count of given array do not match with current row count.", nameof(controls));
             }
@@ -168,6 +168,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 throw new ArgumentException("Row height can not be negative.", nameof(rowHeights));
             }
 
+            _autoSizeColumn = -1;
+            _autoSizeRow = -1;
+
             for (int i = 0; i < columnWidths.Length; i++)
             {
                 if (float.IsNaN(columnWidths[i]))
@@ -178,7 +181,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     }
                     else
                     {
-                        throw new ArgumentException("Only one auto column width is allowed but found two.", nameof(columnWidths));
+                        throw new ArgumentException("Only one auto column width is allowed but found two more.", nameof(columnWidths));
                     }
                 }
             }
@@ -193,7 +196,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     }
                     else
                     {
-                        throw new ArgumentException("Only one auto row height is allowed but found two.", nameof(rowHeights));
+                        throw new ArgumentException("Only one auto row height is allowed but found two more.", nameof(rowHeights));
                     }
                 }
             }
