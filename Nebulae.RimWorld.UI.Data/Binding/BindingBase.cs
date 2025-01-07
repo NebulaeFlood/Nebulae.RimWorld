@@ -135,6 +135,13 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 SourceMember = new BindingMember(source, sourceProperty);
             }
 
+            _hashCode = SourceMember.GetHashCode() ^ TargetMember.GetHashCode();
+
+            if (BindingManager.IsBinding(this))
+            {
+                throw new InvalidOperationException($"Binding from {_sourceType}.{_sourcePath} to {_targetType}.{_targetPath} has already exist.");
+            }
+
             if (!SourceMember.IsReadable)
             {
                 throw new InvalidOperationException($"Source member {_sourceType}.{_sourcePath} must be readable.");
@@ -176,9 +183,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 ?? CreateDefaultConverter(SourceMember.MemberType, TargetMember.MemberType);
             ShouldConvert = !(Converter is null);
 
-            _hashCode = SourceMember.GetHashCode() ^ TargetMember.GetHashCode();
-
-            Bind(source, sourcePath, target, targetPath);
+            StartBinding(source, sourcePath, target, targetPath);
         }
 
 
@@ -195,6 +200,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             return ReferenceEquals(this, obj)
                 || (obj is BindingBase other
+                    && _isBinding == other._isBinding
                     && SourceMember.Equals(other.SourceMember)
                     && TargetMember.Equals(other.TargetMember));
         }
@@ -203,7 +209,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         public bool Equals(BindingBase other)
         {
             return ReferenceEquals(this, other)
-                || (SourceMember.Equals(other.SourceMember)
+                || (_isBinding == other._isBinding
+                    && SourceMember.Equals(other.SourceMember)
                     && TargetMember.Equals(other.TargetMember));
         }
 
@@ -301,7 +308,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         #region Private Methods
 
-        private void Bind(
+        private void StartBinding(
             object source,
             object sourcePath,
             object target,

@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Security.AccessControl;
 using UnityEngine.Networking.Types;
 using Verse;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Nebulae.RimWorld.UI.Data.Binding
 {
@@ -23,7 +22,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// </summary>
         public static void CollectObsoleteBindings()
         {
-            _globalBindings.RemoveWhere(binding => !binding.IsBindingValid);
+            _globalBindings.RemoveWhere(x => !x.IsBinding || !x.IsBindingValid);
             _globalBindings.TrimExcess();
         }
 
@@ -295,6 +294,12 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         #endregion
 
 
+        internal static bool IsBinding(BindingBase binding)
+        {
+            return !_globalBindings.Add(binding);
+        }
+
+
         //------------------------------------------------------
         //
         //  Privaet Methods
@@ -326,7 +331,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         private static MemberInfo FindMember(object source, string name, BindingFlags flags, out Type type)
         {
             type = (source as Type) ?? source.GetType();
-            
+
             MemberInfo member = type.GetProperty(name, flags);
             return member ?? type.GetField(name, flags);
         }
