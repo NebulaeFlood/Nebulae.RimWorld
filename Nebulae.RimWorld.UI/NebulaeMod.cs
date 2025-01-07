@@ -10,24 +10,7 @@ namespace Nebulae.RimWorld.UI
     /// <typeparam name="T"></typeparam>
     public abstract class NebulaeMod<T> : NebulaeModBase where T : ModSettings, new()
     {
-        #region SettingUpdated
-
-        private readonly WeakEvent<Mod, T> _settingUpdated = new WeakEvent<Mod, T>();
-
-        /// <summary>
-        /// 当 Mod 设置更新时触发的弱事件
-        /// </summary>
-        public event WeakEventHandler<Mod, T> SettingUpdated
-        {
-            add => _settingUpdated.Add(value);
-            remove => _settingUpdated.Remove(value);
-        }
-
-        #endregion
-
-
         private static T _settings;
-
 
         /// <summary>
         /// Mod 设置的数据
@@ -51,8 +34,12 @@ namespace Nebulae.RimWorld.UI
         public sealed override void WriteSettings()
         {
             base.WriteSettings();
-            _settingUpdated.Invoke(this, Settings);
-        }
+
+            if (_settings is NotifiableModSettings notifiableSettings)
+            {
+                notifiableSettings.updated.Invoke(this, notifiableSettings);
+            }
+        } 
 
 
         /// <inheritdoc/>
