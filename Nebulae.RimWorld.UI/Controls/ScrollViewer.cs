@@ -239,8 +239,8 @@ namespace Nebulae.RimWorld.UI.Controls
                 _viewWidth,
                 _viewWidth));
             Widgets.BeginGroup(new Rect(
-                - _horizontalOffset,
-                - _verticalOffset,
+                -_horizontalOffset,
+                -_verticalOffset,
                 _viewWidth + _horizontalOffset,
                 _viewHeight + _verticalOffset));
 
