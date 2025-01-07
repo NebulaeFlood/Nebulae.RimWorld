@@ -93,7 +93,7 @@ namespace Nebulae.RimWorld
         {
             _lock = new object();
             _handlers = new ConditionalWeakTable<object, HandlerCollection>();
-            _subcribers = new ConditionalWeakSet<object>();
+            _subcribers = new ConditionalWeakSet<object>(1);
         }
 
 

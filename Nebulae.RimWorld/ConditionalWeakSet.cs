@@ -31,6 +31,15 @@ namespace Nebulae.RimWorld
         /// <summary>
         /// 初始化 <see cref="ConditionalWeakSet{T}"/> 的新实例
         /// </summary>
+        /// <param name="capcity">集合的初始容量</param>
+        public ConditionalWeakSet(int capcity)
+        {
+            _entries = new HashSet<Entry>(capcity);
+        }
+
+        /// <summary>
+        /// 初始化 <see cref="ConditionalWeakSet{T}"/> 的新实例
+        /// </summary>
         /// <param name="collection">要向集合添加的对象</param>
         public ConditionalWeakSet(IEnumerable<T> collection)
         {
