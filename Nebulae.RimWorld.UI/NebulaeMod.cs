@@ -7,9 +7,25 @@ namespace Nebulae.RimWorld.UI
     /// <summary>
     /// 使用 <see cref="Control"/> 作为设置窗口的内容的 Mod 基类
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Mod 设置类</typeparam>
     public abstract class NebulaeMod<T> : NebulaeModBase where T : ModSettings, new()
     {
+        #region SettingsUpdated
+
+        private static readonly WeakEvent<Mod, T> _settingsUpdated = new WeakEvent<Mod, T>();
+
+        /// <summary>
+        /// 当 Mod 设置更新时触发的弱事件
+        /// </summary>
+        public static event WeakEventHandler<Mod, T> SettingsUpdated
+        {
+            add => _settingsUpdated.Add(value);
+            remove => _settingsUpdated.Remove(value);
+        }
+
+        #endregion
+
+
         private static T _settings;
 
         /// <summary>
@@ -34,11 +50,7 @@ namespace Nebulae.RimWorld.UI
         public sealed override void WriteSettings()
         {
             base.WriteSettings();
-
-            if (_settings is NotifiableModSettings notifiableSettings)
-            {
-                notifiableSettings.updated.Invoke(this, notifiableSettings);
-            }
+            _settingsUpdated.Invoke(this, _settings);
         } 
 
 
