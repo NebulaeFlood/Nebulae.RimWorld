@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Nebulae.RimWorld.UI.Controls;
+using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -108,6 +109,41 @@ namespace Nebulae.RimWorld.UI
 
             Text.Font = currentFont;
             return new Size(width, height);
+        }
+
+        /// <summary>
+        /// 获取控件的可显示区域
+        /// </summary>
+        /// <param name="control">要获取可显示区域的控件</param>
+        /// <param name="renderRect">控件绘制的区域</param>
+        /// <returns>控件的可显示区域</returns>
+        public static Rect CalculateVisiableRect(this Control control, Rect renderRect)
+        {
+            if (control.IsHolded)
+            {
+                return control.Container.Segment().IntersectWith(renderRect);
+            }
+            else
+            {
+                return renderRect;
+            }
+        }
+
+        /// <summary>
+        /// 获取控件的可显示区域
+        /// </summary>
+        /// <param name="control">要获取可显示区域的控件</param>
+        /// <returns>控件的可显示区域</returns>
+        public static Rect CalculateVisiableRect(this Control control)
+        {
+            if (control.IsHolded)
+            {
+                return control.Container.Segment().IntersectWith(control.RenderedRect);
+            }
+            else
+            {
+                return control.RenderedRect;
+            }
         }
 
         /// <summary>
