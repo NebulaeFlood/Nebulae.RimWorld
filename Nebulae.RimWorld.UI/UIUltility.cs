@@ -138,11 +138,11 @@ namespace Nebulae.RimWorld.UI
         {
             if (control.IsHolded)
             {
-                return control.Container.Segment().IntersectWith(control.RenderedRect);
+                return control.Container.Segment().IntersectWith(control.RenderRect);
             }
             else
             {
-                return control.RenderedRect;
+                return control.RenderRect;
             }
         }
 

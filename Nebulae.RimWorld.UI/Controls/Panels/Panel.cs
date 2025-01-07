@@ -177,11 +177,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             if (IsHolded)
             {
-                _cachedVisiableRect = Container.Segment().IntersectWith(RenderedRect);
+                _cachedVisiableRect = Container.Segment().IntersectWith(RenderRect);
             }
             else
             {
-                _cachedVisiableRect = RenderedRect;
+                _cachedVisiableRect = RenderRect;
             }
             _isSegmentValid = IsArrangeValid;
 
@@ -206,10 +206,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 排布将被绘制的子控件
+        /// 计算排布将被绘制的子控件需要的区域
         /// </summary>
         /// <param name="availableRect">子控件允许排布的区域</param>
-        /// <returns>排布子控件占用的区域</returns>
+        /// <returns>排布子控件占用的区域。</returns>
         protected abstract Rect ArrangeOverride(Rect availableRect);
 
         /// <inheritdoc/>
@@ -254,8 +254,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 return false;
             }
 
-            Size desiredSize = child.DesiredSize;
-            if (desiredSize == Size.Empty || desiredSize < Size.Empty)
+            Size renderSize = child.RenderRect;
+            if (renderSize == Size.Empty || renderSize < Size.Empty)
             {
                 return false;
             }
@@ -270,10 +270,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 通过将被绘制的子控件计算当前控件布局所需尺寸
+        /// 计算排布将被绘制的子控件需要的尺寸
         /// </summary>
-        /// <param name="availableSize">控件允许排布的区域</param>
-        /// <returns>控件布局所需尺寸</returns>
+        /// <param name="availableSize">子控件允许排布的尺寸</param>
+        /// <returns>排布子控件需要的尺寸。</returns>
         protected abstract Size MeasureOverride(Size availableSize);
 
         /// <inheritdoc/>

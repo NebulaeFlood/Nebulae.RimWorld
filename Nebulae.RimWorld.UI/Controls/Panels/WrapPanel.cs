@@ -141,7 +141,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Rect ArrangeOverride(Rect availableRect)
         {
-            Size desiredSize = DesiredSize - Margin;
+            Size childrenSize = RenderSize;
             float currentX = availableRect.x;
             float currentY = availableRect.y;
 
@@ -214,8 +214,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             return new Rect(
                 availableRect.x,
                 availableRect.y,
-                desiredSize.Width,
-                desiredSize.Height);
+                childrenSize.Width,
+                childrenSize.Height);
         }
 
         /// <inheritdoc/>
@@ -223,8 +223,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         {
             float childMaxHeight = ChildMaxHeight;
             float childMaxWidth = ChildMaxWidth;
-            float desiredWidth = 0f;
-            float desiredHeight = 0f;
+            float childrenWidth = 0f;
+            float childrenHeight = 0f;
 
             Size childAvailableSize;
             Size childDesiredSize;
@@ -249,8 +249,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     MeasureStart:
                         if (rowWidth + childDesiredSize.Width > availableSize.Width)
                         {
-                            desiredWidth = Mathf.Max(desiredWidth, rowWidth);   // 取所有行中最大的宽度
-                            desiredHeight += maxRowHeight;  // 换行
+                            childrenWidth = Mathf.Max(childrenWidth, rowWidth);   // 取所有行中最大的宽度
+                            childrenHeight += maxRowHeight;  // 换行
                             rowWidth = 0f;
                             maxRowHeight = 0f;
 
@@ -264,7 +264,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
                     }
                 });
-                desiredHeight += maxRowHeight;
+                childrenHeight += maxRowHeight;
             }
             else
             {
@@ -287,8 +287,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     MeasureStart:
                         if (columnHeight + childDesiredSize.Height > availableSize.Height)
                         {
-                            desiredHeight = Mathf.Max(desiredHeight, columnHeight); // 取所有列中最大的高度
-                            desiredWidth += maxColumnWidth;    // 换列
+                            childrenHeight = Mathf.Max(childrenHeight, columnHeight); // 取所有列中最大的高度
+                            childrenWidth += maxColumnWidth;    // 换列
                             columnHeight = 0f;
                             maxColumnWidth = 0f;
 
@@ -301,9 +301,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         }
                     }
                 });
-                desiredWidth += maxColumnWidth;
+                childrenWidth += maxColumnWidth;
             }
-            return new Size(desiredWidth, desiredHeight);
+            return new Size(childrenWidth, childrenHeight);
         }
 
         #endregion

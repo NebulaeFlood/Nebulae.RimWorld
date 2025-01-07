@@ -148,15 +148,15 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (IsHolded)
             {
-                _cachedVisiableRect = Container.Segment().IntersectWith(RenderedRect);
+                _cachedVisiableRect = Container.Segment().IntersectWith(RenderRect);
             }
             else if (_assosiatedWindow != null)
             {
-                _cachedVisiableRect = _assosiatedWindow.windowRect.IntersectWith(RenderedRect);
+                _cachedVisiableRect = _assosiatedWindow.windowRect.IntersectWith(RenderRect);
             }
             else
             {
-                _cachedVisiableRect = RenderedRect;
+                _cachedVisiableRect = RenderRect;
             }
             _isSegmentValid = IsArrangeValid;
 

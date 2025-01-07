@@ -9,7 +9,7 @@
         protected override bool IsDrawable(Control child)
         {
             return base.IsDrawable(child)
-                && Segment().Overlaps(child.DesiredRect);
+                && Segment().Overlaps(child.RenderRect);
         }
     }
 }

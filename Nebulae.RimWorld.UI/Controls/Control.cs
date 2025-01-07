@@ -62,8 +62,8 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _isArrangeValid;
         private bool _isMeasureValid;
         private string _name;
-        private Rect _renderedRect;
-        private Size _renderedSize;
+        private Rect _renderRect;
+        private Size _renderSize;
         private bool _showTooltip;
         private string _tooltip;
 
@@ -79,7 +79,7 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Public Properties
 
         /// <summary>
-        /// 排布控件后控件需要占用的布局区域
+        /// 控件需要占用的布局区域
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Arrange(Rect)"/>。</remarks>
         public Rect DesiredRect => _desiredRect;
@@ -136,14 +136,16 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 控件最终呈现区域
+        /// 计算的将要绘制的区域
         /// </summary>
-        public Rect RenderedRect => _renderedRect;
+        /// <remarks>使用前需保证已调用过 <see cref="Arrange(Rect)"/>。</remarks>
+        public Rect RenderRect => _renderRect;
 
         /// <summary>
-        /// 控件最终呈现尺寸
+        /// 计算的将要绘制的尺寸
         /// </summary>
-        public Size RenderedSize => _renderedSize;
+        /// <remarks>使用前需保证已调用过 <see cref="Measure(Size)"/>。</remarks>
+        public Size RenderSize => _renderSize;
 
         /// <summary>
         /// 光标悬浮于控件上时是否显示提示框
@@ -250,7 +252,7 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Public Methods
 
         /// <summary>
-        /// 排布控件
+        /// 计算控件需要占用的布局区域
         /// </summary>
         /// <param name="availableRect">分配给控件的区域</param>
         /// <returns>控件需要占用的布局区域。</returns>
@@ -268,11 +270,13 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (!(Visibility is Visibility.Collapsed))
             {
-                _desiredRect = (ArrangeCore(availableRect - Margin) + Margin).Rounded();
+                _renderRect = ArrangeCore(availableRect - Margin).Rounded();
+                _desiredRect = _renderRect + Margin;
             }
             else
             {
                 _desiredRect = new Rect(availableRect.x, availableRect.y, 0f, 0f);
+                _renderRect = _desiredRect;
             }
 
             _isArrangeValid = true;
@@ -286,7 +290,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <remarks>必须确保调用过 <see cref="Arrange(Rect)"/>，否则会引发不期望的行为。</remarks>
         public Rect Draw()
         {
-            Rect renderRect = _desiredRect - Margin;
+            Rect renderRect = _renderRect;
 
             if (Visibility is Visibility.Collapsed)
             {
@@ -320,7 +324,7 @@ namespace Nebulae.RimWorld.UI.Controls
                         $" - CursorPos = {Event.current.mousePosition}" +
                         $" - DesiredRect = {_desiredRect}\n" +
                         $" - DesiredSize = {_desiredSize}\n" +
-                        $" - RenderedRect = {renderRect}\n" +
+                        $" - RenderRect = {renderRect}\n" +
                         $" - Margin = {Margin}");
                 }
 
@@ -337,9 +341,6 @@ namespace Nebulae.RimWorld.UI.Controls
                     }
                 }
             }
-
-            _renderedRect = renderRect;
-            _renderedSize = renderRect;
             return renderRect;
         }
 
@@ -419,11 +420,13 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (!(Visibility is Visibility.Collapsed))
             {
-                _desiredSize = (MeasureCore(availableSize - Margin) + Margin).Round();
+                _renderSize = MeasureCore(availableSize - Margin).Round();
+                _desiredSize = _renderSize + Margin;
             }
             else
             {
                 _desiredSize = Size.Empty;
+                _renderSize = _desiredSize;
             }
 
             _isMeasureValid = true;
@@ -448,10 +451,10 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Protected Method
 
         /// <summary>
-        /// 计算控件需要占用的布局区域
+        /// 计算呈现控件内容需要的区域
         /// </summary>
         /// <param name="availableRect">允许排布的区域</param>
-        /// <returns>控件需要占用的布局区域。</returns>
+        /// <returns>呈现控件内容需要的区域。</returns>
         protected virtual Rect ArrangeCore(Rect availableRect) =>
             (_desiredSize - Margin).AlignRectToArea(availableRect, HorizontalAlignment, VerticalAlignment);
 

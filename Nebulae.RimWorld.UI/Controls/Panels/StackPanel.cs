@@ -142,7 +142,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Rect ArrangeOverride(Rect availableRect)
         {
-            Size desiredSize = DesiredSize - Margin;
+            Size childrenSize = RenderSize;
             float currentX = availableRect.x;
             float currentY = availableRect.y;
 
@@ -158,7 +158,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                             currentX,
                             currentY,
                             childDesiredSize.Width,
-                            desiredSize.Height))
+                            childrenSize.Height))
                                 .width;
                     }
                 });
@@ -173,7 +173,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         currentY += child.Arrange(new Rect(
                             currentX,
                             currentY,
-                            desiredSize.Width,
+                            childrenSize.Width,
                             childDesiredSize.Height))
                                 .height;
                     }
@@ -183,8 +183,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             return new Rect(
                 availableRect.x,
                 availableRect.y,
-                desiredSize.Width,
-                desiredSize.Height);
+                childrenSize.Width,
+                childrenSize.Height);
         }
 
         /// <inheritdoc/>
@@ -192,8 +192,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         {
             float childMaxHeight = ChildMaxHeight;
             float childMaxWidth = ChildMaxWidth;
-            float desiredWidth = 0f;
-            float desiredHeight = 0f;
+            float childrenWidth = 0f;
+            float childrenHeight = 0f;
 
             Size childAvailableSize;
             Size childDesiredSize;
@@ -210,8 +210,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 Array.ForEach(FilteredChildren, child =>
                 {
                     childDesiredSize = child.Measure(childAvailableSize);
-                    desiredWidth += childDesiredSize.Width;
-                    desiredHeight = Mathf.Max(desiredHeight, childDesiredSize.Height);
+                    childrenWidth += childDesiredSize.Width;
+                    childrenHeight = Mathf.Max(childrenHeight, childDesiredSize.Height);
                 });
             }
             else
@@ -227,11 +227,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 Array.ForEach(FilteredChildren, child =>
                 {
                     childDesiredSize = child.Measure(childAvailableSize);
-                    desiredHeight += childDesiredSize.Height;
-                    desiredWidth = Mathf.Max(desiredWidth, childDesiredSize.Width);
+                    childrenHeight += childDesiredSize.Height;
+                    childrenWidth = Mathf.Max(childrenWidth, childDesiredSize.Width);
                 });
             }
-            return new Size(desiredWidth, desiredHeight);
+            return new Size(childrenWidth, childrenHeight);
         }
 
         #endregion

@@ -364,7 +364,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             if (IsHolded)
             {
-                Rect renderRect = RenderedRect;
+                Rect renderRect = RenderRect;
                 Rect contentVisiableRect = Container.Segment()
                     .IntersectWith(new Rect(
                         renderRect.x,
