@@ -83,13 +83,13 @@ namespace Nebulae.RimWorld.UI.Controls
                 return _cachedVisiableRect;
             }
 
-            if (IsHolded)
+            if (!IsHolded || this is ScrollViewer)
             {
-                _cachedVisiableRect = Container.Segment().IntersectWith(SegmentCore());
+                _cachedVisiableRect = SegmentCore();
             }
             else
             {
-                _cachedVisiableRect = SegmentCore();
+                _cachedVisiableRect = Container.Segment().IntersectWith(SegmentCore());
             }
             _isSegmentValid = IsArrangeValid;
 

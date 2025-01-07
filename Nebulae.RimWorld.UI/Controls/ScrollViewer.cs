@@ -120,8 +120,8 @@ namespace Nebulae.RimWorld.UI.Controls
         protected override Rect ArrangeCore(Rect availableRect)
         {
             _contentControl?.Arrange(new Rect(
-                0f,
-                0f,
+                availableRect.x,
+                availableRect.y,
                 Mathf.Max(_viewWidth, _contentSize.Width),
                 Mathf.Max(_viewHeight, _contentSize.Height)));
             return base.ArrangeCore(availableRect);
@@ -130,6 +130,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect DrawCore(Rect renderRect)
         {
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = _contentSize.Width;
+            float height = _contentSize.Height;
+
             #region BeginScrollViewer
 
             HandleSteamDeckTouchScreen(renderRect);
@@ -142,9 +147,10 @@ namespace Nebulae.RimWorld.UI.Controls
                     if (_shouldDrawHorizontalScrollBar)
                     {
                         DrawScrollBar(
-                            new Rect(renderRect.x,
-                                renderRect.y + _viewHeight + _horizontalScrollBarStyle.margin.top,
-                                renderRect.width,
+                            new Rect(
+                                x,
+                                y + _viewHeight + _horizontalScrollBarStyle.margin.top,
+                                width,
                                 _horizontalScrollBarStyle.fixedHeight),
                             0f,
                             _viewWidth,
@@ -157,10 +163,10 @@ namespace Nebulae.RimWorld.UI.Controls
                     {
                         DrawScrollBar(
                             new Rect(
-                                renderRect.x + _viewWidth + _verticalScrollBarStyle.margin.right,
-                                renderRect.y,
+                                x + _viewWidth + _verticalScrollBarStyle.margin.right,
+                                y,
                                 _verticalScrollBarStyle.fixedWidth,
-                                renderRect.height),
+                                height),
                             0f,
                             _viewHeight,
                             0f,
@@ -184,8 +190,8 @@ namespace Nebulae.RimWorld.UI.Controls
                     {
                         float horizontalOffset = DrawScrollBar(
                             new Rect(
-                                renderRect.x,
-                                renderRect.y + _viewHeight + _horizontalScrollBarStyle.margin.top,
+                                x,
+                                y + _viewHeight + _horizontalScrollBarStyle.margin.top,
                                 _viewWidth,
                                 _horizontalScrollBarStyle.fixedHeight),
                             _horizontalOffset,
@@ -206,8 +212,8 @@ namespace Nebulae.RimWorld.UI.Controls
                     {
                         float verticalOffset = DrawScrollBar(
                             new Rect(
-                                renderRect.x + _viewWidth + _verticalScrollBarStyle.margin.left,
-                                renderRect.y,
+                                x + _viewWidth + _verticalScrollBarStyle.margin.left,
+                                y,
                                 _verticalScrollBarStyle.fixedWidth,
                                 _viewHeight),
                             _verticalOffset,
@@ -228,13 +234,13 @@ namespace Nebulae.RimWorld.UI.Controls
 
             UnityGUIBugsFixer.Notify_BeginScrollView();
             GUI.BeginClip(new Rect(
-                renderRect.x,
-                renderRect.y,
+                x,
+                y,
                 _viewWidth,
                 _viewWidth));
-            GUI.BeginGroup(new Rect(
-                -_horizontalOffset,
-                -_verticalOffset,
+            Widgets.BeginGroup(new Rect(
+                - _horizontalOffset,
+                - _verticalOffset,
                 _viewWidth + _horizontalOffset,
                 _viewHeight + _verticalOffset));
 
@@ -249,7 +255,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             #region EndScrollViewer
 
-            GUI.EndGroup();
+            Widgets.EndGroup();
             GUI.EndClip();
             Widgets.mouseOverScrollViewStack.Pop();
 
@@ -354,9 +360,35 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected override Rect SegmentCore() => new Rect(_horizontalOffset, _verticalOffset, _viewWidth, _viewHeight);
+        protected override Rect SegmentCore()
+        {
+            if (IsHolded)
+            {
+                Rect renderRect = RenderedRect;
+                Rect contentVisiableRect = Container.Segment()
+                    .IntersectWith(new Rect(
+                        renderRect.x,
+                        renderRect.y,
+                        _viewWidth,
+                        _viewHeight));
+                return new Rect(
+                    _horizontalOffset,
+                    _verticalOffset,
+                    contentVisiableRect.width,
+                    contentVisiableRect.height);
+            }
+            else
+            {
+                return new Rect(
+                    _horizontalOffset,
+                    _verticalOffset,
+                    _viewWidth,
+                    _viewHeight);
+            }
+        }
 
         #endregion
+
 
         private static float DrawScrollBar(
             Rect renderRect,
