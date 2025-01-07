@@ -27,9 +27,9 @@ namespace Nebulae.RimWorld.UI.Patches
         {
             Window settingWindow;
 
-            if (mod is NebulaeModBase aetherMod)
+            if (mod is NebulaeModBase nebulaeMod)
             {
-                settingWindow = aetherMod.SettingWindow;
+                settingWindow = nebulaeMod.SettingWindow;
             }
             else
             {
