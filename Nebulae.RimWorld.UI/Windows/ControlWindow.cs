@@ -98,7 +98,16 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public ControlWindow()
         {
-            Button button = new Button { Width = 220f, Height = 40f, Text = "Hello RimWorld!" };
+            doCloseButton = true;
+            doCloseX = true;
+
+            Button button = new Button 
+            { 
+                Width = 220f, 
+                Height = 40f, 
+                Text = "Hello RimWorld!", 
+                ClickSound = null 
+            };
             button.Click += OnDefaultButtonClicked;
 
             Content = button;
