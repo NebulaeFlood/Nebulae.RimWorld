@@ -1,11 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding.Converters;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
-using System.Security.AccessControl;
-using UnityEngine.Networking.Types;
-using Verse;
 
 namespace Nebulae.RimWorld.UI.Data.Binding
 {

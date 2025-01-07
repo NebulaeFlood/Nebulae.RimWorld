@@ -123,7 +123,7 @@ namespace Nebulae.RimWorld.UI
         /// <returns>如果指定的对象等于此 <see cref="Size"/> ，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public override bool Equals(object obj)
         {
-            return obj is Size other 
+            return obj is Size other
                 && this == other;
         }
 

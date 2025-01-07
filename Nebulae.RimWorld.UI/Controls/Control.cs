@@ -317,7 +317,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     TooltipHandler.TipRegion(DrawFullRegion ? _desiredRect : renderRect,
                         $"{this}\n" +
-                        $" - CursorPos = {Event.current.mousePosition}"+
+                        $" - CursorPos = {Event.current.mousePosition}" +
                         $" - DesiredRect = {_desiredRect}\n" +
                         $" - DesiredSize = {_desiredSize}\n" +
                         $" - RenderedRect = {renderRect}\n" +
@@ -372,7 +372,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 _isArrangeValid = false;
 
                 // 控件度量无效，就说明已经调用过 Container 的 InvalidateMeasure 方法
-                if (_isMeasureValid && IsHolded)    
+                if (_isMeasureValid && IsHolded)
                 {
                     Container.InvalidateArrange();
                 }

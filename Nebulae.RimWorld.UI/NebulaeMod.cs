@@ -1,10 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Windows;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -53,7 +48,7 @@ namespace Nebulae.RimWorld.UI
         /// <summary>
         /// 保存 Mos 设置
         /// </summary>
-        public override sealed void WriteSettings()
+        public sealed override void WriteSettings()
         {
             base.WriteSettings();
             _settingUpdated.Invoke(this, Settings);
@@ -61,7 +56,7 @@ namespace Nebulae.RimWorld.UI
 
 
         /// <inheritdoc/>
-        public override ModSettingWindow CreateSettingWindow()
+        public sealed override ModSettingWindow CreateSettingWindow()
         {
             return new ModSettingWindow(this) { Content = CreateContent() };
         }

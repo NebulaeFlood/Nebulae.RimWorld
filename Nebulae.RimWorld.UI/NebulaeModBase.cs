@@ -1,10 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Windows;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
@@ -30,8 +25,8 @@ namespace Nebulae.RimWorld.UI
         {
             get
             {
-                if (_settingWindow != null) 
-                { 
+                if (_settingWindow != null)
+                {
                     return _settingWindow;
                 }
 
@@ -65,6 +60,6 @@ namespace Nebulae.RimWorld.UI
         /// <summary>
         /// 显示在 Mod 选项的标签名称
         /// </summary>
-        public override sealed string SettingsCategory() => CategoryLabel;
+        public sealed override string SettingsCategory() => CategoryLabel;
     }
 }

@@ -1,9 +1,4 @@
 ﻿using Nebulae.RimWorld.UI.Windows;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls
@@ -12,7 +7,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// 表示一个限制内容显示区域的控件
     /// </summary>
     /// <remarks>实现该接口的类应派生自 <see cref="Control"/> 或 <see cref="ControlWindow"/>。</remarks>
-    public interface IFrame 
+    public interface IFrame
     {
         /// <summary>
         /// 无效化控件分割

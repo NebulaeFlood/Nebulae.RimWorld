@@ -1,8 +1,4 @@
-﻿using LudeonTK;
-using Nebulae.RimWorld.UI.Controls;
-using Nebulae.RimWorld.UI.Windows;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -164,7 +160,7 @@ namespace Nebulae.RimWorld.UI
         /// <returns>按钮交互结果是否能触发按钮。</returns>
         public static bool IsPressed(this Widgets.DraggableResult result)
         {
-            return result is Widgets.DraggableResult.Pressed 
+            return result is Widgets.DraggableResult.Pressed
                 || result is Widgets.DraggableResult.DraggedThenPressed;
         }
 

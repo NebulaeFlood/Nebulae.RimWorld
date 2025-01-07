@@ -1,8 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding.Converters;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Reflection;
 
 namespace Nebulae.RimWorld.UI.Data.Binding
 {

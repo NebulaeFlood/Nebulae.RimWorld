@@ -213,7 +213,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         protected abstract Rect ArrangeOverride(Rect availableRect);
 
         /// <inheritdoc/>
-        protected override sealed Rect DrawCore(Rect renderRect)
+        protected sealed override Rect DrawCore(Rect renderRect)
         {
             if (!_isCachedRenderedRectValid)
             {

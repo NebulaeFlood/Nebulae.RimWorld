@@ -1,15 +1,8 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Patches;
-using RimWorld;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
-using Verse.Steam;
 
 namespace Nebulae.RimWorld.UI.Windows
 {
@@ -171,7 +164,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// 绘制窗口内容
         /// </summary>
         /// <param name="inRect">窗口允许绘制的区域</param>
-        public override sealed void DoWindowContents(Rect inRect)
+        public sealed override void DoWindowContents(Rect inRect)
         {
             if (doCloseX && Margin < DefaultCloseButtonDesiredHeight)
             {

@@ -1,9 +1,6 @@
 ﻿using Nebulae.RimWorld.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels

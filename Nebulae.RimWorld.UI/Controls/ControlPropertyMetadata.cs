@@ -1,5 +1,4 @@
 ﻿using Nebulae.RimWorld.UI.Data;
-using System;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
@@ -55,7 +54,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="flag">依赖属性与控件的关系</param>
         public ControlPropertyMetadata(
             object defaultValue,
-            ControlRelation flag = ControlRelation.None) 
+            ControlRelation flag = ControlRelation.None)
             : base(defaultValue)
         {
             Relation = flag;
@@ -70,7 +69,7 @@ namespace Nebulae.RimWorld.UI.Controls
         public ControlPropertyMetadata(
             object defaultValue,
             PropertyChangedCallback propertyChangedCallback,
-            ControlRelation flags = ControlRelation.None) 
+            ControlRelation flags = ControlRelation.None)
             : base(defaultValue, propertyChangedCallback)
         {
             Relation = flags;
@@ -85,7 +84,7 @@ namespace Nebulae.RimWorld.UI.Controls
         public ControlPropertyMetadata(
             object defaultValue,
             CoerceValueCallback coerceValueCallback,
-            ControlRelation flags = ControlRelation.None) 
+            ControlRelation flags = ControlRelation.None)
             : base(defaultValue, coerceValueCallback)
         {
             Relation = flags;
@@ -102,7 +101,7 @@ namespace Nebulae.RimWorld.UI.Controls
             object defaultValue,
             CoerceValueCallback coerceValueCallback,
             PropertyChangedCallback propertyChangedCallback,
-            ControlRelation flags = ControlRelation.None) 
+            ControlRelation flags = ControlRelation.None)
             : base(defaultValue, coerceValueCallback, propertyChangedCallback)
         {
             Relation = flags;

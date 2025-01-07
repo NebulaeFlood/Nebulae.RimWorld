@@ -82,7 +82,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            float desiredWidth, desiredHeight;      
+            float desiredWidth, desiredHeight;
 
             if (HorizontalAlignment is HorizontalAlignment.Stretch)
             {
