@@ -35,7 +35,6 @@ namespace Nebulae.RimWorld.UI.Patches
                     i++;
 
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Page_ModsConfig_Patch), nameof(CreateDelegate)));
-                    i++;
                 }
                 else
                 {
