@@ -132,13 +132,6 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 SourceMember = new BindingMember(source, sourceProperty);
             }
 
-            _hashCode = SourceMember.GetHashCode() ^ TargetMember.GetHashCode();
-
-            if (BindingManager.IsBinding(this))
-            {
-                throw new InvalidOperationException($"Binding from {_sourceType}.{_sourcePath} to {_targetType}.{_targetPath} has already exist.");
-            }
-
             if (!SourceMember.IsReadable)
             {
                 throw new InvalidOperationException($"Source member {_sourceType}.{_sourcePath} must be readable.");
@@ -173,6 +166,13 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             else if (mode is BindingMode.TwoWay && !TargetMember.IsReadable)
             {
                 throw new InvalidOperationException($"Target member {_targetType}.{_targetPath} must be readable for a TowWay binding.");
+            }
+
+            _hashCode = SourceMember.GetHashCode() ^ TargetMember.GetHashCode();
+
+            if (BindingManager.IsBinding(this))
+            {
+                throw new InvalidOperationException($"Binding from {_sourceType}.{_sourcePath} to {_targetType}.{_targetPath} has already exist.");
             }
 
             Mode = mode;
