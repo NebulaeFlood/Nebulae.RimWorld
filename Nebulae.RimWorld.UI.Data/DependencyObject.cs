@@ -139,21 +139,21 @@ namespace Nebulae.RimWorld.UI.Data
         }
 
 
-        internal void SetValueIntelligently(DependencyProperty property, object value)
+        internal void SetValueIntelligently(DependencyProperty property, object newValue)
         {
             if (property is null)
             {
                 throw new ArgumentNullException(nameof(property));
             }
 
-            if (ReferenceEquals(DependencyProperty.UnsetValue, value))
+            if (ReferenceEquals(DependencyProperty.UnsetValue, newValue))
             {
                 return;
             }
 
-            if (!property.ValidateValue(value))
+            if (!property.ValidateValue(newValue))
             {
-                value = CoerceValue(property, value);
+                newValue = CoerceValue(property, newValue);
             }
 
             object oldValue;
@@ -161,11 +161,11 @@ namespace Nebulae.RimWorld.UI.Data
             {
                 oldValue = oldEntry.IsTemporary ? oldEntry.TemporaryValue : oldEntry.Value;
 
-                if (oldValue.Equals(value)) { return; }
+                if (ShouldUpdateValue(oldValue, newValue)) { return; }
 
                 EffectiveValueEntry newEntry = oldEntry.IsTemporary
-                                    ? new EffectiveValueEntry(oldValue, value)
-                                    : new EffectiveValueEntry(value);
+                                    ? new EffectiveValueEntry(oldValue, newValue)
+                                    : new EffectiveValueEntry(newValue);
 
                 _effectiveValues[property] = newEntry;
 
@@ -178,11 +178,9 @@ namespace Nebulae.RimWorld.UI.Data
                 PropertyMetadata metadata = property.GetMetadata(DependencyType);
                 oldValue = metadata.DefaultValue;
 
-                if (oldValue.Equals(value)) { return; }
+                if (ShouldUpdateValue(oldValue, newValue)) { return; }
 
-                EffectiveValueEntry newEntry = oldEntry.IsTemporary
-                    ? new EffectiveValueEntry(oldValue, value)
-                    : new EffectiveValueEntry(value);
+                EffectiveValueEntry newEntry = new EffectiveValueEntry(newValue);
 
                 _effectiveValues[property] = newEntry;
 
@@ -224,18 +222,18 @@ namespace Nebulae.RimWorld.UI.Data
             return property.GetMetadata(DependencyType).DefaultValue;
         }
 
-        private void SetValueCommon(DependencyProperty property, object value, bool isTemporary = false)
+        private void SetValueCommon(DependencyProperty property, object newValue, bool isTemporary = false)
         {
             object oldValue;
             if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
             {
                 oldValue = oldEntry.IsTemporary ? oldEntry.TemporaryValue : oldEntry.Value;
 
-                if (oldValue.Equals(value)) { return; }
+                if (ShouldUpdateValue(oldValue, newValue)) { return; }
 
                 EffectiveValueEntry newEntry = isTemporary
-                    ? new EffectiveValueEntry(oldValue, value)
-                    : new EffectiveValueEntry(value);
+                    ? new EffectiveValueEntry(oldValue, newValue)
+                    : new EffectiveValueEntry(newValue);
 
                 _effectiveValues[property] = newEntry;
 
@@ -248,17 +246,22 @@ namespace Nebulae.RimWorld.UI.Data
                 PropertyMetadata metadata = property.GetMetadata(DependencyType);
                 oldValue = metadata.DefaultValue;
 
-                if (oldValue.Equals(value)) { return; }
+                if (ShouldUpdateValue(oldValue, newValue)) { return; }
 
                 EffectiveValueEntry newEntry = isTemporary
-                    ? new EffectiveValueEntry(oldValue, value)
-                    : new EffectiveValueEntry(value);
+                    ? new EffectiveValueEntry(oldValue, newValue)
+                    : new EffectiveValueEntry(newValue);
 
                 _effectiveValues[property] = newEntry;
 
                 OnPropertyChanged(metadata
                     .NotifyPropertyChanged(this, newEntry));
             }
+        }
+
+        private static bool ShouldUpdateValue(object oldValue, object newValue)
+        {
+            return oldValue?.Equals(newValue) ?? newValue is null;
         }
 
         #endregion
