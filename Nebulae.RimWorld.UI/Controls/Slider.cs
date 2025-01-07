@@ -92,6 +92,15 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect DrawCore(Rect renderRect)
         {
+            if (Event.current.type is EventType.MouseDrag
+                && !Mouse.IsOver(
+                    IsHolded
+                        ? Container.Segment().IntersectWith(renderRect)
+                        : renderRect))
+            {
+                Event.current.Use();
+            }
+
             Value = Widgets.HorizontalSlider(renderRect, Value, _minimun, _maximun, middleAlignment: true, roundTo: _step);
             return renderRect;
         }
