@@ -94,9 +94,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 向面板末尾添加一个控件
         /// </summary>
         /// <param name="control">要添加的控件</param>
-        public void Append(Control control)
+        /// <returns>该面板控件</returns>
+        public VirtualizingStackPanel Append(Control control)
         {
             Children.Add(control);
+            return this;
         }
 
         /// <summary>
