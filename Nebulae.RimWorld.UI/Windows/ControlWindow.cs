@@ -27,8 +27,6 @@ namespace Nebulae.RimWorld.UI.Windows
 
         private Control _content;
 
-        private bool _isSegmentValid = false;
-
         private Rect _windowContentRectCache = Rect.zero;
 
         #endregion
@@ -66,24 +64,6 @@ namespace Nebulae.RimWorld.UI.Windows
                     InvalidateMeasure();
                 }
             }
-        }
-
-        /// <summary>
-        /// 是否绘制窗口底部的窗口关闭按钮
-        /// </summary>
-        public bool DrawCloseButton
-        {
-            get => doCloseButton;
-            set => doCloseButton = value;
-        }
-
-        /// <summary>
-        /// 是否绘制标题栏的窗口关闭按钮
-        /// </summary>
-        public bool DrawTitleCloseButton
-        {
-            get => doCloseX;
-            set => doCloseX = value;
         }
 
         /// <summary>
