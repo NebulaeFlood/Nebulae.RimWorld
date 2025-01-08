@@ -120,8 +120,8 @@ namespace Nebulae.RimWorld.UI.Controls
         protected override Rect ArrangeCore(Rect availableRect)
         {
             _contentControl?.Arrange(new Rect(
-                availableRect.x,
-                availableRect.y,
+                0f,
+                0f,
                 Mathf.Max(_viewWidth, _contentSize.Width),
                 Mathf.Max(_viewHeight, _contentSize.Height)));
             return base.ArrangeCore(availableRect);
@@ -336,6 +336,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 if (shouldMeasureAgain)
                 {
+                    _contentControl.InvalidateMeasure();
                     _contentSize = _contentControl.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
                 }
 
