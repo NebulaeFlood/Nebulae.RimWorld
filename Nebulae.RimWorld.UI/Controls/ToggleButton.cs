@@ -97,6 +97,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         protected ToggleButton()
         {
+            PlayMouseOverSound = false;
         }
 
 
