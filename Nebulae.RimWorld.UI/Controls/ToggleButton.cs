@@ -10,6 +10,11 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public abstract class ToggleButton : ButtonBase
     {
+        /// <summary>
+        /// 图标的尺寸
+        /// </summary>
+        public const float IconSize = 24f;
+
         #region StatusChanged
         private readonly WeakEvent<ToggleButton, ToggleStatus> statusChanged = new WeakEvent<ToggleButton, ToggleStatus>();
 
@@ -99,9 +104,23 @@ namespace Nebulae.RimWorld.UI.Controls
         protected override Rect ArrangeCore(Rect availableRect)
         {
             Rect desiredRect = base.ArrangeCore(availableRect);
-            Rect contentRect = _cachedContentSize.AlignRectToArea(desiredRect, HorizontalAlignment.Center, VerticalAlignment.Center);
-            _cachedIconRect = UIUltility.AlignRectToArea(new Size(24f), contentRect, HorizontalAlignment.Left, VerticalAlignment.Center);
-            _cachedTextRect = new Rect(contentRect.x + 24f, contentRect.y, _cachedContentSize.Width - 24f, _cachedContentSize.Height);
+            Rect contentRect = _cachedContentSize.AlignRectToArea(
+                desiredRect,
+                HorizontalAlignment.Center,
+                VerticalAlignment.Center);
+
+            _cachedIconRect = UIUltility.AlignRectToArea(
+                new Size(IconSize),
+                contentRect,
+                HorizontalAlignment.Left,
+                VerticalAlignment.Center);
+
+            _cachedTextRect = new Rect(
+                contentRect.x + IconSize,
+                contentRect.y,
+                _cachedContentSize.Width - 24f,
+                _cachedContentSize.Height);
+
             return desiredRect;
         }
 
@@ -121,10 +140,14 @@ namespace Nebulae.RimWorld.UI.Controls
                     break;
             }
 
-            GameFont currentFont = GameText.Font;
-            GameText.Font = FontSize;
-            Widgets.Label(_cachedTextRect, Text);
-            GameText.Font = currentFont;
+            if (_cachedContentSize.Width > IconSize)
+            {
+                GameFont currentFont = GameText.Font;
+                GameText.Font = FontSize;
+                Widgets.Label(_cachedTextRect, Text);
+                GameText.Font = currentFont;
+            }
+            
             return renderRect;
         }
 
@@ -132,7 +155,7 @@ namespace Nebulae.RimWorld.UI.Controls
         protected override Size MeasureCore(Size availableSize)
         {
             Size textSize = Text.CalculateLineSize(FontSize);
-            _cachedContentSize = new Size(24f + textSize.Width, textSize.Height);
+            _cachedContentSize = new Size(IconSize + textSize.Width, textSize.Height);
             return base.MeasureCore(availableSize);
         }
     }
