@@ -299,7 +299,7 @@ namespace Nebulae.RimWorld.UI.Data
 
             if (_isMetadataTempDirty)
             {
-                _temporaryMetadata.Clear();
+                _temporaryMetadata = new Dictionary<DependencyObjectType, PropertyMetadata>(_metadata);
                 _isMetadataTempDirty = false;
             }
 
@@ -415,35 +415,33 @@ namespace Nebulae.RimWorld.UI.Data
                 return _defaultMetadata;
             }
 
-            if (!_temporaryMetadata.TryGetValue(ownerType, out PropertyMetadata metadata)
-                && !TryMapType(ownerType, out metadata))
+            if (!_temporaryMetadata.TryGetValue(ownerType, out PropertyMetadata metadata))
             {
-                throw new InvalidOperationException($"The property {_ownerType}.{_name} is not a registed property for {ownerType.OriginalType}.");
+                metadata = MapType(ownerType);
             }
 
             return metadata;
         }
 
-        internal bool TryMapType(DependencyObjectType dType, out PropertyMetadata metadata)
+        internal PropertyMetadata MapType(DependencyObjectType dType)
         {
+            DependencyObjectType potentialMapResult;
             DependencyObjectType[] sortedInfo = _overrideInfo.ToArray();
 
-            DependencyObjectType potentialMapResult;
             for (int i = 0; i < sortedInfo.Length; i++)
             {
                 potentialMapResult = sortedInfo[i];
                 if (potentialMapResult.OriginalType.IsAssignableFrom(dType.OriginalType))
                 {
-                    metadata = _metadata[potentialMapResult];
+                    PropertyMetadata metadata = _metadata[potentialMapResult];
                     _temporaryMetadata[dType] = metadata;
 
                     _isMetadataTempDirty = true;
-                    return true;
+                    return metadata;
                 }
             }
 
-            metadata = null;
-            return false;
+            return _defaultMetadata;
         }
 
         internal void ThrowInvalidCoercedValueException(object value)
