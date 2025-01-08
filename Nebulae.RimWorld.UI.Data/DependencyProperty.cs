@@ -304,7 +304,7 @@ namespace Nebulae.RimWorld.UI.Data
             }
 
             _overrideInfo.Add(dType);
-            _temporaryMetadata.Add(dType, metadata);
+            _temporaryMetadata[dType] = metadata;
         }
 
         /// <summary>
