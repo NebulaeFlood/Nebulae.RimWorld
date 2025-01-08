@@ -79,19 +79,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="controls">要添加的控件</param>
         /// <remarks>
+        /// 必须保证输入的结构能够匹配设置的行数和列数，否则会引发未知的行为。
         /// </remarks>
-        public Grid Set(Control[,] controls)
+        public Grid Set(Control[] controls)
         {
-            if (RowCount != controls.Rank + 1)
-            {
-                throw new ArgumentException("The row count of given array do not match with current row count.", nameof(controls));
-            }
-
-            if (ColumnCount != controls.GetLength(0))
-            {
-                throw new ArgumentException("The column count of given array do not match with current column count.", nameof(controls));
-            }
-
             Control[] controlList = controls.Cast<Control>().ToArray();
             Control[] cleanList = controlList.Where(x => x != null).Distinct().ToArray();
             Children.OverrideCollection(cleanList);
@@ -235,8 +226,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            _columnWidths = _logicalColumnWidths;
-            _rowHeights = _logicalRowHeights;
+            _columnWidths = new float[_logicalColumnWidths.Length];
+            _rowHeights = new float[_logicalRowHeights.Length];
+
+            _logicalColumnWidths.CopyTo(_columnWidths, 0);
+            _logicalRowHeights.CopyTo(_rowHeights, 0);
 
             float calculatedWidth = 0f;
             for (int i = 0; i < _columnWidths.Length; i++)
@@ -287,6 +281,17 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             }
 
             return new Size(calculatedWidth, calculatedHeight);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnMeasureInvalidated()
+        {
+            base.OnMeasureInvalidated();
+
+            for (int i = 0; i < _unitInfos.Length; i++)
+            {
+                _unitInfos[i] = new UnitInfo(_unitInfos[i]);
+            }
         }
 
         #endregion
@@ -406,6 +411,25 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
                 RowSpan = rowSpan;
                 ColumnSpan = columnSpan;
+
+                X = 0f;
+                Y = 0f;
+
+                Width = 0f;
+                Height = 0f;
+            }
+
+            /// <summary>
+            /// 初始化仅继承所占用行列的信息的 <see cref="UnitInfo"/> 的新实例
+            /// </summary>
+            /// <param name="info">将被继承信息的 <see cref="UnitInfo"/> 实例</param>
+            public UnitInfo(UnitInfo info)
+            {
+                Row = info.Row;
+                Column = info.Column;
+
+                RowSpan = info.RowSpan;
+                ColumnSpan = info.ColumnSpan;
 
                 X = 0f;
                 Y = 0f;
