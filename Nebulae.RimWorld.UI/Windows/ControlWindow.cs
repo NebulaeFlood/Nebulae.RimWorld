@@ -16,6 +16,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public const float DefaultCloseButtonDesiredHeight = 26f;
 
+
         //------------------------------------------------------
         //
         //  Private Fields
@@ -108,7 +109,7 @@ namespace Nebulae.RimWorld.UI.Windows
                 Text = "Hello RimWorld!", 
                 ClickSound = null 
             };
-            button.Click += OnDefaultButtonClicked;
+            button.Click += CloseWindow;
 
             Content = button;
 
@@ -125,9 +126,11 @@ namespace Nebulae.RimWorld.UI.Windows
         #region Public Methods
 
         /// <summary>
-        /// 关闭窗口并播放 <see cref="Window.soundClose"/> 设置的音效
+        /// 点击 <see cref="ButtonBase"/> 后关闭窗口的 <see cref="ButtonBase.Click"/> 事件处理器
         /// </summary>
-        public void Close() => Close(true);
+        /// <param name="button">被点击的按钮</param>
+        /// <param name="args">事件数据</param>
+        public void CloseWindow(ButtonBase button, EventArgs args) => Close();
 
         /// <inheritdoc/>
         public void InvalidateArrange() => _content?.InvalidateArrange();
@@ -219,12 +222,6 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         /// <param name="newScale">新的缩放系数</param>
         protected virtual void OnScaleChanged(float newScale) { }
-
-
-        private static void OnDefaultButtonClicked(ButtonBase button, EventArgs args)
-        {
-            ((Window)button.Container).Close();
-        }
 
         private void ResolutionUtility_Patch_ScaleChanged(object sender, float newScale)
         {
