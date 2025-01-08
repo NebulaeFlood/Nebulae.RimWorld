@@ -237,7 +237,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 x,
                 y,
                 _viewWidth,
-                _viewWidth));
+                _viewHeight));
             Widgets.BeginGroup(new Rect(
                 -_horizontalOffset,
                 -_verticalOffset,
@@ -285,11 +285,11 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Size desiredSize = base.MeasureCore(availableSize);
 
+            _shouldDrawHorizontalScrollBar = HorizontalScrollBarVisibility is ScrollBarVisibility.Visible;
+            _shouldDrawVerticalScrollBar = VerticalScrollBarVisibility is ScrollBarVisibility.Visible;
+
             if (_contentControl is null)
             {
-                _shouldDrawHorizontalScrollBar = HorizontalScrollBarVisibility is ScrollBarVisibility.Visible;
-                _shouldDrawVerticalScrollBar = VerticalScrollBarVisibility is ScrollBarVisibility.Visible;
-
                 _viewHeight = _shouldDrawHorizontalScrollBar
                     ? desiredSize.Height - _horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight - _horizontalScrollBarStyle.margin.top
                     : desiredSize.Height;
@@ -303,15 +303,15 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 float contentAvailableHeight = desiredSize.Height;
                 float contentAvailableWidth = desiredSize.Width;
-                if (HorizontalScrollBarVisibility is ScrollBarVisibility.Visible)
+
+                if (_shouldDrawHorizontalScrollBar)
                 {
                     contentAvailableHeight = contentAvailableHeight - _horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight - _horizontalScrollBarStyle.margin.top;
-                    _shouldDrawHorizontalScrollBar = true;
                 }
-                if (VerticalScrollBarVisibility is ScrollBarVisibility.Visible)
+
+                if (_shouldDrawVerticalScrollBar)
                 {
                     contentAvailableWidth = contentAvailableWidth - _verticalScrollBarStyle.margin.left - _verticalScrollBarStyle.fixedWidth - _verticalScrollBarStyle.margin.right;
-                    _shouldDrawVerticalScrollBar = true;
                 }
 
                 _contentSize = _contentControl.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
