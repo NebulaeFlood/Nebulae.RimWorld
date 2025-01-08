@@ -82,12 +82,12 @@ namespace Nebulae.RimWorld.UI.Windows
             doCloseButton = true;
             doCloseX = true;
 
-            Button button = new Button 
-            { 
-                Width = 220f, 
-                Height = 40f, 
-                Text = "Hello RimWorld!", 
-                ClickSound = null 
+            Button button = new Button
+            {
+                Width = 220f,
+                Height = 40f,
+                Text = "Hello RimWorld!",
+                ClickSound = null
             };
             button.Click += CloseWindow;
 

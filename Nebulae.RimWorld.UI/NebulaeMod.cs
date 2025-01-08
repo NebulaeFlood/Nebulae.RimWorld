@@ -51,7 +51,7 @@ namespace Nebulae.RimWorld.UI
         {
             base.WriteSettings();
             _settingsUpdated.Invoke(this, _settings);
-        } 
+        }
 
 
         /// <inheritdoc/>

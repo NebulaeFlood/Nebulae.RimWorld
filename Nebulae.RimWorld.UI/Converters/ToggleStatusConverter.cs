@@ -1,10 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding.Converters;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nebulae.RimWorld.UI.Converters
 {
@@ -22,8 +17,8 @@ namespace Nebulae.RimWorld.UI.Converters
             }
             else
             {
-                return value is true 
-                    ? ToggleStatus.Checked 
+                return value is true
+                    ? ToggleStatus.Checked
                     : ToggleStatus.Unchecked;
             }
         }

@@ -157,7 +157,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 Widgets.Label(_cachedTextRect, Text);
                 GameText.Font = currentFont;
             }
-            
+
             return renderRect;
         }
 

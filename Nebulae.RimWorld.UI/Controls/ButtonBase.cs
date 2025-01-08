@@ -152,7 +152,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             bool isOver = Mouse.IsOver(visiableRect);
 
-            renderRect = DrawButton(renderRect, _isEnabled , isOver);
+            renderRect = DrawButton(renderRect, _isEnabled, isOver);
 
             if (_playMouseOverSound)
             {

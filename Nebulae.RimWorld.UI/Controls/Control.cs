@@ -170,7 +170,7 @@ namespace Nebulae.RimWorld.UI.Controls
             set
             {
                 _tooltip = value;
-                _shouldShowTooltip = !string.IsNullOrEmpty(value.text) 
+                _shouldShowTooltip = !string.IsNullOrEmpty(value.text)
                     || value.textGetter != null;
             }
         }
@@ -309,7 +309,7 @@ namespace Nebulae.RimWorld.UI.Controls
             else if (Visibility is Visibility.Visible)
             {
                 renderRect = DrawCore(renderRect);
-                if (_showTooltip 
+                if (_showTooltip
                     && _shouldShowTooltip)
                 {
                     TooltipHandler.TipRegion(renderRect, _tooltip);

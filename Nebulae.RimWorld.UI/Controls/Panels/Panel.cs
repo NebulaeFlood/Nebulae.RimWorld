@@ -24,10 +24,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         private Control[] _drawableChildren;
         private Control[] _filteredChildren;
 
-        private bool _isCachedRenderedRectValid =false;
-        private bool _isDrawableChildrenValid=false;
+        private bool _isCachedRenderedRectValid = false;
+        private bool _isDrawableChildrenValid = false;
         private bool _isFilteredChildrenValid = false;
-        private bool _isSegmentValid=false;
+        private bool _isSegmentValid = false;
 
         private Rect _cachedRenderedRect;
         private Rect _cachedVisiableRect;

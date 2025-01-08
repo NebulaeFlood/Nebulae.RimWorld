@@ -1,9 +1,4 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 using Grid = Nebulae.RimWorld.UI.Controls.Panels.Grid;
@@ -27,7 +22,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <param name="message">要显示的文字</param>
         public MessageWindow(string message)
         {
-            absorbInputAroundWindow = true; 
+            absorbInputAroundWindow = true;
             closeOnClickedOutside = true;
             doCloseButton = false;
             doCloseX = false;
