@@ -167,13 +167,13 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected override Rect DrawButton(Rect renderRect, bool isOver)
+        protected override Rect DrawButton(Rect renderRect, bool isEnabled, bool isCursorOver)
         {
             Color currentColor = GUI.color;
-            GUI.color = _compositionColor;
+            GUI.color = _compositionColor * currentColor;
 
             Texture2D background = _normalBackground;
-            if (isOver)
+            if (isEnabled && isCursorOver)
             {
                 background = _mouseOverBackground;
 

@@ -139,9 +139,10 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 绘制按钮
         /// </summary>
         /// <param name="renderRect">允许绘制的区域</param>
+        /// <param name="isEnabled">按钮是否被启用</param>
         /// <param name="isCursorOver">光标是否位于按钮上方</param>
         /// <returns>实际绘制的区域。</returns>
-        protected abstract Rect DrawButton(Rect renderRect, bool isCursorOver);
+        protected abstract Rect DrawButton(Rect renderRect, bool isEnabled, bool isCursorOver);
 
         /// <inheritdoc/>
         protected sealed override Rect DrawCore(Rect renderRect)
@@ -151,13 +152,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             bool isOver = Mouse.IsOver(visiableRect);
 
-            Color currentColor = GUI.color;
-            if (!_isEnabled)
-            {
-                GUI.color = Widgets.InactiveColor;
-            }
-
-            renderRect = DrawButton(renderRect, isOver);
+            renderRect = DrawButton(renderRect, _isEnabled , isOver);
 
             if (_playMouseOverSound)
             {
@@ -176,7 +171,6 @@ namespace Nebulae.RimWorld.UI.Controls
                 _clickSound?.PlayOneShotOnCamera();
             }
 
-            GUI.color = currentColor;
             return renderRect;
         }
 

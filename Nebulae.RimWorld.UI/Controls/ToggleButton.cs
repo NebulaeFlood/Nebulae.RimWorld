@@ -125,8 +125,15 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected sealed override Rect DrawButton(Rect renderRect, bool isOver)
+        protected sealed override Rect DrawButton(Rect renderRect, bool isEnabled, bool isCursorOver)
         {
+            Color currentColor = GUI.color;
+
+            if (!isEnabled)
+            {
+                GUI.color = Widgets.InactiveColor;
+            }
+
             switch (Status)
             {
                 case ToggleStatus.Unchecked:
@@ -139,6 +146,8 @@ namespace Nebulae.RimWorld.UI.Controls
                     GUI.DrawTexture(_cachedIconRect, _indeterminateIcon);
                     break;
             }
+
+            GUI.color = currentColor;
 
             if (_cachedContentSize.Width > IconSize)
             {
