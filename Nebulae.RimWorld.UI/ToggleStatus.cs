@@ -3,19 +3,19 @@
     /// <summary>
     /// 指示复选框的状态
     /// </summary>
-    public enum ToggleStatus
+    public enum ToggleStatus : short
     {
         /// <summary>
         /// 未选中
         /// </summary>
-        Unchecked,
+        Unchecked = -1,
         /// <summary>
         /// 选中
         /// </summary>
-        Checked,
+        Checked = 1,
         /// <summary>
         /// 未确定
         /// </summary>
-        Indeterminate
+        Indeterminate = 0
     }
 }
