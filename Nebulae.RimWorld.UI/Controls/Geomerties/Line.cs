@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
     /// </summary>
     public class Line : Control
     {
-        private Color _color;
+        private Color _color = Color.white;
 
 
         //------------------------------------------------------
@@ -73,7 +73,6 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
         /// </summary>
         public Line()
         {
-            _color = Color.white;
         }
 
         /// <inheritdoc/>
@@ -81,7 +80,9 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
         {
             Color currentColor = GUI.color;
             GUI.color = _color;
+
             GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
+
             GUI.color = currentColor;
             return renderRect;
         }

@@ -46,7 +46,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         internal IFrame Container;
-        internal bool IsHolded;
+        internal bool IsHolded = false;
 
 
         //------------------------------------------------------
@@ -57,20 +57,20 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Privaet Fields
 
-        private Rect _desiredRect;
-        private Size _desiredSize;
+        private Rect _desiredRect = Rect.zero;
+        private Size _desiredSize = Size.Empty;
 
-        private bool _isArrangeValid;
-        private bool _isMeasureValid;
+        private bool _isArrangeValid = false;
+        private bool _isMeasureValid = false;
 
-        private string _name;
+        private string _name = string.Empty;
 
-        private Rect _renderRect;
-        private Size _renderSize;
+        private Rect _renderRect = Rect.zero;
+        private Size _renderSize = Size.Empty;
 
         private bool _shouldShowTooltip = false;
-        private bool _showTooltip;
-        private TipSignal _tooltip;
+        private bool _showTooltip = false;
+        private TipSignal _tooltip = string.Empty;
 
         #endregion
 
@@ -240,16 +240,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         protected Control()
         {
-            _desiredRect = Rect.zero;
-            _desiredSize = Size.Empty;
-            _isArrangeValid = false;
-            _isMeasureValid = false;
-            _name = string.Empty;
-            _showTooltip = false;
-            _tooltip = string.Empty;
-
-            Container = null;
-            IsHolded = false;
         }
 
 

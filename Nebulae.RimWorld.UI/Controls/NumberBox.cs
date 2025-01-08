@@ -12,16 +12,31 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class NumberBox : FrameworkControl
     {
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
         private Window _associatedWindow;
-        private string _buffer;
-        private int _decimalPartDigit;
-        private bool _displayAsPercent;
-        private Regex _inputValidator;
+
+        private Regex _inputValidator = new Regex(@"^-?[0-9]{0,39}(\.[0-9]{0,2})?$");
+
+        private string _buffer = "0";
+
+        private float _maximun = 99999f;
+        private float _minimun = -99999f;
+
+        private int _decimalPartDigit = 2;
+        private bool _displayAsPercent = false;
+
         private bool _isFocusing = false;
         private bool _isReadOnly = false;
         private bool _forceFocusing = false;
-        private float _maximun;
-        private float _minimun;
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -178,13 +193,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public NumberBox()
         {
-            _buffer = "0";
-            _decimalPartDigit = 2;
-            _displayAsPercent = false;
-            _inputValidator = new Regex(@"^-?[0-9]{0,39}(\.[0-9]{0,2})?$");
-            _isReadOnly = false;
-            _maximun = float.MaxValue;
-            _minimun = float.MinValue;
         }
 
 

@@ -29,10 +29,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         private bool _isFilteredChildrenValid = false;
         private bool _isSegmentValid = false;
 
-        private Rect _cachedRenderedRect;
-        private Rect _cachedVisiableRect;
+        private Rect _cachedRenderedRect = Rect.zero;
+        private Rect _cachedVisiableRect = Rect.zero;
 
-        private int _childrenVersion;
+        private int _childrenVersion = 0;
         private IFrame[] _cachedFrameChildren;
 
         #endregion
@@ -130,14 +130,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         protected Panel()
         {
             _children = new PanelChildrenCollection(this);
-
-            _isCachedRenderedRectValid = false;
-            _isDrawableChildrenValid = false;
-            _isFilteredChildrenValid = false;
-            _isSegmentValid = false;
-
-            _cachedRenderedRect = Rect.zero;
-            _cachedVisiableRect = Rect.zero;
         }
 
 

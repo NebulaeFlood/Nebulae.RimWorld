@@ -10,9 +10,10 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class Slider : FrameworkControl
     {
-        private float _maximun;
-        private float _minimun;
-        private float _step;
+        private float _maximun = 99999f;
+        private float _minimun = -99999f;
+        private float _step = 0.1f;
+
 
         //------------------------------------------------------
         //
@@ -83,9 +84,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public Slider()
         {
-            _maximun = 100f;
-            _minimun = 0f;
-            _step = 0.1f;
         }
 
 

@@ -11,6 +11,9 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class TextBlock : FrameworkControl
     {
+        private TextAnchor _anchor = TextAnchor.UpperLeft;
+
+
         //------------------------------------------------------
         //
         //  Public Properties
@@ -22,7 +25,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 获取或设置文字在控件内显示的方位
         /// </summary>
-        public TextAnchor Anchor { get; set; }
+        public TextAnchor Anchor
+        {
+            get => _anchor;
+            set => _anchor = value;
+        }
 
         #region FontSize
         /// <summary>
@@ -68,7 +75,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public TextBlock()
         {
-            Anchor = TextAnchor.UpperLeft;
         }
 
 
@@ -78,9 +84,11 @@ namespace Nebulae.RimWorld.UI.Controls
             TextAnchor currentAnchor = GameText.Anchor;
             GameFont currentFont = GameText.Font;
 
-            GameText.Anchor = Anchor;
+            GameText.Anchor = _anchor;
             GameText.Font = FontSize;
+
             Widgets.Label(renderRect, Text);
+
             GameText.Anchor = currentAnchor;
             GameText.Font = currentFont;
 

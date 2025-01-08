@@ -8,9 +8,9 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
     /// </summary>
     public class Rectangle : FrameworkControl
     {
-        private Color _borderColor;
-        private Thickness _borderThickness;
-        private Color _fillColor;
+        private Color _borderColor = Color.white;
+        private Thickness _borderThickness = 1f;
+        private Color _fillColor = new ColorInt(10, 12, 14).ToColor;
 
 
         //------------------------------------------------------
@@ -56,9 +56,6 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
         /// </summary>
         public Rectangle()
         {
-            _borderColor = Color.white;
-            _borderThickness = 1f;
-            _fillColor = new ColorInt(10, 12, 14).ToColor;
         }
 
 
@@ -67,8 +64,11 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
         {
             Color currentColor = GUI.color;
             GUI.color = _fillColor;
+
             GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
+
             GUI.color = _borderColor;
+
             if (_borderThickness != 0f)
             {
                 // Left
@@ -80,7 +80,9 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
                 // Bottom
                 GUI.DrawTexture(new Rect(renderRect.x, renderRect.y + renderRect.height - _borderThickness.Bottom, renderRect.width, _borderThickness.Bottom), BaseContent.WhiteTex);
             }
+
             GUI.color = currentColor;
+
             return renderRect;
         }
     }
