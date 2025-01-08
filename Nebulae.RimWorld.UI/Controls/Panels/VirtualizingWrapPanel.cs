@@ -264,7 +264,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
                     }
                 });
+
                 childrenHeight += maxRowHeight;
+                childrenWidth = availableSize.Width;
             }
             else
             {
@@ -301,6 +303,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         }
                     }
                 });
+
+                childrenHeight = availableSize.Height;
                 childrenWidth += maxColumnWidth;
             }
             return new Size(childrenWidth, childrenHeight);
