@@ -12,11 +12,14 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class NumberBox : FrameworkControl
     {
+        private Window _associatedWindow;
         private string _buffer;
         private int _decimalPartDigit;
         private bool _displayAsPercent;
         private Regex _inputValidator;
-        private bool _isReadOnly;
+        private bool _isFocusing = false;
+        private bool _isReadOnly = false;
+        private bool _forceFocusing = false;
         private float _maximun;
         private float _minimun;
 
@@ -185,12 +188,35 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
+        /// <summary>
+        /// 强制获取焦点
+        /// </summary>
+        /// <param name="window">该控件所属的窗口</param>
+        public void ForceFocus(Window window)
+        {
+            _associatedWindow = window;
+            _forceFocusing = true;
+        }
+
+        /// <summary>
+        /// 获取焦点
+        /// </summary>
+        /// <param name="window">该控件所属的窗口</param>
+        /// <remarks>需要设置 <see cref="Control.Name"/> 属性。</remarks>
+        public void GetFocus(Window window)
+        {
+            _isFocusing = true;
+        }
+
+
         /// <inheritdoc/>
         protected override Rect DrawCore(Rect renderRect)
         {
             GameFont currentFont = Text.Font;
-
             Text.Font = FontSize;
+
+            GUI.SetNextControlName(Name);
+
             if (_isReadOnly)
             {
                 GUI.TextField(renderRect, _buffer, Text.CurTextFieldStyle);
@@ -207,7 +233,16 @@ namespace Nebulae.RimWorld.UI.Controls
                     Value = value;
                 }
             }
+
             Text.Font = currentFont;
+
+            if (_forceFocusing || _isFocusing)
+            {
+                Verse.UI.FocusControl(Name, _associatedWindow);
+
+                _isFocusing = false;
+            }
+
             return renderRect;
         }
     }
