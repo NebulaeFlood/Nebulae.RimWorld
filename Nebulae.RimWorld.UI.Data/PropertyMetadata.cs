@@ -45,7 +45,10 @@ namespace Nebulae.RimWorld.UI.Data
         #region PropertyChanged
         private readonly WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs> _propertyChanged = new WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs>();
 
-        internal event WeakEventHandler<DependencyObject, DependencyPropertyChangedEventArgs> PropertyChanged
+        /// <summary>
+        /// 当依赖属性值发生变化时触发的事件
+        /// </summary>
+        public event WeakEventHandler<DependencyObject, DependencyPropertyChangedEventArgs> PropertyChanged
         {
             add => _propertyChanged.Add(value);
             remove => _propertyChanged.Remove(value);
