@@ -24,10 +24,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         private Control[] _drawableChildren;
         private Control[] _filteredChildren;
 
-        private bool _isCachedRenderedRectValid;
-        private bool _isDrawableChildrenValid;
-        private bool _isFilteredChildrenValid;
-        private bool _isSegmentValid;
+        private bool _isCachedRenderedRectValid =false;
+        private bool _isDrawableChildrenValid=false;
+        private bool _isFilteredChildrenValid = false;
+        private bool _isSegmentValid=false;
 
         private Rect _cachedRenderedRect;
         private Rect _cachedVisiableRect;
@@ -114,6 +114,15 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
         #endregion
 
+
+        static Panel()
+        {
+            HorizontalAlignmentProperty.OverrideMetadata(typeof(Panel),
+                new ControlPropertyMetadata(HorizontalAlignment.Stretch, ControlRelation.Measure));
+
+            VerticalAlignmentProperty.OverrideMetadata(typeof(Panel),
+                new ControlPropertyMetadata(VerticalAlignment.Stretch, ControlRelation.Measure));
+        }
 
         /// <summary>
         /// 为 <see cref="Panel"/> 派生类实现基本初始化
