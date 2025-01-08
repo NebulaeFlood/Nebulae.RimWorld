@@ -59,13 +59,18 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private Rect _desiredRect;
         private Size _desiredSize;
+
         private bool _isArrangeValid;
         private bool _isMeasureValid;
+
         private string _name;
+
         private Rect _renderRect;
         private Size _renderSize;
+
+        private bool _shouldShowTooltip = false;
         private bool _showTooltip;
-        private string _tooltip;
+        private TipSignal _tooltip;
 
         #endregion
 
@@ -105,7 +110,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty HorizontalAlignmentProperty =
             DependencyProperty.Register(nameof(HorizontalAlignment), typeof(HorizontalAlignment), typeof(Control),
-                new ControlPropertyMetadata(HorizontalAlignment.Center, ControlRelation.Arrange));
+                new ControlPropertyMetadata(HorizontalAlignment.Center, ControlRelation.Measure));
         #endregion
 
         #region Margin
@@ -123,7 +128,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty MarginProperty =
             DependencyProperty.Register(nameof(Margin), typeof(Thickness), typeof(Control),
-                new ControlPropertyMetadata(Thickness.Empty));
+                new ControlPropertyMetadata(Thickness.Empty, ControlRelation.Measure));
         #endregion
 
         /// <summary>
@@ -159,10 +164,15 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 提示框文字
         /// </summary>
-        public string Tooltip
+        public TipSignal Tooltip
         {
             get => _tooltip;
-            set => _tooltip = value;
+            set
+            {
+                _tooltip = value;
+                _shouldShowTooltip = !string.IsNullOrEmpty(value.text) 
+                    || value.textGetter != null;
+            }
         }
 
         #region VerticalAlignment
@@ -180,7 +190,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty VerticalAlignmentProperty =
             DependencyProperty.Register(nameof(VerticalAlignment), typeof(VerticalAlignment), typeof(Control),
-                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Arrange));
+                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Measure));
         #endregion
 
         #region Visibility
@@ -299,7 +309,8 @@ namespace Nebulae.RimWorld.UI.Controls
             else if (Visibility is Visibility.Visible)
             {
                 renderRect = DrawCore(renderRect);
-                if (_showTooltip && !_tooltip.NullOrEmpty())
+                if (_showTooltip 
+                    && _shouldShowTooltip)
                 {
                     TooltipHandler.TipRegion(renderRect, _tooltip);
                 }
