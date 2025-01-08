@@ -57,15 +57,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         private static void OnFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            Panel panel = (Panel)d;
-            panel._isDrawableChildrenValid = false;
-            panel.InvalidateMeasure();
+            ((Panel)d).InvalidateFilter();
         }
         #endregion
-
-
-        /// <inheritdoc/>
-        public bool IsSegmentValid => _isSegmentValid;
 
 
         //------------------------------------------------------
@@ -96,7 +90,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 }
 
                 _drawableChildren = FindDrawableChildren().ToArray();
-                _isDrawableChildrenValid = true;
+                _isDrawableChildrenValid = IsArrangeValid;
                 return _drawableChildren;
             }
         }
@@ -145,6 +139,18 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         //------------------------------------------------------
 
         #region Public Methods
+
+        /// <summary>
+        /// 要求面板在下次绘制控件之前重新过滤控件
+        /// </summary>
+        public void InvalidateFilter()
+        {
+            if (_isFilteredChildrenValid)
+            {
+                _isFilteredChildrenValid = false;
+                InvalidateMeasure();
+            }
+        }
 
         /// <inheritdoc/>
         public void InvalidateSegment()
