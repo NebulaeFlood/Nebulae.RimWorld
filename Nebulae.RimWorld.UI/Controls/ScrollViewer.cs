@@ -100,6 +100,15 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
+        static ScrollViewer()
+        {
+            HorizontalAlignmentProperty.OverrideMetadata(typeof(ScrollViewer),
+                new ControlPropertyMetadata(HorizontalAlignment.Stretch, ControlRelation.Measure));
+
+            VerticalAlignmentProperty.OverrideMetadata(typeof(ScrollViewer),
+                new ControlPropertyMetadata(VerticalAlignment.Stretch, ControlRelation.Measure));
+        }
+
         /// <summary>
         /// 初始化 <see cref="ScrollViewer"/> 的新实例
         /// </summary>
