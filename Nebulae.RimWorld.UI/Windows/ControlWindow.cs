@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Controls;
+﻿using HarmonyLib;
+using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Patches;
 using System;
 using UnityEngine;
@@ -93,7 +94,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
             Content = button;
 
-            ResolutionUtility_Patch.ScaleChanged += ResolutionUtility_Patch_ScaleChanged;
+            UIPatch.UIEvent += UIPatch_UIEvent;
         }
 
 
@@ -197,16 +198,12 @@ namespace Nebulae.RimWorld.UI.Windows
         #endregion
 
 
-        /// <summary>
-        /// 当界面缩放 <see cref="Prefs.UIScale"/> 变化时执行的操作
-        /// </summary>
-        /// <param name="newScale">新的缩放系数</param>
-        protected virtual void OnScaleChanged(float newScale) { }
-
-        private void ResolutionUtility_Patch_ScaleChanged(object sender, float newScale)
+        private void UIPatch_UIEvent(Harmony sender, UIEventType e)
         {
-            InvalidateMeasure();
-            OnScaleChanged(newScale);
+            if (e is UIEventType.ScaleChanged)
+            {
+                InvalidateMeasure();
+            }
         }
     }
 }

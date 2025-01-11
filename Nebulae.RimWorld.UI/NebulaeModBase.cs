@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Controls;
+﻿using HarmonyLib;
+using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Windows;
 using UnityEngine;
 using Verse;
@@ -42,6 +43,7 @@ namespace Nebulae.RimWorld.UI
         /// <param name="content">Mod 内容</param>
         protected NebulaeModBase(ModContentPack content) : base(content)
         {
+            UIPatch.UIEvent += UIPatch_UIEvent;
         }
 
 
@@ -61,5 +63,14 @@ namespace Nebulae.RimWorld.UI
         /// 显示在 Mod 选项的标签名称
         /// </summary>
         public sealed override string SettingsCategory() => CategoryLabel;
+
+
+        private void UIPatch_UIEvent(Harmony sender, UIEventType e)
+        {
+            if (e is UIEventType.LanguageChanged)
+            {
+                _settingWindow = null;
+            }
+        }
     }
 }
