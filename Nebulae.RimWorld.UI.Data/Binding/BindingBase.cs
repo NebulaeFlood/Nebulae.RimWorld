@@ -334,7 +334,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             if (ReferenceEquals(sender, SourceMember.AssociatedObject))
             {
-                OnDependencyTargetChanged(sender, e);
+                OnDependencySourceChanged(sender, e);
             }
         }
 
@@ -358,7 +358,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             if (e.PropertyName == TargetMember.MemberName)
             {
-                OnNotifiableSourceChanged(sender, TargetMember.Value);
+                OnNotifiableTargetChanged(sender, TargetMember.Value);
             }
         }
 
