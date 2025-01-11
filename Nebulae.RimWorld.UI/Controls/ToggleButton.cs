@@ -28,12 +28,25 @@ namespace Nebulae.RimWorld.UI.Controls
         }
         #endregion
 
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
         private Size _cachedContentSize = Size.Empty;
-        private Rect _cachedIconRect = Rect.zero;
-        private Rect _cachedTextRect = Rect.zero;
+        private Rect _cachedIconRect;
+        private Rect _cachedTextRect;
+
         private Texture2D _checkedIcon;
         private Texture2D _indeterminateIcon;
         private Texture2D _uncheckedIcon;
+
+        #endregion
+
 
 
         //------------------------------------------------------
@@ -148,16 +161,17 @@ namespace Nebulae.RimWorld.UI.Controls
                     break;
             }
 
-            GUI.color = currentColor;
-
             if (_cachedContentSize.Width > IconSize)
             {
                 GameFont currentFont = GameText.Font;
                 GameText.Font = FontSize;
+
                 Widgets.Label(_cachedTextRect, Text);
+
                 GameText.Font = currentFont;
             }
 
+            GUI.color = currentColor;
             return renderRect;
         }
 

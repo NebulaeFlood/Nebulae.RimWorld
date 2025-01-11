@@ -28,7 +28,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
         private Control _content;
 
-        private Rect _windowContentRectCache = Rect.zero;
+        private Rect _windowContentRectCache;
 
         #endregion
 

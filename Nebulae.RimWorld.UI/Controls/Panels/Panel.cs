@@ -29,8 +29,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         private bool _isFilteredChildrenValid = false;
         private bool _isSegmentValid = false;
 
-        private Rect _cachedRenderedRect = Rect.zero;
-        private Rect _cachedVisiableRect = Rect.zero;
+        private Rect _cachedRenderedRect;
+        private Rect _cachedVisiableRect;
 
         private int _childrenVersion = 0;
         private IFrame[] _cachedFrameChildren;

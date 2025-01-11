@@ -8,7 +8,7 @@ namespace Nebulae.RimWorld.UI.Controls
     public abstract class ContentControl : FrameworkControl, IFrame
     {
         private bool _isSegmentValid = false;
-        private Rect _cachedVisiableRect = Rect.zero;
+        private Rect _cachedVisiableRect;
 
         private object _content;
 

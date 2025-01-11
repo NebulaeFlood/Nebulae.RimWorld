@@ -26,7 +26,7 @@ namespace Nebulae.RimWorld.UI.Controls
         private float _viewWidth = 1f;
 
         private bool _isSegmentValid = false;
-        private Rect _cachedVisiableRect = Rect.zero;
+        private Rect _cachedVisiableRect;
 
         #endregion
 

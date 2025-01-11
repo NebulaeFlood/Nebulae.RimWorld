@@ -57,7 +57,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Privaet Fields
 
-        private Rect _desiredRect = Rect.zero;
+        private Rect _desiredRect;
         private Size _desiredSize = Size.Empty;
 
         private bool _isArrangeValid = false;
@@ -65,7 +65,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private string _name = string.Empty;
 
-        private Rect _renderRect = Rect.zero;
+        private Rect _renderRect;
         private Size _renderSize = Size.Empty;
 
         private bool _shouldShowTooltip = false;
