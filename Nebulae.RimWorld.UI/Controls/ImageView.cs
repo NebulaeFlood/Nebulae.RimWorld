@@ -42,11 +42,6 @@ namespace Nebulae.RimWorld.UI.Controls
         public static readonly DependencyProperty ScaleModeProperty =
             DependencyProperty.Register(nameof(ScaleMode), typeof(ScaleMode), typeof(ImageView),
                 new ControlPropertyMetadata(ScaleMode.ScaleToFit, ControlRelation.Measure));
-
-        private static void _OnScaleModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-
-        }
         #endregion
 
 
