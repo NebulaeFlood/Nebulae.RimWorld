@@ -340,5 +340,17 @@ namespace Nebulae.RimWorld.UI
                 return align;
             }
         }
+
+        /// <summary>
+        /// 将 <see cref="bool"/> 类型的值转化为 <see cref="ToggleStatus"/>
+        /// </summary>
+        /// <param name="isChecked">要转换的值，指示状态是否为 <see cref="ToggleStatus"/></param>
+        /// <returns><paramref name="isChecked"/> 转化的 <see cref="ToggleStatus"/></returns>
+        public static ToggleStatus ToStatus(this bool isChecked)
+        {
+            return isChecked
+                ? ToggleStatus.Checked
+                : ToggleStatus.Unchecked;
+        }
     }
 }
