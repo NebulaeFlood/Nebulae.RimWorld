@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using RimWorld;
-using Verse;
 
 namespace Nebulae.RimWorld.UI.Patches
 {

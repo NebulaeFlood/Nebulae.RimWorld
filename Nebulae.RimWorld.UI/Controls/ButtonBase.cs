@@ -40,6 +40,9 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _isEnabled = true;
         private bool _playMouseOverSound = true;
 
+        private HorizontalAlignment _contentHorizontalAlignment = HorizontalAlignment.Center;
+        private VerticalAlignment _contentVerticalAlignment = VerticalAlignment.Center;
+
         #endregion
 
 
@@ -58,6 +61,24 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             get => _clickSound;
             set => _clickSound = value;
+        }
+
+        /// <summary>
+        /// 按钮内容的水平排布方式
+        /// </summary>
+        public HorizontalAlignment ContentHorizontalAlignment
+        {
+            get => _contentHorizontalAlignment;
+            set => _contentHorizontalAlignment = value;
+        }
+
+        /// <summary>
+        /// 按钮内容的垂直排布方式
+        /// </summary>
+        public VerticalAlignment ContentVerticalAlignment
+        {
+            get => _contentVerticalAlignment;
+            set => _contentVerticalAlignment = value;
         }
 
         #region FontSize

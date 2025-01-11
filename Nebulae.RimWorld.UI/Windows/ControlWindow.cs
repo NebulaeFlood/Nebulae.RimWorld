@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using Nebulae.RimWorld.UI.Controls;
-using Nebulae.RimWorld.UI.Patches;
 using System;
 using UnityEngine;
 using Verse;

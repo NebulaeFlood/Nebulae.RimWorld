@@ -1,7 +1,6 @@
 ﻿using RimWorld;
 using UnityEngine;
 using Verse;
-using GameText = Verse.Text;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
