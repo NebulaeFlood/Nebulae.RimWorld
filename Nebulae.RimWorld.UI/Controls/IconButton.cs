@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using System;
 using UnityEngine;
 using Verse;
 using GameText = Verse.Text;
@@ -13,7 +14,13 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 默认的图标尺寸
         /// </summary>
-        public const float DefaultIconSize = 27f;
+        public const float DefaultIconSize = 24f;
+
+        /// <summary>
+        /// 按钮的默认内边距
+        /// </summary>
+        public const float DefaultPadding = 5f;
+
 
         /// <summary>
         /// 关闭按钮的混合色
@@ -29,15 +36,17 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Private Fields
 
-        private Size _contentDesiredSize = Size.Empty;
+        private Size _iconDesiredSize = Size.Empty;
         private Rect _iconDesiredRect;
+
+        private Size _textDesiredSize = Size.Empty;
         private Rect _textDesiredRect;
 
         private Color _compositionColor = Color.white;
 
         private Texture2D _icon;
 
-        private ContentStatus _status = ContentStatus.NoContent;
+        private ContentStatus _status = ContentStatus.None;
 
         #endregion
 
@@ -86,6 +95,24 @@ namespace Nebulae.RimWorld.UI.Controls
                 new ControlPropertyMetadata(DefaultIconSize, ControlRelation.Measure));
         #endregion
 
+        #region Padding
+        /// <summary>
+        /// 获取或设置按钮内容的统一边距
+        /// </summary>
+        public float Padding
+        {
+            get { return (float)GetValue(PaddingProperty); }
+            set { SetValue(PaddingProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Padding"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty PaddingProperty =
+            DependencyProperty.Register(nameof(Padding), typeof(float), typeof(IconButton),
+                new ControlPropertyMetadata(DefaultPadding, ControlRelation.Measure));
+        #endregion
+
         #endregion
 
 
@@ -108,39 +135,37 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
-            Rect desiredRect = base.ArrangeCore(availableRect);
-            Rect contentRect = _contentDesiredSize.AlignRectToArea(
-                desiredRect,
-                ContentHorizontalAlignment,
-                ContentVerticalAlignment);
-
-            switch (_status)
+            if (_status is ContentStatus.None)
             {
-                case ContentStatus.TextOnly:
-                    _iconDesiredRect = Rect.zero;
-                    _textDesiredRect = contentRect;
-                    break;
-                case ContentStatus.IconOnly:
-                    _iconDesiredRect = contentRect;
-                    _textDesiredRect = Rect.zero;
-                    break;
-                case ContentStatus.TextWithIcon:
-                    _iconDesiredRect = new Rect(
-                        contentRect.x,
-                        contentRect.y,
-                        _contentDesiredSize.Height,
-                        _contentDesiredSize.Height);
+                return base.ArrangeCore(availableRect);
+            }
 
-                    _textDesiredRect = new Rect(
-                        contentRect.x + _contentDesiredSize.Height,
-                        contentRect.y,
-                        _contentDesiredSize.Width - _contentDesiredSize.Height,
-                        _contentDesiredSize.Height);
-                    break;
-                default:    // NoContent
-                    _iconDesiredRect = Rect.zero;
-                    _textDesiredRect = Rect.zero;
-                    break;
+            Rect desiredRect = base.ArrangeCore(availableRect);
+            Rect contentAvailableRect = desiredRect - new Thickness(Padding);
+
+            if ((_status & ContentStatus.IconSetted) != 0)
+            {
+                _iconDesiredRect = _iconDesiredSize.AlignRectToArea(
+                    contentAvailableRect, 
+                    ContentHorizontalAlignment, 
+                    ContentVerticalAlignment);
+            }
+            else
+            {
+                _iconDesiredRect = Rect.zero;
+            }
+
+            if ((_status & ContentStatus.TextSetted) != 0)
+            {
+                contentAvailableRect.x += _iconDesiredRect.x + Padding;
+                _textDesiredRect = _textDesiredSize.AlignRectToArea(
+                    contentAvailableRect,
+                    ContentHorizontalAlignment,
+                    ContentVerticalAlignment);
+            }
+            else
+            {
+                _textDesiredRect = Rect.zero;
             }
 
             return desiredRect;
@@ -165,34 +190,22 @@ namespace Nebulae.RimWorld.UI.Controls
 
             DrawBackground(renderRect, isEnabled, isCursorOver);
 
-            switch (_status)
+            if ((_status & ContentStatus.IconSetted) != 0)
             {
-                case ContentStatus.TextOnly:
-                    {
-                        GameFont currentFont = GameText.Font;
-                        GameText.Font = FontSize;
+                GUI.DrawTexture(_iconDesiredRect, _icon, ScaleMode.ScaleToFit);
+            }
 
-                        Widgets.Label(_textDesiredRect, Text);
+            if ((_status & ContentStatus.TextSetted) != 0)
+            {
+                TextAnchor anchor = GameText.Anchor;
+                GameFont font = GameText.Font;
+                GameText.Anchor = TextAnchor.MiddleLeft;
+                GameText.Font = FontSize;
 
-                        GameText.Font = currentFont;
-                        break;
-                    }
-                case ContentStatus.IconOnly:
-                    GUI.DrawTexture(_iconDesiredRect, _icon, ScaleMode.ScaleToFit);
-                    break;
-                case ContentStatus.TextWithIcon:
-                    {
-                        GUI.DrawTexture(_iconDesiredRect, _icon, ScaleMode.ScaleToFit);
-                        GameFont currentFont = GameText.Font;
-                        GameText.Font = FontSize;
+                Widgets.Label(_textDesiredRect, Text);
 
-                        Widgets.Label(_textDesiredRect, Text);
-
-                        GameText.Font = currentFont;
-                        break;
-                    }
-                default:    // NoContent
-                    break;
+                GameText.Font = font;
+                GameText.Anchor = anchor;
             }
 
             GUI.color = currentColor;
@@ -202,43 +215,28 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            string text = Text;
+            _status = ContentStatus.None;
 
-            bool hasText = string.IsNullOrEmpty(text);
-            bool hasIcon = Icon is null;
-
-            if (hasIcon)
+            if (_icon is null)
             {
-                float iconSize = IconSize;
-
-                if (hasText)
-                {
-                    Size textSize = text.CalculateLineSize(FontSize);
-
-                    _contentDesiredSize = new Size(
-                        textSize.Width + iconSize,
-                        Mathf.Max(textSize.Height, iconSize));
-
-                    _status = ContentStatus.TextWithIcon;
-                }
-                else
-                {
-                    _contentDesiredSize = new Size(iconSize);
-                    _status = ContentStatus.IconOnly;
-                }
+                _iconDesiredSize = Size.Empty;
             }
             else
             {
-                if (hasText)
-                {
-                    _contentDesiredSize = text.CalculateLineSize(FontSize);
-                    _status = ContentStatus.TextOnly;
-                }
-                else
-                {
-                    _contentDesiredSize = Size.Empty;
-                    _status = ContentStatus.NoContent;
-                }
+                _iconDesiredSize = new Size(IconSize);
+                _status |= ContentStatus.IconSetted;
+            }
+
+            string text = Text;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                _textDesiredSize = Size.Empty;
+            }
+            else
+            {
+                _textDesiredSize = text.CalculateLineSize(FontSize);
+                _status |= ContentStatus.TextSetted;
             }
 
             return base.MeasureCore(availableSize);
@@ -250,27 +248,23 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 按钮内容的状态
         /// </summary>
-        protected enum ContentStatus
+        [Flags]
+        protected enum ContentStatus : int
         {
             /// <summary>
             /// 按钮没有设置内容
             /// </summary>
-            NoContent,
+            None = 0x00000000,
 
             /// <summary>
-            /// 按钮只设置的文字内容
+            /// 按钮设置了图标
             /// </summary>
-            TextOnly,
+            IconSetted,
 
             /// <summary>
-            /// 按钮只设置了图标内容
+            /// 按钮设置了文字
             /// </summary>
-            IconOnly,
-
-            /// <summary>
-            /// 按钮设置了图标和文字
-            /// </summary>
-            TextWithIcon
+            TextSetted,
         }
     }
 }
