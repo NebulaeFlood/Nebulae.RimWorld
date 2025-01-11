@@ -63,24 +63,6 @@ namespace Nebulae.RimWorld.UI.Controls
             set => _clickSound = value;
         }
 
-        /// <summary>
-        /// 按钮内容的水平排布方式
-        /// </summary>
-        public HorizontalAlignment ContentHorizontalAlignment
-        {
-            get => _contentHorizontalAlignment;
-            set => _contentHorizontalAlignment = value;
-        }
-
-        /// <summary>
-        /// 按钮内容的垂直排布方式
-        /// </summary>
-        public VerticalAlignment ContentVerticalAlignment
-        {
-            get => _contentVerticalAlignment;
-            set => _contentVerticalAlignment = value;
-        }
-
         #region FontSize
         /// <summary>
         /// 获取或设置字体大小

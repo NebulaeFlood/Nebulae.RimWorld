@@ -50,6 +50,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public RadioButton() : base(DefaultCheckedIcon, DefaultIndeterminateIcon, DefaultUncheckedIcon)
         {
+            IconHitOnly = false;
         }
 
 

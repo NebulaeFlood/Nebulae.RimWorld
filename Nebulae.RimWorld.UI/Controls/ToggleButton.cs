@@ -63,11 +63,26 @@ namespace Nebulae.RimWorld.UI.Controls
             Texture2D indeterminateIcon,
             Texture2D uncheckedIcon)
         {
+            IconHitOnly = true;
             PlayMouseOverSound = false;
+            SeparateContent = true;
 
             _checkedIcon = checkedIcon;
             _indeterminateIcon = indeterminateIcon;
             _uncheckedIcon = uncheckedIcon;
+
+            switch (Status)
+            {
+                case ToggleStatus.Unchecked:
+                    Icon = uncheckedIcon;
+                    break;
+                case ToggleStatus.Checked:
+                    Icon = checkedIcon;
+                    break;
+                default:    // Indeterminate
+                    Icon = indeterminateIcon;
+                    break;
+            }
         }
 
 

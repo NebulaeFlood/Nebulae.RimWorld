@@ -39,7 +39,7 @@ namespace Nebulae.RimWorld.UI
         /// <param name="verticalAlignment">垂直方向对齐方式</param>
         /// <returns>放置后的矩形。</returns>
         public static Rect AlignRectToArea(this Rect rect, Rect availableArea, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
-            => AlignRectToArea(rect, availableArea, horizontalAlignment, verticalAlignment);
+            => AlignRectToArea(new Size(rect.width, rect.height), availableArea, horizontalAlignment, verticalAlignment);
 
         /// <summary>
         /// 计算按照指定对齐方式放置到指定区域后的矩形
@@ -251,6 +251,94 @@ namespace Nebulae.RimWorld.UI
         {
             rect.y += offsetValue;
             return rect;
+        }
+
+        /// <summary>
+        /// 翻转水平排布方式
+        /// </summary>
+        /// <param name="align">要翻转的排布方式</param>
+        /// <returns>翻转后的排布方式</returns>
+        public static HorizontalAlignment Reverse(this HorizontalAlignment align)
+        {
+            switch (align)
+            {
+                case HorizontalAlignment.Left:
+                    return HorizontalAlignment.Right;
+                case HorizontalAlignment.Right:
+                    return HorizontalAlignment.Left;
+                default:
+                    return align;
+            }
+        }
+
+        /// <summary>
+        /// 翻转垂直排布方式
+        /// </summary>
+        /// <param name="align">要翻转的排布方式</param>
+        /// <returns>翻转后的排布方式</returns>
+        public static VerticalAlignment Reverse(this VerticalAlignment align)
+        {
+            switch (align)
+            {
+                case VerticalAlignment.Top:
+                    return VerticalAlignment.Bottom;
+                case VerticalAlignment.Bottom:
+                    return VerticalAlignment.Top;
+                default:
+                    return align;
+            }
+        }
+
+        /// <summary>
+        /// 如果满足条件，翻转水平排布方式
+        /// </summary>
+        /// <param name="align">要翻转的排布方式</param>
+        /// <param name="condition">是否满足条件</param>
+        /// <returns>翻转后的排布方式</returns>
+        public static HorizontalAlignment ReverseIf(this HorizontalAlignment align, bool condition)
+        {
+            if (condition)
+            {
+                switch (align)
+                {
+                    case HorizontalAlignment.Left:
+                        return HorizontalAlignment.Right;
+                    case HorizontalAlignment.Right:
+                        return HorizontalAlignment.Left;
+                    default:
+                        return align;
+                }
+            }
+            else
+            {
+                return align;
+            }
+        }
+
+        /// <summary>
+        /// 如果满足条件，翻转垂直排布方式
+        /// </summary>
+        /// <param name="align">要翻转的排布方式</param>
+        /// <param name="condition">是否满足条件</param>
+        /// <returns>翻转后的排布方式</returns>
+        public static VerticalAlignment ReverseIf(this VerticalAlignment align, bool condition)
+        {
+            if (condition)
+            {
+                switch (align)
+                {
+                    case VerticalAlignment.Top:
+                        return VerticalAlignment.Bottom;
+                    case VerticalAlignment.Bottom:
+                        return VerticalAlignment.Top;
+                    default:
+                        return align;
+                }
+            }
+            else
+            {
+                return align;
+            }
         }
     }
 }

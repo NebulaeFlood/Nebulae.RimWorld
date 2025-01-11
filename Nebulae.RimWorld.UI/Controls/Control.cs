@@ -374,10 +374,10 @@ namespace Nebulae.RimWorld.UI.Controls
                 _isArrangeValid = false;
 
                 // 控件度量无效，就说明已经调用过 Container 的 InvalidateMeasure 方法
-                if (_isMeasureValid && IsHolded)
-                {
-                    Container.InvalidateArrange();
-                }
+                // if (_isMeasureValid && IsHolded)
+                // {
+                //     Container.InvalidateArrange();
+                // }
 
                 OnArrangeInvalidated();
             }

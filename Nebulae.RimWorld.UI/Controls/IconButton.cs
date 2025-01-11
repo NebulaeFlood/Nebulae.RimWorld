@@ -46,6 +46,10 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private Texture2D _icon;
 
+        private bool _iconHitOnly = false;
+        private bool _reverseContent = false;
+        private bool _separateContent = false;
+
         private ContentStatus _status = ContentStatus.None;
 
         #endregion
@@ -113,7 +117,35 @@ namespace Nebulae.RimWorld.UI.Controls
                 new ControlPropertyMetadata(DefaultPadding, ControlRelation.Measure));
         #endregion
 
+        /// <summary>
+        /// 是否翻转图标和文字的位置
+        /// </summary>
+        public bool ReverseContent
+        {
+            get => _reverseContent;
+            set => _reverseContent = value;
+        }
+
+        /// <summary>
+        /// 是否拆分图标为文字
+        /// </summary>
+        public bool SeparateContent
+        {
+            get => _separateContent;
+            set => _separateContent = value;
+        }
+
         #endregion
+
+
+        /// <summary>
+        /// 指示按钮是否只有图标可交互
+        /// </summary>
+        protected bool IconHitOnly
+        {
+            get => _iconHitOnly;
+            set => _iconHitOnly = value;
+        }
 
 
         /// <summary>
@@ -143,12 +175,23 @@ namespace Nebulae.RimWorld.UI.Controls
             Rect desiredRect = base.ArrangeCore(availableRect);
             Rect contentAvailableRect = desiredRect - new Thickness(Padding);
 
+            if (!_separateContent)
+            {
+                contentAvailableRect = new Size(
+                    _iconDesiredSize.Width + _textDesiredSize.Width,
+                    Mathf.Max(_iconDesiredSize.Height, _textDesiredSize.Height))
+                    .AlignRectToArea(
+                        contentAvailableRect,
+                        HorizontalAlignment.Center,
+                        VerticalAlignment.Center);
+            }
+
             if ((_status & ContentStatus.IconSetted) != 0)
             {
                 _iconDesiredRect = _iconDesiredSize.AlignRectToArea(
-                    contentAvailableRect, 
-                    ContentHorizontalAlignment, 
-                    ContentVerticalAlignment);
+                    contentAvailableRect,
+                    HorizontalAlignment.Left.ReverseIf(_reverseContent),
+                    VerticalAlignment.Center);
             }
             else
             {
@@ -157,11 +200,10 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if ((_status & ContentStatus.TextSetted) != 0)
             {
-                contentAvailableRect.x += _iconDesiredRect.x + Padding;
                 _textDesiredRect = _textDesiredSize.AlignRectToArea(
                     contentAvailableRect,
-                    ContentHorizontalAlignment,
-                    ContentVerticalAlignment);
+                    HorizontalAlignment.Right.ReverseIf(_reverseContent),
+                    VerticalAlignment.Center);
             }
             else
             {
@@ -242,6 +284,19 @@ namespace Nebulae.RimWorld.UI.Controls
             return base.MeasureCore(availableSize);
         }
 
+        /// <inheritdoc/>
+        protected override Rect SegmentCore()
+        {
+            if (_iconHitOnly)
+            {
+                return _iconDesiredRect;
+            }
+            else
+            {
+                return base.SegmentCore();
+            }
+        }
+
         #endregion
 
 
@@ -255,16 +310,18 @@ namespace Nebulae.RimWorld.UI.Controls
             /// 按钮没有设置内容
             /// </summary>
             None = 0x00000000,
-
             /// <summary>
             /// 按钮设置了图标
             /// </summary>
-            IconSetted,
-
+            IconSetted = 0x00000001,
             /// <summary>
             /// 按钮设置了文字
             /// </summary>
-            TextSetted,
+            TextSetted = 0x00000002,
+            /// <summary>
+            /// 按钮设置了图标和文字
+            /// </summary>
+            FullSetted = 0x00000003
         }
     }
 }
