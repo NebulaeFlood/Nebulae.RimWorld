@@ -40,9 +40,6 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _isEnabled = true;
         private bool _playMouseOverSound = true;
 
-        private HorizontalAlignment _contentHorizontalAlignment = HorizontalAlignment.Center;
-        private VerticalAlignment _contentVerticalAlignment = VerticalAlignment.Center;
-
         #endregion
 
 
