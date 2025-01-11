@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<DocumentationFile>bin\$(MSBuildProjectName).xml</DocumentationFile>
 
 		<Authors>NubulaeFlood</Authors>
 		<Description>A personal lib for RimWorld mods.</Description>
@@ -19,5 +18,9 @@
 		<PackageTags>RimWorld Mod</PackageTags>
 		<Copyright>Copyright (c) 2024 NubulaeFlood</Copyright>
 	</PropertyGroup>
-
+	
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="copy $(OutDir)$(TargetName).* $(SolutionDir)build\Assemblies" />
+	</Target>
+	
 </Project>
