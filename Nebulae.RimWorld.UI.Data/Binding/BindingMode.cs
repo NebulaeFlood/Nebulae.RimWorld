@@ -1,7 +1,7 @@
 ﻿namespace Nebulae.RimWorld.UI.Data.Binding
 {
     /// <summary>
-    /// 表明 <see cref="BindingBase{TSource, TTarget}"/> 中源和目标的关系
+    /// 表明 <see cref="BindingBase"/> 中源和目标的关系
     /// </summary>
     public enum BindingMode
     {
