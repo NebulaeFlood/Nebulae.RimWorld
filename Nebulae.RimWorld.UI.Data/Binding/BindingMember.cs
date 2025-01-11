@@ -225,17 +225,19 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         public override bool Equals(object obj)
         {
             return obj is BindingMember other
-                && ReferenceEquals(AssociatedObject, other.AssociatedObject)
-                && MemberName == other.MemberName
-                && MemberType == other.MemberType;
+                && (MemberType is null && other.MemberType is null
+                    || (ReferenceEquals(AssociatedObject, other.AssociatedObject)
+                        && MemberName == other.MemberName
+                        && MemberType == other.MemberType));
         }
 
         /// <inheritdoc/>
         public bool Equals(BindingMember other)
         {
-            return ReferenceEquals(AssociatedObject, other.AssociatedObject)
-                && MemberName == other.MemberName
-                && MemberType == other.MemberType;
+            return MemberType is null && other.MemberType is null
+                || (ReferenceEquals(AssociatedObject, other.AssociatedObject)
+                    && MemberName == other.MemberName
+                    && MemberType == other.MemberType);
         }
 
         /// <inheritdoc/>

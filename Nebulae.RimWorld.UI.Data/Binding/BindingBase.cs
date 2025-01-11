@@ -284,15 +284,15 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// 当 <see cref="INotifyPropertyChanged"/> 绑定源成员变化执行的操作
         /// </summary>
         /// <param name="sender">绑定源</param>
-        /// <param name="e">变化信息</param>
-        protected abstract void OnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e);
+        /// <param name="newValue">绑定源成员的新值</param>
+        protected abstract void OnNotifiableSourceChanged(object sender, object newValue);
 
         /// <summary>
         /// 当 <see cref="INotifyPropertyChanged"/> 绑定目标成员变化执行的操作
         /// </summary>
         /// <param name="sender">绑定目标</param>
-        /// <param name="e">变化信息</param>
-        protected abstract void OnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e);
+        /// <param name="newValue">绑定目标成员的新值</param>
+        protected abstract void OnNotifiableTargetChanged(object sender, object newValue);
 
         #endregion
 
@@ -304,36 +304,6 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         //------------------------------------------------------
 
         #region Private Methods
-
-        private void StartBinding(
-            object source,
-            object sourcePath,
-            object target,
-            object targetPath)
-        {
-            if (source is INotifyPropertyChanged notifiableSource)
-            {
-                notifiableSource.PropertyChanged += OnNotifiableSourceChanged;
-            }
-            else if (sourcePath is DependencyProperty)
-            {
-                _sourcePropertyData.PropertyChanged += OnDependencySourceChanged;
-            }
-
-            if (Mode is BindingMode.TwoWay)
-            {
-                if (target is INotifyPropertyChanged notifiableTarget)
-                {
-                    notifiableTarget.PropertyChanged += OnNotifiableTargetChanged;
-                }
-                else if (targetPath is DependencyProperty)
-                {
-                    _targetPropertyData.PropertyChanged += OnDependencyTargetChanged;
-                }
-            }
-
-            _isBinding = true;
-        }
 
         private static IValueConverter CreateDefaultConverter(Type sourceType, Type targetType)
         {
@@ -358,6 +328,69 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             }
 
             return converter;
+        }
+
+        private void PreOnDependencySourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (ReferenceEquals(sender, SourceMember.AssociatedObject))
+            {
+                OnDependencyTargetChanged(sender, e);
+            }
+        }
+
+        private void PreOnDependencyTargetChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (ReferenceEquals(sender, TargetMember.AssociatedObject))
+            {
+                OnDependencyTargetChanged(sender, e);
+            }
+        }
+
+        private void PreOnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == SourceMember.MemberName)
+            {
+                OnNotifiableSourceChanged(sender, SourceMember.Value);
+            }
+        }
+
+        private void PreOnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == TargetMember.MemberName)
+            {
+                OnNotifiableSourceChanged(sender, TargetMember.Value);
+            }
+        }
+
+
+        private void StartBinding(
+            object source,
+            object sourcePath,
+            object target,
+            object targetPath)
+        {
+            if (source is INotifyPropertyChanged notifiableSource)
+            {
+                notifiableSource.PropertyChanged += PreOnNotifiableSourceChanged;
+            }
+            else if (sourcePath is DependencyProperty)
+            {
+                _sourcePropertyData.PropertyChanged += PreOnDependencySourceChanged;
+            }
+
+            if (Mode is BindingMode.TwoWay)
+            {
+                if (target is INotifyPropertyChanged notifiableTarget)
+                {
+                    notifiableTarget.PropertyChanged += PreOnNotifiableTargetChanged;
+                }
+                else if (targetPath is DependencyProperty)
+                {
+                    _targetPropertyData.PropertyChanged += PreOnDependencyTargetChanged;
+                }
+            }
+
+            _isBinding = true;
         }
 
         #endregion

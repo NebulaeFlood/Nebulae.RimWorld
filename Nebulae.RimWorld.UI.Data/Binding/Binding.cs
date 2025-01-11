@@ -97,9 +97,9 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         }
 
         /// <inheritdoc/>
-        protected override void OnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e)
+        protected override void OnNotifiableSourceChanged(object sender, object newValue)
         {
-            _sourceValueCache = SourceMember.Value;
+            _sourceValueCache = newValue;
             _targetValueCache = ShouldConvert
                 ? Converter.Convert(_sourceValueCache, _currentCulture)
                 : _sourceValueCache;
@@ -108,9 +108,9 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         }
 
         /// <inheritdoc/>
-        protected override void OnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e)
+        protected override void OnNotifiableTargetChanged(object sender, object newValue)
         {
-            _targetValueCache = TargetMember.Value;
+            _targetValueCache = newValue;
             _sourceValueCache = ShouldConvert
                 ? Converter.ConvertBack(_targetValueCache, _currentCulture)
                 : _targetValueCache;
