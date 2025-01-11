@@ -103,9 +103,9 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 获取或设置按钮内容的统一边距
         /// </summary>
-        public float Padding
+        public Thickness Padding
         {
-            get { return (float)GetValue(PaddingProperty); }
+            get { return (Thickness)GetValue(PaddingProperty); }
             set { SetValue(PaddingProperty, value); }
         }
 
@@ -113,8 +113,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 标识 <see cref="Padding"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty PaddingProperty =
-            DependencyProperty.Register(nameof(Padding), typeof(float), typeof(IconButton),
-                new ControlPropertyMetadata(DefaultPadding, ControlRelation.Measure));
+            DependencyProperty.Register(nameof(Padding), typeof(Thickness), typeof(IconButton),
+                new ControlPropertyMetadata(new Thickness(DefaultPadding), ControlRelation.Measure));
         #endregion
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             Rect desiredRect = base.ArrangeCore(availableRect);
-            Rect contentAvailableRect = desiredRect - new Thickness(Padding);
+            Rect contentAvailableRect = desiredRect - Padding;
 
             if (!_separateContent)
             {
