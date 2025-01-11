@@ -43,7 +43,6 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
-
         //------------------------------------------------------
         //
         //  Public Properties
@@ -135,6 +134,14 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
+
         /// <summary>
         /// 绘制按钮
         /// </summary>
@@ -150,9 +157,9 @@ namespace Nebulae.RimWorld.UI.Controls
             EventType eventType = Event.current.type;
             Rect visiableRect = Segment().IntersectWith(renderRect);
 
-            bool isOver = Mouse.IsOver(visiableRect);
+            bool isCursorOver = Mouse.IsOver(visiableRect);
 
-            renderRect = DrawButton(renderRect, _isEnabled, isOver);
+            renderRect = DrawButton(renderRect, _isEnabled, isCursorOver);
 
             if (_playMouseOverSound)
             {
@@ -164,7 +171,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return renderRect;
             }
 
-            if (isOver && eventType is EventType.MouseUp)
+            if (isCursorOver && eventType is EventType.MouseUp)
             {
                 OnClick();
                 click.Invoke(this, EventArgs.Empty);
@@ -178,5 +185,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 按钮被单击时发生
         /// </summary>
         protected virtual void OnClick() { }
+
+        #endregion
     }
 }
