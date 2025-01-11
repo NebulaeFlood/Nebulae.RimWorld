@@ -12,11 +12,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 初始化 <see cref="CheckBox"/> 的新实例
         /// </summary>
-        public CheckBox()
+        public CheckBox() : base(Widgets.CheckboxOnTex, Widgets.CheckboxPartialTex, Widgets.CheckboxOffTex)
         {
-            CheckedIcon = Widgets.CheckboxOnTex;
-            IndeterminateIcon = Widgets.CheckboxPartialTex;
-            UncheckedIcon = Widgets.CheckboxOffTex;
         }
 
 

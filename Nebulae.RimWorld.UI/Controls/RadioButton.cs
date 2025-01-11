@@ -48,11 +48,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 初始化 <see cref="RadioButton"/> 的新实例
         /// </summary>
-        public RadioButton()
+        public RadioButton() : base(DefaultCheckedIcon, DefaultIndeterminateIcon, DefaultUncheckedIcon)
         {
-            CheckedIcon = DefaultCheckedIcon;
-            IndeterminateIcon = DefaultIndeterminateIcon;
-            UncheckedIcon = DefaultUncheckedIcon;
         }
 
 

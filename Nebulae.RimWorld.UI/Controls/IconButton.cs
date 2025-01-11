@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Nebulae.RimWorld.UI.Data;
 using UnityEngine;
 using Verse;
 using GameText = Verse.Text;
@@ -33,9 +29,9 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Private Fields
 
-        private Size _cachedContentSize = Size.Empty;
-        private Rect _cachedIconRect;
-        private Rect _cachedTextRect;
+        private Size _contentDesiredSize = Size.Empty;
+        private Rect _iconDesiredRect;
+        private Rect _textDesiredRect;
 
         private Color _compositionColor = Color.white;
 
@@ -64,13 +60,31 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 按钮的图标
+        /// 按钮当前显示的图标
         /// </summary>
         public Texture2D Icon
         {
             get => _icon;
             set => _icon = value;
         }
+
+        #region IconSize
+        /// <summary>
+        /// 获取或设置图标的尺寸
+        /// </summary>
+        public float IconSize
+        {
+            get { return (float)GetValue(IconSizeProperty); }
+            set { SetValue(IconSizeProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="IconSize"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty IconSizeProperty =
+            DependencyProperty.Register(nameof(IconSize), typeof(float), typeof(IconButton),
+                new ControlPropertyMetadata(DefaultIconSize, ControlRelation.Measure));
+        #endregion
 
         #endregion
 
@@ -95,37 +109,37 @@ namespace Nebulae.RimWorld.UI.Controls
         protected override Rect ArrangeCore(Rect availableRect)
         {
             Rect desiredRect = base.ArrangeCore(availableRect);
-            Rect contentRect = _cachedContentSize.AlignRectToArea(
+            Rect contentRect = _contentDesiredSize.AlignRectToArea(
                 desiredRect,
-                HorizontalAlignment.Center,
-                VerticalAlignment.Center);
+                ContentHorizontalAlignment,
+                ContentVerticalAlignment);
 
             switch (_status)
             {
                 case ContentStatus.TextOnly:
-                    _cachedIconRect = Rect.zero;
-                    _cachedTextRect = contentRect;
+                    _iconDesiredRect = Rect.zero;
+                    _textDesiredRect = contentRect;
                     break;
                 case ContentStatus.IconOnly:
-                    _cachedIconRect = contentRect;
-                    _cachedTextRect = Rect.zero;
+                    _iconDesiredRect = contentRect;
+                    _textDesiredRect = Rect.zero;
                     break;
                 case ContentStatus.TextWithIcon:
-                    _cachedIconRect = new Rect(
+                    _iconDesiredRect = new Rect(
                         contentRect.x,
                         contentRect.y,
-                        _cachedContentSize.Height,
-                        _cachedContentSize.Height);
+                        _contentDesiredSize.Height,
+                        _contentDesiredSize.Height);
 
-                    _cachedTextRect = new Rect(
-                        contentRect.x + _cachedContentSize.Height,
+                    _textDesiredRect = new Rect(
+                        contentRect.x + _contentDesiredSize.Height,
                         contentRect.y,
-                        _cachedContentSize.Width - _cachedContentSize.Height,
-                        _cachedContentSize.Height);
+                        _contentDesiredSize.Width - _contentDesiredSize.Height,
+                        _contentDesiredSize.Height);
                     break;
                 default:    // NoContent
-                    _cachedIconRect = Rect.zero;
-                    _cachedTextRect = Rect.zero;
+                    _iconDesiredRect = Rect.zero;
+                    _textDesiredRect = Rect.zero;
                     break;
             }
 
@@ -158,21 +172,21 @@ namespace Nebulae.RimWorld.UI.Controls
                         GameFont currentFont = GameText.Font;
                         GameText.Font = FontSize;
 
-                        Widgets.Label(_cachedTextRect, Text);
+                        Widgets.Label(_textDesiredRect, Text);
 
                         GameText.Font = currentFont;
                         break;
                     }
                 case ContentStatus.IconOnly:
-                    GUI.DrawTexture(_cachedIconRect, _icon, ScaleMode.ScaleToFit);
+                    GUI.DrawTexture(_iconDesiredRect, _icon, ScaleMode.ScaleToFit);
                     break;
                 case ContentStatus.TextWithIcon:
                     {
-                        GUI.DrawTexture(_cachedIconRect, _icon, ScaleMode.ScaleToFit);
+                        GUI.DrawTexture(_iconDesiredRect, _icon, ScaleMode.ScaleToFit);
                         GameFont currentFont = GameText.Font;
                         GameText.Font = FontSize;
 
-                        Widgets.Label(_cachedTextRect, Text);
+                        Widgets.Label(_textDesiredRect, Text);
 
                         GameText.Font = currentFont;
                         break;
@@ -186,34 +200,45 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected override  Size MeasureCore(Size availableSize)
+        protected override Size MeasureCore(Size availableSize)
         {
             string text = Text;
 
-            bool noText = string.IsNullOrEmpty(text);
-            bool noIcon = Icon is null;
+            bool hasText = string.IsNullOrEmpty(text);
+            bool hasIcon = Icon is null;
 
-            if (noText && noIcon)
+            if (hasIcon)
             {
-                _cachedContentSize = Size.Empty;
-                _status = ContentStatus.NoContent;
-            }
-            else if (!noText && noIcon)
-            {
-                _cachedContentSize = text.CalculateLineSize(FontSize);
-                _status = ContentStatus.TextOnly;
-            }
-            else if (noText && !noIcon)
-            {
-                _cachedContentSize = new Size(Mathf.Min(availableSize.Width, availableSize.Height) * 0.8f).Round();
-                _status = ContentStatus.IconOnly;
+                float iconSize = IconSize;
+
+                if (hasText)
+                {
+                    Size textSize = text.CalculateLineSize(FontSize);
+
+                    _contentDesiredSize = new Size(
+                        textSize.Width + iconSize,
+                        Mathf.Max(textSize.Height, iconSize));
+
+                    _status = ContentStatus.TextWithIcon;
+                }
+                else
+                {
+                    _contentDesiredSize = new Size(iconSize);
+                    _status = ContentStatus.IconOnly;
+                }
             }
             else
             {
-                Size textSize = text.CalculateLineSize(FontSize);
-
-                _cachedContentSize = new Size(textSize.Width + textSize.Height, textSize.Height);
-                _status = ContentStatus.TextWithIcon;
+                if (hasText)
+                {
+                    _contentDesiredSize = text.CalculateLineSize(FontSize);
+                    _status = ContentStatus.TextOnly;
+                }
+                else
+                {
+                    _contentDesiredSize = Size.Empty;
+                    _status = ContentStatus.NoContent;
+                }
             }
 
             return base.MeasureCore(availableSize);
