@@ -220,6 +220,19 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect DrawCore(Rect renderRect)
         {
+            if (GUI.GetNameOfFocusedControl() == Name 
+                && Event.current.type == EventType.KeyDown 
+                && Event.current.keyCode == KeyCode.Escape)
+            {
+                Verse.UI.UnfocusCurrentControl();
+                Event.current.Use();
+            }
+            else if (OriginalEventUtility.EventType == EventType.MouseDown 
+                && !renderRect.Contains(Event.current.mousePosition))
+            {
+                Verse.UI.UnfocusCurrentControl();
+            }
+
             GameFont currentFont = Text.Font;
             Text.Font = FontSize;
 
