@@ -18,9 +18,9 @@
 		<PackageTags>RimWorld Mod</PackageTags>
 		<Copyright>Copyright (c) 2024 NubulaeFlood</Copyright>
 	</PropertyGroup>
-	
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="copy $(OutDir)$(TargetName).* $(SolutionDir)build\Assemblies" />
+
+	<Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'RELEASE'">
+		<Exec Command="xcopy $(OutDir)$(TargetName).* $(SolutionDir)build\Assemblies\ /y" />
 	</Target>
 	
 </Project>
