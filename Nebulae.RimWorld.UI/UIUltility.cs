@@ -147,9 +147,9 @@ namespace Nebulae.RimWorld.UI
         /// <returns>光标在屏幕上的 UI 坐标</returns>
         public static Vector2 GetScreenMousePosition()
         {
-            Vector2 mousePos = Input.mousePosition;
+            Vector2 mousePos = Input.mousePosition / Prefs.UIScale;
             mousePos.y = Verse.UI.screenHeight - mousePos.y;
-            return mousePos / Prefs.UIScale;
+            return mousePos;
         }
 
         /// <summary>
