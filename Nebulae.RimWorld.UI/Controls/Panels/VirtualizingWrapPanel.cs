@@ -19,7 +19,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         #region ItemHeight
         /// <summary>
-        /// 获取或设置子控件的最大高度
+        /// 获取或设置分配给子控件的高度
         /// </summary>
         public float ItemHeight
         {
@@ -37,7 +37,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         #region ItemWidth
         /// <summary>
-        /// 获取或设置子控件的最大宽度
+        /// 获取或设置分配给子控件的宽度
         /// </summary>
         public float ItemWidth
         {
