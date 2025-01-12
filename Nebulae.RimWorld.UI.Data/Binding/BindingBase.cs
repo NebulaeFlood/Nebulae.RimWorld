@@ -338,9 +338,9 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         private void PreOnDependencySourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.Property.Name == SourceMember.MemberName)
+            if (ReferenceEquals(sender, SourceMember.AssociatedObject))
             {
-                if (_isBinding && IsBindingValid)
+                if (_isBinding && TargetMember.IsAlive)
                 {
                     OnDependencySourceChanged(sender, e);
                 }
@@ -353,9 +353,9 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         private void PreOnDependencyTargetChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.Property.Name == TargetMember.MemberName)
+            if (ReferenceEquals(sender, TargetMember.AssociatedObject))
             {
-                if (_isBinding && IsBindingValid)
+                if (_isBinding && SourceMember.IsAlive)
                 {
                     OnDependencyTargetChanged(sender, e);
                 }
@@ -368,9 +368,9 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         private void PreOnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == SourceMember.MemberName)
+            if (ReferenceEquals(sender, SourceMember.AssociatedObject))
             {
-                if (_isBinding && IsBindingValid)
+                if (_isBinding && TargetMember.IsAlive)
                 {
                     OnNotifiableSourceChanged(sender, SourceMember.Value);
                 }
@@ -383,9 +383,9 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         private void PreOnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == TargetMember.MemberName)
+            if (ReferenceEquals(sender, TargetMember.AssociatedObject))
             {
-                if (_isBinding && IsBindingValid)
+                if (_isBinding && SourceMember.IsAlive)
                 {
                     OnNotifiableTargetChanged(sender, TargetMember.Value);
                 }
