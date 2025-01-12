@@ -5,7 +5,7 @@ using Verse;
 namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
-    /// 用于显示控件内容的控件
+    /// 用于在非 <see cref="ControlWindow"/> 内完整呈现控件功能的控件
     /// </summary>
     public sealed class ContentPresenter : Control, IFrame
     {
@@ -17,8 +17,8 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Private Fields
 
-        private Window _assosiatedWindow;
         private Control _content;
+        private Window _owner;
 
         private float _horizontalOffset = 0f;
         private float _verticalOffset = 0f;
@@ -38,16 +38,6 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Public Properties
-
-        /// <summary>
-        /// 关联的窗口
-        /// </summary>
-        /// <remarks>当窗口不派生自 <see cref="ControlWindow"/> 时，设置此属性为显示该控件的窗口。</remarks>
-        public Window AssosiatedWindow
-        {
-            get => _assosiatedWindow;
-            set => _assosiatedWindow = value;
-        }
 
         /// <summary>
         /// 内容控件
@@ -85,6 +75,15 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
+        /// 承载该控件的窗口
+        /// </summary>
+        public Window Owner
+        {
+            get => _owner;
+            set => _owner = value;
+        }
+
+        /// <summary>
         /// 内容控件的可显示区域的垂直偏移量
         /// </summary>
         public float VerticalOffset
@@ -108,8 +107,10 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 初始化 <see cref="ContentPresenter"/> 的新实例
         /// </summary>
-        public ContentPresenter()
+        /// <param name="owner">承载该控件的窗口</param>
+        public ContentPresenter(Window owner)
         {
+            _owner = owner;
         }
 
 
@@ -150,13 +151,9 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 _cachedVisiableRect = Container.Segment().IntersectWith(RenderRect);
             }
-            else if (_assosiatedWindow != null)
-            {
-                _cachedVisiableRect = _assosiatedWindow.windowRect.IntersectWith(RenderRect);
-            }
             else
             {
-                _cachedVisiableRect = RenderRect;
+                _cachedVisiableRect = _owner.windowRect.IntersectWith(RenderRect);
             }
             _isSegmentValid = IsArrangeValid;
 
