@@ -45,8 +45,18 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
+        //------------------------------------------------------
+        //
+        //  Internal Fields
+        //
+        //------------------------------------------------------
+
+        #region Internal Fields
+
         internal IFrame Container;
         internal bool IsHolded = false;
+
+        #endregion
 
 
         //------------------------------------------------------
