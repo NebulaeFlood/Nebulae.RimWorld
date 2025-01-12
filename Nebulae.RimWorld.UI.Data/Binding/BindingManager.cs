@@ -8,19 +8,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
     /// <summary>
     /// 绑定关系管理器
     /// </summary>
+    /// <remarks>所有绑定关系基本不会自动回收，需要手动回收</remarks>
     public static class BindingManager
     {
-        private static readonly HashSet<BindingBase> _globalBindings = new HashSet<BindingBase>();
+        internal static readonly HashSet<BindingBase> GlobalBindings = new HashSet<BindingBase>();
 
-
-        /// <summary>
-        /// 回收所有无效的绑定关系
-        /// </summary>
-        public static void CollectObsoleteBindings()
-        {
-            _globalBindings.RemoveWhere(x => !x.IsBinding || !x.IsBindingValid);
-            _globalBindings.TrimExcess();
-        }
 
         #region Bind Normal Members
 
@@ -290,9 +282,24 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         #endregion
 
 
-        internal static bool IsBinding(BindingBase binding)
+        /// <summary>
+        /// 回收由 <see cref="BindingManager"/> 管理的所有绑定关系
+        /// </summary>
+        public static void CollectAllBindings()
         {
-            return !_globalBindings.Add(binding);
+            GlobalBindings.RemoveWhere(x =>
+            {
+                x.IsBinding = false;
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// 回收由 <see cref="BindingManager"/> 管理的不可用的绑定关系
+        /// </summary>
+        public static void CollectObsolutedBingings()
+        {
+            GlobalBindings.RemoveWhere(x => !x.IsBinding || !x.IsBindingValid);
         }
 
 

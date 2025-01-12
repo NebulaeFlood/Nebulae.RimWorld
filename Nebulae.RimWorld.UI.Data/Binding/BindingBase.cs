@@ -86,7 +86,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <summary>
         /// 绑定关系是否存在
         /// </summary>
-        public bool IsBinding => _isBinding;
+        public bool IsBinding
+        {
+            get => _isBinding;
+            internal set => _isBinding = value;
+        }
 
         /// <summary>
         /// 绑定对象是否支持绑定
@@ -170,7 +174,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             _hashCode = SourceMember.GetHashCode() ^ TargetMember.GetHashCode();
 
-            if (BindingManager.IsBinding(this))
+            if (!BindingManager.GlobalBindings.Add(this))
             {
                 throw new InvalidOperationException($"Binding from {_sourceType}.{_sourcePath} to {_targetType}.{_targetPath} has already exist.");
             }
@@ -248,6 +252,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             }
 
             _isBinding = false;
+
+            BindingManager.GlobalBindings.Remove(this);
         }
 
         /// <summary>
@@ -332,17 +338,31 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         private void PreOnDependencySourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            if (ReferenceEquals(sender, SourceMember.AssociatedObject))
+            if (e.Property.Name == SourceMember.MemberName)
             {
-                OnDependencySourceChanged(sender, e);
+                if (_isBinding && IsBindingValid)
+                {
+                    OnDependencySourceChanged(sender, e);
+                }
+                else
+                {
+                    Unbind();
+                }
             }
         }
 
         private void PreOnDependencyTargetChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            if (ReferenceEquals(sender, TargetMember.AssociatedObject))
+            if (e.Property.Name == TargetMember.MemberName)
             {
-                OnDependencyTargetChanged(sender, e);
+                if (_isBinding && IsBindingValid)
+                {
+                    OnDependencyTargetChanged(sender, e);
+                }
+                else
+                {
+                    Unbind();
+                }
             }
         }
 
@@ -350,7 +370,14 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             if (e.PropertyName == SourceMember.MemberName)
             {
-                OnNotifiableSourceChanged(sender, SourceMember.Value);
+                if (_isBinding && IsBindingValid)
+                {
+                    OnNotifiableSourceChanged(sender, SourceMember.Value);
+                }
+                else
+                {
+                    Unbind();
+                }
             }
         }
 
@@ -358,7 +385,14 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             if (e.PropertyName == TargetMember.MemberName)
             {
-                OnNotifiableTargetChanged(sender, TargetMember.Value);
+                if (_isBinding && IsBindingValid)
+                {
+                    OnNotifiableTargetChanged(sender, TargetMember.Value);
+                }
+                else
+                {
+                    Unbind();
+                }
             }
         }
 
