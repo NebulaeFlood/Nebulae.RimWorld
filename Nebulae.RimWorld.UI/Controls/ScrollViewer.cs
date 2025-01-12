@@ -207,7 +207,8 @@ namespace Nebulae.RimWorld.UI.Controls
                             _viewWidth,
                             0f,
                             Mathf.Max(_contentSize.Width, _viewWidth),
-                            isHorizontal: true);
+                            isHorizontal: true)
+                                .Clamp(0f, Mathf.Max(0f, _contentSize.Width - _viewWidth));
 
                         _shouldUpdateSegment = _shouldUpdateSegment || _horizontalOffset != horizontalOffset;
                         _horizontalOffset = horizontalOffset;
@@ -229,7 +230,8 @@ namespace Nebulae.RimWorld.UI.Controls
                             _viewHeight,
                             0f,
                             Mathf.Max(_contentSize.Height, _viewHeight),
-                            isHorizontal: false);
+                            isHorizontal: false)
+                                .Clamp(0f, Mathf.Max(0f, _contentSize.Height - _viewHeight));
 
                         _shouldUpdateSegment = _shouldUpdateSegment || _verticalOffset != verticalOffset;
                         _verticalOffset = verticalOffset;
