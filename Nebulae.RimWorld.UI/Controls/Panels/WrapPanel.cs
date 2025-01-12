@@ -17,39 +17,39 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         #region Public Properties
 
-        #region ChildMaxHeight
+        #region ItemHeight
         /// <summary>
         /// 获取或设置子控件的最大高度
         /// </summary>
-        public float ChildMaxHeight
+        public float ItemHeight
         {
-            get { return (float)GetValue(ChildMaxHeightProperty); }
-            set { SetValue(ChildMaxHeightProperty, value); }
+            get { return (float)GetValue(ItemHeightProperty); }
+            set { SetValue(ItemHeightProperty, value); }
         }
 
         /// <summary>
-        /// 标识 <see cref="ChildMaxHeight"/> 依赖属性。
+        /// 标识 <see cref="ItemHeight"/> 依赖属性。
         /// </summary>
-        public static readonly DependencyProperty ChildMaxHeightProperty =
-            DependencyProperty.Register(nameof(ChildMaxHeight), typeof(float), typeof(WrapPanel),
+        public static readonly DependencyProperty ItemHeightProperty =
+            DependencyProperty.Register(nameof(ItemHeight), typeof(float), typeof(WrapPanel),
                 new ControlPropertyMetadata(40f, ControlRelation.Measure));
         #endregion
 
-        #region ChildMaxWidth
+        #region ItemWidth
         /// <summary>
         /// 获取或设置子控件的最大宽度
         /// </summary>
-        public float ChildMaxWidth
+        public float ItemWidth
         {
-            get { return (float)GetValue(ChildMaxWidthProperty); }
-            set { SetValue(ChildMaxWidthProperty, value); }
+            get { return (float)GetValue(ItemWidthProperty); }
+            set { SetValue(ItemWidthProperty, value); }
         }
 
         /// <summary>
-        /// 标识 <see cref="ChildMaxWidth"/> 依赖属性。
+        /// 标识 <see cref="ItemWidth"/> 依赖属性。
         /// </summary>
-        public static readonly DependencyProperty ChildMaxWidthProperty =
-            DependencyProperty.Register(nameof(ChildMaxWidth), typeof(float), typeof(WrapPanel),
+        public static readonly DependencyProperty ItemWidthProperty =
+            DependencyProperty.Register(nameof(ItemWidth), typeof(float), typeof(WrapPanel),
                 new ControlPropertyMetadata(200f, ControlRelation.Measure));
         #endregion
 
@@ -144,24 +144,35 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         protected override Rect ArrangeOverride(Rect availableRect)
         {
             Size childrenSize = RenderSize;
-            float currentX = availableRect.x;
-            float currentY = availableRect.y;
 
-            Size childDesiredSize;
+            float childMaxHeight = ItemHeight;
+            float childMaxWidth = ItemWidth;
+
+            float currentX = 0f;
+            float currentY = 0f;
+
+            Size childAvailableSize;
             if (Orientation is Orientation.Horizontal)
             {
+                childAvailableSize = new Size(
+                    childMaxWidth > 1f
+                        ? Mathf.Min(childMaxWidth, availableRect.width)
+                        : childMaxWidth * availableRect.width,
+                    childMaxHeight > 1f
+                        ? childMaxHeight
+                        : childMaxHeight * availableRect.width);
+
                 float maxRowHeight = 0f;
 
                 Array.ForEach(FilteredChildren, child =>
                 {
-                    childDesiredSize = child.DesiredSize;
-                    if (childDesiredSize > Size.Empty)
+                    if (child.RenderSize > Size.Empty)
                     {
 
                     ArrangeStart:
-                        if (currentX + childDesiredSize.Width > availableRect.x + availableRect.width)
+                        if (currentX + childAvailableSize.Width > childrenSize.Width)
                         {
-                            currentX = availableRect.x;
+                            currentX = 0f;
                             currentY += maxRowHeight;   // 换行
                             maxRowHeight = 0f;
 
@@ -169,31 +180,39 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         }
                         else
                         {
-                            currentX += child.Arrange(new Rect(
-                                currentX,
-                                currentY,
-                                childDesiredSize.Width,
-                                childDesiredSize.Height))
-                                    .width;
-                            maxRowHeight = Mathf.Max(maxRowHeight, childDesiredSize.Height);
+                            child.Arrange(new Rect(
+                                currentX + availableRect.x,
+                                currentY + availableRect.y,
+                                childAvailableSize.Width,
+                                childAvailableSize.Height));
+
+                            currentX += childAvailableSize.Width;
+                            maxRowHeight = Mathf.Max(maxRowHeight, childAvailableSize.Height);
                         }
                     }
                 });
             }
             else
             {
+                childAvailableSize = new Size(
+                    childMaxWidth > 1f
+                        ? childMaxWidth
+                        : childMaxWidth * availableRect.width,
+                    childMaxHeight > 1f
+                        ? Mathf.Min(childMaxHeight, availableRect.height)
+                        : childMaxHeight * availableRect.height);
+
                 float maxColumnWidth = 0f;
 
                 Array.ForEach(FilteredChildren, child =>
                 {
-                    childDesiredSize = child.DesiredSize;
-                    if (childDesiredSize > Size.Empty)
+                    if (child.RenderSize > Size.Empty)
                     {
 
                     ArrangeStart:
-                        if (currentY + childDesiredSize.Height > availableRect.y + availableRect.height)
+                        if (currentY + childAvailableSize.Height > childrenSize.Height)
                         {
-                            currentY = availableRect.y;
+                            currentY = 0f;
                             currentX += maxColumnWidth; // 换列
                             maxColumnWidth = 0f;
 
@@ -201,13 +220,14 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         }
                         else
                         {
-                            currentY += child.Arrange(new Rect(
-                                currentX,
-                                currentY,
-                                childDesiredSize.Width,
-                                childDesiredSize.Height))
-                                    .height;
-                            maxColumnWidth = Mathf.Max(maxColumnWidth, childDesiredSize.Width);
+                            child.Arrange(new Rect(
+                                currentX + availableRect.x,
+                                currentY + availableRect.y,
+                                childAvailableSize.Width,
+                                childAvailableSize.Height));
+
+                            currentY += childAvailableSize.Height;
+                            maxColumnWidth = Mathf.Max(maxColumnWidth, childAvailableSize.Width);
                         }
                     }
                 });
@@ -223,92 +243,60 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            float childMaxHeight = ChildMaxHeight;
-            float childMaxWidth = ChildMaxWidth;
-            float childrenWidth = 0f;
-            float childrenHeight = 0f;
+            Control[] filteredChildren = FilteredChildren;
 
-            Size childAvailableSize;
-            Size childDesiredSize;
+            float childMaxHeight = ItemHeight;
+            float childMaxWidth = ItemWidth;
+
+            int childrenColumnCount;
+            int childrenRowCount;
+
             if (Orientation is Orientation.Horizontal)
             {
-                childAvailableSize = new Size(
-                    childMaxWidth > 1f
+                childMaxWidth = childMaxWidth > 1f
                         ? Mathf.Min(childMaxWidth, availableSize.Width)
-                        : childMaxWidth * availableSize.Width,
-                    childMaxHeight > 1f
+                        : childMaxWidth * availableSize.Width;
+
+                // 限制子控件最大宽度不超过面板宽度
+                childMaxHeight = childMaxHeight > 1f
                         ? childMaxHeight
-                        : childMaxHeight * availableSize.Height);
+                        : childMaxHeight * availableSize.Height;
 
-                float rowWidth = 0f;
-                float maxRowHeight = 0f;
-                Array.ForEach(FilteredChildren, child =>
+                childrenColumnCount = (int)(availableSize.Width / childMaxWidth);
+                childrenRowCount = filteredChildren.Length / childrenColumnCount;
+
+                if (filteredChildren.Length % childrenColumnCount > 0)
                 {
-                    childDesiredSize = child.Measure(childAvailableSize);
-                    if (childDesiredSize > Size.Empty)
-                    {
-
-                    MeasureStart:
-                        if (rowWidth + childDesiredSize.Width > availableSize.Width)
-                        {
-                            childrenWidth = Mathf.Max(childrenWidth, rowWidth);   // 取所有行中最大的宽度
-                            childrenHeight += maxRowHeight;  // 换行
-                            rowWidth = 0f;
-                            maxRowHeight = 0f;
-
-                            goto MeasureStart;  // 重新计算该控件
-                        }
-                        else
-                        {
-                            rowWidth += childDesiredSize.Width;
-                            maxRowHeight = Mathf.Max(maxRowHeight, childDesiredSize.Height);
-                        }
-                    }
-                });
-
-                childrenHeight += maxRowHeight;
-                childrenWidth = availableSize.Width;
+                    childrenRowCount++;
+                }
             }
             else
             {
-                childAvailableSize = new Size(
-                    childMaxWidth > 1f
-                        ? childMaxWidth
-                        : childMaxWidth * availableSize.Width,
-                    childMaxHeight > 1f
-                        ? Mathf.Min(childMaxHeight, availableSize.Height)
-                        : childMaxHeight * availableSize.Height);
+                childMaxWidth = childMaxWidth > 1f
+                    ? childMaxWidth
+                    : childMaxWidth * availableSize.Width;
 
-                float columnHeight = 0f;
-                float maxColumnWidth = 0f;
-                Array.ForEach(FilteredChildren, child =>
+                // 限制子控件最大高度不超过面板高度
+                childMaxHeight = childMaxHeight > 1f
+                    ? Mathf.Min(childMaxHeight, availableSize.Height)
+                    : childMaxHeight * availableSize.Height;
+
+                childrenRowCount = (int)(availableSize.Height / childMaxHeight);
+                childrenColumnCount = filteredChildren.Length / childrenRowCount;
+
+                if (filteredChildren.Length % childrenRowCount > 0)
                 {
-                    childDesiredSize = child.Measure(childAvailableSize);
-                    if (childDesiredSize > Size.Empty)
-                    {
-
-                    MeasureStart:
-                        if (columnHeight + childDesiredSize.Height > availableSize.Height)
-                        {
-                            childrenHeight = Mathf.Max(childrenHeight, columnHeight); // 取所有列中最大的高度
-                            childrenWidth += maxColumnWidth;    // 换列
-                            columnHeight = 0f;
-                            maxColumnWidth = 0f;
-
-                            goto MeasureStart;  // 重新计算该控件
-                        }
-                        else
-                        {
-                            columnHeight += childDesiredSize.Height;
-                            maxColumnWidth = Mathf.Max(maxColumnWidth, childDesiredSize.Width);
-                        }
-                    }
-                });
-
-                childrenHeight = availableSize.Height;
-                childrenWidth += maxColumnWidth;
+                    childrenColumnCount++;
+                }
             }
-            return new Size(childrenWidth, childrenHeight);
+
+            Size childMaxSize = new Size(childMaxWidth, childMaxHeight);
+
+            Array.ForEach(filteredChildren, child => child.Measure(childMaxSize));
+
+            return new Size(
+                childMaxWidth * childrenColumnCount,
+                childMaxHeight * childrenRowCount);
         }
 
         #endregion
