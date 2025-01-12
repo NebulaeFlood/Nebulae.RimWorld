@@ -82,6 +82,29 @@ namespace Nebulae.RimWorld.Utilities
         }
 
         /// <summary>
+        /// 将字符串转化为浮点数
+        /// </summary>
+        /// <param name="str">要转换的字符串</param>
+        /// <param name="defaultValue">转换失败时返回的默认值</param>
+        /// <returns>转换后的数字</returns>
+        public static float Prase(this string str, float defaultValue)
+        {
+            if (!float.TryParse(str, out float value))
+            {
+                if (string.IsNullOrEmpty(str))
+                {
+                    value = 0f;
+                }
+                else
+                {
+                    value = defaultValue;
+                }
+            }
+
+            return value;
+        }
+
+        /// <summary>
         /// 将无穷替换为指定值
         /// </summary>
         /// <param name="value">可能被替换的数</param>
