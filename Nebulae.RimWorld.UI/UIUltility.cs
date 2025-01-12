@@ -162,6 +162,28 @@ namespace Nebulae.RimWorld.UI
         }
 
         /// <summary>
+        /// 获取光标在屏幕上的 UI 坐标
+        /// </summary>
+        /// <returns>光标在屏幕上的 UI 坐标</returns>
+        public static Vector2 GetScreenMousePosition()
+        {
+            Vector2 mousePos = Input.mousePosition;
+            mousePos.y = Verse.UI.screenHeight - mousePos.y;
+            return mousePos / Prefs.UIScale;
+        }
+
+        /// <summary>
+        /// 获取光标在屏幕上的 UI 坐标
+        /// </summary>
+        /// <returns>光标在屏幕上的 UI 坐标</returns>
+        public static Vector2 GetScreenMousePosition()
+        {
+            Vector2 mousePos = Input.mousePosition;
+            mousePos.y = Verse.UI.screenHeight - mousePos.y;
+            return mousePos / Prefs.UIScale;
+        }
+
+        /// <summary>
         /// 计算两个矩形的交集
         /// </summary>
         /// <param name="rect">第一个矩形</param>
