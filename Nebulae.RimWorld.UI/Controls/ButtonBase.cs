@@ -159,7 +159,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected sealed override Rect DrawCore(Rect renderRect)
         {
-            EventType eventType = Event.current.type;
             Rect visiableRect = Segment().IntersectWith(renderRect);
 
             bool isCursorOver = visiableRect.Contains(Event.current.mousePosition);
@@ -182,7 +181,7 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             if (isCursorOver 
-                && eventType is EventType.MouseUp)
+                && GUI.Button(visiableRect, string.Empty, Widgets.EmptyStyle))
             {
                 OnClick();
                 click.Invoke(this, EventArgs.Empty);
