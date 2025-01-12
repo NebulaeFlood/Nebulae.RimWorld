@@ -181,30 +181,6 @@ namespace Nebulae.RimWorld.UI
         }
 
         /// <summary>
-        /// 判断按钮交互结果是否能触发按钮
-        /// </summary>
-        /// <param name="result">按钮交互结果</param>
-        /// <returns>按钮交互结果是否能触发按钮。</returns>
-        public static bool IsPressed(this Widgets.DraggableResult result)
-        {
-            return result is Widgets.DraggableResult.Pressed
-                || result is Widgets.DraggableResult.DraggedThenPressed;
-        }
-
-        /// <summary>
-        /// 判断矩形是否仅有尺寸发生变化
-        /// </summary>
-        /// <param name="rect">要判断的矩形</param>
-        /// <param name="previousRect">要比较的矩形</param>
-        /// <returns>矩形是否仅有尺寸发生变化。</returns>
-        public static bool IsSizeOnlyChanged(this Rect rect, Rect previousRect)
-        {
-            return rect.x == previousRect.x
-                && rect.y == previousRect.y
-                && (rect.width != previousRect.width || rect.height != previousRect.height);
-        }
-
-        /// <summary>
         /// 对矩形坐标应用偏移
         /// </summary>
         /// <param name="rect">要偏移坐标的矩形</param>
