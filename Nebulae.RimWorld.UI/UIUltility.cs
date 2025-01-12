@@ -142,17 +142,6 @@ namespace Nebulae.RimWorld.UI
         }
 
         /// <summary>
-        /// 获取光标在屏幕上的 UI 坐标
-        /// </summary>
-        /// <returns>光标在屏幕上的 UI 坐标</returns>
-        public static Vector2 GetScreenMousePosition()
-        {
-            Vector2 mousePos = Input.mousePosition / Prefs.UIScale;
-            mousePos.y = Verse.UI.screenHeight - mousePos.y;
-            return mousePos;
-        }
-
-        /// <summary>
         /// 计算两个矩形的交集
         /// </summary>
         /// <param name="rect">第一个矩形</param>
