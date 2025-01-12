@@ -162,8 +162,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         ? childMaxHeight
                         : childMaxHeight * availableRect.width);
 
-                float maxRowHeight = 0f;
-
                 Array.ForEach(FilteredChildren, child =>
                 {
                     if (child.RenderSize > Size.Empty)
@@ -173,8 +171,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         if (currentX + childAvailableSize.Width > childrenSize.Width)
                         {
                             currentX = 0f;
-                            currentY += maxRowHeight;   // 换行
-                            maxRowHeight = 0f;
+                            currentY += childAvailableSize.Height;   // 换行
 
                             goto ArrangeStart;  // 重新排列该控件
                         }
@@ -187,7 +184,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                                 childAvailableSize.Height));
 
                             currentX += childAvailableSize.Width;
-                            maxRowHeight = Mathf.Max(maxRowHeight, childAvailableSize.Height);
                         }
                     }
                 });
@@ -202,8 +198,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         ? Mathf.Min(childMaxHeight, availableRect.height)
                         : childMaxHeight * availableRect.height);
 
-                float maxColumnWidth = 0f;
-
                 Array.ForEach(FilteredChildren, child =>
                 {
                     if (child.RenderSize > Size.Empty)
@@ -213,8 +207,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         if (currentY + childAvailableSize.Height > childrenSize.Height)
                         {
                             currentY = 0f;
-                            currentX += maxColumnWidth; // 换列
-                            maxColumnWidth = 0f;
+                            currentX += childAvailableSize.Width; // 换列
 
                             goto ArrangeStart;  // 重新排列该控件
                         }
@@ -227,7 +220,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                                 childAvailableSize.Height));
 
                             currentY += childAvailableSize.Height;
-                            maxColumnWidth = Mathf.Max(maxColumnWidth, childAvailableSize.Width);
                         }
                     }
                 });
