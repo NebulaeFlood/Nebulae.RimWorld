@@ -219,18 +219,33 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="renderRect">允许绘制背景的区域</param>
         /// <param name="isEnabled">按钮是否被启用，用于判断应该绘制的状态背景</param>
         /// <param name="isCursorOver">光标是否位于控件上方，用于判断应该绘制的状态背景</param>
-        protected virtual void DrawBackground(Rect renderRect, bool isEnabled, bool isCursorOver) { }
+        /// <param name="isPressing">按钮是否被按下</param>
+        protected virtual void DrawBackground(
+            Rect renderRect,
+            bool isEnabled,
+            bool isCursorOver,
+            bool isPressing) 
+        { 
+        }
 
 
         /// <inheritdoc/>
-        protected override sealed Rect DrawButton(Rect renderRect, bool isEnabled, bool isCursorOver)
+        protected override sealed Rect DrawButton(
+            Rect renderRect,
+            bool isEnabled,
+            bool isCursorOver,
+            bool isPressing)
         {
             Color currentColor = GUI.color;
             GUI.color = isEnabled
                 ? _compositionColor * currentColor
                 : _compositionColor * Widgets.InactiveColor;
 
-            DrawBackground(renderRect, isEnabled, isCursorOver);
+            DrawBackground(
+                renderRect,
+                isEnabled,
+                isCursorOver,
+                isPressing);
 
             if ((_status & ContentStatus.IconSetted) != 0)
             {

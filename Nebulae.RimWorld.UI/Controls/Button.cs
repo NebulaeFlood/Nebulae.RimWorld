@@ -98,14 +98,18 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         /// <inheritdoc/>
-        protected override void DrawBackground(Rect renderRect, bool isEnabled, bool isCursorOver)
+        protected override void DrawBackground(
+            Rect renderRect,
+            bool isEnabled,
+            bool isCursorOver,
+            bool isPressing)
         {
             Texture2D background = _normalBackground;
             if (isEnabled && isCursorOver)
             {
                 background = _mouseOverBackground;
 
-                if (Input.GetMouseButton(0))
+                if (isPressing)
                 {
                     background = _pressedBackground;
                 }

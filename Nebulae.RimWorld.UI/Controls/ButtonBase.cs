@@ -148,8 +148,13 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="renderRect">允许绘制的区域</param>
         /// <param name="isEnabled">按钮是否被启用</param>
         /// <param name="isCursorOver">光标是否位于按钮上方</param>
+        /// <param name="isPressing">按钮是否被按下</param>
         /// <returns>实际绘制的区域。</returns>
-        protected abstract Rect DrawButton(Rect renderRect, bool isEnabled, bool isCursorOver);
+        protected abstract Rect DrawButton(
+            Rect renderRect,
+            bool isEnabled,
+            bool isCursorOver,
+            bool isPressing);
 
         /// <inheritdoc/>
         protected sealed override Rect DrawCore(Rect renderRect)
@@ -157,9 +162,14 @@ namespace Nebulae.RimWorld.UI.Controls
             EventType eventType = Event.current.type;
             Rect visiableRect = Segment().IntersectWith(renderRect);
 
-            bool isCursorOver = Mouse.IsOver(visiableRect);
+            bool isCursorOver = visiableRect.Contains(Event.current.mousePosition);
+            bool isPressing = isCursorOver && Input.GetMouseButton(0);
 
-            renderRect = DrawButton(renderRect, _isEnabled, isCursorOver);
+            renderRect = DrawButton(
+                renderRect,
+                _isEnabled,
+                isCursorOver,
+                isPressing);
 
             if (_playMouseOverSound)
             {
@@ -171,7 +181,8 @@ namespace Nebulae.RimWorld.UI.Controls
                 return renderRect;
             }
 
-            if (isCursorOver && eventType is EventType.MouseUp)
+            if (isCursorOver 
+                && eventType is EventType.MouseUp)
             {
                 OnClick();
                 click.Invoke(this, EventArgs.Empty);
