@@ -87,31 +87,31 @@ namespace Nebulae.RimWorld.UI.Controls
             if (HorizontalAlignment is HorizontalAlignment.Stretch)
             {
                 desiredWidth = availableSize.Width.IsInfinity()
-                    ? UIUltility.ScreenWidth
+                    ? Verse.UI.screenWidth
                     : availableSize.Width;
             }
             else
             {
-                float width = Width.ReplaceInfinityWith(UIUltility.ScreenWidth);
+                float width = Width.ReplaceInfinityWith(Verse.UI.screenWidth);
 
                 desiredWidth = width > 1f
                     ? Mathf.Min(width, availableSize.Width)
-                    : (availableSize.Width.ReplaceInfinityWith(UIUltility.ScreenWidth) * width);
+                    : (availableSize.Width.ReplaceInfinityWith(Verse.UI.screenWidth) * width);
             }
 
             if (VerticalAlignment is VerticalAlignment.Stretch)
             {
                 desiredHeight = availableSize.Height.IsInfinity()
-                    ? UIUltility.ScreenHeight
+                    ? Verse.UI.screenHeight
                     : availableSize.Height;
             }
             else
             {
-                float height = Height.ReplaceInfinityWith(UIUltility.ScreenHeight);
+                float height = Height.ReplaceInfinityWith(Verse.UI.screenHeight);
 
                 desiredHeight = height > 1f
                     ? Mathf.Min(height, availableSize.Height)
-                    : (availableSize.Height.ReplaceInfinityWith(UIUltility.ScreenHeight) * height);
+                    : (availableSize.Height.ReplaceInfinityWith(Verse.UI.screenHeight) * height);
             }
 
             return new Size(desiredWidth, desiredHeight);

@@ -9,26 +9,6 @@ namespace Nebulae.RimWorld.UI
     /// </summary>
     public static class UIUltility
     {
-        //------------------------------------------------------
-        //
-        //  Global Properties
-        //
-        //------------------------------------------------------
-
-        #region Global Properties
-
-        /// <summary>
-        /// 游戏窗口客户区高度
-        /// </summary>
-        public static float ScreenHeight => Verse.UI.screenHeight;
-
-        /// <summary>
-        /// 游戏窗口客户区宽度
-        /// </summary>
-        public static float ScreenWidth => Verse.UI.screenWidth;
-
-        #endregion
-
 
         /// <summary>
         /// 计算按照指定对齐方式放置到指定区域后的矩形
@@ -159,17 +139,6 @@ namespace Nebulae.RimWorld.UI
             float right = Mathf.Max(rect.xMax, anotherRect.xMax);
             float bottom = Mathf.Max(rect.yMax, anotherRect.yMax);
             return new Rect(left, top, right - left, bottom - top);
-        }
-
-        /// <summary>
-        /// 获取光标在屏幕上的 UI 坐标
-        /// </summary>
-        /// <returns>光标在屏幕上的 UI 坐标</returns>
-        public static Vector2 GetScreenMousePosition()
-        {
-            Vector2 mousePos = Input.mousePosition;
-            mousePos.y = Verse.UI.screenHeight - mousePos.y;
-            return mousePos / Prefs.UIScale;
         }
 
         /// <summary>
