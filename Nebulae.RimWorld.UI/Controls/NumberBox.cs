@@ -10,7 +10,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 专用于输入数字的文本框控件
     /// </summary>
-    public class NumberBox : FrameworkControl
+    public class NumberBox : FocusableControl
     {
         //------------------------------------------------------
         //
@@ -19,8 +19,6 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Private Fields
-
-        private Window _associatedWindow;
 
         private Regex _inputValidator = new Regex(@"^-?[0-9]{0,39}(\.[0-9]{0,2})?$");
 
@@ -32,9 +30,7 @@ namespace Nebulae.RimWorld.UI.Controls
         private int _decimalPartDigit = 2;
         private bool _displayAsPercent = false;
 
-        private bool _isFocusing = false;
         private bool _isReadOnly = false;
-        private bool _forceFocusing = false;
 
         #endregion
 
@@ -196,47 +192,11 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
-        /// <summary>
-        /// 强制获取焦点
-        /// </summary>
-        /// <param name="window">该控件所属的窗口</param>
-        public void ForceFocus(Window window)
-        {
-            _associatedWindow = window;
-            _forceFocusing = true;
-        }
-
-        /// <summary>
-        /// 获取焦点
-        /// </summary>
-        /// <param name="window">该控件所属的窗口</param>
-        /// <remarks>需要设置 <see cref="Control.Name"/> 属性。</remarks>
-        public void GetFocus(Window window)
-        {
-            _isFocusing = true;
-        }
-
-
         /// <inheritdoc/>
-        protected override Rect DrawCore(Rect renderRect)
+        protected override void DrawControl(Rect renderRect)
         {
-            if (GUI.GetNameOfFocusedControl() == Name 
-                && Event.current.type == EventType.KeyDown 
-                && Event.current.keyCode == KeyCode.Escape)
-            {
-                Verse.UI.UnfocusCurrentControl();
-                Event.current.Use();
-            }
-            else if (OriginalEventUtility.EventType == EventType.MouseDown 
-                && !renderRect.Contains(Event.current.mousePosition))
-            {
-                Verse.UI.UnfocusCurrentControl();
-            }
-
             GameFont currentFont = Text.Font;
             Text.Font = FontSize;
-
-            GUI.SetNextControlName(Name);
 
             if (_isReadOnly)
             {
@@ -247,7 +207,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 string text = GUI.TextField(renderRect, _buffer, Text.CurTextFieldStyle);
                 if (_buffer != text && _inputValidator.IsMatch(text))
                 {
-                    float value = float.Parse(text).Clamp(_minimun, _maximun);
+                    float value = text.Prase(0f).Clamp(_minimun, _maximun);
                     _buffer = DisplayAsPercent
                         ? string.Format($"{{0:F{Math.Max(_decimalPartDigit - 2, 0)}}}%", value * 100f)
                         : value.ToString();
@@ -256,15 +216,6 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             Text.Font = currentFont;
-
-            if (_forceFocusing || _isFocusing)
-            {
-                Verse.UI.FocusControl(Name, _associatedWindow);
-
-                _isFocusing = false;
-            }
-
-            return renderRect;
         }
     }
 }

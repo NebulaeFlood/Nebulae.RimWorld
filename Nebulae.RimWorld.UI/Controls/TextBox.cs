@@ -9,13 +9,9 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 文本框控件
     /// </summary>
-    public class TextBox : FrameworkControl
+    public class TextBox : FocusableControl
     {
-        private Window _associatedWindow;
-
-        private bool _isFocusing = false;
         private bool _isReadOnly = false;
-        private bool _forceFocusing = false;
         private bool _wrapText = true;
 
 
@@ -115,47 +111,11 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
-        /// <summary>
-        /// 强制获取焦点
-        /// </summary>
-        /// <param name="window">该控件所属的窗口</param>
-        public void ForceFocus(Window window)
-        {
-            _associatedWindow = window;
-            _forceFocusing = true;
-        }
-
-        /// <summary>
-        /// 获取焦点
-        /// </summary>
-        /// <param name="window">该控件所属的窗口</param>
-        /// <remarks>需要设置 <see cref="Control.Name"/> 属性。</remarks>
-        public void GetFocus(Window window)
-        {
-            _isFocusing = true;
-        }
-
-
         /// <inheritdoc/>
-        protected override Rect DrawCore(Rect renderRect)
+        protected override void DrawControl(Rect renderRect)
         {
-            if (GUI.GetNameOfFocusedControl() == Name
-                && Event.current.type == EventType.KeyDown
-                && Event.current.keyCode == KeyCode.Escape)
-            {
-                Verse.UI.UnfocusCurrentControl();
-                Event.current.Use();
-            }
-            else if (OriginalEventUtility.EventType == EventType.MouseDown
-                && !renderRect.Contains(Event.current.mousePosition))
-            {
-                Verse.UI.UnfocusCurrentControl();
-            }
-
             GameFont currentFont = GameText.Font;
             GameText.Font = FontSize;
-
-            GUI.SetNextControlName(Name);
 
             if (_wrapText)
             {
@@ -189,15 +149,6 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             GameText.Font = currentFont;
-
-            if (_forceFocusing || _isFocusing)
-            {
-                Verse.UI.FocusControl(Name, _associatedWindow);
-
-                _isFocusing = false;
-            }
-
-            return renderRect;
         }
     }
 }
