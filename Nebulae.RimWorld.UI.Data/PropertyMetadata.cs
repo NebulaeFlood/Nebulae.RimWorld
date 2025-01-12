@@ -48,7 +48,7 @@ namespace Nebulae.RimWorld.UI.Data
         /// <summary>
         /// 当依赖属性值发生变化时触发的事件
         /// </summary>
-        public event WeakEventHandler<DependencyObject, DependencyPropertyChangedEventArgs> PropertyChanged
+        internal event WeakEventHandler<DependencyObject, DependencyPropertyChangedEventArgs> PropertyChanged
         {
             add => _propertyChanged.Add(value);
             remove => _propertyChanged.Remove(value);
