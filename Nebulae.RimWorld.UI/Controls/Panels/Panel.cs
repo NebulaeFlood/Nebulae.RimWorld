@@ -76,25 +76,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <remarks>对于 <see cref="Grid"/>，部分项可能为 <see langword="null"/>。</remarks>
         protected PanelChildrenCollection Children => _children;
 
-
-        /// <summary>
-        /// 当前条件下可以被绘制的子控件
-        /// </summary>
-        protected Control[] DrawableChildren
-        {
-            get
-            {
-                if (_isDrawableChildrenValid)
-                {
-                    return _drawableChildren;
-                }
-
-                _drawableChildren = FindDrawableChildren().ToArray();
-                _isDrawableChildrenValid = IsArrangeValid;
-                return _drawableChildren;
-            }
-        }
-
         /// <summary>
         /// <see cref="Filter"/> 过滤后的子控件
         /// </summary>
@@ -222,9 +203,16 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected sealed override Rect DrawCore(Rect renderRect)
         {
+            if (!_isDrawableChildrenValid)
+            {
+                _drawableChildren = FindDrawableChildren().ToArray();
+
+                _isDrawableChildrenValid = true;
+            }
+
             if (!_isCachedRenderedRectValid)
             {
-                for (int i = 0; i < DrawableChildren.Length; i++)
+                for (int i = 0; i < _drawableChildren.Length; i++)
                 {
                     if (i > 0)
                     {
@@ -240,7 +228,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             }
             else
             {
-                for (int i = 0; i < DrawableChildren.Length; i++)
+                for (int i = 0; i < _drawableChildren.Length; i++)
                 {
                     _drawableChildren[i].Draw();
                 }
@@ -262,6 +250,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             }
 
             Size renderSize = child.RenderRect;
+
             if (renderSize == Size.Empty || renderSize < Size.Empty)
             {
                 return false;
