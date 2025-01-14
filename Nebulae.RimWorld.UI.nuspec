@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
 	<metadata>
 		<id>Nebulae.RimWorld.UI</id>
-		<version>1.2.3</version>
+		<version>1.2.5</version>
 		<authors>NubulaeFlood</authors>
 		<license type="file">LICENSE.txt</license>
 		<licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
@@ -32,6 +32,6 @@
 		<file src="Nebulae.RimWorld.UI.Data\bin\Release\net472\Nebulae.RimWorld.UI.Data.xml" target="lib\net472\Nebulae.RimWorld.UI.Data.xml" />
 
 		<file src="LICENSE.txt" target="LICENSE.txt" />
-		<file src="README.md" target="README.md" />
+		<file src="NEBULAE-RIMWORLD-UI.md" target="README.md" />
 	</files>
 </package>
