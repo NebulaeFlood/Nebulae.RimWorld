@@ -15,7 +15,6 @@ namespace Nebulae.RimWorld.UI.Patches
             yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(LoadedLanguage), nameof(LoadedLanguage.folderName)));
             yield return new CodeInstruction(OpCodes.Call, AccessTools.PropertySetter(typeof(Prefs), nameof(Prefs.LangFolderName)));
             yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(LanguageDatabase_Patch), nameof(SelectLanguageWithNotification)));
-
         }
 
         private static void SelectLanguageWithNotification()

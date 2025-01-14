@@ -224,8 +224,8 @@ namespace Nebulae.RimWorld.UI.Controls
             Rect renderRect,
             bool isEnabled,
             bool isCursorOver,
-            bool isPressing) 
-        { 
+            bool isPressing)
+        {
         }
 
 

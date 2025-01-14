@@ -1,5 +1,4 @@
-﻿using Nebulae.RimWorld.UI.Data.Binding;
-using System;
+﻿using System;
 
 namespace Nebulae.RimWorld.UI.Data
 {

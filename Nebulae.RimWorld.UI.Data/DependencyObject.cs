@@ -1,5 +1,4 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding;
-using RimWorld;
 using System;
 using System.Collections.Generic;
 

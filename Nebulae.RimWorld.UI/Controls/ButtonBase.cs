@@ -180,7 +180,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return renderRect;
             }
 
-            if (isCursorOver 
+            if (isCursorOver
                 && GUI.Button(visiableRect, string.Empty, Widgets.EmptyStyle))
             {
                 OnClick();
