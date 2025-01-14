@@ -36,6 +36,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
             ScrollViewer scrollViewer = new ScrollViewer
             {
+                Margin = new Thickness(0f, 0f, 0f, 12f),
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
                 Content = new TextBlock { Text = message }
             };
@@ -49,7 +50,7 @@ namespace Nebulae.RimWorld.UI.Windows
             };
             confirmButton.Click += CloseWindow;
 
-            Content = new Grid().SetSize(new float[] { 0.5f, 0.5f }, new float[] { Grid.Remain, 36f })
+            Content = new Grid().SetSize(new float[] { 0.6f, 0.4f }, new float[] { Grid.Remain, 42f })
                 .Set(new Control[]
                 {
                     scrollViewer,   scrollViewer,
