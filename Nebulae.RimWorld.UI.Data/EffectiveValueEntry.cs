@@ -8,22 +8,36 @@
         /// <summary>
         /// 是否正在临时修改属性值
         /// </summary>
-        internal readonly bool IsTemporary;
+        internal bool IsTemporary;
 
         /// <summary>
         /// 属性的临时值
         /// </summary>
-        internal readonly object TemporaryValue;
+        internal object TemporaryValue;
 
         /// <summary>
         /// 属性的值
         /// </summary>
-        internal readonly object Value;
+        internal object Value;
 
         /// <summary>
         /// 属性的有效值
         /// </summary>
-        internal object EffectiveValue => IsTemporary ? TemporaryValue : Value;
+        internal object EffectiveValue
+        {
+            get => IsTemporary ? TemporaryValue : Value;
+            set
+            {
+                if (IsTemporary)
+                {
+                    TemporaryValue = value;
+                }
+                else
+                {
+                    Value = value;
+                }
+            }
+        }
 
 
         /// <summary>

@@ -30,9 +30,6 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         private readonly string _targetPath;
         private readonly Type _targetType;
 
-        private readonly PropertyMetadata _sourcePropertyData;
-        private readonly PropertyMetadata _targetPropertyData;
-
         private bool _isBinding;
 
         #endregion
@@ -65,12 +62,12 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <summary>
         /// 绑定源成员的信息
         /// </summary>
-        protected readonly BindingMember SourceMember;
+        internal protected readonly BindingMember SourceMember;
 
         /// <summary>
         /// 绑定目标成员的信息
         /// </summary>
-        protected readonly BindingMember TargetMember;
+        internal protected readonly BindingMember TargetMember;
 
         #endregion
 
@@ -100,6 +97,16 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         #endregion
 
 
+#if DEBUG
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        ~BindingBase()
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        {
+            System.Diagnostics.Debug.WriteLine($"A {Mode} Binding from [{SourceMember.GetHashCode()}]{_sourceType}.{_sourcePath} to [{TargetMember.GetHashCode()}]{_targetType}.{_targetPath} is being collected.");
+        }
+#endif
+
+
         /// <summary>
         /// 为 <see cref="BindingBase"/> 派生类实现基本初始化
         /// </summary>
@@ -118,6 +125,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             IValueConverter converter,
             BindingMode mode)
         {
+            #region Source Member
+
             if (sourcePath is MemberInfo sourceMember)
             {
                 _sourcePath = sourceMember.Name;
@@ -130,11 +139,14 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 DependencyProperty sourceProperty = (DependencyProperty)sourcePath;
 
                 _sourcePath = sourceProperty.Name;
-                _sourcePropertyData = sourceProperty.GetMetadata((DependencyObject)source);
                 _sourceType = sourceProperty.OwnerType;
 
                 SourceMember = new BindingMember(source, sourceProperty);
             }
+
+            #endregion
+
+            #region Validate Source Member
 
             if (!SourceMember.IsReadable)
             {
@@ -144,6 +156,10 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             {
                 throw new InvalidOperationException($"Source member {_sourceType}.{_sourcePath} must be writable for a TowWay binding.");
             }
+
+            #endregion
+
+            #region Target Member
 
             if (targetPath is MemberInfo targetMember)
             {
@@ -157,34 +173,44 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 DependencyProperty targetProperty = (DependencyProperty)targetPath;
 
                 _targetPath = targetProperty.Name;
-                _targetPropertyData = targetProperty.GetMetadata((DependencyObject)target);
                 _targetType = targetProperty.OwnerType;
 
                 TargetMember = new BindingMember(target, targetProperty);
             }
 
+            #endregion
+
+            #region Validate Target Member
+
             if (!TargetMember.IsWritable)
             {
-                throw new InvalidOperationException($"Target member {_targetType}.{_targetPath} must be writable.");
+                throw new InvalidOperationException($"Subcriber member {_targetType}.{_targetPath} must be writable.");
             }
             else if (mode is BindingMode.TwoWay && !TargetMember.IsReadable)
             {
-                throw new InvalidOperationException($"Target member {_targetType}.{_targetPath} must be readable for a TowWay binding.");
+                throw new InvalidOperationException($"Subcriber member {_targetType}.{_targetPath} must be readable for a TowWay binding.");
             }
 
+            #endregion
+
+            #region Check Repetition
+
             _hashCode = SourceMember.GetHashCode() ^ TargetMember.GetHashCode();
+            _isBinding = true;
 
             if (!BindingManager.GlobalBindings.Add(this))
             {
                 throw new InvalidOperationException($"Binding from {_sourceType}.{_sourcePath} to {_targetType}.{_targetPath} has already exist.");
             }
 
+            #endregion
+
             Mode = mode;
             Converter = converter
                 ?? CreateDefaultConverter(SourceMember.MemberType, TargetMember.MemberType);
             ShouldConvert = !(Converter is null);
 
-            StartBinding(source, sourcePath, target, targetPath);
+            StartBinding(source, target);
         }
 
 
@@ -228,24 +254,22 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 return;
             }
 
-            if (_sourcePropertyData != null)
+            if (SourceMember.AssociatedObject is DependencyObject dependencySource)
             {
-                _sourcePropertyData.PropertyChanged -= OnDependencySourceChanged;
+                dependencySource.DependencyPropertyChanged -= OnDependencySourceChanged;
             }
-
-            if (_targetPropertyData != null)
+            else if (SourceMember.AssociatedObject is INotifyPropertyChanged notifiableSource)
             {
-                _targetPropertyData.PropertyChanged -= OnDependencyTargetChanged;
+                notifiableSource.PropertyChanged -= OnNotifiableSourceChanged;
             }
 
             if (Mode is BindingMode.TwoWay)
             {
-                if (SourceMember.AssociatedObject is INotifyPropertyChanged notifiableSource)
+                if (TargetMember.AssociatedObject is DependencyObject dependencyTarget)
                 {
-                    notifiableSource.PropertyChanged -= OnNotifiableSourceChanged;
+                    dependencyTarget.DependencyPropertyChanged -= OnDependencyTargetChanged;
                 }
-
-                if (TargetMember.AssociatedObject is INotifyPropertyChanged notifiableTarget)
+                else if (TargetMember.AssociatedObject is INotifyPropertyChanged notifiableTarget)
                 {
                     notifiableTarget.PropertyChanged -= OnNotifiableTargetChanged;
                 }
@@ -276,29 +300,29 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// 当 <see cref="DependencyObject"/> 绑定源成员变化执行的操作
         /// </summary>
         /// <param name="sender">绑定源</param>
-        /// <param name="e">变化信息</param>
+        /// <param name="e">事件数据</param>
         protected abstract void OnDependencySourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e);
 
         /// <summary>
         /// 当 <see cref="DependencyObject"/> 绑定目标成员变化执行的操作
         /// </summary>
         /// <param name="sender">绑定目标</param>
-        /// <param name="e">变化信息</param>
+        /// <param name="e">事件数据</param>
         protected abstract void OnDependencyTargetChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e);
 
         /// <summary>
         /// 当 <see cref="INotifyPropertyChanged"/> 绑定源成员变化执行的操作
         /// </summary>
         /// <param name="sender">绑定源</param>
-        /// <param name="newValue">绑定源成员的新值</param>
-        protected abstract void OnNotifiableSourceChanged(object sender, object newValue);
+        /// <param name="e">事件数据</param>
+        protected abstract void OnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e);
 
         /// <summary>
         /// 当 <see cref="INotifyPropertyChanged"/> 绑定目标成员变化执行的操作
         /// </summary>
         /// <param name="sender">绑定目标</param>
-        /// <param name="newValue">绑定目标成员的新值</param>
-        protected abstract void OnNotifiableTargetChanged(object sender, object newValue);
+        /// <param name="e">事件数据</param>
+        protected abstract void OnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e);
 
         #endregion
 
@@ -336,95 +360,28 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             return converter;
         }
 
-        private void PreOnDependencySourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        private void StartBinding(object source, object target)
         {
-            if (ReferenceEquals(sender, SourceMember.AssociatedObject))
+            if (source is DependencyObject dependencySource)
             {
-                if (_isBinding && TargetMember.IsAlive)
-                {
-                    OnDependencySourceChanged(sender, e);
-                }
-                else
-                {
-                    Unbind();
-                }
+                dependencySource.DependencyPropertyChanged += OnDependencySourceChanged;
             }
-        }
-
-        private void PreOnDependencyTargetChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (ReferenceEquals(sender, TargetMember.AssociatedObject))
+            else if (source is INotifyPropertyChanged notifiableSource)
             {
-                if (_isBinding && SourceMember.IsAlive)
-                {
-                    OnDependencyTargetChanged(sender, e);
-                }
-                else
-                {
-                    Unbind();
-                }
-            }
-        }
-
-        private void PreOnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (ReferenceEquals(sender, SourceMember.AssociatedObject))
-            {
-                if (_isBinding && TargetMember.IsAlive)
-                {
-                    OnNotifiableSourceChanged(sender, SourceMember.Value);
-                }
-                else
-                {
-                    Unbind();
-                }
-            }
-        }
-
-        private void PreOnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (ReferenceEquals(sender, TargetMember.AssociatedObject))
-            {
-                if (_isBinding && SourceMember.IsAlive)
-                {
-                    OnNotifiableTargetChanged(sender, TargetMember.Value);
-                }
-                else
-                {
-                    Unbind();
-                }
-            }
-        }
-
-
-        private void StartBinding(
-            object source,
-            object sourcePath,
-            object target,
-            object targetPath)
-        {
-            if (source is INotifyPropertyChanged notifiableSource)
-            {
-                notifiableSource.PropertyChanged += PreOnNotifiableSourceChanged;
-            }
-            else if (sourcePath is DependencyProperty)
-            {
-                _sourcePropertyData.PropertyChanged += PreOnDependencySourceChanged;
+                notifiableSource.PropertyChanged += OnNotifiableSourceChanged;
             }
 
             if (Mode is BindingMode.TwoWay)
             {
-                if (target is INotifyPropertyChanged notifiableTarget)
+                if (target is DependencyObject dependencyTarget)
                 {
-                    notifiableTarget.PropertyChanged += PreOnNotifiableTargetChanged;
+                    dependencyTarget.DependencyPropertyChanged += OnDependencyTargetChanged;
                 }
-                else if (targetPath is DependencyProperty)
+                else if (target is INotifyPropertyChanged notifiableTarget)
                 {
-                    _targetPropertyData.PropertyChanged += PreOnDependencyTargetChanged;
+                    notifiableTarget.PropertyChanged += OnNotifiableTargetChanged;
                 }
             }
-
-            _isBinding = true;
         }
 
         #endregion

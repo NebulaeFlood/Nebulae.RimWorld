@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Data.Binding;
+using RimWorld;
+using System;
 using System.Collections.Generic;
 
 namespace Nebulae.RimWorld.UI.Data
@@ -8,6 +10,22 @@ namespace Nebulae.RimWorld.UI.Data
     /// </summary>
     public abstract class DependencyObject
     {
+        #region DependencyPropertyChanged
+
+        private readonly BindingDependencyPropertyChangedEvent _dependencyPropertyChanged =
+            new BindingDependencyPropertyChangedEvent();
+
+        /// <summary>
+        /// 提供给 <see cref="BindingBase"/> 的当依赖属性值发生变化时触发的事件
+        /// </summary>
+        internal event PropertyChangedCallback DependencyPropertyChanged
+        {
+            add => _dependencyPropertyChanged.Add(value, value.Invoke);
+            remove => _dependencyPropertyChanged.Remove(value);
+        }
+
+        #endregion
+
         /// <summary>
         /// 依赖对象当前的类型
         /// </summary>
@@ -65,12 +83,23 @@ namespace Nebulae.RimWorld.UI.Data
 
             if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
             {
-                if (oldEntry.Value != oldEntry.TemporaryValue)
+                if (!oldEntry.IsTemporary)
                 {
-                    EffectiveValueEntry newEntry = new EffectiveValueEntry(oldEntry.Value);
-                    _effectiveValues[property] = newEntry;
-                    property.GetMetadata(DependencyType).NotifyPropertyChanged(this, oldEntry, newEntry);
+                    return;
                 }
+
+                if (CompareAndUpdate(oldEntry.TemporaryValue, oldEntry.Value, ForceValueStatus.Common, out var newEntry))
+                {
+                    return;
+                }
+
+                var args = new DependencyPropertyChangedEventArgs(
+                    property,
+                    property.GetMetadata(DependencyType),
+                    oldEntry,
+                    newEntry);
+
+                SetValueStraightly(args);
             }
         }
 
@@ -96,7 +125,7 @@ namespace Nebulae.RimWorld.UI.Data
             {
                 value = CoerceValue(property, value);
             }
-            SetValueCommon(property, value, isTemporary: false);
+            SetValueCommon(property, value, ForceValueStatus.Common);
         }
 
         /// <summary>
@@ -121,7 +150,7 @@ namespace Nebulae.RimWorld.UI.Data
             {
                 value = CoerceValue(property, value);
             }
-            SetValueCommon(property, value, isTemporary: true);
+            SetValueCommon(property, value, ForceValueStatus.Temporary);
         }
 
         #endregion
@@ -153,37 +182,53 @@ namespace Nebulae.RimWorld.UI.Data
                 newValue = CoerceValue(property, newValue);
             }
 
-            object oldValue;
+            DependencyPropertyChangedEventArgs args;
+            PropertyMetadata metadata;
+            EffectiveValueEntry newEntry;
+
             if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
             {
-                oldValue = oldEntry.IsTemporary ? oldEntry.TemporaryValue : oldEntry.Value;
-
-                if (ShouldUpdateValue(oldValue, newValue)) { return; }
-
-                EffectiveValueEntry newEntry = oldEntry.IsTemporary
-                                    ? new EffectiveValueEntry(oldValue, newValue)
-                                    : new EffectiveValueEntry(newValue);
+                if (CompareAndUpdate(
+                        oldEntry,
+                        newValue,
+                        ForceValueStatus.Keep,
+                        out newEntry))
+                {
+                    return;
+                }
 
                 _effectiveValues[property] = newEntry;
 
-                OnPropertyChanged(property
-                    .GetMetadata(DependencyType)
-                    .NotifyPropertyChanged(this, oldEntry, newEntry));
+                metadata = property.GetMetadata(DependencyType);
+                args = new DependencyPropertyChangedEventArgs(
+                    property,
+                    metadata,
+                    newEntry);
+
+                metadata.PropertyChangedCallback?.Invoke(this, args);
+                OnPropertyChanged(args);
+                _dependencyPropertyChanged.Invoke(this, args);
             }
             else
             {
-                PropertyMetadata metadata = property.GetMetadata(DependencyType);
-                oldValue = metadata.DefaultValue;
+                metadata = property.GetMetadata(DependencyType);
 
-                if (ShouldUpdateValue(oldValue, newValue)) { return; }
-
-                EffectiveValueEntry newEntry = new EffectiveValueEntry(newValue);
-
-                _effectiveValues[property] = newEntry;
-
-                OnPropertyChanged(metadata
-                    .NotifyPropertyChanged(this, newEntry));
+                if (CompareAndUpdate(
+                        metadata.DefaultValue,
+                        newValue,
+                        ForceValueStatus.Keep,
+                        out newEntry))
+                {
+                    return;
+                }
             }
+
+            args = new DependencyPropertyChangedEventArgs(
+                property,
+                metadata,
+                newEntry);
+
+            SetValueStraightly(args);
         }
 
 
@@ -199,11 +244,13 @@ namespace Nebulae.RimWorld.UI.Data
         {
             PropertyMetadata metadata = property.GetMetadata(DependencyType);
 
-            object coercedValue = metadata.CoerceValue(this, value);
+            object coercedValue = metadata.CoerceValueCallback?.Invoke(this, value) ?? value;
+
             if (!property.ValidateValue(coercedValue))
             {
                 property.ThrowInvalidCoercedValueException(coercedValue);
             }
+
             return coercedValue;
         }
 
@@ -219,48 +266,132 @@ namespace Nebulae.RimWorld.UI.Data
             return property.GetMetadata(DependencyType).DefaultValue;
         }
 
-        private void SetValueCommon(DependencyProperty property, object newValue, bool isTemporary = false)
+        private void SetValueCommon(DependencyProperty property, object newValue, ForceValueStatus valueStatus)
         {
-            object oldValue;
+            DependencyPropertyChangedEventArgs args;
+            PropertyMetadata metadata;
+            EffectiveValueEntry newEntry;
+
             if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
             {
-                oldValue = oldEntry.IsTemporary ? oldEntry.TemporaryValue : oldEntry.Value;
+                if (CompareAndUpdate(
+                        oldEntry,
+                        newValue,
+                        valueStatus,
+                        out newEntry))
+                {
+                    return;
+                }
 
-                if (ShouldUpdateValue(oldValue, newValue)) { return; }
-
-                EffectiveValueEntry newEntry = isTemporary
-                    ? new EffectiveValueEntry(oldValue, newValue)
-                    : new EffectiveValueEntry(newValue);
-
-                _effectiveValues[property] = newEntry;
-
-                OnPropertyChanged(property
-                    .GetMetadata(DependencyType)
-                    .NotifyPropertyChanged(this, oldEntry, newEntry));
+                metadata = property.GetMetadata(DependencyType);
             }
             else
             {
-                PropertyMetadata metadata = property.GetMetadata(DependencyType);
-                oldValue = metadata.DefaultValue;
+                metadata = property.GetMetadata(DependencyType);
 
-                if (ShouldUpdateValue(oldValue, newValue)) { return; }
-
-                EffectiveValueEntry newEntry = isTemporary
-                    ? new EffectiveValueEntry(oldValue, newValue)
-                    : new EffectiveValueEntry(newValue);
-
-                _effectiveValues[property] = newEntry;
-
-                OnPropertyChanged(metadata
-                    .NotifyPropertyChanged(this, newEntry));
+                if (CompareAndUpdate(
+                        metadata.DefaultValue,
+                        newValue,
+                        valueStatus,
+                        out newEntry))
+                {
+                    return;
+                }
             }
+
+            args = new DependencyPropertyChangedEventArgs(
+                property,
+                metadata,
+                newEntry);
+
+            SetValueStraightly(args);
         }
 
-        private static bool ShouldUpdateValue(object oldValue, object newValue)
+        private void SetValueStraightly(DependencyPropertyChangedEventArgs args)
         {
+            _effectiveValues[args.Property] = args.NewEntry;
+
+            args.Metadata.PropertyChangedCallback?.Invoke(this, args);
+
+            OnPropertyChanged(args);
+
+            _dependencyPropertyChanged.Invoke(this, args);
+        }
+
+        private static bool CompareAndUpdate(EffectiveValueEntry entry, object newValue, ForceValueStatus forceStatus, out EffectiveValueEntry newEntry)
+        {
+            object entryValue;
+
+            if (forceStatus is ForceValueStatus.Common)
+            {
+
+                if (entry.IsTemporary)
+                {
+                    entryValue = entry.TemporaryValue;
+                }
+                else
+                {
+                    entryValue = entry.Value;
+                }
+
+                newEntry = new EffectiveValueEntry(newValue);
+
+            }
+            else if (forceStatus is ForceValueStatus.Keep)
+            {
+
+                if (entry.IsTemporary)
+                {
+                    entryValue = entry.TemporaryValue;
+                    newEntry = new EffectiveValueEntry(entry.Value, newValue);
+                }
+                else
+                {
+                    entryValue = entry.Value;
+                    newEntry = new EffectiveValueEntry(newValue);
+                }
+
+            }
+            else
+            {
+
+                if (entry.IsTemporary)
+                {
+                    entryValue = entry.TemporaryValue;
+                }
+                else
+                {
+                    entryValue = entry.Value;
+                }
+
+                newEntry = new EffectiveValueEntry(entry.Value, newValue);
+            }
+
+            return entryValue?.Equals(newValue) ?? newValue is null;
+        }
+
+        private static bool CompareAndUpdate(object oldValue, object newValue, ForceValueStatus forceStatus, out EffectiveValueEntry newEntry)
+        {
+            if (forceStatus is ForceValueStatus.Temporary)
+            {
+                newEntry = new EffectiveValueEntry(oldValue, newValue);
+            }
+            else
+            {
+                newEntry = new EffectiveValueEntry(newValue);
+            }
+
             return oldValue?.Equals(newValue) ?? newValue is null;
         }
 
         #endregion
+
+
+        private enum ForceValueStatus
+        {
+            Common,
+            Keep,
+            Temporary
+        }
     }
 }

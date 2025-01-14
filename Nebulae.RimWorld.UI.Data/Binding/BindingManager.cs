@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
     /// <summary>
     /// 绑定关系管理器
     /// </summary>
-    /// <remarks>所有绑定关系基本不会自动回收，需要手动回收</remarks>
+    /// <remarks>注意手动回收所有绑定对象存在强引用的绑定关系，否则会造成内存泄漏。</remarks>
     public static class BindingManager
     {
         internal static readonly HashSet<BindingBase> GlobalBindings = new HashSet<BindingBase>();
@@ -26,12 +26,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="targetPath">绑定目标的成员路径</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        /// <returns>创建的绑定关系</returns>
         /// <remarks>
         /// 对于静态成员，对应的 <paramref name="source"/> 或 
         /// <paramref name="target"/> 传入声明该成员的 <see cref="Type"/>。
         /// </remarks>
-        public static Binding Bind(
+        public static void Bind(
             object source,
             string sourcePath,
             object target,
@@ -39,7 +38,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             BindingMode mode,
             BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
         {
-            return Bind(source, sourcePath, target, targetPath, null, mode, flags);
+            Bind(source, sourcePath, target, targetPath, null, mode, flags);
         }
 
         /// <summary>
@@ -52,12 +51,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="converter">成员间的值转换器</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        /// <returns>创建的绑定关系</returns>
         /// <remarks>
         /// 对于静态成员，对应的 <paramref name="source"/> 或 
         /// <paramref name="target"/> 传入声明该成员的 <see cref="Type"/>。
         /// </remarks>
-        public static Binding Bind(
+        public static void Bind(
             object source,
             string sourcePath,
             object target,
@@ -79,7 +77,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             MemberInfo sourceMember = FindSourceMember(source, sourcePath, flags);
             MemberInfo targetMember = FindTargetMember(target, targetPath, flags);
 
-            return new Binding(source, sourceMember, target, targetMember, converter, mode);
+            // 构造函数内判断绑定是否重复时已经将绑定添加到 GlobalBingings
+            new Binding(source, sourceMember, target, targetMember, converter, mode);
         }
 
         #endregion
@@ -95,12 +94,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="targetPath">绑定目标的成员路径</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        /// <returns>创建的绑定关系</returns>
         /// <remarks>
         /// 对于静态成员，对应的 <paramref name="source"/> 或 
         /// <paramref name="target"/> 传入声明该成员的 <see cref="Type"/>。
         /// </remarks>
-        public static Binding Bind(
+        public static void Bind(
             object source,
             string sourcePath,
             DependencyObject target,
@@ -108,7 +106,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             BindingMode mode,
             BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
         {
-            return Bind(source, sourcePath, target, targetPath, null, mode, flags);
+            Bind(source, sourcePath, target, targetPath, null, mode, flags);
         }
 
         /// <summary>
@@ -121,12 +119,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="converter">成员间的值转换器</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        /// <returns>创建的绑定关系</returns>
         /// <remarks>
         /// 对于静态成员，对应的 <paramref name="source"/> 或 
         /// <paramref name="target"/> 传入声明该成员的 <see cref="Type"/>。
         /// </remarks>
-        public static Binding Bind(
+        public static void Bind(
             object source,
             string sourcePath,
             DependencyObject target,
@@ -147,7 +144,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             MemberInfo sourceMember = FindSourceMember(source, sourcePath, flags);
 
-            return new Binding(source, sourceMember, target, targetPath, converter, mode);
+            // 构造函数内判断绑定是否重复时已经将绑定添加到 GlobalBingings
+            new Binding(source, sourceMember, target, targetPath, converter, mode);
         }
 
         #endregion
@@ -163,12 +161,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="targetPath">绑定目标的成员路径</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        /// <returns>创建的绑定关系</returns>
         /// <remarks>
         /// 对于静态成员，对应的 <paramref name="source"/> 或 
         /// <paramref name="target"/> 传入声明该成员的 <see cref="Type"/>。
         /// </remarks>
-        public static Binding Bind(
+        public static void Bind(
             DependencyObject source,
             DependencyProperty sourcePath,
             object target,
@@ -176,7 +173,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             BindingMode mode,
             BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
         {
-            return Bind(source, sourcePath, target, targetPath, null, mode, flags);
+            Bind(source, sourcePath, target, targetPath, null, mode, flags);
         }
 
         /// <summary>
@@ -189,12 +186,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="converter">成员间的值转换器</param>
         /// <param name="mode">绑定关系的类型</param>
         /// <param name="flags">搜索成员的方式</param>
-        /// <returns>创建的绑定关系</returns>
         /// <remarks>
         /// 对于静态成员，对应的 <paramref name="source"/> 或 
         /// <paramref name="target"/> 传入声明该成员的 <see cref="Type"/>。
         /// </remarks>
-        public static Binding Bind(
+        public static void Bind(
             DependencyObject source,
             DependencyProperty sourcePath,
             object target,
@@ -215,7 +211,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             MemberInfo targetMember = FindTargetMember(target, targetPath, flags);
 
-            return new Binding(source, sourcePath, target, targetMember, converter, mode);
+            // 构造函数内判断绑定是否重复时已经将绑定添加到 GlobalBingings
+            new Binding(source, sourcePath, target, targetMember, converter, mode);
         }
 
         #endregion
@@ -230,19 +227,18 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="target">绑定目标</param>
         /// <param name="targetPath">绑定目标的成员路径</param>
         /// <param name="mode">绑定关系的类型</param>
-        /// <returns>创建的绑定关系</returns>
         /// <remarks>
         /// 对于静态成员，对应的 <paramref name="source"/> 或 
         /// <paramref name="target"/> 传入声明该成员的 <see cref="Type"/>。
         /// </remarks>
-        public static Binding Bind(
+        public static void Bind(
             DependencyObject source,
             DependencyProperty sourcePath,
             DependencyObject target,
             DependencyProperty targetPath,
             BindingMode mode)
         {
-            return Bind(source, sourcePath, target, targetPath, null, mode);
+            Bind(source, sourcePath, target, targetPath, null, mode);
         }
 
         /// <summary>
@@ -254,12 +250,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="targetPath">绑定目标的成员路径</param>
         /// <param name="converter">成员间的值转换器</param>
         /// <param name="mode">绑定关系的类型</param>
-        /// <returns>创建的绑定关系</returns>
         /// <remarks>
         /// 对于静态成员，对应的 <paramref name="source"/> 或 
         /// <paramref name="target"/> 传入声明该成员的 <see cref="Type"/>。
         /// </remarks>
-        public static Binding Bind(
+        public static void Bind(
             DependencyObject source,
             DependencyProperty sourcePath,
             DependencyObject target,
@@ -277,30 +272,38 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 Assert(BindingFailedReason.TargetArgumentNull);
             }
 
-            return new Binding(source, sourcePath, target, targetPath, converter, mode);
+            // 构造函数内判断绑定是否重复时已经将绑定添加到 GlobalBingings
+            new Binding(source, sourcePath, target, targetPath, converter, mode);
         }
 
         #endregion
 
 
         /// <summary>
-        /// 回收由 <see cref="BindingManager"/> 管理的所有绑定关系
+        /// 回收不可用的绑定关系
         /// </summary>
-        public static void CollectAllBindings()
+        /// <remarks>并不会强制调用 <see cref="GC.Collect()"/>，只是使 <see cref="BindingBase"/> 对象可以被释放。</remarks>
+        public static void CollectObsolutedBingings()
         {
             BindingBase[] bindings = GlobalBindings.ToArray();
-
-            GlobalBindings.Clear();
-
-            Array.ForEach(bindings, x => x.Unbind());
+            Array.ForEach(bindings, x =>
+            {
+                if (!x.IsBinding || !x.IsBindingValid)
+                {
+                    x.Unbind();
+                }
+            });
         }
 
         /// <summary>
-        /// 回收由 <see cref="BindingManager"/> 管理的不可用的绑定关系
+        /// 取消所有与指定对象关联的绑定关系
         /// </summary>
-        public static void CollectObsolutedBingings()
+        /// <param name="obj">要取消绑定关系的对象</param>
+        public static void Unbind(object obj)
         {
-            GlobalBindings.RemoveWhere(x => !x.IsBinding || !x.IsBindingValid);
+            GlobalBindings.RemoveWhere(x =>
+                ReferenceEquals(x.SourceMember.AssociatedObject, obj)
+                || ReferenceEquals(x.TargetMember.AssociatedObject, obj));
         }
 
 
@@ -381,7 +384,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             //------------------------------------------------------
             //
-            //  From Target
+            //  From Subcriber
             //
             //------------------------------------------------------
 

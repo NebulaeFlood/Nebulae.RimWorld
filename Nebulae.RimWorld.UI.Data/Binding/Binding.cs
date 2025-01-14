@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding.Converters;
+using System.ComponentModel;
 using System.Globalization;
 
 namespace Nebulae.RimWorld.UI.Data.Binding
@@ -76,47 +77,70 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <inheritdoc/>
         protected override void OnDependencySourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            _sourceValueCache = e.NewValue;
-            _targetValueCache = ShouldConvert
-                ? Converter.Convert(_sourceValueCache, _currentCulture)
-                : _sourceValueCache;
-
-            TargetMember.Value = _targetValueCache;
+            OnSourceChanged(e.NewValue);
         }
 
         /// <inheritdoc/>
         protected override void OnDependencyTargetChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            _targetValueCache = e.NewValue;
-            _sourceValueCache = ShouldConvert
-                ? Converter.ConvertBack(_targetValueCache, _currentCulture)
-                : _targetValueCache;
-
-            SourceMember.Value = _sourceValueCache;
+            OnTargetChanged(e.NewValue);
         }
 
         /// <inheritdoc/>
-        protected override void OnNotifiableSourceChanged(object sender, object newValue)
+        protected override void OnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e)
         {
-            _sourceValueCache = newValue;
-            _targetValueCache = ShouldConvert
-                ? Converter.Convert(_sourceValueCache, _currentCulture)
-                : _sourceValueCache;
-
-            TargetMember.Value = _targetValueCache;
+            OnSourceChanged(SourceMember.Value);
         }
 
         /// <inheritdoc/>
-        protected override void OnNotifiableTargetChanged(object sender, object newValue)
+        protected override void OnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e)
         {
-            _targetValueCache = newValue;
-            _sourceValueCache = ShouldConvert
-                ? Converter.ConvertBack(_targetValueCache, _currentCulture)
-                : _targetValueCache;
-
-            SourceMember.Value = _sourceValueCache;
+            OnTargetChanged(TargetMember.Value);
         }
 
         #endregion
+
+
+        private void OnSourceChanged(object value)
+        {
+            _sourceValueCache = value;
+
+            object convertedValue = ShouldConvert
+                ? Converter.Convert(value, _currentCulture)
+                : _sourceValueCache;
+
+            if (convertedValue?.IsUnsetValue() ?? false)
+            {
+                return;
+            }
+
+            if (!convertedValue?.Equals(_targetValueCache) ?? true)
+            {
+                _targetValueCache = convertedValue;
+
+                TargetMember.Value = convertedValue;
+            }
+        }
+
+        private void OnTargetChanged(object value)
+        {
+            _targetValueCache = value;
+
+            object convertedValue = ShouldConvert
+                ? Converter.ConvertBack(value, _currentCulture)
+                : value;
+
+            if (convertedValue?.IsUnsetValue() ?? false)
+            {
+                return;
+            }
+
+            if (!convertedValue?.Equals(_sourceValueCache) ?? true)
+            {
+                _sourceValueCache = convertedValue;
+
+                SourceMember.Value = convertedValue;
+            }
+        }
     }
 }

@@ -3,10 +3,10 @@
     /// <summary>
     /// 依赖属性的值更改后的事件数据
     /// </summary>
-    public struct DependencyPropertyChangedEventArgs
+    public readonly struct DependencyPropertyChangedEventArgs
     {
-        private readonly EffectiveValueEntry _newEntry;
-        private readonly EffectiveValueEntry _oldEntry;
+        internal readonly EffectiveValueEntry NewEntry;
+        internal readonly EffectiveValueEntry OldEntry;
 
 
         /// <summary>
@@ -22,12 +22,12 @@
         /// <summary>
         /// 属性的新值
         /// </summary>
-        public object NewValue => _newEntry.EffectiveValue;
+        public object NewValue => NewEntry.EffectiveValue;
 
         /// <summary>
         /// 属性的旧值
         /// </summary>
-        public object OldValue => _oldEntry.EffectiveValue;
+        public object OldValue => OldEntry.EffectiveValue;
 
 
         /// <summary>
@@ -41,8 +41,8 @@
             Metadata = metadata;
             Property = property;
 
-            _oldEntry = new EffectiveValueEntry(metadata.DefaultValue);
-            _newEntry = newEntry;
+            OldEntry = new EffectiveValueEntry(metadata.DefaultValue);
+            NewEntry = newEntry;
         }
 
         /// <summary>
@@ -57,8 +57,8 @@
             Metadata = metadata;
             Property = property;
 
-            _oldEntry = oldEntry;
-            _newEntry = newEntry;
+            OldEntry = oldEntry;
+            NewEntry = newEntry;
         }
     }
 }

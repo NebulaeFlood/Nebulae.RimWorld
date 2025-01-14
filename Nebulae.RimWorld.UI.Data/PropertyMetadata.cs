@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Data.Binding;
+using System;
 
 namespace Nebulae.RimWorld.UI.Data
 {
@@ -11,7 +12,7 @@ namespace Nebulae.RimWorld.UI.Data
     public delegate object CoerceValueCallback(DependencyObject dp, object baseValue);
 
     /// <summary>
-    /// 表示依赖属性的有效值更改时调用的方法
+    /// 表示依赖属性的有效值更改后调用的方法
     /// </summary>
     /// <param name="dp">属性值更改的依赖属性</param>
     /// <param name="args">有关属性更改的数据</param>
@@ -42,42 +43,18 @@ namespace Nebulae.RimWorld.UI.Data
     /// </summary>
     public class PropertyMetadata
     {
-        #region PropertyChanged
-        private readonly WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs> _propertyChanged = new WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs>();
-
-        /// <summary>
-        /// 当依赖属性值发生变化时触发的事件
-        /// </summary>
-        internal event WeakEventHandler<DependencyObject, DependencyPropertyChangedEventArgs> PropertyChanged
-        {
-            add => _propertyChanged.Add(value);
-            remove => _propertyChanged.Remove(value);
-        }
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
         private readonly MetadataFlag _flags;
+
 
         /// <summary>
         /// 强制转换回调函数
         /// </summary>
-        private CoerceValueCallback _coerceValueCallback;
+        internal CoerceValueCallback CoerceValueCallback;
 
         /// <summary>
         /// 属性更改回调函数
         /// </summary>
-        private PropertyChangedCallback _propertyChangedCallback;
-
-        #endregion
-
+        internal PropertyChangedCallback PropertyChangedCallback;
 
         internal object DefaultValue;
         internal DependencyProperty Property;
@@ -128,7 +105,7 @@ namespace Nebulae.RimWorld.UI.Data
         {
             DefaultValue = defaultValue;
 
-            _propertyChangedCallback = propertyChangedCallback;
+            PropertyChangedCallback = propertyChangedCallback;
             _flags = flags;
         }
 
@@ -145,7 +122,7 @@ namespace Nebulae.RimWorld.UI.Data
         {
             DefaultValue = defaultValue;
 
-            _coerceValueCallback = coerceValueCallback;
+            CoerceValueCallback = coerceValueCallback;
             _flags = flags;
         }
 
@@ -164,8 +141,8 @@ namespace Nebulae.RimWorld.UI.Data
         {
             DefaultValue = defaultValue;
 
-            _coerceValueCallback = coerceValueCallback;
-            _propertyChangedCallback = propertyChangedCallback;
+            CoerceValueCallback = coerceValueCallback;
+            PropertyChangedCallback = propertyChangedCallback;
             _flags = flags;
         }
 
@@ -179,6 +156,17 @@ namespace Nebulae.RimWorld.UI.Data
         //------------------------------------------------------
 
         #region Public Methods
+
+        /// <summary>
+        /// 强制转换要设置给属性的值
+        /// </summary>
+        /// <param name="obj">请求转换属性值的对象</param>
+        /// <param name="baseValue">要设置给属性的值</param>
+        /// <returns>转换后的值。</returns>
+        public object CoerceValue(DependencyObject obj, object baseValue)
+        {
+            return CoerceValueCallback?.Invoke(obj, baseValue) ?? baseValue;
+        }
 
         /// <summary>
         /// 获取属性的默认值
@@ -205,25 +193,25 @@ namespace Nebulae.RimWorld.UI.Data
             }
 
             if (((baseMetadata._flags & MetadataFlag.InheritablePropertyChangedCallback) != 0)
-                && baseMetadata._propertyChangedCallback != null)
+                && baseMetadata.PropertyChangedCallback != null)
             {
-                Delegate[] baseDelegates = baseMetadata._propertyChangedCallback.GetInvocationList();
-                Delegate[] delegates = _propertyChangedCallback?.GetInvocationList() ?? Array.Empty<Delegate>();
+                Delegate[] baseDelegates = baseMetadata.PropertyChangedCallback.GetInvocationList();
+                Delegate[] delegates = PropertyChangedCallback?.GetInvocationList() ?? Array.Empty<Delegate>();
 
-                _propertyChangedCallback = (PropertyChangedCallback)baseDelegates[0];
+                PropertyChangedCallback = (PropertyChangedCallback)baseDelegates[0];
                 for (int i = 1; i < baseDelegates.Length; i++)
                 {
-                    _propertyChangedCallback += (PropertyChangedCallback)baseDelegates[i];
+                    PropertyChangedCallback += (PropertyChangedCallback)baseDelegates[i];
                 }
                 for (int i = 0; i < delegates.Length; i++)
                 {
-                    _propertyChangedCallback += (PropertyChangedCallback)delegates[i];
+                    PropertyChangedCallback += (PropertyChangedCallback)delegates[i];
                 }
             }
 
-            if (_coerceValueCallback == null)
+            if (CoerceValueCallback == null)
             {
-                _coerceValueCallback = baseMetadata._coerceValueCallback;
+                CoerceValueCallback = baseMetadata.CoerceValueCallback;
             }
 
             Property = baseMetadata.Property;
@@ -240,16 +228,7 @@ namespace Nebulae.RimWorld.UI.Data
 
         #region Internal Methods
 
-        /// <summary>
-        /// 强制转换要设置给属性的值
-        /// </summary>
-        /// <param name="obj">请求转换属性值的对象</param>
-        /// <param name="baseValue">要设置给属性的值</param>
-        /// <returns>转换后的值。</returns>
-        internal object CoerceValue(DependencyObject obj, object baseValue)
-        {
-            return _coerceValueCallback?.Invoke(obj, baseValue) ?? baseValue;
-        }
+
 
         /// <summary>
         /// 通知属性更改
@@ -261,9 +240,7 @@ namespace Nebulae.RimWorld.UI.Data
         {
             DependencyPropertyChangedEventArgs args = new DependencyPropertyChangedEventArgs(Property, this, newEntry);
 
-            _propertyChangedCallback?.Invoke(obj, args);
-            _propertyChanged.Invoke(obj, args);
-
+            PropertyChangedCallback?.Invoke(obj, args);
             return args;
         }
 
@@ -278,9 +255,7 @@ namespace Nebulae.RimWorld.UI.Data
         {
             DependencyPropertyChangedEventArgs args = new DependencyPropertyChangedEventArgs(Property, this, oldEntry, newEntry);
 
-            _propertyChangedCallback?.Invoke(obj, args);
-            _propertyChanged.Invoke(obj, args);
-
+            PropertyChangedCallback?.Invoke(obj, args);
             return args;
         }
 
