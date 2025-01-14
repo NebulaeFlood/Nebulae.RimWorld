@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Windows;
+using System;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -17,9 +18,9 @@ namespace Nebulae.RimWorld.UI
         /// <summary>
         /// 当 Mod 设置更新时触发的弱事件
         /// </summary>
-        public static event WeakEventHandler<Mod, T> SettingsUpdated
+        public static event Action<Mod, T> SettingsUpdated
         {
-            add => _settingsUpdated.Add(value);
+            add => _settingsUpdated.Add(value, value.Invoke);
             remove => _settingsUpdated.Remove(value);
         }
 

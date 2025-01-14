@@ -13,15 +13,15 @@ namespace Nebulae.RimWorld.UI.Controls
     public abstract class ButtonBase : ContentControl
     {
         #region Click
-        private readonly WeakEvent<ButtonBase, EventArgs> click = new WeakEvent<ButtonBase, EventArgs>();
+        private readonly WeakEvent<ButtonBase, EventArgs> _click = new WeakEvent<ButtonBase, EventArgs>();
 
         /// <summary>
         /// 单击按钮时发生的弱事件
         /// </summary>
-        public event WeakEventHandler<ButtonBase, EventArgs> Click
+        public event Action<ButtonBase, EventArgs> Click
         {
-            add => click.Add(value);
-            remove => click.Remove(value);
+            add => _click.Add(value, value.Invoke);
+            remove => _click.Remove(value);
         }
         #endregion
 
@@ -184,7 +184,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 && GUI.Button(visiableRect, string.Empty, Widgets.EmptyStyle))
             {
                 OnClick();
-                click.Invoke(this, EventArgs.Empty);
+                _click.Invoke(this, EventArgs.Empty);
                 _clickSound?.PlayOneShotOnCamera();
             }
 

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -19,6 +20,15 @@ namespace Nebulae.RimWorld.UI
         ScaleChanged
     }
 
+
+    /// <summary>
+    /// 表示一个原版 UI 事件的处理器
+    /// </summary>
+    /// <param name="harmony">通过 Patch 获取到事件的 <see cref="Harmony"/> 实例</param>
+    /// <param name="type">UI 事件的类型</param>
+    public delegate void UIEventHandler(Harmony harmony, UIEventType type);
+
+
     /// <summary>
     /// 原版 UI 补丁
     /// </summary>
@@ -33,9 +43,9 @@ namespace Nebulae.RimWorld.UI
         /// <summary>
         /// 原版 UI 事件
         /// </summary>
-        public static event WeakEventHandler<Harmony, UIEventType> UIEvent
+        public static event UIEventHandler UIEvent
         {
-            add => InternalUIEvent.Add(value);
+            add => InternalUIEvent.Add(value, value.Invoke);
             remove => InternalUIEvent.Remove(value);
         }
 
