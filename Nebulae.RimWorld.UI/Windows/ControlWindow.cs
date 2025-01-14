@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.Utilities;
 using System;
 using UnityEngine;
 using Verse;
@@ -11,10 +12,30 @@ namespace Nebulae.RimWorld.UI.Windows
     /// </summary>
     public class ControlWindow : Window, IFrame
     {
+        //------------------------------------------------------
+        //
+        //  Public Const
+        //
+        //------------------------------------------------------
+
+        #region Public Const
+
         /// <summary>
         /// 默认的关闭按钮（X）要占用的高度
         /// </summary>
         public const float DefaultCloseButtonDesiredHeight = 26f;
+
+        /// <summary>
+        /// 默认的窗口高度
+        /// </summary>
+        public const float DefaultWindowHeight = 700f;
+
+        /// <summary>
+        /// 默认的窗口宽度
+        /// </summary>
+        public const float DefaultWindowWidth = 900f;
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -26,6 +47,8 @@ namespace Nebulae.RimWorld.UI.Windows
         #region Private Fields
 
         private Control _content;
+
+        private bool _isOpen;
 
         private Rect _windowContentRectCache;
 
@@ -69,7 +92,12 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <summary>
         /// 窗口初始的大小
         /// </summary>
-        public override Vector2 InitialSize => new Vector2(900f, 700f);
+        public override Vector2 InitialSize => new Vector2(DefaultWindowWidth, DefaultWindowHeight);
+
+        /// <summary>
+        /// 窗口是否处于开启状态
+        /// </summary>
+        public new bool IsOpen => _isOpen;
 
         #endregion
 
@@ -160,10 +188,9 @@ namespace Nebulae.RimWorld.UI.Windows
         {
             if (doCloseX && Margin < DefaultCloseButtonDesiredHeight)
             {
-                float offset = DefaultCloseButtonDesiredHeight - Margin;
-                inRect.y += offset;
-                inRect.height -= offset;
+                inRect.yMin += DefaultCloseButtonDesiredHeight - Margin;
             }
+
             if (doCloseButton)
             {
                 inRect.height -= FooterRowHeight;
@@ -171,6 +198,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
             if (_windowContentRectCache != inRect)
             {
+
                 if (_windowContentRectCache.IsPositionOnlyChanged(inRect))
                 {
                     InvalidateArrange();
@@ -180,29 +208,19 @@ namespace Nebulae.RimWorld.UI.Windows
                     InvalidateMeasure();
                 }
 
-                InvalidateSegment();
-
                 _windowContentRectCache = inRect;
             }
 
             _content?.Draw(inRect);
         }
 
-        /// <summary>
-        /// 额外的绘制内容，可在窗口外部绘制，坐标相对于整个游戏界面的左上角
-        /// </summary>
-        /// <remarks>此处使用 <see cref="GUI"/>, <see cref="Widgets"/> 等类进行绘制。</remarks>
-        public override void ExtraOnGUI() { }
-
         #endregion
 
 
         private void UIPatch_UIEvent(Harmony sender, UIEventType e)
         {
-            if (e is UIEventType.ScaleChanged)
-            {
-                InvalidateMeasure();
-            }
+            // 对于 Label 等控件，不只是改变界面缩放会影响尺寸
+            InvalidateMeasure();
         }
     }
 }
