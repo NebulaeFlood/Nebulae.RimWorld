@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding.Converters;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Nebulae.RimWorld.UI.Data.Binding
@@ -287,11 +288,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// </summary>
         public static void CollectAllBindings()
         {
-            GlobalBindings.RemoveWhere(x =>
-            {
-                x.IsBinding = false;
-                return true;
-            });
+            BindingBase[] bindings = GlobalBindings.ToArray();
+
+            GlobalBindings.Clear();
+
+            Array.ForEach(bindings, x => x.Unbind());
         }
 
         /// <summary>
