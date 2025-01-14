@@ -48,8 +48,6 @@ namespace Nebulae.RimWorld.UI.Windows
 
         private Control _content;
 
-        private bool _isOpen;
-
         private Rect _windowContentRectCache;
 
         #endregion
@@ -93,11 +91,6 @@ namespace Nebulae.RimWorld.UI.Windows
         /// 窗口初始的大小
         /// </summary>
         public override Vector2 InitialSize => new Vector2(DefaultWindowWidth, DefaultWindowHeight);
-
-        /// <summary>
-        /// 窗口是否处于开启状态
-        /// </summary>
-        public new bool IsOpen => _isOpen;
 
         #endregion
 
