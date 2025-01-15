@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace Nebulae.RimWorld.WeakEventManagers
 {
     /// <summary>
-    /// 一个通过订阅者直接引发操作的弱事件管理器
+    /// 通过订阅者直接引发操作的弱事件管理器
     /// </summary>
     /// <typeparam name="T">管理的对象类型</typeparam>
     /// <remarks>实现此类后，根据自定义的统一方法实现相应的调用方法。</remarks>
-    public abstract class WeakEventManager<T> where T : class
+    public abstract class WeakEventManager<T> : IWeakEventManager where T : class
     {
         /// <summary>
         /// 事件的订阅者
@@ -108,17 +108,13 @@ namespace Nebulae.RimWorld.WeakEventManagers
             Subscribers.Add(new WeakReference<T>(subscriber));
         }
 
-        /// <summary>
-        /// 取消所有管理
-        /// </summary>
+        /// <inheritdoc/>
         public void Clear()
         {
             Subscribers.Clear();
         }
 
-        /// <summary>
-        /// 清理管理的已经被回收的对象
-        /// </summary>
+        /// <inheritdoc/>
         public void Purge()
         {
             if (Subscribers.RemoveAll(x => !x.TryGetTarget(out _)) > 0)
