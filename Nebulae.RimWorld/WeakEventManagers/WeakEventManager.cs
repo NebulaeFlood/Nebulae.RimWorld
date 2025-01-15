@@ -16,7 +16,7 @@ namespace Nebulae.RimWorld.WeakEventManagers
         /// <summary>
         /// 事件的订阅者
         /// </summary>
-        protected readonly List<WeakReference<T>> Subscribers;
+        internal protected readonly List<WeakReference<T>> Subscribers;
 
 
         /// <summary>
@@ -83,10 +83,10 @@ namespace Nebulae.RimWorld.WeakEventManagers
         #region Public Methods
 
         /// <summary>
-        /// 向管理器添加订阅者
+        /// 管理指定对象
         /// </summary>
         /// <param name="subscriber">要添加的对象</param>
-        public void AddSubscriber(T subscriber)
+        public void Manager(T subscriber)
         {
             if (subscriber is null)
             {
@@ -109,26 +109,11 @@ namespace Nebulae.RimWorld.WeakEventManagers
         }
 
         /// <summary>
-        /// 取消所有订阅
+        /// 取消所有管理
         /// </summary>
         public void Clear()
         {
             Subscribers.Clear();
-        }
-
-        /// <summary>
-        /// 获取未被回收的订阅者
-        /// </summary>
-        /// <returns>未被回收的订阅者</returns>
-        public IEnumerable<T> GetAliveSubscribers()
-        {
-            foreach (var subscriber in Subscribers)
-            {
-                if (subscriber.TryGetTarget(out T target))
-                {
-                    yield return target;
-                }
-            }
         }
 
         /// <summary>
@@ -143,9 +128,9 @@ namespace Nebulae.RimWorld.WeakEventManagers
         }
 
         /// <summary>
-        /// 取消订阅管理器
+        /// 取消管理指定对象
         /// </summary>
-        /// <param name="subscriber">要求取消的对象</param>
+        /// <param name="subscriber">取消管理的对象</param>
         public void Remove(T subscriber)
         {
             if (subscriber is null)
