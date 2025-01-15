@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Windows
     /// <summary>
     /// 使用 <see cref="Control"/> 进行内容呈现的窗口
     /// </summary>
-    public class ControlWindow : Window, IFrame
+    public class ControlWindow : Window, IFrame, IUIEventListener
     {
         //------------------------------------------------------
         //
@@ -48,6 +48,8 @@ namespace Nebulae.RimWorld.UI.Windows
         private Control _content;
 
         private Rect _windowContentRectCache;
+
+        private bool _isOpen = false;
 
         #endregion
 
@@ -91,6 +93,11 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public override Vector2 InitialSize => new Vector2(DefaultWindowWidth, DefaultWindowHeight);
 
+        /// <summary>
+        /// 窗口是否正在呈现
+        /// </summary>
+        public new bool IsOpen => _isOpen;
+
         #endregion
 
 
@@ -112,8 +119,7 @@ namespace Nebulae.RimWorld.UI.Windows
             button.Click += CloseWindow;
 
             Content = button;
-
-            UIPatch.UIEvent += UIPatch_UIEvent;
+            UIPatch.UIEvent.Manage(this);
         }
 
 
@@ -155,6 +161,18 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public void Show() => Find.WindowStack.Add(this);
 
+        /// <inheritdoc/>
+        public void UIEventHandler(UIEventType type)
+        {
+            // if (type is UIEventType.ScaleChanged)
+            // {
+            //     InvalidateMeasure();
+            // }
+
+            // 对于 Label 等控件，不只是改变界面缩放会影响尺寸
+            InvalidateMeasure();
+        }
+
         #endregion
 
 
@@ -165,12 +183,6 @@ namespace Nebulae.RimWorld.UI.Windows
         //------------------------------------------------------
 
         #region Public Virtual Methods
-
-        /// <summary>
-        /// 关闭窗口
-        /// </summary>
-        /// <param name="doCloseSound">是否播放 <see cref="Window.soundClose"/> 设置的音效</param>
-        public sealed override void Close(bool doCloseSound = true) => base.Close(doCloseSound);
 
         /// <summary>
         /// 绘制窗口内容
@@ -206,13 +218,24 @@ namespace Nebulae.RimWorld.UI.Windows
             _content?.Draw(inRect);
         }
 
-        #endregion
-
-
-        private void UIPatch_UIEvent(Harmony sender, UIEventType e)
+        /// <summary>
+        /// 当窗口关闭时引发的操作
+        /// </summary>
+        public override void PostClose()
         {
-            // 对于 Label 等控件，不只是改变界面缩放会影响尺寸
-            InvalidateMeasure();
+            base.PostClose();
+            _isOpen = false;
         }
+
+        /// <summary>
+        /// 当窗口打开时执行的操作
+        /// </summary>
+        public override void PostOpen()
+        {
+            base.PostOpen();
+            _isOpen = true;
+        }
+
+        #endregion
     }
 }

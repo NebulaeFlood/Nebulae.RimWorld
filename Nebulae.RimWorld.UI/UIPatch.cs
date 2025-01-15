@@ -1,5 +1,9 @@
 ﻿using HarmonyLib;
+using Nebulae.RimWorld.WeakEventManagers;
+using RimWorld;
+using System.Collections.Generic;
 using Verse;
+using CollectionWeakReference = System.WeakReference<Nebulae.RimWorld.IWeakCollection>;
 
 namespace Nebulae.RimWorld.UI
 {
@@ -21,43 +25,69 @@ namespace Nebulae.RimWorld.UI
 
 
     /// <summary>
-    /// 表示一个原版 UI 事件的处理器
-    /// </summary>
-    /// <param name="harmony">通过 Patch 获取到事件的 <see cref="Harmony"/> 实例</param>
-    /// <param name="type">UI 事件的类型</param>
-    public delegate void UIEventHandler(Harmony harmony, UIEventType type);
-
-
-    /// <summary>
     /// 原版 UI 补丁
     /// </summary>
     [StaticConstructorOnStartup]
     public static class UIPatch
     {
         internal const string UniqueId = "Nebulae.RimWorld.UI";
-
-        internal static readonly WeakEvent<Harmony, UIEventType> InternalUIEvent = new WeakEvent<Harmony, UIEventType>();
-
-
-        /// <summary>
-        /// 原版 UI 事件
-        /// </summary>
-        public static event UIEventHandler UIEvent
-        {
-            add => InternalUIEvent.Add(value, value.Invoke);
-            remove => InternalUIEvent.Remove(value);
-        }
-
+        
         /// <summary>
         /// 原版 UI Patch
         /// </summary>
-        public static readonly Harmony HarmonyInstance;
+        internal static readonly Harmony HarmonyInstance;
+
+        /// <summary>
+        /// 原版 UI 事件管理器
+        /// </summary>
+        public static readonly UIEventManager UIEvent = new UIEventManager();
 
 
         static UIPatch()
         {
             HarmonyInstance = new Harmony(UniqueId);
             HarmonyInstance.PatchAll();
+        }
+    }
+
+
+    /// <summary>
+    /// 通过 <see cref="UIPatch"/> 创建的原版 UI 事件的订阅者
+    /// </summary>
+    public interface IUIEventListener
+    {
+        /// <summary>
+        /// 原版 UI 事件的处理器
+        /// </summary>
+        /// <param name="type">UI 事件的类型</param>
+        void UIEventHandler(UIEventType type);
+    }
+
+
+    /// <summary>
+    /// UI 事件管理器
+    /// </summary>
+    public sealed class UIEventManager : WeakEventManager<IUIEventListener>
+    {
+        internal UIEventManager()
+        {
+        }
+
+        /// <summary>
+        /// 调用所有订阅者的事件处理方法
+        /// </summary>
+        /// <param name="eventType">事件类型</param>
+        public void Invoke(UIEventType eventType)
+        {
+            Purge();
+
+            Subscribers.ForEach(x =>
+            {
+                if (x.TryGetTarget(out var listener))
+                {
+                    listener.UIEventHandler(eventType);
+                }
+            });
         }
     }
 }

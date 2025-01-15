@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI
     /// <summary>
     /// 使用 <see cref="Control"/> 作为设置窗口的内容的 Mod 基类
     /// </summary>
-    public abstract class NebulaeModBase : Mod
+    public abstract class NebulaeModBase : Mod, IUIEventListener
     {
         private ModSettingWindow _settingWindow;
 
@@ -43,7 +43,7 @@ namespace Nebulae.RimWorld.UI
         /// <param name="content">Mod 内容</param>
         protected NebulaeModBase(ModContentPack content) : base(content)
         {
-            UIPatch.UIEvent += UIPatch_UIEvent;
+            UIPatch.UIEvent.Manage(this);
         }
 
 
@@ -64,11 +64,12 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         public sealed override string SettingsCategory() => CategoryLabel;
 
-
-        private void UIPatch_UIEvent(Harmony sender, UIEventType e)
+        /// <inheritdoc/>
+        public void UIEventHandler(UIEventType type)
         {
-            if (e is UIEventType.LanguageChanged)
+            if (type is UIEventType.LanguageChanged)
             {
+                // 使窗口在下次打开时重新生成，完成本地化
                 _settingWindow = null;
             }
         }

@@ -23,7 +23,7 @@ namespace Nebulae.RimWorld.UI.Patches
             {
                 PlayDataLoader.ClearAllPlayData();
                 PlayDataLoader.LoadAllPlayData();
-                UIPatch.InternalUIEvent.Invoke(UIPatch.HarmonyInstance, UIEventType.LanguageChanged);
+                UIPatch.UIEvent.Invoke(UIEventType.LanguageChanged);
             }, "LoadingLongEvent", doAsynchronously: true, exceptionHandler: null);
         }
     }

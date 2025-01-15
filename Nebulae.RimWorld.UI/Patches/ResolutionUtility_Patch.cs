@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Patches
         [HarmonyPostfix]
         internal static void SafeSetUIScalePostfix()
         {
-            UIPatch.InternalUIEvent.Invoke(UIPatch.HarmonyInstance, UIEventType.ScaleChanged);
+            UIPatch.UIEvent.Invoke(UIEventType.ScaleChanged);
         }
     }
 }
