@@ -13,7 +13,7 @@ namespace Nebulae.RimWorld
     public class WeakCollection<T> : IEnumerable<T> where T : class
     {
         private readonly List<WeakReference<T>> _items;
-        private readonly WeakReference _obsolutedItem = new WeakReference(new object());
+        private readonly WeakReference _obsoletedItem = new WeakReference(new object());
 
 
         /// <summary>
@@ -168,7 +168,10 @@ namespace Nebulae.RimWorld
         /// </summary>
         public void Purge()
         {
-            _items.RemoveAll(x => !x.TryGetTarget(out _));
+            if (_items.RemoveAll(x => !x.TryGetTarget(out _)) > 0)
+            {
+                _items.TrimExcess();
+            }
         }
 
         /// <summary>
@@ -215,14 +218,14 @@ namespace Nebulae.RimWorld
 
         private void PrivatePurge()
         {
-            if (_obsolutedItem.IsAlive)
+            if (_obsoletedItem.IsAlive)
             {
                 return;
             }
 
             Purge();
 
-            _obsolutedItem.Target = new object();
+            _obsoletedItem.Target = new object();
         }
     }
 }

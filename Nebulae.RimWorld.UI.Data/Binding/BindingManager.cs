@@ -12,6 +12,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
     /// <remarks>注意手动回收所有绑定对象存在强引用的绑定关系，否则会造成内存泄漏。</remarks>
     public static class BindingManager
     {
+        private static readonly WeakReference _obsoletedBinding = new WeakReference(new object());
+
         internal static readonly HashSet<BindingBase> GlobalBindings = new HashSet<BindingBase>();
 
 
@@ -285,6 +287,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <remarks>并不会强制调用 <see cref="GC.Collect()"/>，只是使 <see cref="BindingBase"/> 对象可以被释放。</remarks>
         public static void CollectObsolutedBingings()
         {
+            if (_obsoletedBinding.IsAlive)
+            {
+                return;
+            }
+
             BindingBase[] bindings = GlobalBindings.ToArray();
             Array.ForEach(bindings, x =>
             {
@@ -293,6 +300,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                     x.Unbind();
                 }
             });
+
+            _obsoletedBinding.Target = new object();
         }
 
         /// <summary>
@@ -384,7 +393,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             //------------------------------------------------------
             //
-            //  From Subcriber
+            //  From Subscriber
             //
             //------------------------------------------------------
 

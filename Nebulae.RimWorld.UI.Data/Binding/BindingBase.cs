@@ -184,11 +184,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             if (!TargetMember.IsWritable)
             {
-                throw new InvalidOperationException($"Subcriber member {_targetType}.{_targetPath} must be writable.");
+                throw new InvalidOperationException($"Subscriber member {_targetType}.{_targetPath} must be writable.");
             }
             else if (mode is BindingMode.TwoWay && !TargetMember.IsReadable)
             {
-                throw new InvalidOperationException($"Subcriber member {_targetType}.{_targetPath} must be readable for a TowWay binding.");
+                throw new InvalidOperationException($"Subscriber member {_targetType}.{_targetPath} must be readable for a TowWay binding.");
             }
 
             #endregion

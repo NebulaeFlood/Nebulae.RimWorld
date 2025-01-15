@@ -36,7 +36,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             if (!(handler.Target is BindingBase binding))
             {
-                throw new ArgumentException($"{handler.Target.GetType()} is not a valid subcriber type of {this}.", nameof(handler));
+                throw new ArgumentException($"{handler.Target.GetType()} is not a valid subscriber type of {this}.", nameof(handler));
             }
 
             InvocationList.Add(new HandlerEntry(castedHandler, binding, handler.Method));
@@ -87,19 +87,19 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             /// 订阅事件的对象
             /// </summary>
             /// <remarks>对于静态类，该项为 <see langword="null"/>。</remarks>
-            public readonly BindingBase Subcriber;
+            public readonly BindingBase Subscriber;
 
 
             /// <summary>
             /// 初始化 <see cref="HandlerEntry"/> 的新条目
             /// </summary>
             /// <param name="handler">事件处理器</param>
-            /// <param name="subcriber">订阅事件的对象</param>
+            /// <param name="subscriber">订阅事件的对象</param>
             /// <param name="method">处理器的原方法</param>
-            internal HandlerEntry(Action<TSender, TArgs> handler, BindingBase subcriber, MethodInfo method)
+            internal HandlerEntry(Action<TSender, TArgs> handler, BindingBase subscriber, MethodInfo method)
             {
                 Handler = handler;
-                Subcriber = subcriber;
+                Subscriber = subscriber;
 
                 _method = method;
             }
@@ -109,11 +109,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             /// 判断给出的信息是否与该条目匹配
             /// </summary>
             /// <param name="handler">事件处理器</param>
-            /// <param name="subcriber">订阅事件的对象</param>
+            /// <param name="subscriber">订阅事件的对象</param>
             /// <returns>若匹配，返回 <see langword="true"/>，反之则返回 <see langword="false"/>。</returns>
-            public bool Matches(Delegate handler, BindingBase subcriber)
+            public bool Matches(Delegate handler, BindingBase subscriber)
             {
-                return ReferenceEquals(Subcriber, subcriber)
+                return ReferenceEquals(Subscriber, subscriber)
                     && ReferenceEquals(_method, handler.Method);
             }
         }
@@ -130,7 +130,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             InvocationList.ForEach(x =>
             {
-                BindingBase binding = x.Subcriber;
+                BindingBase binding = x.Subscriber;
 
                 if ((ReferenceEquals(sender, binding.SourceMember.AssociatedObject)
                     && args.Property.Name == binding.SourceMember.MemberName)
@@ -166,7 +166,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             InvocationList.ForEach(x =>
             {
-                BindingBase binding = x.Subcriber;
+                BindingBase binding = x.Subscriber;
 
                 if ((ReferenceEquals(sender, binding.SourceMember.AssociatedObject)
                     && args.PropertyName == binding.SourceMember.MemberName)
