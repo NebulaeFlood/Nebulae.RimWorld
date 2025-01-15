@@ -44,7 +44,7 @@ namespace Nebulae.RimWorld.UI.Windows
             Button confirmButton = new Button
             {
                 Margin = 4f,
-                Text = "Confirm".Translate(),
+                Text = "Nebulae.RimWrold.UI.MessageWindow.ConfirmButtom.Text".Translate(),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
             };
