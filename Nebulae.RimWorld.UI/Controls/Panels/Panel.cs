@@ -83,7 +83,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         {
             get
             {
-                if (_isFilteredChildrenValid)
+                if (_isFilteredChildrenValid
+                    && _childrenVersion == _children.Version)
                 {
                     return _filteredChildren;
                 }
