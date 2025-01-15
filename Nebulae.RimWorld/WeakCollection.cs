@@ -10,7 +10,7 @@ namespace Nebulae.RimWorld
     /// </summary>
     /// <typeparam name="T">存储的对象类型</typeparam>
     /// <remarks>无法存放为 <see langword="null"/> 的对象。</remarks>
-    public class WeakCollection<T> : IEnumerable<T> where T : class
+    public class WeakCollection<T> : IEnumerable<T>, IWeakCollection where T : class
     {
         private readonly List<WeakReference<T>> _items;
         private readonly WeakReference _obsoletedItem = new WeakReference(new object());

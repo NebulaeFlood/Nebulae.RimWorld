@@ -11,7 +11,7 @@ namespace Nebulae.RimWorld.WeakEventManagers
     /// </summary>
     /// <typeparam name="T">管理的对象类型</typeparam>
     /// <remarks>实现此类后，根据自定义的统一方法实现相应的调用方法。</remarks>
-    public abstract class WeakEventManager<T> : IWeakEventManager where T : class
+    public abstract class WeakEventManager<T> : IWeakCollection where T : class
     {
         /// <summary>
         /// 事件的订阅者

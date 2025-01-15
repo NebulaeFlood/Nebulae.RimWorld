@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nebulae.RimWorld.WeakEventManagers
+namespace Nebulae.RimWorld
 {
     /// <summary>
-    /// 定义一个通过订阅者直接引发操作的弱事件管理器
+    /// 定义一个通过弱引用管理对象的集合
     /// </summary>
-    public interface IWeakEventManager
+    public interface IWeakCollection
     {
         /// <summary>
         /// 取消所有管理
