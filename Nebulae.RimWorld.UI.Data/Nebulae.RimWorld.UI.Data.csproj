@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nebulae.RimWorld" Version="1.0.7" />
+    <PackageReference Include="Nebulae.RimWorld" Version="1.0.13" />
   </ItemGroup>
 
 </Project>
