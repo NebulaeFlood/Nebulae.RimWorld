@@ -86,7 +86,7 @@ namespace Nebulae.RimWorld.WeakEventManagers
         /// 管理指定对象
         /// </summary>
         /// <param name="subscriber">要添加的对象</param>
-        public void Manager(T subscriber)
+        public void Manage(T subscriber)
         {
             if (subscriber is null)
             {
