@@ -131,8 +131,8 @@ namespace Nebulae.RimWorld.UI.Controls
             _contentControl?.Arrange(new Rect(
                 0f,
                 0f,
-                Mathf.Max(_viewWidth, _contentSize.Width),
-                Mathf.Max(_viewHeight, _contentSize.Height)));
+                Mathf.Min(_viewWidth, _contentSize.Width),
+                Mathf.Min(_viewHeight, _contentSize.Height)));
             return base.ArrangeCore(availableRect);
         }
 
@@ -298,6 +298,9 @@ namespace Nebulae.RimWorld.UI.Controls
 
             _shouldDrawHorizontalScrollBar = HorizontalScrollBarVisibility is ScrollBarVisibility.Visible;
             _shouldDrawVerticalScrollBar = VerticalScrollBarVisibility is ScrollBarVisibility.Visible;
+
+            _horizontalOffset = 0f;
+            _verticalOffset = 0f;
 
             if (_contentControl is null)
             {

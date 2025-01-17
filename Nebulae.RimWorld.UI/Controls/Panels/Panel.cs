@@ -140,6 +140,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         {
             if (_isSegmentValid)
             {
+                _isCachedRenderedRectValid = false;
                 _isDrawableChildrenValid = false;
                 _isSegmentValid = false;
 
@@ -208,7 +209,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             {
                 _drawableChildren = FindDrawableChildren().ToArray();
 
-                _isDrawableChildrenValid = true;
+                _isDrawableChildrenValid = IsArrangeValid;
             }
 
             if (!_isCachedRenderedRectValid)
@@ -225,7 +226,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         _cachedRenderedRect = _drawableChildren[i].Draw();
                     }
                 }
-                _isCachedRenderedRectValid = true;
+                _isCachedRenderedRectValid = IsArrangeValid;
             }
             else
             {

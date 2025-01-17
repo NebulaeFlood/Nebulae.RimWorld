@@ -64,7 +64,6 @@ namespace Nebulae.RimWorld.UI.Controls
             Texture2D uncheckedIcon)
         {
             IconHitOnly = true;
-            PlayMouseOverSound = false;
             SeparateContent = true;
 
             _checkedIcon = checkedIcon;
