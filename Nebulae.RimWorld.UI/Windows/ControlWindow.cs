@@ -91,7 +91,6 @@ namespace Nebulae.RimWorld.UI.Windows
                     }
                     else
                     {
-                        value.Owner = this;
                         LayoutManager.Root = value;
                     }
                 }

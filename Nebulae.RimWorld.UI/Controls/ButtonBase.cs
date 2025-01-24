@@ -192,7 +192,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 按钮被单击时执行的方法
         /// </summary>
-        protected virtual void OnClick() 
+        protected virtual void OnClick()
         {
             _clickSound?.PlayOneShotOnCamera();
         }

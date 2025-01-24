@@ -85,8 +85,6 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            _root.Owner = _owner;
-
             if (_isDirty)
             {
                 _root.Measure(clientRect);
