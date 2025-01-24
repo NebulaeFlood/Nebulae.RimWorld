@@ -6,7 +6,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 图片控件
     /// </summary>
-    public class ImageView : Control
+    public class ImageView : FrameworkControl
     {
         #region ImageSource
         /// <summary>
@@ -53,24 +53,37 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
+
         /// <inheritdoc/>
-        protected override Rect DrawCore(Rect renderRect)
+        protected override void DrawCore()
         {
             if (ImageSource != null)
             {
-                GUI.DrawTexture(renderRect, ImageSource, ScaleMode);
+                GUI.DrawTexture(RenderRect, ImageSource, ScaleMode);
             }
-            return renderRect;
         }
 
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            Texture2D imageSource = ImageSource;
-            if (imageSource is null) { return new Size(0f); }
+            availableSize = base.MeasureCore(availableSize);
+
+            if (!(ImageSource is Texture2D imageSource))
+            {
+                return Size.Empty;
+            }
+
             if (ScaleMode is ScaleMode.ScaleToFit)
             {
                 float scale;
+
                 if (imageSource.width < availableSize.Width && imageSource.height < availableSize.Height)
                 {
                     scale = Mathf.Max(availableSize.Width / imageSource.width, availableSize.Height / imageSource.height);
@@ -87,9 +100,13 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     scale = Mathf.Min(availableSize.Width / imageSource.width, availableSize.Height / imageSource.height);
                 }
+
                 return new Size(imageSource.width * scale, imageSource.height * scale);
             }
+
             return new Size(imageSource.width, imageSource.height);
         }
+
+        #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Nebulae.RimWorld.UI
+﻿namespace Nebulae.RimWorld.UI.Controls.Panels
 {
     /// <summary>
     /// 指定控件的布局方向

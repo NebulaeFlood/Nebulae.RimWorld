@@ -36,7 +36,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <param name="inRect">允许绘制的区域</param>
         protected override void LateWindowOnGUI(Rect inRect)
         {
-            _associatedMod.DoSettingsWindowContents(Segment());
+            _associatedMod.DoSettingsWindowContents(inRect);
         }
 
         /// <summary>

@@ -15,27 +15,22 @@ namespace Nebulae.RimWorld.UI.Patches
             Type type = typeof(Control);
             MethodInfo method = AccessTools.Method(typeof(DebugTabMenu_Settings), "AddNode");
 
-            AccessTools.Method(typeof(DebugTabMenu_Settings), "AddNode").Invoke(__instance, new object[]
+            method.Invoke(__instance, new object[]
             {
-                AccessTools.Field(type, nameof(Control.ClickForceArrange)),
+                AccessTools.Field(type, nameof(Control.ClickForceLayout)),
                 "Aether Control"
             });
-            AccessTools.Method(typeof(DebugTabMenu_Settings), "AddNode").Invoke(__instance, new object[]
+            method.Invoke(__instance, new object[]
             {
-                AccessTools.Field(type, nameof(Control.ClickForceMeasure)),
+                AccessTools.Field(type, nameof(Control.DrawLayoutRect)),
                 "Aether Control"
             });
-            AccessTools.Method(typeof(DebugTabMenu_Settings), "AddNode").Invoke(__instance, new object[]
+            method.Invoke(__instance, new object[]
             {
-                AccessTools.Field(type, nameof(Control.DrawFullRegion)),
+                AccessTools.Field(type, nameof(Control.DrawRenderRect)),
                 "Aether Control"
             });
-            AccessTools.Method(typeof(DebugTabMenu_Settings), "AddNode").Invoke(__instance, new object[]
-            {
-                AccessTools.Field(type, nameof(Control.DrawRegion)),
-                "Aether Control"
-            });
-            AccessTools.Method(typeof(DebugTabMenu_Settings), "AddNode").Invoke(__instance, new object[]
+            method.Invoke(__instance, new object[]
             {
                 AccessTools.Field(type, nameof(Control.ShowInfo)),
                 "Aether Control"

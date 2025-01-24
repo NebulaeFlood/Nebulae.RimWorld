@@ -79,7 +79,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         /// <inheritdoc/>
-        protected override Rect DrawCore(Rect renderRect)
+        protected override void DrawCore()
         {
             TextAnchor currentAnchor = GameText.Anchor;
             GameFont currentFont = GameText.Font;
@@ -87,18 +87,18 @@ namespace Nebulae.RimWorld.UI.Controls
             GameText.Anchor = _anchor;
             GameText.Font = FontSize;
 
-            Widgets.Label(renderRect, Text);
+            Widgets.Label(RenderRect, Text);
 
             GameText.Anchor = currentAnchor;
             GameText.Font = currentFont;
-
-            return renderRect;
         }
 
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            return new Size(availableSize.Width, Text.CalculateHeight(availableSize.Width, FontSize));
+            return new Size(
+                availableSize.Width,
+                Text.CalculateHeight(availableSize.Width, FontSize));
         }
     }
 }

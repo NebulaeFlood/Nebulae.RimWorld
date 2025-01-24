@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Nebulae.RimWorld.UI
+namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
     /// 用于指定宽度和高度
@@ -13,13 +13,14 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         public static readonly Size Empty = new Size(0f);
 
+
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Public Feilds
         //
         //------------------------------------------------------
 
-        #region Public Properties
+        #region Public Feilds
 
         /// <summary>
         /// 获取此 <see cref="Size"/> 结构的垂直长度
@@ -273,8 +274,8 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         /// <param name="size"><see cref="Size"/> 对象</param>
         /// <param name="uniformLength">统一长度</param>
-        /// <returns>如果 <paramref name="size"/> 的宽度和高度均小于 <paramref name="uniformLength"/>，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public static bool operator <(Size size, float uniformLength) => size.Width < uniformLength && size.Height < uniformLength;
+        /// <returns>如果 <paramref name="size"/> 的宽度和高度有一项小于 <paramref name="uniformLength"/>，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public static bool operator <(Size size, float uniformLength) => size.Width < uniformLength || size.Height < uniformLength;
 
         /// <summary>
         /// 判断指定的统一长度是否大于 <see cref="Size"/> 对象的宽度和高度

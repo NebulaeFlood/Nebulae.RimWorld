@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Nebulae.RimWorld.UI
+namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
     /// 描述边框的粗细
@@ -214,9 +214,9 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         /// <param name="thickness"> <see cref="Thickness"/> 对象</param>
         /// <param name="uniformLength">统一长度</param>
-        /// <returns>如果 <see cref="Thickness"/> 对象的四个边均小于 <paramref name="uniformLength"/>，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        /// <returns>如果 <see cref="Thickness"/> 对象有一边边小于 <paramref name="uniformLength"/>，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public static bool operator <(Thickness thickness, float uniformLength) =>
-            thickness.Left < uniformLength && thickness.Top < uniformLength && thickness.Right < uniformLength && thickness.Bottom < uniformLength;
+            thickness.Left < uniformLength || thickness.Top < uniformLength || thickness.Right < uniformLength || thickness.Bottom < uniformLength;
 
         /// <summary>
         /// 判断指定的统一长度是否大于 <see cref="Thickness"/> 对象的四个边。

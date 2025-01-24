@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.Utilities;
+﻿using Nebulae.RimWorld.UI.Utilities;
+using Nebulae.RimWorld.Utilities;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -119,9 +120,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 }
             }
 
-
-            InvalidateMeasure();
-
             return this;
         }
 
@@ -226,6 +224,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
+            for (int i = 0; i < _unitInfos.Length; i++)
+            {
+                _unitInfos[i] = new UnitInfo(_unitInfos[i]);
+            }
+
             _columnWidths = new float[_logicalColumnWidths.Length];
             _rowHeights = new float[_logicalRowHeights.Length];
 
@@ -281,17 +284,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             }
 
             return new Size(calculatedWidth, calculatedHeight);
-        }
-
-        /// <inheritdoc/>
-        protected override void OnMeasureInvalidated()
-        {
-            base.OnMeasureInvalidated();
-
-            for (int i = 0; i < _unitInfos.Length; i++)
-            {
-                _unitInfos[i] = new UnitInfo(_unitInfos[i]);
-            }
         }
 
         #endregion

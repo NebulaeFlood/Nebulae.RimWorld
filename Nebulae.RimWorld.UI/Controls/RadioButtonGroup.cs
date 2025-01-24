@@ -1,8 +1,7 @@
-﻿using Nebulae.RimWorld.UI.Controls;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Nebulae.RimWorld.UI
+namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
     /// 表示按钮所在组的集合

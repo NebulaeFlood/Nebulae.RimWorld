@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Controls.Panels;
+using Nebulae.RimWorld.UI.Data;
 using UnityEngine;
 using Verse;
 
@@ -7,7 +8,7 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
     /// <summary>
     /// 线条图案
     /// </summary>
-    public class Line : Control
+    public class Line : FrameworkControl
     {
         private Color _color = Color.white;
 
@@ -76,15 +77,14 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
         }
 
         /// <inheritdoc/>
-        protected override Rect DrawCore(Rect renderRect)
+        protected override void DrawCore()
         {
             Color currentColor = GUI.color;
             GUI.color = _color;
 
-            GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
+            GUI.DrawTexture(RenderRect, BaseContent.WhiteTex);
 
             GUI.color = currentColor;
-            return renderRect;
         }
 
         /// <inheritdoc/>

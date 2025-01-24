@@ -88,9 +88,9 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         /// <inheritdoc/>
-        protected override Rect DrawCore(Rect renderRect)
+        protected override void DrawCore()
         {
-            if (renderRect.Contains(Event.current.mousePosition))
+            if (RenderRect.Contains(Event.current.mousePosition))
             {
                 EventType eventType = Event.current.type;
 
@@ -101,14 +101,12 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             Value = Widgets.HorizontalSlider(
-                renderRect,
+                RenderRect,
                 Value,
                 _minimun,
                 _maximun,
                 middleAlignment: true,
                 roundTo: _step);
-
-            return renderRect;
         }
     }
 }

@@ -10,9 +10,10 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 所有按钮控件的基类，定义了其共同特性
     /// </summary>
-    public abstract class ButtonBase : ContentControl
+    public abstract class ButtonBase : FrameworkControl
     {
         #region Click
+
         private readonly WeakEvent<ButtonBase, EventArgs> _click = new WeakEvent<ButtonBase, EventArgs>();
 
         /// <summary>
@@ -23,6 +24,7 @@ namespace Nebulae.RimWorld.UI.Controls
             add => _click.Add(value, value.Invoke);
             remove => _click.Remove(value);
         }
+
         #endregion
 
 
@@ -126,14 +128,6 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
-        /// <summary>
-        /// 为 <see cref="ButtonBase"/> 派生类实现基本初始化
-        /// </summary>
-        protected ButtonBase()
-        {
-        }
-
-
         //------------------------------------------------------
         //
         //  Protected Methods
@@ -149,46 +143,51 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="isEnabled">按钮是否被启用</param>
         /// <param name="isCursorOver">光标是否位于按钮上方</param>
         /// <param name="isPressing">按钮是否被按下</param>
-        /// <returns>实际绘制的区域。</returns>
-        protected abstract Rect DrawButton(
+        protected abstract void DrawButton(
             Rect renderRect,
             bool isEnabled,
             bool isCursorOver,
             bool isPressing);
 
         /// <inheritdoc/>
-        protected sealed override Rect DrawCore(Rect renderRect)
+        protected sealed override void DrawCore()
         {
-            Rect visiableRect = Segment().IntersectWith(renderRect);
+            bool isMouseOver = IsMouseOver();
+            bool isPressing = isMouseOver && Input.GetMouseButton(0);
 
-            bool isCursorOver = visiableRect.Contains(Event.current.mousePosition);
-            bool isPressing = isCursorOver && Input.GetMouseButton(0);
-
-            renderRect = DrawButton(
-                renderRect,
+            DrawButton(
+                RenderRect,
                 _isEnabled,
-                isCursorOver,
+                isMouseOver,
                 isPressing);
 
             if (_playMouseOverSound)
             {
-                MouseoverSounds.DoRegion(visiableRect, _mouseOverSound);
+                MouseoverSounds.DoRegion(ContentRect, _mouseOverSound);
             }
 
             if (!_isEnabled)
             {
-                return renderRect;
+                return;
             }
 
-            if (isCursorOver
-                && GUI.Button(visiableRect, string.Empty, Widgets.EmptyStyle))
+            if (isMouseOver
+                && GUI.Button(ContentRect, string.Empty, Widgets.EmptyStyle))
             {
                 OnClick();
+
                 _click.Invoke(this, EventArgs.Empty);
                 _clickSound?.PlayOneShotOnCamera();
             }
+        }
 
-            return renderRect;
+        /// <summary>
+        /// 判断光标是否位于按钮上方
+        /// </summary>
+        /// <returns>光标是否位于按钮上方。</returns>
+        protected virtual bool IsMouseOver()
+        {
+            return ContentRect.Contains(Event.current.mousePosition);
         }
 
         /// <summary>

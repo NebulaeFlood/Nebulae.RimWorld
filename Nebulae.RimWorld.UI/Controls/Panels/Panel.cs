@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
     /// <summary>
     /// 面板控件的基类，定义了其共同特性
     /// </summary>
-    public abstract class Panel : FrameworkControl, IFrame
+    public abstract class Panel : FrameworkControl
     {
         //------------------------------------------------------
         //
@@ -24,41 +24,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         private Control[] _drawableChildren;
         private Control[] _filteredChildren;
 
-        private bool _isCachedRenderedRectValid = false;
         private bool _isDrawableChildrenValid = false;
         private bool _isFilteredChildrenValid = false;
-        private bool _isSegmentValid = false;
 
-        private Rect _cachedRenderedRect;
-        private Rect _cachedVisiableRect;
-
-        private int _childrenVersion = 0;
-        private IFrame[] _cachedFrameChildren;
-
-        #endregion
-
-
-        #region Filter
-        /// <summary>
-        /// 获取或设置子控件过滤器
-        /// </summary>
-        public Func<Control, bool> Filter
-        {
-            get { return (Func<Control, bool>)GetValue(FilterProperty); }
-            set { SetValue(FilterProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="Filter"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty FilterProperty =
-            DependencyProperty.Register(nameof(Filter), typeof(Func<Control, bool>), typeof(Panel),
-                new ControlPropertyMetadata(null, OnFilterChanged, ControlRelation.Measure));
-
-        private static void OnFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((Panel)d).InvalidateFilter();
-        }
         #endregion
 
 
@@ -79,12 +47,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// <see cref="Filter"/> 过滤后的子控件
         /// </summary>
-        protected Control[] FilteredChildren
+        internal protected Control[] FilteredChildren
         {
             get
             {
-                if (_isFilteredChildrenValid
-                    && _childrenVersion == _children.Version)
+                if (_isFilteredChildrenValid)
                 {
                     return _filteredChildren;
                 }
@@ -94,6 +61,33 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 return _filteredChildren;
             }
         }
+
+        #endregion
+
+
+        #region Filter
+
+        /// <summary>
+        /// 获取或设置子控件过滤器
+        /// </summary>
+        public Func<Control, bool> Filter
+        {
+            get { return (Func<Control, bool>)GetValue(FilterProperty); }
+            set { SetValue(FilterProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Filter"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty FilterProperty =
+            DependencyProperty.Register(nameof(Filter), typeof(Func<Control, bool>), typeof(Panel),
+                new ControlPropertyMetadata(null, OnFilterChanged, ControlRelation.Measure));
+
+        private static void OnFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((Panel)d).InvalidateFilter();
+        }
+
         #endregion
 
 
@@ -115,70 +109,19 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
 
-        //------------------------------------------------------
-        //
-        //  Public Methods
-        //
-        //------------------------------------------------------
-
-        #region Public Methods
-
         /// <summary>
-        /// 要求面板在下次绘制控件之前重新过滤控件
+        /// 要求面板在下次绘制控件之前重新过滤子控件
         /// </summary>
         public void InvalidateFilter()
         {
             if (_isFilteredChildrenValid)
             {
+                _isDrawableChildrenValid = false;
                 _isFilteredChildrenValid = false;
+
                 InvalidateMeasure();
             }
         }
-
-        /// <inheritdoc/>
-        public void InvalidateSegment()
-        {
-            if (_isSegmentValid)
-            {
-                _isCachedRenderedRectValid = false;
-                _isDrawableChildrenValid = false;
-                _isSegmentValid = false;
-
-                if (_childrenVersion != _children.Version)
-                {
-                    _childrenVersion = _children.Version;
-                    _cachedFrameChildren = _children.Where(x => x is IFrame).Cast<IFrame>().ToArray();
-                }
-
-                Array.ForEach(_cachedFrameChildren, x => x.InvalidateSegment());
-            }
-        }
-
-        /// <summary>
-        /// 计算面板控件的内容控件的可显示区域
-        /// </summary>
-        /// <returns>内容控件的可显示区域。</returns>
-        public Rect Segment()
-        {
-            if (_isSegmentValid)
-            {
-                return _cachedVisiableRect;
-            }
-
-            if (IsHolded)
-            {
-                _cachedVisiableRect = Container.Segment().IntersectWith(RenderRect);
-            }
-            else
-            {
-                _cachedVisiableRect = RenderRect;
-            }
-            _isSegmentValid = IsArrangeValid;
-
-            return _cachedVisiableRect;
-        }
-
-        #endregion
 
 
         //------------------------------------------------------
@@ -192,6 +135,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected sealed override Rect ArrangeCore(Rect availableRect)
         {
+            _isDrawableChildrenValid = false;
+
             return ArrangeOverride(base.ArrangeCore(availableRect));
         }
 
@@ -203,40 +148,19 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         protected abstract Rect ArrangeOverride(Rect availableRect);
 
         /// <inheritdoc/>
-        protected sealed override Rect DrawCore(Rect renderRect)
+        protected sealed override void DrawCore()
         {
             if (!_isDrawableChildrenValid)
             {
                 _drawableChildren = FindDrawableChildren().ToArray();
 
-                _isDrawableChildrenValid = IsArrangeValid;
+                _isDrawableChildrenValid = true;
             }
 
-            if (!_isCachedRenderedRectValid)
+            for (int i = 0; i < _drawableChildren.Length; i++)
             {
-                for (int i = 0; i < _drawableChildren.Length; i++)
-                {
-                    if (i > 0)
-                    {
-                        _cachedRenderedRect = _cachedRenderedRect.CombineWith(
-                            _drawableChildren[i].Draw());
-                    }
-                    else
-                    {
-                        _cachedRenderedRect = _drawableChildren[i].Draw();
-                    }
-                }
-                _isCachedRenderedRectValid = IsArrangeValid;
+                _drawableChildren[i].Draw();
             }
-            else
-            {
-                for (int i = 0; i < _drawableChildren.Length; i++)
-                {
-                    _drawableChildren[i].Draw();
-                }
-            }
-
-            return _cachedRenderedRect;
         }
 
         /// <summary>
@@ -246,24 +170,15 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <returns>子控件是否应该被绘制</returns>
         protected virtual bool IsDrawable(Control child)
         {
-            if (child.Visibility is Visibility.Collapsed)
-            {
-                return false;
-            }
-
-            Size renderSize = child.RenderRect;
-
-            if (renderSize == Size.Empty || renderSize < Size.Empty)
-            {
-                return false;
-            }
-
-            return true;
+            return child.RenderSize.Height > float.Epsilon
+                && child.RenderSize.Width > float.Epsilon;
         }
 
         /// <inheritdoc/>
         protected sealed override Size MeasureCore(Size availableSize)
         {
+            _isDrawableChildrenValid = false;
+
             return MeasureOverride(base.MeasureCore(availableSize));
         }
 
@@ -275,30 +190,18 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         protected abstract Size MeasureOverride(Size availableSize);
 
         /// <inheritdoc/>
-        protected override void OnArrangeInvalidated()
+        protected override Rect SegmentCore(Rect visiableRect)
         {
-            base.OnArrangeInvalidated();
-
-            // 控件度量无效，说明已经调用过 InvalidateSegment 方法
-            if (IsMeasureValid)
-            {
-                InvalidateSegment();
-
-                _children.ForEach(x => x.InvalidateArrange());
-                _isCachedRenderedRectValid = false;
-                _isDrawableChildrenValid = false;
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override void OnMeasureInvalidated()
-        {
-            base.OnMeasureInvalidated();
-            InvalidateSegment();
-
-            _children.ForEach(x => x.InvalidateMeasure());
-            _isCachedRenderedRectValid = false;
             _isDrawableChildrenValid = false;
+
+            visiableRect = base.SegmentCore(visiableRect);
+
+            Array.ForEach(_filteredChildren, x =>
+            {
+                x.Segment(visiableRect);
+            });
+
+            return visiableRect;
         }
 
         #endregion

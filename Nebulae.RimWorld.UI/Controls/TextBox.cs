@@ -112,7 +112,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         /// <inheritdoc/>
-        protected override void DrawControl(Rect renderRect)
+        protected override void DrawControl()
         {
             GameFont currentFont = GameText.Font;
             GameText.Font = FontSize;
@@ -121,11 +121,11 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 if (_isReadOnly)
                 {
-                    GUI.TextArea(renderRect, Text, GameText.CurTextAreaReadOnlyStyle);
+                    GUI.TextArea(RenderRect, Text, GameText.CurTextAreaReadOnlyStyle);
                 }
                 else
                 {
-                    string text = GUI.TextArea(renderRect, Text, GameText.CurTextAreaStyle);
+                    string text = GUI.TextArea(RenderRect, Text, GameText.CurTextAreaStyle);
                     if (Text != text && (InputValidator is null || InputValidator.IsMatch(text)))
                     {
                         Text = text;
@@ -136,11 +136,11 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 if (_isReadOnly)
                 {
-                    GUI.TextField(renderRect, Text, GameText.CurTextFieldStyle);
+                    GUI.TextField(RenderRect, Text, GameText.CurTextFieldStyle);
                 }
                 else
                 {
-                    string text = GUI.TextField(renderRect, Text, GameText.CurTextFieldStyle);
+                    string text = GUI.TextField(RenderRect, Text, GameText.CurTextFieldStyle);
                     if (Text != text && (InputValidator is null || InputValidator.IsMatch(text)))
                     {
                         Text = text;

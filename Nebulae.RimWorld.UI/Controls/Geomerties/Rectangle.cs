@@ -60,8 +60,10 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
 
 
         /// <inheritdoc/>
-        protected override Rect DrawCore(Rect renderRect)
+        protected override void DrawCore()
         {
+            Rect renderRect = RenderRect;
+
             Color currentColor = GUI.color;
             GUI.color = _fillColor;
 
@@ -82,8 +84,6 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
             }
 
             GUI.color = currentColor;
-
-            return renderRect;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using System;
 using UnityEngine;
 using Verse;
@@ -180,7 +181,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 contentAvailableRect = new Size(
                     _iconDesiredSize.Width + _textDesiredSize.Width,
                     Mathf.Max(_iconDesiredSize.Height, _textDesiredSize.Height))
-                    .AlignRectToArea(
+                    .AlignToArea(
                         contentAvailableRect,
                         HorizontalAlignment.Center,
                         VerticalAlignment.Center);
@@ -188,10 +189,11 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if ((_status & ContentStatus.IconSetted) != 0)
             {
-                _iconDesiredRect = _iconDesiredSize.AlignRectToArea(
-                    contentAvailableRect,
-                    HorizontalAlignment.Left.ReverseIf(_reverseContent),
-                    VerticalAlignment.Center);
+                _iconDesiredRect = _iconDesiredSize
+                    .AlignToArea(
+                        contentAvailableRect,
+                        HorizontalAlignment.Left.ReverseIf(_reverseContent),
+                        VerticalAlignment.Center);
             }
             else
             {
@@ -200,7 +202,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if ((_status & ContentStatus.TextSetted) != 0)
             {
-                _textDesiredRect = _textDesiredSize.AlignRectToArea(
+                _textDesiredRect = _textDesiredSize.AlignToArea(
                     contentAvailableRect,
                     HorizontalAlignment.Right.ReverseIf(_reverseContent),
                     VerticalAlignment.Center);
@@ -228,9 +230,8 @@ namespace Nebulae.RimWorld.UI.Controls
         {
         }
 
-
         /// <inheritdoc/>
-        protected override sealed Rect DrawButton(
+        protected override sealed void DrawButton(
             Rect renderRect,
             bool isEnabled,
             bool isCursorOver,
@@ -266,7 +267,17 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             GUI.color = currentColor;
-            return renderRect;
+        }
+
+        /// <inheritdoc/>
+        protected override bool IsMouseOver()
+        {
+            if (_iconHitOnly)
+            {
+                return _iconDesiredRect.Contains(Event.current.mousePosition);
+            }
+
+            return ContentRect.Contains(Event.current.mousePosition);
         }
 
         /// <inheritdoc/>
@@ -299,19 +310,6 @@ namespace Nebulae.RimWorld.UI.Controls
             return base.MeasureCore(availableSize);
         }
 
-        /// <inheritdoc/>
-        protected override Rect SegmentCore()
-        {
-            if (_iconHitOnly)
-            {
-                return _iconDesiredRect;
-            }
-            else
-            {
-                return base.SegmentCore();
-            }
-        }
-
         #endregion
 
 
@@ -324,19 +322,19 @@ namespace Nebulae.RimWorld.UI.Controls
             /// <summary>
             /// 按钮没有设置内容
             /// </summary>
-            None = 0x00000000,
+            None = 0b00,
             /// <summary>
             /// 按钮设置了图标
             /// </summary>
-            IconSetted = 0x00000001,
+            IconSetted = 0b01,
             /// <summary>
             /// 按钮设置了文字
             /// </summary>
-            TextSetted = 0x00000002,
+            TextSetted = 0b10,
             /// <summary>
             /// 按钮设置了图标和文字
             /// </summary>
-            FullSetted = 0x00000003
+            FullSetted = 0b11
         }
     }
 }

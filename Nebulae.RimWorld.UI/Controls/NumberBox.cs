@@ -22,7 +22,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private Regex _inputValidator = new Regex(@"^-?[0-9]{0,39}(\.[0-9]{0,2})?$");
 
-        private string _buffer = "0";
+        private string _buffer = "0.00";
 
         private float _maximun = 99999f;
         private float _minimun = -99999f;
@@ -55,7 +55,8 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     _decimalPartDigit = value;
 
-                    _inputValidator = DisplayAsPercent
+                    _buffer = string.Format("{0:F" + value + "}", Value);
+                    _inputValidator = _displayAsPercent
                         ? new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{Math.Max(value - 2, 0)}}})?%$")
                         : new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{value}}})?$");
                 }
@@ -73,9 +74,14 @@ namespace Nebulae.RimWorld.UI.Controls
                 if (_displayAsPercent != value)
                 {
                     _displayAsPercent = value;
+
+                    _buffer = value
+                        ? string.Format("{0:F" + Math.Max(_decimalPartDigit - 2, 0) + "}%", Value * 100f)
+                        : string.Format("{0:F" + _decimalPartDigit + "}", Value * 100f);
+
                     _inputValidator = value
-                        ? new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{Math.Max(DecimalPartDigit - 2, 0)}}})?%$")
-                        : new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{DecimalPartDigit}}})?$");
+                        ? new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{Math.Max(_decimalPartDigit - 2, 0)}}})?%$")
+                        : new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{_decimalPartDigit}}})?$");
                 }
             }
         }
@@ -193,18 +199,18 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         /// <inheritdoc/>
-        protected override void DrawControl(Rect renderRect)
+        protected override void DrawControl()
         {
             GameFont currentFont = Text.Font;
             Text.Font = FontSize;
 
             if (_isReadOnly)
             {
-                GUI.TextField(renderRect, _buffer, Text.CurTextFieldStyle);
+                GUI.TextField(RenderRect, _buffer, Text.CurTextFieldStyle);
             }
             else
             {
-                string text = GUI.TextField(renderRect, _buffer, Text.CurTextFieldStyle);
+                string text = GUI.TextField(RenderRect, _buffer, Text.CurTextFieldStyle);
                 if (_buffer != text && _inputValidator.IsMatch(text))
                 {
                     float value = text.Prase(0f).Clamp(_minimun, _maximun);

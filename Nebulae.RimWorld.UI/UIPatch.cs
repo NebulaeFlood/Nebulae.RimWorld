@@ -1,9 +1,6 @@
 ﻿using HarmonyLib;
 using Nebulae.RimWorld.WeakEventManagers;
-using RimWorld;
-using System.Collections.Generic;
 using Verse;
-using CollectionWeakReference = System.WeakReference<Nebulae.RimWorld.IWeakCollection>;
 
 namespace Nebulae.RimWorld.UI
 {
@@ -31,7 +28,7 @@ namespace Nebulae.RimWorld.UI
     public static class UIPatch
     {
         internal const string UniqueId = "Nebulae.RimWorld.UI";
-        
+
         /// <summary>
         /// 原版 UI Patch
         /// </summary>

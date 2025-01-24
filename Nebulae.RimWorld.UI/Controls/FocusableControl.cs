@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
@@ -9,6 +8,8 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public abstract class FocusableControl : FrameworkControl
     {
+        internal static FocusableControl FocusingControl;
+
         //------------------------------------------------------
         //
         //  Private Fields
@@ -17,44 +18,11 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Private Fields
 
-        private static FocusableControl _focusingControl;
         private static int _globeIndex = 0;
 
 
-        private Window _owner;
-
         private readonly string _focusIndex = string.Empty;
-
         private Status _status = Status.Normal;
-        private bool _isSegmentValid = false;
-
-        private Rect _visiableRectCache;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
-        #region Public Properties
-
-        /// <summary>
-        /// 持有焦点的控件
-        /// </summary>
-        public static FocusableControl FocusingControl => _focusingControl;
-
-
-        /// <summary>
-        /// 承载该控件的窗口
-        /// </summary>
-        public Window Owner
-        {
-            get => _owner;
-            set => _owner = value;
-        }
 
         #endregion
 
@@ -112,55 +80,48 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect DrawCore(Rect renderRect)
+        protected override void DrawCore()
         {
             GUI.SetNextControlName(_focusIndex);
-            DrawControl(renderRect);
+            DrawControl();
 
-            bool isFocusing = UpdateStatus(renderRect);
+            bool isFocusing = UpdateStatus();
             bool isForceFocusing = _status.HasFlag(Status.ForceFocusing);
 
             if (_status.HasFlag(Status.LossingFocus))
             {
                 GUI.FocusControl(null);
 
-                _focusingControl = null;
+                FocusingControl = null;
+
                 _status = Status.Normal;
             }
             else if (!isFocusing
-                && (_status.HasFlag(Status.ForceFocusing) || _status.HasFlag(Status.WillFocus)))
+                && (_status.HasFlag(Status.ForceFocusing)
+                    || _status.HasFlag(Status.WillFocus)))
             {
-                Verse.UI.FocusControl(_focusIndex, _owner);
+                Verse.UI.FocusControl(_focusIndex, Owner);
 
                 _status = isForceFocusing
                      ? Status.Focusing | Status.ForceFocusing
                      : Status.Focusing;
             }
-
-            return renderRect;
         }
 
         /// <summary>
         /// 绘制可焦聚的控件
         /// </summary>
-        /// <param name="renderRect">控件允许绘制的区域</param>
-        protected abstract void DrawControl(Rect renderRect);
-
-        /// <inheritdoc/>
-        protected override void OnArrangeInvalidated()
-        {
-            base.OnArrangeInvalidated();
-            _isSegmentValid = false;
-        }
+        protected abstract void DrawControl();
 
         #endregion
 
 
-        private bool UpdateStatus(Rect renderRect)
+        private bool UpdateStatus()
         {
             if (_focusIndex == GUI.GetNameOfFocusedControl())
             {
-                _focusingControl = this;
+                FocusingControl = this;
+
                 _status |= Status.Focusing;
             }
             else
@@ -170,12 +131,6 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (!_status.HasFlag(Status.ForceFocusing))
             {
-                if (!_isSegmentValid)
-                {
-                    _visiableRectCache = this.CalculateVisiableRect(renderRect);
-                    _isSegmentValid = true;
-                }
-
                 EventType eventType = Event.current.type;
 
                 if (eventType is EventType.MouseDrag)
@@ -184,7 +139,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 }
 
                 if (eventType is EventType.MouseDown
-                    && !_visiableRectCache.Contains(Event.current.mousePosition))
+                    && !ContentRect.Contains(Event.current.mousePosition))
                 {
                     _status |= Status.LossingFocus;
                     return true;
@@ -198,11 +153,11 @@ namespace Nebulae.RimWorld.UI.Controls
         [Flags]
         private enum Status : int
         {
-            Normal = 0x00000000,
-            Focusing = 0x00000001,
-            ForceFocusing = 0x00000002,
-            WillFocus = 0x00000004,
-            LossingFocus = 0x00000008
+            Normal = 0b0000,
+            Focusing = 0b0001,
+            ForceFocusing = 0b0010,
+            WillFocus = 0b0100,
+            LossingFocus = 0b1000
         }
     }
 }

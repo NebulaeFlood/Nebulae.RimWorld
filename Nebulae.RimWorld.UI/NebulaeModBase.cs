@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using Nebulae.RimWorld.UI.Controls;
+﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Windows;
 using UnityEngine;
 using Verse;

@@ -1,5 +1,5 @@
-﻿using HarmonyLib;
-using Nebulae.RimWorld.UI.Controls;
+﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Utilities;
 using System;
 using UnityEngine;
 using Verse;
@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Windows
     /// <summary>
     /// 使用 <see cref="Control"/> 进行内容呈现的窗口
     /// </summary>
-    public class ControlWindow : Window, IFrame, IUIEventListener
+    public class ControlWindow : Window, IUIEventListener
     {
         //------------------------------------------------------
         //
@@ -37,6 +37,9 @@ namespace Nebulae.RimWorld.UI.Windows
         #endregion
 
 
+        internal readonly LayoutManager LayoutManager;
+
+
         //------------------------------------------------------
         //
         //  Private Fields
@@ -45,11 +48,12 @@ namespace Nebulae.RimWorld.UI.Windows
 
         #region Private Fields
 
-        private Control _content;
-
-        private Rect _windowContentRectCache;
+        private Rect _clientRect;
 
         private bool _isOpen = false;
+
+        private float _initialHeight = DefaultWindowHeight;
+        private float _initialWidth = DefaultWindowWidth;
 
         #endregion
 
@@ -63,27 +67,33 @@ namespace Nebulae.RimWorld.UI.Windows
         #region Public Properties
 
         /// <summary>
+        /// 窗口的客户区域
+        /// </summary>
+        public Rect ClientRect => _clientRect;
+
+        /// <summary>
         /// 内容控件
         /// </summary>
         public Control Content
         {
-            get => _content;
+            get => LayoutManager.Root;
             set
             {
-                if (_content != value)
+                Control root = LayoutManager.Root;
+
+                if (!ReferenceEquals(root, value))
                 {
+                    root?.RemoveParent();
+
                     if (value is null)
                     {
-                        _content.RemoveContainer();
+                        LayoutManager.Root = null;
                     }
                     else
                     {
-                        value.SetContainer(this);
+                        value.Owner = this;
+                        LayoutManager.Root = value;
                     }
-
-                    _content = value;
-
-                    InvalidateMeasure();
                 }
             }
         }
@@ -91,12 +101,46 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <summary>
         /// 窗口初始的大小
         /// </summary>
-        public override Vector2 InitialSize => new Vector2(DefaultWindowWidth, DefaultWindowHeight);
+        public sealed override Vector2 InitialSize => new Vector2(_initialWidth, _initialHeight);
+
+        /// <summary>
+        /// 窗口的初始高度
+        /// </summary>
+        public float InitialHeight
+        {
+            get => _initialHeight;
+            set
+            {
+                if (_initialHeight != value)
+                {
+                    _initialHeight = value;
+
+                    LayoutManager.InvalidateLayout();
+                }
+            }
+        }
 
         /// <summary>
         /// 窗口是否正在呈现
         /// </summary>
         public new bool IsOpen => _isOpen;
+
+        /// <summary>
+        /// 窗口的初始宽度
+        /// </summary>
+        public float InitialWidth
+        {
+            get => _initialWidth;
+            set
+            {
+                if (_initialWidth != value)
+                {
+                    _initialWidth = value;
+
+                    LayoutManager.InvalidateLayout();
+                }
+            }
+        }
 
         #endregion
 
@@ -109,16 +153,8 @@ namespace Nebulae.RimWorld.UI.Windows
             doCloseButton = true;
             doCloseX = true;
 
-            Button button = new Button
-            {
-                Width = 220f,
-                Height = 40f,
-                Text = "Hello RimWorld!",
-                ClickSound = null
-            };
-            button.Click += CloseWindow;
+            LayoutManager = new LayoutManager(this);
 
-            Content = button;
             UIPatch.UIEvent.Manage(this);
         }
 
@@ -138,23 +174,23 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <param name="args">事件数据</param>
         public void CloseWindow(ButtonBase button, EventArgs args) => Close();
 
-        /// <inheritdoc/>
-        public void InvalidateArrange() => _content?.InvalidateArrange();
-
-        /// <inheritdoc/>
-        public void InvalidateMeasure() => _content?.InvalidateMeasure();
-
-        /// <inheritdoc/>
-        public void InvalidateSegment()
+        /// <summary>
+        /// 创建默认内容
+        /// </summary>
+        /// <returns>默认内容控件。</returns>
+        public virtual Control CreateDefaultContent()
         {
-            if (_content is IFrame frame)
+            Button button = new Button
             {
-                frame.InvalidateSegment();
-            }
-        }
+                Width = 220f,
+                Height = 40f,
+                Text = "Hello RimWorld!",
+                ClickSound = null
+            };
+            button.Click += CloseWindow;
 
-        /// <inheritdoc/>
-        public Rect Segment() => _windowContentRectCache;
+            return button;
+        }
 
         /// <summary>
         /// 开始呈现窗口
@@ -164,13 +200,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <inheritdoc/>
         public void UIEventHandler(UIEventType type)
         {
-            // if (type is UIEventType.ScaleChanged)
-            // {
-            //     InvalidateMeasure();
-            // }
-
-            // 对于 Label 等控件，不只是改变界面缩放会影响尺寸
-            InvalidateMeasure();
+            LayoutManager.InvalidateLayout();
         }
 
         #endregion
@@ -200,22 +230,17 @@ namespace Nebulae.RimWorld.UI.Windows
                 inRect.height -= FooterRowHeight;
             }
 
-            if (_windowContentRectCache != inRect)
+            if (_clientRect != inRect)
             {
-
-                if (_windowContentRectCache.IsPositionOnlyChanged(inRect))
+                if (!_clientRect.IsPositionOnlyChanged(inRect))
                 {
-                    InvalidateArrange();
-                }
-                else
-                {
-                    InvalidateMeasure();
+                    LayoutManager.InvalidateLayout();
                 }
 
-                _windowContentRectCache = inRect;
+                _clientRect = inRect;
             }
 
-            _content?.Draw(inRect);
+            LayoutManager.Draw(inRect);
         }
 
         /// <summary>

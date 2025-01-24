@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using UnityEngine;
 using Verse;
 using GameText = Verse.Text;
@@ -10,6 +11,9 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class Label : Control
     {
+        private TextAnchor _anchor = TextAnchor.MiddleCenter;
+
+
         //------------------------------------------------------
         //
         //  Public Properties
@@ -17,6 +21,15 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Public Properties
+
+        /// <summary>
+        /// 获取或设置文本锚点
+        /// </summary>
+        public TextAnchor Anchor
+        {
+            get => _anchor;
+            set => _anchor = value;
+        }
 
         #region FontSize
         /// <summary>
@@ -65,22 +78,77 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
+
         /// <inheritdoc/>
-        protected override Rect DrawCore(Rect renderRect)
+        protected override Rect ArrangeCore(Rect availableRect)
+        {
+            HorizontalAlignment horizontalAlignment;
+
+            if (_anchor is TextAnchor.UpperLeft
+                || _anchor is TextAnchor.MiddleLeft
+                || _anchor is TextAnchor.LowerLeft)
+            {
+                horizontalAlignment = HorizontalAlignment.Left;
+            }
+            else if (_anchor is TextAnchor.UpperRight
+                || _anchor is TextAnchor.MiddleRight
+                || _anchor is TextAnchor.LowerRight)
+            {
+                horizontalAlignment = HorizontalAlignment.Right;
+            }
+            else
+            {
+                horizontalAlignment = HorizontalAlignment.Center;
+            }
+
+            VerticalAlignment verticalAlignment;
+
+            if (_anchor is TextAnchor.UpperLeft
+                || _anchor is TextAnchor.UpperCenter
+                || _anchor is TextAnchor.UpperRight)
+            {
+                verticalAlignment = VerticalAlignment.Top;
+            }
+            else if (_anchor is TextAnchor.LowerLeft
+                || _anchor is TextAnchor.LowerCenter
+                || _anchor is TextAnchor.LowerRight)
+            {
+                verticalAlignment = VerticalAlignment.Bottom;
+            }
+            else
+            {
+                verticalAlignment = VerticalAlignment.Center;
+            }
+
+            return RenderSize.AlignToArea(availableRect,
+                horizontalAlignment, verticalAlignment);
+        }
+
+        /// <inheritdoc/>
+        protected override void DrawCore()
         {
             TextAnchor currentAnchor = GameText.Anchor;
             GameFont currentFont = GameText.Font;
 
             GameText.Anchor = TextAnchor.MiddleCenter;
             GameText.Font = FontSize;
-            Widgets.Label(renderRect, Text);
+
+            Widgets.Label(RenderRect, Text);
+
             GameText.Anchor = currentAnchor;
             GameText.Font = currentFont;
-
-            return renderRect;
         }
 
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize) => Text.CalculateLineSize(FontSize);
+
+        #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Nebulae.RimWorld.UI
+﻿namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
     /// 滚动条的可见性

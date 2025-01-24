@@ -1,4 +1,4 @@
-﻿namespace Nebulae.RimWorld.UI
+﻿namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
     /// 指示控件在分配的空间的水平方向上的对齐方式
