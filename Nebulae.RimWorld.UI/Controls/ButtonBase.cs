@@ -36,8 +36,8 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Private Fields
 
-        private SoundDef _clickSound = SoundDefOf.Mouseover_Standard;
-        private SoundDef _mouseOverSound;
+        private SoundDef _clickSound = SoundDefOf.Click;
+        private SoundDef _mouseOverSound = SoundDefOf.Mouseover_Standard;
 
         private bool _isEnabled = true;
         private bool _playMouseOverSound = true;
@@ -177,7 +177,6 @@ namespace Nebulae.RimWorld.UI.Controls
                 OnClick();
 
                 _click.Invoke(this, EventArgs.Empty);
-                _clickSound?.PlayOneShotOnCamera();
             }
         }
 
@@ -191,9 +190,12 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 按钮被单击时发生
+        /// 按钮被单击时执行的方法
         /// </summary>
-        protected virtual void OnClick() { }
+        protected virtual void OnClick() 
+        {
+            _clickSound?.PlayOneShotOnCamera();
+        }
 
         #endregion
     }

@@ -109,6 +109,22 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Methods
+
+        /// <summary>
+        /// 要求面板在下次绘制控件之前重新判断子控件是否可绘制
+        /// </summary>
+        public void InvalidateDrawableChildren()
+        {
+            _isDrawableChildrenValid = false;
+        }
+
         /// <summary>
         /// 要求面板在下次绘制控件之前重新过滤子控件
         /// </summary>
@@ -122,6 +138,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 InvalidateMeasure();
             }
         }
+
+        #endregion
 
 
         //------------------------------------------------------
