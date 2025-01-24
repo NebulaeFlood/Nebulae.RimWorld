@@ -33,6 +33,35 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
+        //------------------------------------------------------
+        //
+        //  Public Properties
+        //
+        //------------------------------------------------------
+
+        #region Public Properties
+
+        /// <summary>
+        /// 选项卡的统一高度
+        /// </summary>
+        public float TabHeight
+        {
+            get => _tabPanel.ItemHeight;
+            set => _tabPanel.ItemHeight = value;
+        }
+
+        /// <summary>
+        /// 选项卡的统一宽度
+        /// </summary>
+        public float TabWidth
+        {
+            get => _tabPanel.ItemWidth;
+            set => _tabPanel.ItemWidth = value;
+        }
+
+        #endregion
+
+
         static TabControl()
         {
             HorizontalAlignmentProperty.OverrideMetadata(typeof(TabControl),
