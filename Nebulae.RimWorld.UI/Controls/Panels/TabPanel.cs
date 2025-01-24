@@ -61,7 +61,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty ItemWidthProperty =
             DependencyProperty.Register(nameof(ItemWidth), typeof(float), typeof(TabPanel),
-                new ControlPropertyMetadata(170f, ControlRelation.Measure));
+                new ControlPropertyMetadata(190f, ControlRelation.Measure));
         #endregion
 
         #endregion
