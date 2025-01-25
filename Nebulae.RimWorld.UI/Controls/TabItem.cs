@@ -11,6 +11,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// <see cref="TabControl"/> 的选项卡项
     /// </summary>
+    [StaticConstructorOnStartup]
     public class TabItem : ButtonBase
     {
         /// <summary>
