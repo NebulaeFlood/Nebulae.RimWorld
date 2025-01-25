@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Windows;
+using System;
 using UnityEngine;
 using Verse;
 
@@ -25,12 +26,11 @@ namespace Nebulae.RimWorld.UI
         {
             get
             {
-                if (_settingWindow != null)
+                if (_settingWindow is null)
                 {
-                    return _settingWindow;
+                    throw new InvalidOperationException($"Trying to get mod setting window of {this} before it is created.");
                 }
 
-                _settingWindow = CreateSettingWindow();
                 return _settingWindow;
             }
         }
@@ -42,6 +42,8 @@ namespace Nebulae.RimWorld.UI
         /// <param name="content">Mod 内容</param>
         protected NebulaeModBase(ModContentPack content) : base(content)
         {
+            StartUpQuestManager.AddQuest(() => _settingWindow = CreateSettingWindow());
+
             UIPatch.UIEvent.Manage(this);
         }
 
