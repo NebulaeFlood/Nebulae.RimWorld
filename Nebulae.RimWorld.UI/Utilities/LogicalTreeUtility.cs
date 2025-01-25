@@ -70,7 +70,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// 移除控件的父控件
         /// </summary>
         /// <param name="control">要移除父控件的控件</param>
-        internal static void RemoveParent(this Control control)
+        public static void RemoveParent(this Control control)
         {
             control.IsChild = false;
             control.Owner = null;
@@ -83,7 +83,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// </summary>
         /// <param name="control">要设置父控件的控件</param>
         /// <param name="parent">设置给控件的父控件</param>
-        internal static void SetParent(this Control control, Control parent)
+        public static void SetParent(this Control control, Control parent)
         {
             control.IsChild = true;
             control.Owner = parent.Owner;
