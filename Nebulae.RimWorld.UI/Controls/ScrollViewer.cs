@@ -14,25 +14,6 @@ namespace Nebulae.RimWorld.UI.Controls
     {
         //------------------------------------------------------
         //
-        //  Private Static Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Static Fields
-
-        private static readonly GUIStyle _backgroundStyle = GUI.skin.scrollView;
-
-        private static readonly GUIStyle _horizontalScrollBarStyle = GUI.skin.horizontalScrollbar;
-        private static readonly GUIStyle _horizontalScrollBarThumb = GUI.skin.horizontalScrollbarThumb;
-
-        private static readonly GUIStyle _verticalScrollBarStyle = GUI.skin.verticalScrollbar;
-        private static readonly GUIStyle _verticalScrollBarThumb = GUI.skin.verticalScrollbarThumb;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
         //  Private Fields
         //
         //------------------------------------------------------
@@ -187,9 +168,9 @@ namespace Nebulae.RimWorld.UI.Controls
                     DrawScrollBar(
                         new Rect(
                             RenderRect.x,
-                            RenderRect.y + _viewHeight + _horizontalScrollBarStyle.margin.top,
+                            RenderRect.y + _viewHeight + GUI.skin.horizontalScrollbar.margin.top,
                             _viewWidth,
-                            _horizontalScrollBarStyle.fixedHeight),
+                            GUI.skin.horizontalScrollbar.fixedHeight),
                         0f,
                         _viewWidth,
                         0f,
@@ -201,9 +182,9 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     DrawScrollBar(
                         new Rect(
-                            RenderRect.x + _viewWidth + _verticalScrollBarStyle.margin.right,
+                            RenderRect.x + _viewWidth + GUI.skin.verticalScrollbar.margin.right,
                             RenderRect.y,
-                            _verticalScrollBarStyle.fixedWidth,
+                            GUI.skin.verticalScrollbar.fixedWidth,
                             _viewHeight),
                         0f,
                         _viewHeight,
@@ -223,7 +204,7 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 if (eventType is EventType.Repaint)
                 {
-                    _backgroundStyle.Draw(
+                    GUI.skin.scrollView.Draw(
                         RenderRect,
                         RenderRect.Contains(Event.current.mousePosition),
                         false,
@@ -236,9 +217,9 @@ namespace Nebulae.RimWorld.UI.Controls
                     float horizontalOffset = DrawScrollBar(
                         new Rect(
                             RenderRect.x,
-                            RenderRect.y + _viewHeight + _horizontalScrollBarStyle.margin.top,
+                            RenderRect.y + _viewHeight + GUI.skin.horizontalScrollbar.margin.top,
                             _viewWidth,
-                            _horizontalScrollBarStyle.fixedHeight),
+                            GUI.skin.horizontalScrollbar.fixedHeight),
                         _horizontalOffset,
                         _viewWidth,
                         0f,
@@ -258,9 +239,9 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     float verticalOffset = DrawScrollBar(
                         new Rect(
-                            RenderRect.x + _viewWidth + _verticalScrollBarStyle.margin.left,
+                            RenderRect.x + _viewWidth + GUI.skin.verticalScrollbar.margin.left,
                             RenderRect.y,
-                            _verticalScrollBarStyle.fixedWidth,
+                            GUI.skin.verticalScrollbar.fixedWidth,
                             _viewHeight),
                         _verticalOffset,
                         _viewHeight,
@@ -346,11 +327,11 @@ namespace Nebulae.RimWorld.UI.Controls
             if (_content is null)
             {
                 _viewHeight = _shouldDrawHorizontalScrollBar
-                    ? renderSize.Height - _horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight - _horizontalScrollBarStyle.margin.top
+                    ? renderSize.Height - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top
                     : renderSize.Height;
 
                 _viewWidth = _shouldDrawVerticalScrollBar
-                    ? renderSize.Width - _verticalScrollBarStyle.margin.left - _verticalScrollBarStyle.fixedWidth - _verticalScrollBarStyle.margin.right
+                    ? renderSize.Width - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right
                     : renderSize.Width;
             }
             else
@@ -360,12 +341,12 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 if (_shouldDrawHorizontalScrollBar)
                 {
-                    contentAvailableHeight = contentAvailableHeight - _horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight - _horizontalScrollBarStyle.margin.top;
+                    contentAvailableHeight = contentAvailableHeight - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top;
                 }
 
                 if (_shouldDrawVerticalScrollBar)
                 {
-                    contentAvailableWidth = contentAvailableWidth - _verticalScrollBarStyle.margin.left - _verticalScrollBarStyle.fixedWidth - _verticalScrollBarStyle.margin.right;
+                    contentAvailableWidth = contentAvailableWidth - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right;
                 }
 
                 Size contentSize = _content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
@@ -375,7 +356,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     && HorizontalScrollBarVisibility != ScrollBarVisibility.Hidden
                     && contentSize.Width > contentAvailableWidth)
                 {
-                    contentAvailableHeight = contentAvailableHeight - _horizontalScrollBarStyle.margin.bottom - _horizontalScrollBarStyle.fixedHeight - _horizontalScrollBarStyle.margin.top;
+                    contentAvailableHeight = contentAvailableHeight - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top;
                     shouldMeasureAgain = true;
                     _shouldDrawHorizontalScrollBar = true;
                 }
@@ -383,7 +364,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     && VerticalScrollBarVisibility != ScrollBarVisibility.Hidden
                     && contentSize.Height > contentAvailableHeight)
                 {
-                    contentAvailableWidth = contentAvailableWidth - _verticalScrollBarStyle.margin.left - _verticalScrollBarStyle.fixedWidth - _verticalScrollBarStyle.margin.right;
+                    contentAvailableWidth = contentAvailableWidth - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right;
                     shouldMeasureAgain = true;
                     _shouldDrawVerticalScrollBar = true;
                 }
@@ -456,13 +437,13 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (isHorizontal)
             {
-                sliderStyle = _horizontalScrollBarStyle;
-                thumbStyle = _horizontalScrollBarThumb;
+                sliderStyle = GUI.skin.horizontalScrollbar;
+                thumbStyle = GUI.skin.horizontalScrollbarThumb;
             }
             else
             {
-                sliderStyle = _verticalScrollBarStyle;
-                thumbStyle = _verticalScrollBarThumb;
+                sliderStyle = GUI.skin.verticalScrollbar;
+                thumbStyle = GUI.skin.verticalScrollbarThumb;
             }
 
             return GUI.Slider(renderRect,
