@@ -48,6 +48,8 @@ namespace Nebulae.RimWorld.UI.Controls
         private Texture2D _icon;
 
         private bool _iconHitOnly = false;
+        private bool _iconHighlightable = true;
+
         private bool _reverseContent = false;
         private bool _separateContent = false;
 
@@ -99,6 +101,15 @@ namespace Nebulae.RimWorld.UI.Controls
             DependencyProperty.Register(nameof(IconSize), typeof(float), typeof(IconButton),
                 new ControlPropertyMetadata(DefaultIconSize, ControlRelation.Measure));
         #endregion
+
+        /// <summary>
+        /// 按钮的图标是否可高亮
+        /// </summary>
+        public bool IconHighlightable
+        {
+            get => _iconHighlightable;
+            set => _iconHighlightable = value;
+        }
 
         #region Padding
         /// <summary>
@@ -238,20 +249,17 @@ namespace Nebulae.RimWorld.UI.Controls
             bool isPressing)
         {
             Color currentColor = GUI.color;
-            GUI.color = isEnabled
-                ? _compositionColor * currentColor
-                : _compositionColor * Widgets.InactiveColor;
+            Color buttonColor = isEnabled
+                ? Color.white
+                : Widgets.InactiveColor;
+
+            GUI.color = _compositionColor * buttonColor;
 
             DrawBackground(
                 renderRect,
                 isEnabled,
                 isCursorOver,
                 isPressing);
-
-            if ((_status & ContentStatus.IconSetted) != 0)
-            {
-                GUI.DrawTexture(_iconDesiredRect, _icon, ScaleMode.ScaleToFit);
-            }
 
             if ((_status & ContentStatus.TextSetted) != 0)
             {
@@ -264,6 +272,18 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 GameText.Font = font;
                 GameText.Anchor = anchor;
+            }
+
+            if ((_status & ContentStatus.IconSetted) != 0)
+            {
+                if (isEnabled
+                    && _iconHighlightable 
+                    && isCursorOver )
+                {
+                    GUI.color = _compositionColor * GenUI.MouseoverColor;
+                }
+
+                GUI.DrawTexture(_iconDesiredRect, _icon, ScaleMode.ScaleToFit);
             }
 
             GUI.color = currentColor;

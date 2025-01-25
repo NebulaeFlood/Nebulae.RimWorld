@@ -52,6 +52,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             ClickSound = SoundDefOf.Tick_Tiny;
             IconHitOnly = false;
+            IconHighlightable = false;
         }
 
 

@@ -15,6 +15,7 @@ namespace Nebulae.RimWorld.UI.Controls
         public CheckBox() : base(Widgets.CheckboxOnTex, Widgets.CheckboxPartialTex, Widgets.CheckboxOffTex)
         {
             ClickSound = null;
+            IconHighlightable = false;
             ReverseContent = true;
         }
 
