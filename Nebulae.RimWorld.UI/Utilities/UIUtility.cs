@@ -80,6 +80,54 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
+        /// 绘制矩形
+        /// </summary>
+        /// <param name="renderRect"></param>
+        /// <param name="fillColor"></param>
+        public static void DrawRectangle(Rect renderRect, Color fillColor)
+        {
+            Color currentColor = GUI.color;
+            GUI.color = fillColor;
+
+            GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
+
+            GUI.color = currentColor;
+        }
+
+
+        /// <summary>
+        /// 绘制有边框的矩形
+        /// </summary>
+        /// <param name="renderRect"></param>
+        /// <param name="fillColor"></param>
+        /// <param name="borderThickness"></param>
+        /// <param name="borderColor"></param>
+        public static void DrawRectangle(Rect renderRect, Color fillColor, Thickness borderThickness, Color borderColor)
+        {
+            Color currentColor = GUI.color;
+            GUI.color = fillColor;
+
+            GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
+
+            GUI.color = borderColor;
+
+            if (borderThickness != 0f)
+            {
+                // Left
+                GUI.DrawTexture(new Rect(renderRect.x, renderRect.y, borderThickness.Left, renderRect.height), BaseContent.WhiteTex);
+                // Top
+                GUI.DrawTexture(new Rect(renderRect.x, renderRect.y, renderRect.width, borderThickness.Top), BaseContent.WhiteTex);
+                // Right
+                GUI.DrawTexture(new Rect(renderRect.x + renderRect.width - borderThickness.Right, renderRect.y, borderThickness.Right, renderRect.height), BaseContent.WhiteTex);
+                // Bottom
+                GUI.DrawTexture(new Rect(renderRect.x, renderRect.y + renderRect.height - borderThickness.Bottom, renderRect.width, borderThickness.Bottom), BaseContent.WhiteTex);
+            }
+
+            GUI.color = currentColor;
+        }
+
+
+        /// <summary>
         /// 计算两个矩形的交集
         /// </summary>
         /// <param name="rect">第一个矩形</param>
