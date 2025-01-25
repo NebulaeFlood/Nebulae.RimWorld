@@ -85,10 +85,20 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="parent">设置给控件的父控件</param>
         public static void SetParent(this Control control, Control parent)
         {
-            control.IsChild = true;
-            control.Owner = parent.Owner;
-            control.Parent = parent;
-            control.Rank = parent.Rank + 1;
+            if (parent is null)
+            {
+                control.IsChild = false;
+                control.Owner = null;
+                control.Parent = null;
+                control.Rank = 0;
+            }
+            else
+            {
+                control.IsChild = true;
+                control.Owner = parent.Owner;
+                control.Parent = parent;
+                control.Rank = parent.Rank + 1;
+            }
         }
     }
 }
