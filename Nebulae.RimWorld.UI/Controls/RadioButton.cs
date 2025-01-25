@@ -50,6 +50,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public RadioButton() : base(DefaultCheckedIcon, DefaultIndeterminateIcon, DefaultUncheckedIcon)
         {
+            ClickSound = SoundDefOf.Tick_Tiny;
             IconHitOnly = false;
         }
 
@@ -68,7 +69,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     }
                 }
                 Status = ToggleStatus.Checked;
-                SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
+                base.OnClick();
             }
         }
     }
