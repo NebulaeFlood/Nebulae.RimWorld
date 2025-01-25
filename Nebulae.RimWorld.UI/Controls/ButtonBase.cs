@@ -199,6 +199,16 @@ namespace Nebulae.RimWorld.UI.Controls
             _clickSound?.PlayOneShotOnCamera();
         }
 
+        /// <inheritdoc/>
+        protected override Rect SegmentCore(Rect visiableRect)
+        {
+            visiableRect = base.SegmentCore(visiableRect);
+
+            UpdateHitTestRect(visiableRect);
+
+            return visiableRect;
+        }
+
         #endregion
     }
 }

@@ -302,7 +302,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect SegmentCore(Rect visiableRect)
         {
-            visiableRect = base.SegmentCore(visiableRect);
+            visiableRect = visiableRect.IntersectWith(RenderRect);
 
             if (_iconHitOnly)
             {
