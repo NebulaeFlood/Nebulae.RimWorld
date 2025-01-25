@@ -60,7 +60,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             control.SetParent(_owner);
             _children.Add(control);
 
-            _owner.InvalidateMeasure();
+            _owner.InvalidateFilter();
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             _children.Clear();
             _children.TrimExcess();
-            _owner.InvalidateMeasure();
+            _owner.InvalidateFilter();
         }
 
         /// <summary>
@@ -114,8 +114,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             _children = controls.Where(x => x != null).Distinct().ToList();
             _children.ForEach(x => x.SetParent(_owner));
-
-            // _owner.InvalidateMeasure();
         }
 
         /// <summary>
@@ -132,8 +130,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             _children = controls.Where(x => x != null).Distinct().ToList();
             _children.ForEach(x => x.SetParent(_owner));
 
-            // _owner.InvalidateMeasure();
-
             return (TOwner)_owner;
         }
 
@@ -147,7 +143,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             if (_children.Remove(control))
             {
                 control.RemoveParent();
-                _owner.InvalidateMeasure();
+                _owner.InvalidateFilter();
 
                 return true;
             }
