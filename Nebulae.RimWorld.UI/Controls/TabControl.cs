@@ -105,7 +105,6 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             item.Container = this;
-            item.Selected = false;
 
             if (_selectedTabItem is null)
             {
@@ -127,15 +126,8 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            if (_selectedTabItem != null)
-            {
-                _selectedTabItem.Selected = false;
-
-                _content?.RemoveParent();
-
-                _selectedTabItem = null;
-                _content = null;
-            }
+            _selectedTabItem = null;
+            _content = null;
 
             for (int i = _tabItems.Count; i >= 0; i--)
             {
@@ -173,10 +165,6 @@ namespace Nebulae.RimWorld.UI.Controls
                 }
                 else
                 {
-                    item.Selected = false;
-
-                    _content?.RemoveParent();
-
                     _selectedTabItem = null;
                     _content = null;
                 }
@@ -197,16 +185,12 @@ namespace Nebulae.RimWorld.UI.Controls
                 if (_selectedTabItem != null)
                 {
                     _selectedTabItem.Selected = false;
-
-                    _content?.RemoveParent();
                 }
 
                 _selectedTabItem = item;
                 _content = item.Content;
 
                 item.Selected = true;
-
-                _content?.SetParent(this);
 
                 _tabPanel.InvalidateDrawableChildren();
             }
@@ -226,11 +210,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (_tabItems.Count > 0)
             {
-                _tabItems.ForEach(x =>
-                {
-                    x.Container = this;
-                    x.Selected = false;
-                });
+                _tabItems.ForEach(x => { x.Container = this; });
 
                 Select(_tabItems[0]);
             }

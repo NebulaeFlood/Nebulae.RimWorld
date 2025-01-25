@@ -20,17 +20,6 @@ namespace Nebulae.RimWorld.UI.Controls
         public static readonly Texture2D TabAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/TabAtlas");
 
 
-        /// <summary>
-        /// 获取或设置选项卡内容
-        /// </summary>
-        public Control Content;
-
-        /// <summary>
-        /// 获取或设置选项卡是否被选中
-        /// </summary>
-        public bool Selected = false;
-
-
         //------------------------------------------------------
         //
         //  Private Fields
@@ -40,6 +29,7 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Private Fields
 
         private TabControl _container;
+        private Control _content;
 
         private Rect _leftRect;
         private static readonly Rect _leftUVRect = new Rect(0f, 0f, 0.46875f, 1f);
@@ -53,8 +43,18 @@ namespace Nebulae.RimWorld.UI.Controls
         private Rect _bottomRect;
         private static readonly Rect _bottomUVRect = new Rect(0.5f, 0.01f, 0.01f, 0.01f);
 
+        private bool _selected = false;
+
         #endregion
 
+
+        //------------------------------------------------------
+        //
+        //  Public Properties
+        //
+        //------------------------------------------------------
+
+        #region Public Properties
 
         /// <summary>
         /// 获取选项卡所属的容器
@@ -62,8 +62,51 @@ namespace Nebulae.RimWorld.UI.Controls
         public TabControl Container
         {
             get => _container;
-            internal set => _container = value;
+            internal set
+            {
+                if (!ReferenceEquals(_container, value))
+                {
+                    _selected = false;
+
+                    _container = value;
+                    _content?.SetParent(value);
+                    LogicalTreeUtility.SetParent(this, value);
+                }
+            }
         }
+
+        /// <summary>
+        /// 获取或设置选项卡内容
+        /// </summary>
+        public Control Content
+        {
+            get => _content;
+            set
+            {
+                if (!ReferenceEquals(_content, value))
+                {
+                    _content?.RemoveParent();
+                    _content = value;
+                    _content?.SetParent(_container);
+
+                    if (_selected)
+                    {
+                        _container?.Select(this);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 选项卡是否被选中
+        /// </summary>
+        public bool Selected
+        {
+            get => _selected;
+            internal set => _selected = value;
+        }
+
+        #endregion
 
 
         /// <summary>
@@ -109,7 +152,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             Rect labelRect;
 
-            if (isCursorOver)
+            if (isCursorOver || _selected)
             {
                 labelRect = new Rect(RenderRect.x + 1f, RenderRect.y, RenderRect.width, RenderRect.height);
                 textColor = Color.yellow;
@@ -155,7 +198,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            if (!Selected)
+            if (!_selected)
             {
                 _container.Select(this);
 
@@ -166,11 +209,15 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect SegmentCore(Rect visiableRect)
         {
-            return visiableRect.IntersectWith(new Rect(
+            visiableRect = visiableRect.IntersectWith(new Rect(
                 RenderRect.x + TabPanel.IntersectedWidth,
                 RenderRect.y,
                 RenderSize.Width - 2f * TabPanel.IntersectedWidth,
                 RenderSize.Height));
+
+            UpdateHitTestRect(visiableRect);
+
+            return visiableRect;
         }
 
         #endregion
