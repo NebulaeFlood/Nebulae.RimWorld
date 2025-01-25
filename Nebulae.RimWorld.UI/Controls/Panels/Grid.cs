@@ -82,7 +82,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <remarks>
         /// 必须保证输入的结构能够匹配设置的行数和列数，否则会引发未知的行为。
         /// </remarks>
-        public Grid Set(Control[] controls)
+        public Grid Set(params Control[] controls)
         {
             Control[] controlList = controls.Cast<Control>().ToArray();
             Control[] cleanList = controlList.Where(x => x != null).Distinct().ToArray();
