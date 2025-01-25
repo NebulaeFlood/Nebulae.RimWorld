@@ -50,7 +50,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty ChildMaxWidthProperty =
             DependencyProperty.Register(nameof(ChildMaxWidth), typeof(float), typeof(StackPanel),
-                new ControlPropertyMetadata(float.PositiveInfinity, ControlRelation.Measure));
+                new ControlPropertyMetadata(1f, ControlRelation.Measure));
         #endregion
 
         #region Orientation
