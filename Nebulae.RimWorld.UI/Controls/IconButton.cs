@@ -270,17 +270,6 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected override bool IsMouseOver()
-        {
-            if (_iconHitOnly)
-            {
-                return _iconDesiredRect.Contains(Event.current.mousePosition);
-            }
-
-            return ContentRect.Contains(Event.current.mousePosition);
-        }
-
-        /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
             _status = ContentStatus.None;
@@ -308,6 +297,23 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             return base.MeasureCore(availableSize);
+        }
+
+        /// <inheritdoc/>
+        protected override Rect SegmentCore(Rect visiableRect)
+        {
+            visiableRect = base.SegmentCore(visiableRect);
+
+            if (_iconHitOnly)
+            {
+                UpdateHitTestRect(_iconDesiredRect);
+            }
+            else
+            {
+                UpdateHitTestRect(visiableRect);
+            }
+
+            return visiableRect;
         }
 
         #endregion

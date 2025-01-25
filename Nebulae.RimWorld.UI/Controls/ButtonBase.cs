@@ -42,6 +42,8 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _isEnabled = true;
         private bool _playMouseOverSound = true;
 
+        private Rect _hitTestRect;
+
         #endregion
 
 
@@ -152,7 +154,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected sealed override void DrawCore()
         {
-            bool isMouseOver = IsMouseOver();
+            bool isMouseOver = _hitTestRect.Contains(Event.current.mousePosition);
             bool isPressing = isMouseOver && Input.GetMouseButton(0);
 
             DrawButton(
@@ -163,7 +165,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (_playMouseOverSound)
             {
-                MouseoverSounds.DoRegion(ContentRect, _mouseOverSound);
+                MouseoverSounds.DoRegion(_hitTestRect, _mouseOverSound);
             }
 
             if (!_isEnabled)
@@ -172,7 +174,7 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             if (isMouseOver
-                && GUI.Button(ContentRect, string.Empty, Widgets.EmptyStyle))
+                && GUI.Button(_hitTestRect, string.Empty, Widgets.EmptyStyle))
             {
                 OnClick();
 
@@ -181,12 +183,12 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 判断光标是否位于按钮上方
+        /// 更新按钮可交互区域
         /// </summary>
-        /// <returns>光标是否位于按钮上方。</returns>
-        protected virtual bool IsMouseOver()
+        /// <param name="hitTestRect">按钮可交互的区域</param>
+        protected void UpdateHitTestRect(Rect hitTestRect)
         {
-            return ContentRect.Contains(Event.current.mousePosition);
+            _hitTestRect = hitTestRect;
         }
 
         /// <summary>
