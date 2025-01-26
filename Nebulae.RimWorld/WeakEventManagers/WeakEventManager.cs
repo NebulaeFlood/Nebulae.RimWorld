@@ -86,9 +86,11 @@ namespace Nebulae.RimWorld.WeakEventManagers
         /// 获取存活的可管理对象
         /// </summary>
         /// <returns>存活的可管理对象</returns>
-        public IEnumerable<T> GetSubcribers()
+        public T[] GetSubcribers()
         {
             bool anyDead = false;
+
+            IEnumerable<T> subscribers = Enumerable.Empty<T>();
 
             for (int i = _subscribers.Count - 1; i >= 0; i--)
             {
@@ -100,7 +102,7 @@ namespace Nebulae.RimWorld.WeakEventManagers
                 }
                 else
                 {
-                    yield return target;
+                    subscribers = subscribers.Append(target);
                 }
             }
 
@@ -108,6 +110,8 @@ namespace Nebulae.RimWorld.WeakEventManagers
             {
                 _subscribers.TrimExcess();
             }
+
+            return subscribers.ToArray();
         }
 
         /// <summary>
