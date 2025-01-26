@@ -71,7 +71,7 @@ namespace Nebulae.RimWorld.UI
             if (type is UIEventType.LanguageChanged)
             {
                 // 使窗口在下次打开时重新生成，完成本地化
-                _settingWindow = null;
+                _settingWindow = CreateSettingWindow();
             }
         }
     }
