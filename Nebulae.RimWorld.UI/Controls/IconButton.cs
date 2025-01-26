@@ -277,8 +277,8 @@ namespace Nebulae.RimWorld.UI.Controls
             if ((_status & ContentStatus.IconSetted) != 0)
             {
                 if (isEnabled
-                    && _iconHighlightable 
-                    && isCursorOver )
+                    && _iconHighlightable
+                    && isCursorOver)
                 {
                     GUI.color = _compositionColor * GenUI.MouseoverColor;
                 }

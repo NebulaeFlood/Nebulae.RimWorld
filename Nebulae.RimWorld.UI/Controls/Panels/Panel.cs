@@ -135,7 +135,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 _isDrawableChildrenValid = false;
                 _isFilteredChildrenValid = false;
 
-                InvalidateMeasure();
+                if (!_isIndependent)
+                {
+                    InvalidateMeasure();
+                }
             }
         }
 
