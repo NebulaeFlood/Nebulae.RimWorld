@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nebulae.RimWorld
+﻿namespace Nebulae.RimWorld
 {
     /// <summary>
     /// 定义一个通过弱引用管理对象的集合

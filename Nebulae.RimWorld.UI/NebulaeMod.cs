@@ -1,7 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Windows;
 using Nebulae.RimWorld.WeakEventManagers;
-using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI

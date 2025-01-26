@@ -1,7 +1,5 @@
 ﻿using HarmonyLib;
 using Nebulae.RimWorld.WeakEventManagers;
-using System;
-using System.Linq;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
