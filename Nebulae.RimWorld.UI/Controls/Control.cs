@@ -133,6 +133,9 @@ namespace Nebulae.RimWorld.UI.Controls
         private string _name = string.Empty;
 
         private bool _isArrangeValid = false;
+
+        private bool _isIndependent = false;
+
         private bool _isMeasureValid = false;
         private bool _isSegmentValid = false;
 
@@ -172,6 +175,15 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 控件是否独立于 <see cref="ControlWindow"/>
+        /// </summary>
+        public bool IsIndependent
+        {
+            get => _isIndependent;
+            set => _isIndependent = value;
         }
 
         /// <summary>
@@ -389,7 +401,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <exception cref="InvalidOperationException">当一个不是 <see cref="ControlWindow"/> 的 <see cref="ControlWindow.Content"/> 的控件或其子控件尝试无效化排布时发生。</exception>
         public void InvalidateArrange()
         {
-            if (!_isArrangeValid)
+            if (!_isArrangeValid || _isIndependent)
             {
                 return;
             }
@@ -416,7 +428,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <exception cref="InvalidOperationException">当一个不是 <see cref="ControlWindow"/> 的 <see cref="ControlWindow.Content"/> 的控件或其子控件尝试无效化度量时发生。</exception>
         public void InvalidateMeasure()
         {
-            if (!_isMeasureValid)
+            if (!_isMeasureValid || _isIndependent)
             {
                 return;
             }
@@ -444,7 +456,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <exception cref="InvalidOperationException">当一个不是 <see cref="ControlWindow"/> 的 <see cref="ControlWindow.Content"/> 的控件或其子控件尝试无效化分割时发生。</exception>
         public void InvalidateSegment()
         {
-            if (!_isSegmentValid)
+            if (!_isSegmentValid || _isIndependent)
             {
                 return;
             }
