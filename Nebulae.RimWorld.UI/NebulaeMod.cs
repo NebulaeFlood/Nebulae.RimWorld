@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Windows;
 using Nebulae.RimWorld.WeakEventManagers;
+using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -90,15 +91,12 @@ namespace Nebulae.RimWorld.UI
             /// <param name="settings">新的设置内容</param>
             public void Invoke(Mod mod, T settings)
             {
-                Purge();
+                var subscribers = GetSubcribers();
 
-                Subscribers.ForEach(x =>
+                for (int i = 0; i < subscribers.Length; i++)
                 {
-                    if (x.TryGetTarget(out var listener))
-                    {
-                        listener.HandleModSettingsUpdated(mod, settings);
-                    }
-                });
+                    subscribers[i].HandleModSettingsUpdated(mod, settings);
+                }
             }
         }
     }

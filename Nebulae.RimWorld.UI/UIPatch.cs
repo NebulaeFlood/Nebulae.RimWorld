@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
 using Nebulae.RimWorld.WeakEventManagers;
+using System;
+using System.Linq;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -76,15 +78,12 @@ namespace Nebulae.RimWorld.UI
         /// <param name="eventType">事件类型</param>
         public void Invoke(UIEventType eventType)
         {
-            Purge();
+            var subscribers = GetSubcribers();
 
-            Subscribers.ForEach(x =>
+            for (int i = 0; i < subscribers.Length; i++)
             {
-                if (x.TryGetTarget(out var listener))
-                {
-                    listener.UIEventHandler(eventType);
-                }
-            });
+                subscribers[i].UIEventHandler(eventType);
+            }
         }
     }
 }
