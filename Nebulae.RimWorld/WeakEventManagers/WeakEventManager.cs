@@ -16,7 +16,7 @@ namespace Nebulae.RimWorld.WeakEventManagers
         /// <summary>
         /// 事件的订阅者
         /// </summary>
-        internal protected readonly List<WeakReference<T>> Subscribers;
+        private readonly List<WeakReference<T>> _subscribers;
 
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Nebulae.RimWorld.WeakEventManagers
             {
                 Purge();
 
-                return Subscribers.Count;
+                return _subscribers.Count;
             }
         }
 
@@ -47,7 +47,7 @@ namespace Nebulae.RimWorld.WeakEventManagers
         /// </summary>
         public WeakEventManager()
         {
-            Subscribers = new List<WeakReference<T>>(1);
+            _subscribers = new List<WeakReference<T>>(1);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Nebulae.RimWorld.WeakEventManagers
         /// <param name="capcity">期望管理的对象数量</param>
         public WeakEventManager(int capcity)
         {
-            Subscribers = new List<WeakReference<T>>(capcity);
+            _subscribers = new List<WeakReference<T>>(capcity);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Nebulae.RimWorld.WeakEventManagers
         /// <param name="subscribers">需要管理的对象</param>
         public WeakEventManager(IEnumerable<T> subscribers)
         {
-            Subscribers = new List<WeakReference<T>>(
+            _subscribers = new List<WeakReference<T>>(
                 from subscriber in subscribers.Distinct()
                 where subscriber != null
                 select new WeakReference<T>(subscriber));
@@ -83,6 +83,34 @@ namespace Nebulae.RimWorld.WeakEventManagers
         #region Public Methods
 
         /// <summary>
+        /// 获取存活的可管理对象
+        /// </summary>
+        /// <returns>存活的可管理对象</returns>
+        public IEnumerable<T> GetSubcribers()
+        {
+            bool anyDead = false;
+
+            for (int i = _subscribers.Count - 1; i >= 0; i--)
+            {
+                if (!_subscribers[i].TryGetTarget(out T target))
+                {
+                    _subscribers.RemoveAt(i);
+
+                    anyDead = true;
+                }
+                else
+                {
+                    yield return target;
+                }
+            }
+
+            if (anyDead)
+            {
+                _subscribers.TrimExcess();
+            }
+        }
+
+        /// <summary>
         /// 管理指定对象
         /// </summary>
         /// <param name="subscriber">要添加的对象</param>
@@ -93,11 +121,11 @@ namespace Nebulae.RimWorld.WeakEventManagers
                 return;
             }
 
-            for (int i = Subscribers.Count - 1; i >= 0; i--)
+            for (int i = _subscribers.Count - 1; i >= 0; i--)
             {
-                if (!Subscribers[i].TryGetTarget(out T target))
+                if (!_subscribers[i].TryGetTarget(out T target))
                 {
-                    Subscribers.RemoveAt(i);
+                    _subscribers.RemoveAt(i);
                 }
                 else if (ReferenceEquals(target, subscriber))
                 {
@@ -105,21 +133,21 @@ namespace Nebulae.RimWorld.WeakEventManagers
                 }
             }
 
-            Subscribers.Add(new WeakReference<T>(subscriber));
+            _subscribers.Add(new WeakReference<T>(subscriber));
         }
 
         /// <inheritdoc/>
         public void Clear()
         {
-            Subscribers.Clear();
+            _subscribers.Clear();
         }
 
         /// <inheritdoc/>
         public void Purge()
         {
-            if (Subscribers.RemoveAll(x => !x.TryGetTarget(out _)) > 0)
+            if (_subscribers.RemoveAll(x => !x.TryGetTarget(out _)) > 0)
             {
-                Subscribers.TrimExcess();
+                _subscribers.TrimExcess();
             }
         }
 
@@ -134,15 +162,15 @@ namespace Nebulae.RimWorld.WeakEventManagers
                 return;
             }
 
-            for (int i = Subscribers.Count - 1; i >= 0; i--)
+            for (int i = _subscribers.Count - 1; i >= 0; i--)
             {
-                if (!Subscribers[i].TryGetTarget(out T target))
+                if (!_subscribers[i].TryGetTarget(out T target))
                 {
-                    Subscribers.RemoveAt(i);
+                    _subscribers.RemoveAt(i);
                 }
                 else if (ReferenceEquals(target, subscriber))
                 {
-                    Subscribers.RemoveAt(i);
+                    _subscribers.RemoveAt(i);
                     return;
                 }
             }
@@ -160,9 +188,6 @@ namespace Nebulae.RimWorld.WeakEventManagers
     /// <typeparam name="TArgs">事件参数类型</typeparam>
     public class WeakEventManager<TSender, TArgs> : WeakEventManager<IWeakEventSubscriber<TSender, TArgs>>
     {
-        private readonly WeakReference _obsoletedSubcriber = new WeakReference(new object());
-
-
         //------------------------------------------------------
         //
         //  Constructors
@@ -204,20 +229,10 @@ namespace Nebulae.RimWorld.WeakEventManagers
         /// <param name="args">事件数据</param>
         public void Invoke(TSender sender, TArgs args)
         {
-            if (!_obsoletedSubcriber.IsAlive)
+            foreach (var subcriber in GetSubcribers())
             {
-                Purge();
-
-                _obsoletedSubcriber.Target = new object();
+                subcriber.OnEventActivated(sender, args);
             }
-
-            Subscribers.ForEach(x =>
-            {
-                if (x.TryGetTarget(out var target))
-                {
-                    target.OnEventActivated(sender, args);
-                }
-            });
         }
     }
 
