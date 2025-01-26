@@ -8,6 +8,12 @@ namespace Nebulae.RimWorld.UI.Converters
     /// </summary>
     public class ToggleStatusConverter : IValueConverter
     {
+        /// <summary>
+        /// 该转换器的实例
+        /// </summary>
+        public static readonly ToggleStatusConverter Instance = new ToggleStatusConverter();
+
+
         /// <inheritdoc/>
         public object Convert(object value, CultureInfo culture)
         {
