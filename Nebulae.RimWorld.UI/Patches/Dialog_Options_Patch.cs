@@ -14,29 +14,43 @@ namespace Nebulae.RimWorld.UI.Patches
         [HarmonyTranspiler]
         internal static IEnumerable<CodeInstruction> DoModOptionsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
+            bool patched = false;
+
+            MethodInfo method = AccessTools.Method(typeof(WindowStack), nameof(WindowStack.Add));
+
             ConstructorInfo constructorInfo = AccessTools.Constructor(typeof(Dialog_ModSettings), parameters: new Type[] { typeof(Mod) });
+
             foreach (var code in instructions)
             {
-                yield return code.opcode == OpCodes.Newobj && (ConstructorInfo)code.operand == constructorInfo
-                    ? new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Dialog_Options_Patch), nameof(CreateModSettingWindow)))
-                    : code;
+                if (patched)
+                {
+                    yield return code;
+                }
+                else if (code.opcode == OpCodes.Callvirt && (MethodInfo)code.operand == method)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, 4);
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Dialog_Options_Patch), nameof(ReplaceModSettingWindow)));
+                    yield return code;
+
+                    patched = true;
+                }
+                else
+                {
+                    yield return code;
+                }
             }
         }
 
-        private static Window CreateModSettingWindow(Mod mod)
+        private static Window ReplaceModSettingWindow(Window window, Mod mod)
         {
-            Window settingWindow;
-
             if (mod is NebulaeModBase nebulaeMod)
             {
-                settingWindow = nebulaeMod.SettingWindow;
+                return nebulaeMod.SettingWindow;
             }
             else
             {
-                settingWindow = new Dialog_ModSettings(mod);
+                return window;
             }
-
-            return settingWindow;
         }
     }
 }

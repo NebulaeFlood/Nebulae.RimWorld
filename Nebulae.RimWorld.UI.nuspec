@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
 	<metadata>
 		<id>Nebulae.RimWorld.UI</id>
-		<version>1.3.4</version>
+		<version>1.3.5</version>
 		<authors>NubulaeFlood</authors>
 		<license type="file">LICENSE.txt</license>
 		<licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
@@ -24,11 +24,9 @@
 	</metadata>
 	<files>
 		<file src="Nebulae.RimWorld.UI\bin\Release\net472\Nebulae.RimWorld.UI.dll" target="lib\net472\Nebulae.RimWorld.UI.dll" />
-		<file src="Nebulae.RimWorld.UI\bin\Release\net472\Nebulae.RimWorld.UI.pdb" target="lib\net472\Nebulae.RimWorld.UI.pdb" />
 		<file src="Nebulae.RimWorld.UI\bin\Release\net472\Nebulae.RimWorld.UI.xml" target="lib\net472\Nebulae.RimWorld.UI.xml" />
 
 		<file src="Nebulae.RimWorld.UI.Data\bin\Release\net472\Nebulae.RimWorld.UI.Data.dll" target="lib\net472\Nebulae.RimWorld.UI.Data.dll" />
-		<file src="Nebulae.RimWorld.UI.Data\bin\Release\net472\Nebulae.RimWorld.UI.Data.pdb" target="lib\net472\Nebulae.RimWorld.UI.Data.pdb" />
 		<file src="Nebulae.RimWorld.UI.Data\bin\Release\net472\Nebulae.RimWorld.UI.Data.xml" target="lib\net472\Nebulae.RimWorld.UI.Data.xml" />
 
 		<file src="LICENSE.txt" target="LICENSE.txt" />

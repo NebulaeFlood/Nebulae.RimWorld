@@ -23,7 +23,6 @@
 	</metadata>
 	<files>
 		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.dll" target="lib\net472\Nebulae.RimWorld.dll" />
-		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.pdb" target="lib\net472\Nebulae.RimWorld.pdb" />
 		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.xml" target="lib\net472\Nebulae.RimWorld.xml" />
 		<file src="LICENSE.txt" target="LICENSE.txt" />
 		<file src="NEBULAE-RIMWORLD.md" target="README.md" />
