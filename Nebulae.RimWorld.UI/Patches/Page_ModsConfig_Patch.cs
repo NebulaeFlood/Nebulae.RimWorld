@@ -14,13 +14,19 @@ namespace Nebulae.RimWorld.UI.Patches
         [HarmonyTranspiler]
         internal static IEnumerable<CodeInstruction> DoModInfoTranspiler(IEnumerable<CodeInstruction> instructions)
         {
+            bool patched = false;
+
             CodeInstruction[] codes = instructions.ToArray();
 
             for (int i = 0; i < codes.Length; i++)
             {
                 var code = codes[i];
 
-                if (code.opcode == OpCodes.Ldstr && code.operand is "ModOptions")
+                if (patched)
+                {
+                    yield return code;
+                }
+                else if (code.opcode == OpCodes.Ldstr && code.operand is "ModOptions")
                 {
                     yield return codes[i++];
                     yield return codes[i++];
@@ -33,6 +39,8 @@ namespace Nebulae.RimWorld.UI.Patches
                     i++;
 
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Page_ModsConfig_Patch), nameof(CreateDelegate)));
+
+                    patched = true;
                 }
                 else
                 {
