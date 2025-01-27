@@ -112,7 +112,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     if (control.IsChild)
                     {
-                        control.Parent.Measure(control.Parent.RenderSize);
+                        control.Parent.Measure(control.Parent.DesiredSize);
                     }
                     else
                     {
@@ -130,7 +130,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     if (control.IsChild)
                     {
-                        control.Parent.Arrange(control.Parent.RenderRect);
+                        control.Parent.Arrange(control.Parent.DesiredRect);
                     }
                     else
                     {
