@@ -1,5 +1,4 @@
 ﻿using Nebulae.RimWorld.UI.Data;
-using System;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
@@ -151,7 +150,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             float currentX = 0f;
             float currentY = 0f;
 
+            var children = FilteredChildren;
+
             Size childAvailableSize;
+
             if (Orientation is Orientation.Horizontal)
             {
                 childAvailableSize = new Size(
@@ -162,8 +164,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         ? childMaxHeight
                         : childMaxHeight * availableRect.width);
 
-                Array.ForEach(FilteredChildren, child =>
+                for (int i = 0; i < children.Length; i++)
                 {
+                    var child = children[i];
                     if (child.RenderSize > Size.Empty)
                     {
 
@@ -186,7 +189,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                             currentX += childAvailableSize.Width;
                         }
                     }
-                });
+                }
             }
             else
             {
@@ -198,8 +201,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         ? Mathf.Min(childMaxHeight, availableRect.height)
                         : childMaxHeight * availableRect.height);
 
-                Array.ForEach(FilteredChildren, child =>
+                for (int i = 0; i < children.Length; i++)
                 {
+                    var child = children[i];
                     if (child.RenderSize > Size.Empty)
                     {
 
@@ -222,7 +226,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                             currentY += childAvailableSize.Height;
                         }
                     }
-                });
+                }
             }
 
             return new Rect(
@@ -284,7 +288,12 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             Size childMaxSize = new Size(childMaxWidth, childMaxHeight);
 
-            Array.ForEach(filteredChildren, child => child.Measure(childMaxSize));
+            var children = FilteredChildren;
+
+            for (int i = 0; i < children.Length; i++)
+            {
+                children[i].Measure(childMaxSize);
+            }
 
             return new Size(
                 childMaxWidth * childrenColumnCount,

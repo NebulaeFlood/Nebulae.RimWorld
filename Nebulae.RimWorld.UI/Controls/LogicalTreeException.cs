@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
     [Serializable]
     internal sealed class LogicalTreeException : Exception
     {
-        internal LogicalTreeException(Control control, string message) : 
+        internal LogicalTreeException(Control control, string message) :
             base(CreateMessageText(control, message))
         {
         }

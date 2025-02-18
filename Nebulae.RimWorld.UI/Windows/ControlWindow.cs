@@ -49,6 +49,7 @@ namespace Nebulae.RimWorld.UI.Windows
         #region Private Fields
 
         private Rect _clientRect;
+        private Rect _nonClientRect;
 
         private bool _isOpen = false;
 
@@ -113,24 +114,7 @@ namespace Nebulae.RimWorld.UI.Windows
         public Control Content
         {
             get => LayoutManager.Root;
-            set
-            {
-                Control root = LayoutManager.Root;
-
-                if (!ReferenceEquals(root, value))
-                {
-                    root?.RemoveParent();
-
-                    if (value is null)
-                    {
-                        LayoutManager.Root = null;
-                    }
-                    else
-                    {
-                        LayoutManager.Root = value;
-                    }
-                }
-            }
+            set => LayoutManager.Root = value;
         }
 
         /// <summary>
@@ -194,7 +178,6 @@ namespace Nebulae.RimWorld.UI.Windows
             doCloseX = true;
 
             LayoutManager = new LayoutManager(this);
-
             UIPatch.UIEvent.Manage(this);
         }
 
@@ -208,7 +191,7 @@ namespace Nebulae.RimWorld.UI.Windows
         #region Public Methods
 
         /// <summary>
-        /// 点击 <see cref="ButtonBase"/> 后关闭窗口的 <see cref="ButtonBase.Click"/> 事件处理器
+        /// 点击 <see cref="ButtonBase"/> 后关闭窗口的 <see cref="ButtonBase.Clicked"/> 事件处理器
         /// </summary>
         /// <param name="button">被点击的按钮</param>
         /// <param name="args">事件数据</param>
@@ -233,7 +216,7 @@ namespace Nebulae.RimWorld.UI.Windows
             }
 
             if (DebugDrawHitTestRect)
-        {
+            {
                 content |= DebugContent.HitTestRect;
             }
 

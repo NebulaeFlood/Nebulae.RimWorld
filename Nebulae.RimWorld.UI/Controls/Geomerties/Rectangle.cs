@@ -71,16 +71,21 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
 
             GUI.color = _borderColor;
 
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
             if (_borderThickness != 0f)
             {
                 // Left
-                GUI.DrawTexture(new Rect(renderRect.x, renderRect.y, _borderThickness.Left, renderRect.height), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x, y, _borderThickness.Left, height), BaseContent.WhiteTex);
                 // Top
-                GUI.DrawTexture(new Rect(renderRect.x, renderRect.y, renderRect.width, _borderThickness.Top), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x, y, width, _borderThickness.Top), BaseContent.WhiteTex);
                 // Right
-                GUI.DrawTexture(new Rect(renderRect.x + renderRect.width - _borderThickness.Right, renderRect.y, _borderThickness.Right, renderRect.height), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x + width - _borderThickness.Right, y, _borderThickness.Right, height), BaseContent.WhiteTex);
                 // Bottom
-                GUI.DrawTexture(new Rect(renderRect.x, renderRect.y + renderRect.height - _borderThickness.Bottom, renderRect.width, _borderThickness.Bottom), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x, y + height - _borderThickness.Bottom, width, _borderThickness.Bottom), BaseContent.WhiteTex);
             }
 
             GUI.color = currentColor;

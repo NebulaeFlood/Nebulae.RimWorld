@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Data.Binding;
 using Nebulae.RimWorld.UI.Windows;
 
 namespace Nebulae.RimWorld.UI.Utilities
@@ -15,7 +16,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="control">要判断父控件的控件</param>
         /// <param name="target">可能为 <paramref name="control"/> 的父控件的控件</param>
         /// <returns>如果 <paramref name="target"/> 为 <paramref name="control"/> 的父控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public static bool IsParent(this Control control, Control target)
+        public static bool IsChildOf(this Control control, Control target)
         {
             if (control.IsChild)
             {
@@ -25,7 +26,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 }
                 else
                 {
-                    return IsParent(control.Parent, target);
+                    return IsChildOf(control.Parent, target);
                 }
             }
             else
@@ -35,37 +36,25 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
-        /// 移除控件的父控件
+        /// 显示以目标控件为根控件的控件树上的所有控件的信息
         /// </summary>
-        /// <param name="control">要移除父控件的控件</param>
-        public static void RemoveParent(this Control control)
+        /// <param name="root">目标控件</param>
+        public static void ShowInfo(this Control root)
         {
-            control.IsChild = false;
-            control.Owner = null;
-            control.Parent = null;
-            control.Rank = 0;
+            LogicalTreeInfoWindow.ShowWindow(root);
         }
 
         /// <summary>
-        /// 设置控件的父控件
+        /// 解除以目标控件为根控件的控件树上的所有绑定关系
         /// </summary>
-        /// <param name="control">要设置父控件的控件</param>
-        /// <param name="parent">设置给控件的父控件</param>
-        public static void SetParent(this Control control, Control parent)
+        /// <param name="root">目标控件</param>
+        public static void Unbind(this Control root)
         {
-            if (parent is null)
+            BindingManager.Unbind(root);
+
+            foreach (var child in root.LogicalChildren)
             {
-                control.IsChild = false;
-                control.Owner = null;
-                control.Parent = null;
-                control.Rank = 0;
-            }
-            else
-            {
-                control.IsChild = true;
-                control.Owner = parent.Owner;
-                control.Parent = parent;
-                control.Rank = parent.Rank + 1;
+                BindingManager.Unbind(child);
             }
         }
     }

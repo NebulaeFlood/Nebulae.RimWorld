@@ -1,5 +1,4 @@
-﻿using Nebulae.RimWorld.UI.Utilities;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,7 +93,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <param name="action">对每个控件执行的操作</param>
         public void ForEach(Action<Control> action)
         {
-            _children.ForEach(action);
+            for (int i = 0; i < _children.Count; i++)
+            {
+                action(_children[i]);
+            }
         }
 
         /// <summary>

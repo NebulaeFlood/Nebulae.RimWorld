@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
@@ -54,7 +55,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     new Exception($"{this}.AssociatedWindow cannot be null.", e);
                 }
-               
+
                 return _associatedWindow;
             }
             set
@@ -140,7 +141,6 @@ namespace Nebulae.RimWorld.UI.Controls
             if (_status.HasFlag(Status.LossingFocus))
             {
                 GUI.FocusControl(null);
-
                 FocusingControl = null;
 
                 _status = Status.Normal;
@@ -149,7 +149,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 && (_status.HasFlag(Status.ForceFocusing)
                     || _status.HasFlag(Status.WillFocus)))
             {
-                Verse.UI.FocusControl(_focusIndex, Owner);
+                Verse.UI.FocusControl(_focusIndex, AssociatedWindow);
 
                 _status = isForceFocusing
                      ? Status.Focusing | Status.ForceFocusing

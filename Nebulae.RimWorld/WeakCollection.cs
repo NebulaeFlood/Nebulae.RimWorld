@@ -135,13 +135,13 @@ namespace Nebulae.RimWorld
                 return;
             }
 
-            _items.ForEach(x =>
+            for (int i = 0; i < _items.Count; i++)
             {
-                if (x.TryGetTarget(out T target))
+                if (_items[i].TryGetTarget(out T target))
                 {
                     action(target);
                 }
-            });
+            }
         }
 
 

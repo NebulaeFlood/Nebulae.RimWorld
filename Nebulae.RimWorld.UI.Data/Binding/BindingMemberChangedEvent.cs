@@ -128,18 +128,19 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <inheritdoc/>
         public override void Invoke(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
-            InvocationList.ForEach(x =>
+            for (int i = 0; i < InvocationList.Count; i++)
             {
-                BindingBase binding = x.Subscriber;
+                var entry = InvocationList[i];
+                var binding = entry.Subscriber;
 
                 if ((ReferenceEquals(sender, binding.SourceMember.AssociatedObject)
                     && args.Property.Name == binding.SourceMember.MemberName)
                         || (ReferenceEquals(sender, binding.TargetMember.AssociatedObject)
                             && args.Property.Name == binding.TargetMember.MemberName))
                 {
-                    x.Handler(sender, args);
+                    entry.Handler(sender, args);
                 }
-            });
+            }
         }
     }
 
@@ -164,18 +165,19 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <inheritdoc/>
         public override void Invoke(object sender, PropertyChangedEventArgs args)
         {
-            InvocationList.ForEach(x =>
+            for (int i = 0; i < InvocationList.Count; i++)
             {
-                BindingBase binding = x.Subscriber;
+                var entry = InvocationList[i];
+                var binding = entry.Subscriber;
 
                 if ((ReferenceEquals(sender, binding.SourceMember.AssociatedObject)
                     && args.PropertyName == binding.SourceMember.MemberName)
                         || (ReferenceEquals(sender, binding.TargetMember.AssociatedObject)
                             && args.PropertyName == binding.TargetMember.MemberName))
                 {
-                    x.Handler(sender, args);
+                    entry.Handler(sender, args);
                 }
-            });
+            }
         }
     }
 }

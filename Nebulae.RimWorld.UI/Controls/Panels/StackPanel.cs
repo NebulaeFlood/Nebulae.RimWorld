@@ -1,5 +1,4 @@
 ﻿using Nebulae.RimWorld.UI.Data;
-using System;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
@@ -148,11 +147,14 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             float currentX = availableRect.x;
             float currentY = availableRect.y;
 
+            var children = FilteredChildren;
+
             Size childDesiredSize;
             if (Orientation is Orientation.Horizontal)
             {
-                Array.ForEach(FilteredChildren, child =>
+                for (int i = 0; i < children.Length; i++)
                 {
+                    var child = children[i];
                     childDesiredSize = child.DesiredSize;
                     if (childDesiredSize > Size.Empty)
                     {
@@ -163,12 +165,13 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                             childrenSize.Height))
                                 .width;
                     }
-                });
+                }
             }
             else
             {
-                Array.ForEach(FilteredChildren, child =>
+                for (int i = 0; i < children.Length; i++)
                 {
+                    var child = children[i];
                     childDesiredSize = child.DesiredSize;
                     if (childDesiredSize > Size.Empty)
                     {
@@ -179,7 +182,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                             childDesiredSize.Height))
                                 .height;
                     }
-                });
+                }
             }
 
             return new Rect(
@@ -197,8 +200,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             float childrenWidth = 0f;
             float childrenHeight = 0f;
 
+            var children = FilteredChildren;
+
             Size childAvailableSize;
             Size childDesiredSize;
+
             if (Orientation is Orientation.Horizontal)
             {
                 childAvailableSize = new Size(
@@ -209,12 +215,13 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         ? childMaxHeight
                         : childMaxHeight * availableSize.Height);
 
-                Array.ForEach(FilteredChildren, child =>
+                for (int i = 0; i < children.Length; i++)
                 {
+                    var child = children[i];
                     childDesiredSize = child.Measure(childAvailableSize);
                     childrenWidth += childDesiredSize.Width;
                     childrenHeight = Mathf.Max(childrenHeight, childDesiredSize.Height);
-                });
+                }
             }
             else
             {
@@ -226,12 +233,13 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         ? childMaxHeight
                         : childMaxHeight * availableSize.Height);
 
-                Array.ForEach(FilteredChildren, child =>
+                for (int i = 0; i < children.Length; i++)
                 {
+                    var child = children[i];
                     childDesiredSize = child.Measure(childAvailableSize);
                     childrenHeight += childDesiredSize.Height;
                     childrenWidth = Mathf.Max(childrenWidth, childDesiredSize.Width);
-                });
+                }
             }
             return new Size(childrenWidth, childrenHeight);
         }

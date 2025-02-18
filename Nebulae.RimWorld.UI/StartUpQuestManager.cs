@@ -29,17 +29,17 @@ namespace Nebulae.RimWorld.UI
 
         internal static void FinishQuests()
         {
-            _actionQueue.ForEach(x =>
+            for (int i = 0; i < _actionQueue.Count; i++)
             {
                 try
                 {
-                    x.Invoke();
+                    _actionQueue[i].Invoke();
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"An exception occured when try finish quest from {x.Method.DeclaringType}: {e}");
+                    Log.Error($"An exception occured when try finish quest from {_actionQueue[i].Method.DeclaringType}: {e}");
                 }
-            });
+            }
 
             _actionQueue.Clear();
             _actionQueue = null;

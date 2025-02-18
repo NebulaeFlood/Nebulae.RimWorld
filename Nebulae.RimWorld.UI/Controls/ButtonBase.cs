@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
 using System;
 using UnityEngine;
@@ -12,17 +13,17 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public abstract class ButtonBase : FrameworkControl
     {
-        #region Click
+        #region Clicked
 
-        private readonly WeakEvent<ButtonBase, EventArgs> _click = new WeakEvent<ButtonBase, EventArgs>();
+        private readonly WeakEvent<ButtonBase, EventArgs> _clicked = new WeakEvent<ButtonBase, EventArgs>();
 
         /// <summary>
         /// 单击按钮时发生的弱事件
         /// </summary>
-        public event Action<ButtonBase, EventArgs> Click
+        public event Action<ButtonBase, EventArgs> Clicked
         {
-            add => _click.Add(value, value.Invoke);
-            remove => _click.Remove(value);
+            add => _clicked.Add(value, value.Invoke);
+            remove => _clicked.Remove(value);
         }
 
         #endregion
@@ -178,16 +179,16 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 OnClick();
 
-                _click.Invoke(this, EventArgs.Empty);
+                _clicked.Invoke(this, EventArgs.Empty);
             }
         }
 
         /// <inheritdoc/>
         protected override void OnDebugDraw(DebugContent content)
         {
-            if (content.HasFlag(DebugContent.HitTestRect) 
+            if (content.HasFlag(DebugContent.HitTestRect)
                 && (_hitTestRect.width > 0f || _hitTestRect.height > 0f))
-        {
+            {
                 UIUtility.DrawBorder(_hitTestRect, new Color(0f, 0f, 1f, 1f));
             }
         }
@@ -203,11 +204,20 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect SegmentCore(Rect visiableRect)
         {
-            visiableRect = base.SegmentCore(visiableRect);
+            visiableRect = visiableRect.IntersectWith(RenderRect);
 
             UpdateHitTestRect(visiableRect);
 
             return visiableRect;
+        }
+
+        /// <summary>
+        /// 更新按钮可交互区域
+        /// </summary>
+        /// <param name="hitTestRect">按钮可交互的区域</param>
+        protected void UpdateHitTestRect(Rect hitTestRect)
+        {
+            _hitTestRect = hitTestRect;
         }
 
         #endregion

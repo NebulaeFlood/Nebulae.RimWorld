@@ -172,14 +172,14 @@ namespace Nebulae.RimWorld.UI.Utilities
             float width = renderRect.width;
             float height = renderRect.height;
 
-                // Left
-                GUI.DrawTexture(new Rect(x, y, 1f, height), BaseContent.WhiteTex);
-                // Top
-                GUI.DrawTexture(new Rect(x, y, width, 1f), BaseContent.WhiteTex);
-                // Right
-                GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), BaseContent.WhiteTex);
-                // Bottom
-                GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
+            // Left
+            GUI.DrawTexture(new Rect(x, y, 1f, height), BaseContent.WhiteTex);
+            // Top
+            GUI.DrawTexture(new Rect(x, y, width, 1f), BaseContent.WhiteTex);
+            // Right
+            GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), BaseContent.WhiteTex);
+            // Bottom
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
 
             GUI.color = currentColor;
         }

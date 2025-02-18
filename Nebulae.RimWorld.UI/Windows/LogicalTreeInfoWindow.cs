@@ -1,15 +1,10 @@
-﻿using LudeonTK;
-using Nebulae.RimWorld.UI.Controls;
+﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Panels;
 using Nebulae.RimWorld.UI.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
-using Grid = Nebulae.RimWorld.UI.Controls.Panels.Grid;
 using TextBlock = Nebulae.RimWorld.UI.Controls.TextBlock;
 
 namespace Nebulae.RimWorld.UI.Windows
@@ -117,8 +112,8 @@ namespace Nebulae.RimWorld.UI.Windows
                     $"DesiredRect:\n{source.DesiredRect}\n" +
                     $"ContentRect:\n{source.ContentRect}\n" +
                     $"Visibility:\n{source.Visibility}\n" +
-                    $"IsArrangeValid:\n{source.IsArrangeValid}\n" + 
-                    $"IsMeasureValid:\n{source.IsMeasureValid}\n" + 
+                    $"IsArrangeValid:\n{source.IsArrangeValid}\n" +
+                    $"IsMeasureValid:\n{source.IsMeasureValid}\n" +
                     $"IsSegmentValid:\n{source.IsSegmentValid}\n"
             };
             node.Clicked += _optionPanel.SetInfo;

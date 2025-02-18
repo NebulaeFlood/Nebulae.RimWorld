@@ -1,5 +1,4 @@
-﻿using Nebulae.RimWorld.UI.Controls.Panels;
-using Nebulae.RimWorld.UI.Utilities;
+﻿using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -115,7 +114,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 if (_selected != value)
                 {
                     _selected = value;
-                    
+
                     PlayMouseOverSound = !value;
                 }
             }
