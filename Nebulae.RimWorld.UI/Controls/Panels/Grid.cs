@@ -218,7 +218,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 filteredChildren[i].Arrange(_unitInfos[i].Rect.Offset(availableRect.x, availableRect.y));
             }
 
-            return availableRect;
+            return new Rect(availableRect.x, availableRect.y, RenderSize.Width, RenderSize.Height);
         }
 
         /// <inheritdoc/>
