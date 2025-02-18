@@ -14,6 +14,16 @@ namespace Nebulae.RimWorld.Utilities
         public static void Dump(this object obj) => Log.Message(obj);
 
         /// <summary>
+        /// 以 <paramref name="logLabel"/> 为主语，提交错误
+        /// </summary>
+        /// <param name="logLabel">主语</param>
+        /// <param name="message">错误内容</param>
+        public static void Error(this string logLabel, string message)
+        {
+            Log.Error($"[{logLabel}] {message}");
+        }
+
+        /// <summary>
         /// 以 <paramref name="logLabel"/> 为主语，提交日志
         /// </summary>
         /// <param name="logLabel">主语</param>
