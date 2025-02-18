@@ -16,10 +16,6 @@
 		<Copyright>Copyright (c) 2024 NubulaeFlood</Copyright>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<DebugType>none</DebugType>
-	</PropertyGroup>
-
 	<Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'RELEASE'">
 		<Exec Command="xcopy $(OutDir)$(TargetName).* $(SolutionDir)build\Assemblies\ /y" />
 	</Target>
