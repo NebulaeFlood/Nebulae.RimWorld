@@ -8,7 +8,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 布局管理器
     /// </summary>
-    internal sealed class LayoutManager
+    public sealed class LayoutManager
     {
         //------------------------------------------------------
         //
@@ -39,7 +39,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 获取或设置根控件
         /// </summary>
-        internal Control Root
+        public Control Root
         {
             get => _root;
             set
@@ -85,7 +85,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 初始化 <see cref="LayoutManager"/> 的新实例
         /// </summary>
-        internal LayoutManager(ControlWindow owner)
+        public LayoutManager(ControlWindow owner)
         {
             _owner = owner;
         }
@@ -93,17 +93,17 @@ namespace Nebulae.RimWorld.UI.Controls
 
         //------------------------------------------------------
         //
-        //  internal Methods
+        //  public Methods
         //
         //------------------------------------------------------
 
-        #region internal Methods
+        #region public Methods
 
         /// <summary>
         /// 绘制控件
         /// </summary>
         /// <param name="clientRect">窗口的客户区</param>
-        internal void Draw(Rect clientRect)
+        public void Draw(Rect clientRect)
         {
             if (_isEmpty)
             {
@@ -192,7 +192,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 无效化控件排布
         /// </summary>
         /// <param name="control">排布被无效化的控件</param>
-        internal void InvalidateArrange(Control control)
+        public void InvalidateArrange(Control control)
         {
             if (_isDirty || _isEmpty)
             {
@@ -242,7 +242,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 无效化控件布局
         /// </summary>
-        internal void InvalidateLayout()
+        public void InvalidateLayout()
         {
             if (_isDirty || _isEmpty)
             {
@@ -256,7 +256,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 无效化控件度量
         /// </summary>
         /// <param name="control">度量被无效化的控件</param>
-        internal void InvalidateMeasure(Control control)
+        public void InvalidateMeasure(Control control)
         {
             if (_isDirty || _isEmpty)
             {
@@ -307,7 +307,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 无效化控件分割
         /// </summary>
         /// <param name="control">分割被无效化的控件</param>
-        internal void InvalidateSegment(Control control)
+        public void InvalidateSegment(Control control)
         {
             if (_isDirty || _isEmpty)
             {
@@ -359,7 +359,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="control">要判断排布是否有效的控件</param>
         /// <returns>控件排布是否有效。</returns>
-        internal bool IsArrangeValid(Control control)
+        public bool IsArrangeValid(Control control)
         {
             if (_isDirty)
             {
@@ -392,7 +392,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="control">要判断度量是否有效的控件</param>
         /// <returns>控件度量是否有效。</returns>
-        internal bool IsMeasureValid(Control control)
+        public bool IsMeasureValid(Control control)
         {
             if (_isDirty)
             {
@@ -425,7 +425,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="control">要判断分割是否有效的控件</param>
         /// <returns>控件分割是否有效。</returns>
-        internal bool IsSegmentValid(Control control)
+        public bool IsSegmentValid(Control control)
         {
             if (_isDirty)
             {
