@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.UI.Windows;
 using System;
 using UnityEngine;
@@ -70,6 +71,7 @@ namespace Nebulae.RimWorld.UI
         {
             if (type is UIEventType.LanguageChanged)
             {
+                _settingWindow.Content?.Unbind();
                 // 使窗口在下次打开时重新生成，完成本地化
                 _settingWindow = CreateSettingWindow();
             }
