@@ -37,10 +37,10 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Private Fields
 
-        private Size _iconDesiredSize = Size.Empty;
+        private Size _iconRenderSize = Size.Empty;
         private Rect _iconDesiredRect;
 
-        private Size _textDesiredSize = Size.Empty;
+        private Size _textRenderSize = Size.Empty;
         private Rect _textDesiredRect;
 
         private Color _compositionColor = Color.white;
@@ -111,24 +111,6 @@ namespace Nebulae.RimWorld.UI.Controls
             set => _iconHighlightable = value;
         }
 
-        #region Padding
-        /// <summary>
-        /// 获取或设置按钮内容的统一边距
-        /// </summary>
-        public Thickness Padding
-        {
-            get { return (Thickness)GetValue(PaddingProperty); }
-            set { SetValue(PaddingProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="Padding"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty PaddingProperty =
-            DependencyProperty.Register(nameof(Padding), typeof(Thickness), typeof(IconButton),
-                new ControlPropertyMetadata(new Thickness(DefaultPadding), ControlRelation.Measure));
-        #endregion
-
         /// <summary>
         /// 是否翻转图标和文字的位置
         /// </summary>
@@ -160,6 +142,12 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
+        static IconButton()
+        {
+            PaddingProperty.OverrideMetadata(typeof(IconButton),
+                new ControlPropertyMetadata(new Thickness(DefaultPadding), ControlRelation.Measure));
+        }
+
         /// <summary>
         /// 初始化 <see cref="IconButton"/> 的新实例
         /// </summary>
@@ -179,30 +167,31 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
+            Rect renderRect = base.ArrangeCore(availableRect);
+
             if (_status is ContentStatus.None)
             {
-                return base.ArrangeCore(availableRect);
+                return renderRect;
             }
 
-            Rect desiredRect = base.ArrangeCore(availableRect);
-            Rect contentAvailableRect = desiredRect - Padding;
+            Rect contentRenderRect = renderRect;
 
             if (!_separateContent)
             {
-                contentAvailableRect = new Size(
-                    _iconDesiredSize.Width + _textDesiredSize.Width,
-                    Mathf.Max(_iconDesiredSize.Height, _textDesiredSize.Height))
+                contentRenderRect = new Size(
+                    _iconRenderSize.Width + _textRenderSize.Width,
+                    Mathf.Max(_iconRenderSize.Height, _textRenderSize.Height))
                     .AlignToArea(
-                        contentAvailableRect,
+                        renderRect,
                         HorizontalAlignment.Center,
                         VerticalAlignment.Center);
             }
 
             if ((_status & ContentStatus.IconSetted) != 0)
             {
-                _iconDesiredRect = _iconDesiredSize
+                _iconDesiredRect = _iconRenderSize
                     .AlignToArea(
-                        contentAvailableRect,
+                        contentRenderRect,
                         HorizontalAlignment.Left.ReverseIf(_reverseContent),
                         VerticalAlignment.Center);
             }
@@ -213,8 +202,8 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if ((_status & ContentStatus.TextSetted) != 0)
             {
-                _textDesiredRect = _textDesiredSize.AlignToArea(
-                    contentAvailableRect,
+                _textDesiredRect = _textRenderSize.AlignToArea(
+                    contentRenderRect,
                     HorizontalAlignment.Right.ReverseIf(_reverseContent),
                     VerticalAlignment.Center);
             }
@@ -223,7 +212,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 _textDesiredRect = Rect.zero;
             }
 
-            return desiredRect;
+            return renderRect;
         }
 
         /// <summary>
@@ -296,11 +285,11 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (_icon is null)
             {
-                _iconDesiredSize = Size.Empty;
+                _iconRenderSize = Size.Empty;
             }
             else
             {
-                _iconDesiredSize = new Size(IconSize);
+                _iconRenderSize = new Size(IconSize);
                 _status |= ContentStatus.IconSetted;
             }
 
@@ -308,11 +297,11 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (string.IsNullOrEmpty(text))
             {
-                _textDesiredSize = Size.Empty;
+                _textRenderSize = Size.Empty;
             }
             else
             {
-                _textDesiredSize = text.CalculateLineSize(FontSize);
+                _textRenderSize = text.CalculateLineSize(FontSize);
                 _status |= ContentStatus.TextSetted;
             }
 

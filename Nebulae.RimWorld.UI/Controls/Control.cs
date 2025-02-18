@@ -190,7 +190,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 if (_isIndependent)
                 {
                     _isIndependent = value;
-        }
+                }
                 else
                 {
                     SetParent(null);
@@ -404,7 +404,8 @@ namespace Nebulae.RimWorld.UI.Controls
             if (!(Visibility is Visibility.Collapsed))
             {
                 Thickness margin = Margin;
-                RenderRect = ArrangeCore(availableRect - margin).Rounded();
+                Thickness padding = Padding;
+                RenderRect = ArrangeCore(availableRect - (margin + padding)).Rounded() + padding;
                 DesiredRect = RenderRect + margin;
             }
             else
@@ -437,12 +438,12 @@ namespace Nebulae.RimWorld.UI.Controls
             if (content.HasFlag(DebugContent.ContentRect) && ContentSize != 0f)
             {
                 UIUtility.DrawBorder(ContentRect, new Color(0f, 1f, 0f, 1f));
-                }
+            }
 
             if (content.HasFlag(DebugContent.DesiredRect) && DesiredSize != 0f)
-                {
+            {
                 UIUtility.DrawBorder(DesiredRect, new Color(1f, 0.92156863f, 0.015686275f, 1f));
-                }
+            }
 
             OnDebugDraw(content);
         }
@@ -451,25 +452,25 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 使用当前计算的布局信息绘制控件
         /// </summary>
         public void Draw()
-                {
+        {
             if (RenderSize.Width <= float.Epsilon
                 || RenderSize.Height <= float.Epsilon)
-                    {
+            {
                 return;
-                    }
+            }
 
             DrawCore();
 
             if (_showTooltip && _shouldShowTooltip)
-                {
+            {
                 TooltipHandler.TipRegion(ContentRect, _tooltip);
-                    }
+            }
 
             if (Prefs.DevMode && !_isIndependent)
-                    {
+            {
                 DebugDraw(Owner.GetDebugContent());
-                    }
-                }
+            }
+        }
 
         /// <summary>
         /// 获取控件的父控件
@@ -486,25 +487,20 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <exception cref="InvalidOperationException">当一个不是 <see cref="ControlWindow"/> 的 <see cref="ControlWindow.Content"/> 的控件或其子控件尝试无效化排布时发生。</exception>
         public void InvalidateArrange()
         {
-            if (!_isArrangeValid || _isIndependent)
+            if (!_isArrangeValid)
             {
                 return;
             }
 
-            if (_isSegmentValid)
-            {
-                InvalidateSegment();
-            }
+            _isArrangeValid = false;
+            _isSegmentValid = false;
 
-            if (Owner is null)
+            if (_isIndependent)
             {
-                Owner = LogicalTreeUtility.GetOwner(this)
-                    ?? throw new InvalidOperationException($"Can not invalidate arrange for the control: {this} which is not the content of {typeof(ControlWindow)}."); ;
+                return;
             }
 
             Owner.LayoutManager.InvalidateArrange(this);
-
-            _isArrangeValid = false;
         }
 
         /// <summary>
@@ -513,25 +509,21 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <exception cref="InvalidOperationException">当一个不是 <see cref="ControlWindow"/> 的 <see cref="ControlWindow.Content"/> 的控件或其子控件尝试无效化度量时发生。</exception>
         public void InvalidateMeasure()
         {
-            if (!_isMeasureValid || _isIndependent)
+            if (!_isMeasureValid)
             {
                 return;
             }
 
-            if (_isArrangeValid)
-            {
-                InvalidateArrange();
-            }
+            _isArrangeValid = false;
+            _isMeasureValid = false;
+            _isSegmentValid = false;
 
-            if (Owner is null)
+            if (_isIndependent)
             {
-                Owner = LogicalTreeUtility.GetOwner(this)
-                    ?? throw new InvalidOperationException($"Can not invalidate measure for the control: {this} which is not the content of {typeof(ControlWindow)}."); ;
+                return;
             }
 
             Owner.LayoutManager.InvalidateMeasure(this);
-
-            _isMeasureValid = false;
         }
 
         /// <summary>
@@ -541,20 +533,19 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <exception cref="InvalidOperationException">当一个不是 <see cref="ControlWindow"/> 的 <see cref="ControlWindow.Content"/> 的控件或其子控件尝试无效化分割时发生。</exception>
         public void InvalidateSegment()
         {
-            if (!_isSegmentValid || _isIndependent)
+            if (!_isSegmentValid)
             {
                 return;
             }
 
-            if (Owner is null)
+            _isSegmentValid = false;
+
+            if (_isIndependent)
             {
-                Owner = LogicalTreeUtility.GetOwner(this)
-                    ?? throw new InvalidOperationException($"Can not invalidate segment for the control: {this} which is not the content of {typeof(ControlWindow)}."); ;
+                return;
             }
 
             Owner.LayoutManager.InvalidateSegment(this);
-
-            _isSegmentValid = false;
         }
 
         /// <summary>
@@ -567,7 +558,8 @@ namespace Nebulae.RimWorld.UI.Controls
             if (!(Visibility is Visibility.Collapsed))
             {
                 Thickness margin = Margin;
-                RenderSize = MeasureCore(availableSize - margin).Round();
+                Thickness padding = Padding;
+                RenderSize = MeasureCore(availableSize - (margin + padding)).Round() + padding;
                 DesiredSize = RenderSize + margin;
             }
             else
@@ -645,7 +637,7 @@ namespace Nebulae.RimWorld.UI.Controls
         public override string ToString()
         {
             return string.IsNullOrEmpty(_name)
-                ? base.ToString()
+                ? Type.ToString()
                 : _name;
         }
 
@@ -724,85 +716,5 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         #endregion
-
-
-        internal sealed class ControlInfoWindow : ControlWindow
-        {
-            internal static readonly ControlInfoWindow Instance = new ControlInfoWindow();
-
-
-            internal Control Source;
-            private Type _sourceType;
-
-            private bool _isPanel;
-            private Panel _panel;
-
-            private TextBlock _infoBox;
-
-            internal ControlInfoWindow()
-            {
-                draggable = true;
-                drawShadow = false;
-                resizeable = true;
-
-                layer = WindowLayer.Super;
-
-                InitialWidth = 450f;
-                InitialHeight = 220f;
-
-                Content = CreateDefaultContent();
-            }
-
-
-            public override Control CreateDefaultContent()
-            {
-                var scrollViewer = new ScrollViewer();
-                _infoBox = new TextBlock
-                {
-                    Anchor = TextAnchor.MiddleLeft,
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Top,
-                };
-
-                scrollViewer.Content = _infoBox;
-                return scrollViewer;
-            }
-
-            public override bool OnCloseRequest()
-            {
-                return !ShowInfo;
-            }
-
-            public void SetSource(Control source)
-            {
-                Source = source;
-                _sourceType = source.GetType();
-
-                if (source is Panel panel)
-                {
-                    _isPanel = true;
-                    _panel = panel;
-                }
-            }
-
-
-            protected override void LateWindowOnGUI(Rect inRect)
-            {
-                base.LateWindowOnGUI(inRect);
-
-                _infoBox.Text =
-                    $"Type: {_sourceType}\n" +
-                    $"Name: {Source._name}\n" +
-                    $"RenderRect: {Source.RenderRect}\n" +
-                    $"DesiredRect: {Source.DesiredRect}\n" +
-                    $"ContentRect: {Source.ContentRect}\n";
-
-                if (_isPanel)
-                {
-                    _infoBox.Text +=
-                        $"FilteredChildren.Count: {_panel.FilteredChildren.Length}";
-                }
-            }
-        }
     }
 }

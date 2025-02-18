@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.UI.Windows;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -71,12 +72,12 @@ namespace Nebulae.RimWorld.UI.Controls
                         {
                             child.Owner = _owner;
                             child.Rank = child.Parent.Rank + 1;
-                }
+                        }
                         catch (Exception e)
                         {
                             throw new LogicalTreeException(child, "A error occured when setting the root of a layout tree, please check that the parent-child relationship between controls has been set correctly.", e);
-            }
-        }
+                        }
+                    }
                 }
             }
         }
@@ -118,16 +119,15 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 _isDirty = false;
 
-                _isArrangeValid = false;
-                _isMeasureValid = false;
-                _isSegmentValid = false;
+                _isArrangeValid = true;
+                _isMeasureValid = true;
+                _isSegmentValid = true;
 
                 _arrangeQueue.Clear();
                 _measureQueue.Clear();
                 _segmentQueue.Clear();
 
                 _root.Draw();
-
                 return;
             }
 
@@ -199,39 +199,36 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            if (_arrangeQueue.Count < 1)
+            if (!control.IsChild)
             {
+                _arrangeQueue.Clear();
+                _segmentQueue.Clear();
+
                 _arrangeQueue.Add(control);
+                _segmentQueue.Add(control);
+
                 _isArrangeValid = false;
+                _isSegmentValid = false;
             }
-            else if (!control.IsChild || control.Parent is ScrollViewer)
+            else if (control.Parent is ScrollViewer viewer)
             {
-                if (_isArrangeValid)
+                if (_arrangeQueue.Add(viewer))
                 {
-                    _arrangeQueue.Add(control);
-                    _isArrangeValid = false;
-                }
-                else
-                {
-                    foreach (var item in _arrangeQueue)
+                    if (_arrangeQueue.Count > 1)
                     {
-                        if (control.IsParent(item))
-                        {
-                            _arrangeQueue.Remove(item);
-                            break;
-                        }
-                        else if (ReferenceEquals(control, item))
-                        {
-                            return;
-                        }
-                        else if (item.Rank > control.Rank)
-                        {
-                            break;
-                        }
+                        _arrangeQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                        _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
                     }
 
-                    _arrangeQueue.Add(control);
+                    _segmentQueue.Add(viewer);
                 }
+                else if (_segmentQueue.Add(viewer) && _segmentQueue.Count > 1)
+                {
+                    _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                }
+
+                _isArrangeValid = false;
+                _isSegmentValid = false;
             }
             else
             {
@@ -244,11 +241,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public void InvalidateLayout()
         {
-            if (_isDirty || _isEmpty)
-            {
-                return;
-            }
-
             _isDirty = true;
         }
 
@@ -263,39 +255,42 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            if (_measureQueue.Count < 1)
+            if (!control.IsChild)
             {
-                _measureQueue.Add(control);
-                _isMeasureValid = false;
+                _isDirty = true;
             }
-            else if (!control.IsChild || control.Parent is ScrollViewer)
+            else if (control.Parent is ScrollViewer viewer)
             {
-                if (_isMeasureValid)
+                if (_measureQueue.Add(viewer))
                 {
-                    _measureQueue.Add(control);
-                    _isMeasureValid = false;
-                }
-                else
-                {
-                    foreach (var item in _measureQueue)
+                    if (_measureQueue.Count > 1)
                     {
-                        if (control.IsParent(item))
-                        {
-                            _measureQueue.Remove(item);
-                            break;
-                        }
-                        else if (ReferenceEquals(control, item))
-                        {
-                            return;
-                        }
-                        else if (item.Rank > control.Rank)
-                        {
-                            break;
-                        }
+                        _arrangeQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                        _measureQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                        _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
                     }
 
-                    _measureQueue.Add(control);
+                    _arrangeQueue.Add(viewer);
+                    _segmentQueue.Add(viewer);
                 }
+                else if (_arrangeQueue.Add(viewer))
+                {
+                    if (_arrangeQueue.Count > 1)
+                    {
+                        _arrangeQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                        _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                    }
+
+                    _segmentQueue.Add(viewer);
+                }
+                else if (_segmentQueue.Add(viewer) && _segmentQueue.Count > 1)
+                {
+                    _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                }
+
+                _isArrangeValid = false;
+                _isMeasureValid = false;
+                _isSegmentValid = false;
             }
             else
             {
@@ -314,39 +309,23 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            if (_segmentQueue.Count < 1)
+            _isSegmentValid = false;
+
+            if (!control.IsChild)
             {
+                _segmentQueue.Clear();
                 _segmentQueue.Add(control);
+
                 _isSegmentValid = false;
             }
-            else if (!control.IsChild || control.Parent is ScrollViewer)
+            else if (control.Parent is ScrollViewer viewer)
             {
-                if (_isSegmentValid)
+                if (_segmentQueue.Add(viewer) && _segmentQueue.Count > 1)
                 {
-                    _segmentQueue.Add(control);
-                    _isSegmentValid = false;
+                    _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
                 }
-                else
-                {
-                    foreach (var item in _segmentQueue)
-                    {
-                        if (control.IsParent(item))
-                        {
-                            _segmentQueue.Remove(item);
-                            break;
-                        }
-                        else if (ReferenceEquals(control, item))
-                        {
-                            return;
-                        }
-                        else if (item.Rank > control.Rank)
-                        {
-                            break;
-                        }
-                    }
 
-                    _segmentQueue.Add(control);
-                }
+                _isSegmentValid = false;
             }
             else
             {
@@ -373,14 +352,14 @@ namespace Nebulae.RimWorld.UI.Controls
 
             foreach (var item in _arrangeQueue)
             {
-                if (control.IsParent(item)
-                    || ReferenceEquals(control, item))
+                if (item.Rank > control.Rank)
                 {
                     return false;
                 }
-                else if (item.Rank > control.Rank)
+                else if (ReferenceEquals(item, control)
+                    || CanInfectLayout(item, control))
                 {
-                    return true;
+                    break;
                 }
             }
 
@@ -406,14 +385,14 @@ namespace Nebulae.RimWorld.UI.Controls
 
             foreach (var item in _measureQueue)
             {
-                if (control.IsParent(item)
-                    || ReferenceEquals(control, item))
+                if (item.Rank > control.Rank)
                 {
                     return false;
                 }
-                else if (item.Rank > control.Rank)
+                else if (ReferenceEquals(item, control)
+                    || CanInfectLayout(item, control))
                 {
-                    return true;
+                    break;
                 }
             }
 
@@ -439,14 +418,14 @@ namespace Nebulae.RimWorld.UI.Controls
 
             foreach (var item in _segmentQueue)
             {
-                if (control.IsParent(item)
-                    || ReferenceEquals(control, item))
+                if (item.Rank > control.Rank)
                 {
                     return false;
                 }
-                else if (item.Rank > control.Rank)
+                else if (ReferenceEquals(item, control)
+                    || CanInfectLayout(item, control))
                 {
-                    return true;
+                    break;
                 }
             }
 
@@ -456,6 +435,32 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
+        private static bool CanInfectLayout(Control instigator, Control target)
+        {
+            if (target.IsChild)
+            {
+                Control parent = target.Parent;
+
+                if (parent is ScrollViewer)
+                {
+                    return false;
+                }
+                else if (ReferenceEquals(instigator, parent))
+                {
+                    return true;
+                }
+                else
+                {
+                    return CanInfectLayout(instigator, parent);
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
         private class ControlComparer : IComparer<Control>
         {
             public static readonly ControlComparer Instance = new ControlComparer();
@@ -463,7 +468,18 @@ namespace Nebulae.RimWorld.UI.Controls
 
             public int Compare(Control x, Control y)
             {
-                return x.Rank < y.Rank ? -1 : 1;
+                if (x.Rank < y.Rank)
+                {
+                    return -1;
+                }
+                else if (ReferenceEquals(x, y))
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
             }
         }
     }
