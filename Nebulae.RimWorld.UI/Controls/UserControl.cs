@@ -6,17 +6,18 @@ using UnityEngine;
 namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
-    /// 页面控件
+    /// 用户控件
     /// </summary>
-    public abstract class Page : Control
+    /// <remarks>方便使用控件组成新控件。</remarks>
+    public abstract class UserControl : Control
     {
         private Control _content;
 
 
         /// <summary>
-        /// 初始化 <see cref="Page"/> 的新实例
+        /// 初始化 <see cref="UserControl"/> 的新实例
         /// </summary>
-        public Page()
+        public UserControl()
         {
             _content = CreateContent();
 
