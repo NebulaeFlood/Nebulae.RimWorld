@@ -182,13 +182,14 @@ namespace Nebulae.RimWorld.UI.Controls
             }
         }
 
-        /// <summary>
-        /// 更新按钮可交互区域
-        /// </summary>
-        /// <param name="hitTestRect">按钮可交互的区域</param>
-        protected void UpdateHitTestRect(Rect hitTestRect)
+        /// <inheritdoc/>
+        protected override void OnDebugDraw(DebugContent content)
         {
-            _hitTestRect = hitTestRect;
+            if (content.HasFlag(DebugContent.HitTestRect) 
+                && (_hitTestRect.width > 0f || _hitTestRect.height > 0f))
+        {
+                UIUtility.DrawBorder(_hitTestRect, new Color(0f, 0f, 1f, 1f));
+            }
         }
 
         /// <summary>

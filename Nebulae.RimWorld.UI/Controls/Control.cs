@@ -3,47 +3,52 @@ using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.UI.Windows;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
+    /// 调试内容
+    /// </summary>
+    [Flags]
+    public enum DebugContent : int
+    {
+        /// <summary>
+        /// 不绘制内容
+        /// </summary>
+        Empty = 0b0000,
+
+        /// <summary>
+        /// 绘制 <see cref="Control.ContentRect"/>
+        /// </summary>
+        ContentRect = 0b0001,
+
+        /// <summary>
+        /// 绘制 <see cref="Control.DesiredRect"/>
+        /// </summary>
+        DesiredRect = 0b0010,
+
+        /// <summary>
+        /// 绘制 <see cref="Control.RenderRect"/>
+        /// </summary>
+        RenderRect = 0b0100,
+
+        /// <summary>
+        /// 绘制按钮的可交互区域
+        /// </summary>
+        HitTestRect = 0b1000
+    }
+
+
+    /// <summary>
     /// 所有控件的基类，定义了控件的共同特性
     /// </summary>
     public abstract class Control : DependencyObject
     {
-        //------------------------------------------------------
-        //
-        //  Public Static Fields
-        //
-        //------------------------------------------------------
-
-        #region Public Static Fields
-
-        /// <summary>
-        /// 点击控件是否强制重新排布控件
-        /// </summary>
-        public static bool ClickForceLayout = false;
-
-        /// <summary>
-        /// 是否绘制控件绘制区域
-        /// </summary>
-        public static bool DrawRenderRect = false;
-
-        /// <summary>
-        /// 是否绘制控件布局区域
-        /// </summary>
-        public static bool DrawLayoutRect = false;
-
-        /// <summary>
-        ///是否在信息窗口显示控件信息
-        /// </summary>
-        public static bool ShowInfo = false;
-
-        #endregion
-
-
         //------------------------------------------------------
         //
         //  Public Fields
@@ -414,62 +419,57 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 使用当前计算的布局信息绘制控件
+        /// 绘制调试内容
         /// </summary>
-        public void Draw()
+        /// <param name="content">要绘制的调试内容</param>
+        public void DebugDraw(DebugContent content)
         {
-            if (RenderSize.Width <= float.Epsilon
-                || RenderSize.Height <= float.Epsilon)
+            if (content is DebugContent.Empty)
             {
                 return;
             }
 
+            if (content.HasFlag(DebugContent.RenderRect) && RenderSize != 0f)
+            {
+                UIUtility.DrawBorder(RenderRect, new Color(1f, 1f, 1f, 1f));
+            }
+
+            if (content.HasFlag(DebugContent.ContentRect) && ContentSize != 0f)
+            {
+                UIUtility.DrawBorder(ContentRect, new Color(0f, 1f, 0f, 1f));
+                }
+
+            if (content.HasFlag(DebugContent.DesiredRect) && DesiredSize != 0f)
+                {
+                UIUtility.DrawBorder(DesiredRect, new Color(1f, 0.92156863f, 0.015686275f, 1f));
+                }
+
+            OnDebugDraw(content);
+        }
+
+        /// <summary>
+        /// 使用当前计算的布局信息绘制控件
+        /// </summary>
+        public void Draw()
+                {
+            if (RenderSize.Width <= float.Epsilon
+                || RenderSize.Height <= float.Epsilon)
+                    {
+                return;
+                    }
+
             DrawCore();
 
             if (_showTooltip && _shouldShowTooltip)
-            {
-                TooltipHandler.TipRegion(
-                    RenderRect.IntersectWith(ContentRect),
-                    _tooltip);
-            }
-
-            if (Prefs.DevMode)
-            {
-                if (DrawRenderRect)
                 {
-                    Widgets.DrawBox(RenderRect);
-                }
-
-                if (DrawLayoutRect && (!DrawRenderRect || Margin != 0f))
-                {
-                    Widgets.DrawBox(DesiredRect, lineTexture: BaseContent.YellowTex);
-                }
-
-                if (ClickForceLayout
-                    && Event.current.type is EventType.MouseDown
-                    && RenderRect.IntersectWith(ContentRect).Contains(Event.current.mousePosition))
-                {
-                    if (ClickForceLayout)
-                    {
-                        Owner.LayoutManager.InvalidateLayout();
-                    }
-                }
-
-                if (ShowInfo)
-                {
-                    if (!ControlInfoWindow.Instance.IsOpen)
-                    {
-                        ControlInfoWindow.Instance.Show();
+                TooltipHandler.TipRegion(ContentRect, _tooltip);
                     }
 
-                    if (RenderRect.IntersectWith(ContentRect).Contains(Event.current.mousePosition)
-                        && (ControlInfoWindow.Instance.Source is null
-                            || ControlInfoWindow.Instance.Source.Rank <= Rank))
+            if (Prefs.DevMode && !_isIndependent)
                     {
-                        ControlInfoWindow.Instance.SetSource(this);
+                DebugDraw(Owner.GetDebugContent());
                     }
                 }
-            }
 
         /// <summary>
         /// 获取控件的父控件
@@ -687,6 +687,14 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="availableSize">分配给控件的可用空间</param>
         /// <returns>呈现控件内容需要的尺寸。</returns>
         protected virtual Size MeasureCore(Size availableSize) => availableSize;
+
+        /// <summary>
+        /// 当 <see cref="DebugDraw"/> 被调用时执行的函数
+        /// </summary>
+        /// <param name="content">要绘制的调试内容</param>
+        protected virtual void OnDebugDraw(DebugContent content)
+        {
+        }
 
         /// <inheritdoc/>
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args)

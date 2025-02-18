@@ -60,6 +60,42 @@ namespace Nebulae.RimWorld.UI.Windows
 
         //------------------------------------------------------
         //
+        //  Public Fields
+        //
+        //------------------------------------------------------
+
+        #region Public Fields
+
+        /// <summary>
+        /// 是否绘制控件可见区域
+        /// </summary>
+        public bool DebugDrawContentRect = false;
+
+        /// <summary>
+        /// 是否绘制控件布局区域
+        /// </summary>
+        public bool DebugDrawDesiredRect = false;
+
+        /// <summary>
+        /// 是否绘制控件绘制区域
+        /// </summary>
+        public bool DebugDrawRenderRect = false;
+
+        /// <summary>
+        /// 是否绘制按钮可交互区域
+        /// </summary>
+        public bool DebugDrawHitTestRect = false;
+
+        /// <summary>
+        /// 是否是作为显示调试信息的窗口
+        /// </summary>
+        public bool IsDebugWindow = false;
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
         //  Public Properties
         //
         //------------------------------------------------------
@@ -141,6 +177,11 @@ namespace Nebulae.RimWorld.UI.Windows
             }
         }
 
+        /// <summary>
+        /// 窗口的非客户区
+        /// </summary>
+        public Rect NonClientRect => _nonClientRect;
+
         #endregion
 
 
@@ -174,21 +215,34 @@ namespace Nebulae.RimWorld.UI.Windows
         public void CloseWindow(ButtonBase button, EventArgs args) => Close();
 
         /// <summary>
-        /// 创建默认内容
+        /// 获取要绘制的调试内容
         /// </summary>
-        /// <returns>默认内容控件。</returns>
-        public virtual Control CreateDefaultContent()
+        /// <returns>要绘制的调试内容。</returns>
+        public DebugContent GetDebugContent()
         {
-            Button button = new Button
-            {
-                Width = 220f,
-                Height = 40f,
-                Text = "Hello RimWorld!",
-                ClickSound = null
-            };
-            button.Click += CloseWindow;
+            DebugContent content = DebugContent.Empty;
 
-            return button;
+            if (DebugDrawContentRect)
+            {
+                content |= DebugContent.ContentRect;
+            }
+
+            if (DebugDrawDesiredRect)
+            {
+                content |= DebugContent.DesiredRect;
+            }
+
+            if (DebugDrawHitTestRect)
+        {
+                content |= DebugContent.HitTestRect;
+            }
+
+            if (DebugDrawRenderRect)
+            {
+                content |= DebugContent.RenderRect;
+            }
+
+            return content;
         }
 
         /// <summary>
@@ -219,6 +273,8 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <param name="inRect">窗口允许绘制的区域</param>
         public sealed override void DoWindowContents(Rect inRect)
         {
+            _nonClientRect = inRect;
+
             if (doCloseX && Margin < DefaultCloseButtonDesiredHeight)
             {
                 inRect.yMin += DefaultCloseButtonDesiredHeight - Margin;
@@ -240,6 +296,27 @@ namespace Nebulae.RimWorld.UI.Windows
             }
 
             LayoutManager.Draw(inRect);
+
+            if (Prefs.DevMode && !IsDebugWindow)
+            {
+                if (Widgets.ButtonText(new Rect(
+                    _nonClientRect.xMax - 194f,
+                    _nonClientRect.yMax - 24f,
+                    100f,
+                    24f), "ForceLayout"))
+                {
+                    LayoutManager.InvalidateLayout();
+                }
+
+                if (Widgets.ButtonText(new Rect(
+                    _nonClientRect.xMax - 90f,
+                    _nonClientRect.yMax - 24f,
+                    90f,
+                    24f), "ShowInfo") && Content is Control control)
+                {
+                    control.ShowInfo();
+                }
+            }
         }
 
         /// <summary>
