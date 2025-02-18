@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -181,6 +182,15 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             }
         }
 
+        /// <inheritdoc/>
+        protected internal override IEnumerable<Control> EnumerateLogicalChildren()
+        {
+            foreach (var item in _children)
+            {
+                yield return item;
+            }
+        }
+
         /// <summary>
         /// 判断子控件是否应该被绘制
         /// </summary>
@@ -212,12 +222,14 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         {
             _isDrawableChildrenValid = false;
 
-            visiableRect = base.SegmentCore(visiableRect);
+            visiableRect = visiableRect.IntersectWith(RenderRect);
 
-            Array.ForEach(_filteredChildren, x =>
+            var children = FilteredChildren;
+
+            for (int i = 0; i < children.Length; i++)
             {
-                x.Segment(visiableRect);
-            });
+                children[i].Segment(visiableRect);
+            }
 
             return visiableRect;
         }
