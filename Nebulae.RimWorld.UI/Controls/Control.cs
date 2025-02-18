@@ -100,14 +100,9 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Internal Fields
 
         /// <summary>
-        /// 控件是否为另一个控件的子控件
+        /// 控件是否为其他控件的逻辑子控件
         /// </summary>
         internal bool IsChild = false;
-
-        /// <summary>
-        /// 拥有该控件的窗口
-        /// </summary>
-        internal ControlWindow Owner;
 
         /// <summary>
         /// 控件的父控件
@@ -134,7 +129,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private bool _isArrangeValid = false;
 
-        private bool _isIndependent = false;
+        private bool _isIndependent = true;
 
         private bool _isMeasureValid = false;
         private bool _isSegmentValid = false;
@@ -142,6 +137,8 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _shouldShowTooltip = false;
         private bool _showTooltip = false;
         private TipSignal _tooltip = string.Empty;
+
+        private ControlWindow _owner;
 
         #endregion
 
@@ -161,7 +158,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             get
             {
-                if (!_isArrangeValid)
+                if (!_isArrangeValid || _isIndependent)
                 {
                     return false;
                 }
@@ -183,7 +180,17 @@ namespace Nebulae.RimWorld.UI.Controls
         public bool IsIndependent
         {
             get => _isIndependent;
-            set => _isIndependent = value;
+            set
+            {
+                if (_isIndependent)
+                {
+                    _isIndependent = value;
+        }
+                else
+                {
+                    SetParent(null);
+                }
+            }
         }
 
         /// <summary>
@@ -193,7 +200,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             get
             {
-                if (!_isMeasureValid)
+                if (!_isMeasureValid || _isIndependent)
                 {
                     return false;
                 }
@@ -216,7 +223,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             get
             {
-                if (!_isSegmentValid)
+                if (!_isSegmentValid || _isIndependent)
                 {
                     return false;
                 }
@@ -229,6 +236,25 @@ namespace Nebulae.RimWorld.UI.Controls
                 _isSegmentValid = false;
 
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 控件的所有逻辑子控件
+        /// </summary>
+        public IEnumerable<Control> LogicalChildren
+        {
+            get
+            {
+                foreach (var child in EnumerateLogicalChildren())
+                {
+                    yield return child;
+
+                    foreach (var grandchild in child.LogicalChildren)
+                    {
+                        yield return grandchild;
+                    }
+                }
             }
         }
 
@@ -258,6 +284,57 @@ namespace Nebulae.RimWorld.UI.Controls
             get => _name;
             set => _name = value;
         }
+
+        /// <summary>
+        /// 负责呈现控件的 <see cref="ControlWindow"/>
+        /// </summary>
+        /// <remarks>当 <see cref="IsIndependent"/> 为 <see langword="true"/> 时必定为 <see langword="null"/>。</remarks>
+        public ControlWindow Owner
+        {
+            get
+            {
+                if (_isIndependent)
+                {
+                    return null;
+                }
+
+                if (_owner != null)
+                {
+                    return _owner;
+                }
+
+                if (!IsChild)
+                {
+                    new LogicalTreeException(this, $"Cannot find this control in any logical tree while {Type}.IsIndependent is false.");
+                }
+
+                _owner = Parent.Owner;
+                return _owner;
+            }
+            internal set
+            {
+                _isIndependent = value is null;
+                _owner = value;
+            }
+        }
+
+        #region Padding
+        /// <summary>
+        /// 获取或设置控件内容的内部边距
+        /// </summary>
+        public Thickness Padding
+        {
+            get { return (Thickness)GetValue(PaddingProperty); }
+            set { SetValue(PaddingProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Padding"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty PaddingProperty =
+            DependencyProperty.Register(nameof(Padding), typeof(Thickness), typeof(Control),
+                new ControlPropertyMetadata(Thickness.Empty, ControlRelation.Measure));
+        #endregion
 
         /// <summary>
         /// 光标悬浮于控件上时是否显示提示框
@@ -393,6 +470,14 @@ namespace Nebulae.RimWorld.UI.Controls
                     }
                 }
             }
+
+        /// <summary>
+        /// 获取控件的父控件
+        /// </summary>
+        /// <returns>控件的父控件。</returns>
+        public Control GetParent()
+        {
+            return Parent;
         }
 
         /// <summary>
@@ -520,6 +605,40 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
+        /// 设置控件的父控件
+        /// </summary>
+        /// <param name="parent">设置给控件的父控件</param>
+        public void SetParent(Control parent)
+        {
+            if (parent is null)
+            {
+                IsChild = false;
+                Owner = null;
+                Parent = null;
+                Rank = 0;
+            }
+            else
+            {
+                Owner = parent.Owner;
+            }
+
+            if (ReferenceEquals(Parent, parent))
+            {
+                return;
+            }
+
+            IsChild = true;
+            Parent = parent;
+            Rank = parent.Rank + 1;
+
+            foreach (var child in LogicalChildren)
+            {
+                child.Owner = _owner;
+                child.Rank = child.Parent.Rank + 1;
+            }
+        }
+
+        /// <summary>
         /// 获取该控件的字符串表示形式
         /// </summary>
         /// <returns>该控件的字符串表示形式.</returns>
@@ -552,6 +671,15 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 绘制控件
         /// </summary>
         protected abstract void DrawCore();
+
+        /// <summary>
+        /// 获取逻辑子控件
+        /// </summary>
+        /// <returns>与该控件直接关联的逻辑子控件。</returns>
+        protected internal virtual IEnumerable<Control> EnumerateLogicalChildren()
+        {
+            yield break;
+        }
 
         /// <summary>
         /// 计算呈现控件内容需要的尺寸

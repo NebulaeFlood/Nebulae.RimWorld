@@ -24,7 +24,56 @@ namespace Nebulae.RimWorld.UI.Controls
         private readonly string _focusIndex = string.Empty;
         private Status _status = Status.Normal;
 
+        private Window _associatedWindow;
+
         #endregion
+
+
+        /// <summary>
+        /// 该控件关联的窗口
+        /// </summary>
+        public Window AssociatedWindow
+        {
+            get
+            {
+                if (_associatedWindow != null)
+                {
+                    return _associatedWindow;
+                }
+
+                if (IsIndependent)
+                {
+                    throw new Exception($"{this}.AssociatedWindow cannot be null.");
+                }
+
+                try
+                {
+                    _associatedWindow = Owner;
+                }
+                catch (Exception e)
+                {
+                    new Exception($"{this}.AssociatedWindow cannot be null.", e);
+                }
+               
+                return _associatedWindow;
+            }
+            set
+            {
+                if (value is null)
+                {
+                    throw new InvalidOperationException($"{this}.AssociatedWindow cannot set to be null.");
+                }
+
+                if (IsIndependent)
+                {
+                    _associatedWindow = value;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Cannot set {this}.AssociatedWindow while cotrol is in a logical tree.");
+                }
+            }
+        }
 
 
         /// <summary>

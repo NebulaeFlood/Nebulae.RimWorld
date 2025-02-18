@@ -54,11 +54,18 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 if (!ReferenceEquals(_content, value))
                 {
-                    _content?.RemoveParent();
+                    _content?.SetParent(null);
                     _content = value;
-                    _content?.SetParent(this);
+
+                    if (_content is null)
+                    {
+                        return;
                 }
+
+                    _content.SetParent(this);
+                    _content.InvalidateMeasure();
             }
+        }
         }
 
         #region HorizontalScrollBarVisibility
@@ -311,6 +318,17 @@ namespace Nebulae.RimWorld.UI.Controls
                 _shouldUpdateSegment = true;
             }
             #endregion
+        }
+
+        /// <inheritdoc/>
+        protected internal override IEnumerable<Control> EnumerateLogicalChildren()
+        {
+            if (_content is null)
+            {
+                yield break;
+            }
+
+            yield return _content;
         }
 
         /// <inheritdoc/>

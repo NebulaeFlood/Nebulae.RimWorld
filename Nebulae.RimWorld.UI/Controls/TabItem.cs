@@ -69,8 +69,8 @@ namespace Nebulae.RimWorld.UI.Controls
                     _selected = false;
 
                     _container = value;
+                    SetParent(value);
                     _content?.SetParent(value);
-                    LogicalTreeUtility.SetParent(this, value);
                 }
             }
         }
@@ -85,9 +85,16 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 if (!ReferenceEquals(_content, value))
                 {
-                    _content?.RemoveParent();
+                    _content?.SetParent(null);
                     _content = value;
-                    _content?.SetParent(_container);
+
+                    if (_content is null)
+                    {
+                        return;
+                    }
+
+                    _content.SetParent(_container);
+                    _content.InvalidateMeasure();
 
                     if (_selected)
                     {

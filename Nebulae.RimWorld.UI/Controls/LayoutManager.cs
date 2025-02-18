@@ -46,12 +46,37 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 if (!ReferenceEquals(_root, value))
                 {
-                    _root = value;
-                    _root.Owner = _owner;
-                    _root.Rank = 0;
+                    if (!_isEmpty)
+                    {
+                        _root.SetParent(null);
+                    }
 
                     _isDirty = true;
                     _isEmpty = value is null;
+                    _root = value;
+
+                    if (_isEmpty)
+                    {
+                        return;
+                    }
+
+                    _root.IsChild = false;
+                    _root.Owner = _owner;
+                    _root.Parent = null;
+                    _root.Rank = 0;
+
+                    foreach (var child in _root.LogicalChildren)
+                    {
+                        try
+                        {
+                            child.Owner = _owner;
+                            child.Rank = child.Parent.Rank + 1;
+                }
+                        catch (Exception e)
+                        {
+                            throw new LogicalTreeException(child, "A error occured when setting the root of a layout tree, please check that the parent-child relationship between controls has been set correctly.", e);
+            }
+        }
                 }
             }
         }
