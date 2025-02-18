@@ -80,10 +80,68 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
+        /// 绘制边框
+        /// </summary>
+        /// <param name="renderRect">绘制边框的区域</param>
+        /// <param name="borderColor">边框颜色</param>
+        public static void DrawBorder(Rect renderRect, Color borderColor)
+        {
+            Color currentColor = GUI.color;
+            GUI.color = borderColor;
+
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
+            // Left
+            GUI.DrawTexture(new Rect(x, y, 1f, height), BaseContent.WhiteTex);
+            // Top
+            GUI.DrawTexture(new Rect(x, y, width, 1f), BaseContent.WhiteTex);
+            // Right
+            GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), BaseContent.WhiteTex);
+            // Bottom
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
+
+            GUI.color = currentColor;
+        }
+
+        /// <summary>
+        /// 绘制边框
+        /// </summary>
+        /// <param name="renderRect">绘制边框的区域</param>
+        /// <param name="borderThickness">边框粗细</param>
+        /// <param name="borderColor">边框颜色</param>
+        public static void DrawBorder(Rect renderRect, Thickness borderThickness, Color borderColor)
+        {
+            Color currentColor = GUI.color;
+            GUI.color = borderColor;
+
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
+            if (borderThickness != 0f)
+            {
+                // Left
+                GUI.DrawTexture(new Rect(x, y, borderThickness.Left, height), BaseContent.WhiteTex);
+                // Top
+                GUI.DrawTexture(new Rect(x, y, width, borderThickness.Top), BaseContent.WhiteTex);
+                // Right
+                GUI.DrawTexture(new Rect(x + width - borderThickness.Right, y, borderThickness.Right, height), BaseContent.WhiteTex);
+                // Bottom
+                GUI.DrawTexture(new Rect(x, y + height - borderThickness.Bottom, width, borderThickness.Bottom), BaseContent.WhiteTex);
+            }
+
+            GUI.color = currentColor;
+        }
+
+        /// <summary>
         /// 绘制矩形
         /// </summary>
-        /// <param name="renderRect"></param>
-        /// <param name="fillColor"></param>
+        /// <param name="renderRect">绘制矩形的区域</param>
+        /// <param name="fillColor">矩形颜色</param>
         public static void DrawRectangle(Rect renderRect, Color fillColor)
         {
             Color currentColor = GUI.color;
@@ -94,14 +152,45 @@ namespace Nebulae.RimWorld.UI.Utilities
             GUI.color = currentColor;
         }
 
+        /// <summary>
+        /// 绘制有边框的矩形
+        /// </summary>
+        /// <param name="renderRect">绘制矩形的区域</param>
+        /// <param name="fillColor">矩形颜色</param>
+        /// <param name="borderColor">边框颜色</param>
+        public static void DrawRectangle(Rect renderRect, Color fillColor, Color borderColor)
+        {
+            Color currentColor = GUI.color;
+            GUI.color = fillColor;
+
+            GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
+
+            GUI.color = borderColor;
+
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
+                // Left
+                GUI.DrawTexture(new Rect(x, y, 1f, height), BaseContent.WhiteTex);
+                // Top
+                GUI.DrawTexture(new Rect(x, y, width, 1f), BaseContent.WhiteTex);
+                // Right
+                GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), BaseContent.WhiteTex);
+                // Bottom
+                GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
+
+            GUI.color = currentColor;
+        }
 
         /// <summary>
         /// 绘制有边框的矩形
         /// </summary>
-        /// <param name="renderRect"></param>
-        /// <param name="fillColor"></param>
-        /// <param name="borderThickness"></param>
-        /// <param name="borderColor"></param>
+        /// <param name="renderRect">绘制矩形的区域</param>
+        /// <param name="fillColor">矩形颜色</param>
+        /// <param name="borderThickness">边框粗细</param>
+        /// <param name="borderColor">边框颜色</param>
         public static void DrawRectangle(Rect renderRect, Color fillColor, Thickness borderThickness, Color borderColor)
         {
             Color currentColor = GUI.color;
@@ -111,16 +200,21 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             GUI.color = borderColor;
 
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
             if (borderThickness != 0f)
             {
                 // Left
-                GUI.DrawTexture(new Rect(renderRect.x, renderRect.y, borderThickness.Left, renderRect.height), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x, y, borderThickness.Left, height), BaseContent.WhiteTex);
                 // Top
-                GUI.DrawTexture(new Rect(renderRect.x, renderRect.y, renderRect.width, borderThickness.Top), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x, y, width, borderThickness.Top), BaseContent.WhiteTex);
                 // Right
-                GUI.DrawTexture(new Rect(renderRect.x + renderRect.width - borderThickness.Right, renderRect.y, borderThickness.Right, renderRect.height), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x + width - borderThickness.Right, y, borderThickness.Right, height), BaseContent.WhiteTex);
                 // Bottom
-                GUI.DrawTexture(new Rect(renderRect.x, renderRect.y + renderRect.height - borderThickness.Bottom, renderRect.width, borderThickness.Bottom), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x, y + height - borderThickness.Bottom, width, borderThickness.Bottom), BaseContent.WhiteTex);
             }
 
             GUI.color = currentColor;
