@@ -110,7 +110,15 @@ namespace Nebulae.RimWorld.UI.Controls
         public bool Selected
         {
             get => _selected;
-            internal set => _selected = value;
+            internal set
+            {
+                if (_selected != value)
+                {
+                    _selected = value;
+                    
+                    PlayMouseOverSound = !value;
+                }
+            }
         }
 
         #endregion
@@ -216,13 +224,13 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect SegmentCore(Rect visiableRect)
         {
-            visiableRect = visiableRect.IntersectWith(new Rect(
-                RenderRect.x + TabPanel.IntersectedWidth,
-                RenderRect.y,
-                RenderSize.Width - 2f * TabPanel.IntersectedWidth,
-                RenderSize.Height));
+            visiableRect = visiableRect.IntersectWith(RenderRect);
 
-            UpdateHitTestRect(visiableRect);
+            UpdateHitTestRect(visiableRect.IntersectWith(new Rect(
+                RenderRect.x + TabControl.IntersectedWidth,
+                RenderRect.y,
+                RenderSize.Width - 2f * TabControl.IntersectedWidth,
+                RenderSize.Height)));
 
             return visiableRect;
         }

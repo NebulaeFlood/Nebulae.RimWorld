@@ -1,34 +1,44 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Panels;
+using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
-    /// 选项卡控件
+    /// 包含多个选项卡的控件
     /// </summary>
     public class TabControl : FrameworkControl
     {
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
+        /// <summary>
+        /// 选项卡之间重叠的宽度
+        /// </summary>
+        public const float IntersectedWidth = 8f;
+
+        /// <summary>
+        /// 每行选项卡之间的间隔
+        /// </summary>
+        public const float RowMargin = 4f;
+
 
         #region Private Fields
 
         private List<TabItem> _tabItems = new List<TabItem>(1);
+        private TabItem[] _renderedItems;
 
         private TabItem _selectedTabItem;
-        private Control _content;
-
-        private readonly TabPanel _tabPanel;
+        private Control _selectedTabContent;
 
         private Rect _backgroundRect;
         private static readonly Rect _backgroundUVRect = new Rect(0.49f, 0.49f, 0.02f, 0.02f);
+
+        private Size _tabPanelSize;
 
         #endregion
 
@@ -41,35 +51,43 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Public Properties
 
+        #region TabHeight
         /// <summary>
-        /// 选项卡的统一高度
+        /// 获取或设置选项卡的统一高度
         /// </summary>
         public float TabHeight
         {
-            get => _tabPanel.ItemHeight;
-            set => _tabPanel.ItemHeight = value;
+            get { return (float)GetValue(TabHeightProperty); }
+            set { SetValue(TabHeightProperty, value); }
         }
 
         /// <summary>
-        /// 选项卡的统一宽度
+        /// 标识 <see cref="TabHeight"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty TabHeightProperty =
+            DependencyProperty.Register(nameof(TabHeight), typeof(float), typeof(TabControl),
+                new ControlPropertyMetadata(30f, ControlRelation.Measure));
+        #endregion
+
+        #region TabWidth
+        /// <summary>
+        /// 获取或设置选项卡的统一宽度
         /// </summary>
         public float TabWidth
         {
-            get => _tabPanel.ItemWidth;
-            set => _tabPanel.ItemWidth = value;
+            get { return (float)GetValue(TabWidthProperty); }
+            set { SetValue(TabWidthProperty, value); }
         }
 
+        /// <summary>
+        /// 标识 <see cref="TabWidth"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty TabWidthProperty =
+            DependencyProperty.Register(nameof(TabWidth), typeof(float), typeof(TabControl),
+                 new ControlPropertyMetadata(190f, ControlRelation.Measure));
         #endregion
 
-
-        static TabControl()
-        {
-            HorizontalAlignmentProperty.OverrideMetadata(typeof(TabControl),
-                new ControlPropertyMetadata(HorizontalAlignment.Stretch, ControlRelation.Measure));
-
-            VerticalAlignmentProperty.OverrideMetadata(typeof(TabControl),
-                new ControlPropertyMetadata(VerticalAlignment.Stretch, ControlRelation.Measure));
-        }
+        #endregion
 
 
         /// <summary>
@@ -77,11 +95,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public TabControl()
         {
-            _tabPanel = new TabPanel
-            {
-                VerticalAlignment = VerticalAlignment.Top
-            };
-            _tabPanel.SetParent(this);
         }
 
 
@@ -98,8 +111,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public void Append(TabItem item)
         {
-            if (item is null
-                || _tabItems.Contains(item))
+            if (item is null || _tabItems.Contains(item))
             {
                 return;
             }
@@ -110,14 +122,17 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 Select(item);
             }
+            else
+            {
+                item.Selected = false;
+            }
 
             _tabItems.Add(item);
-
             InvalidateMeasure();
         }
 
         /// <summary>
-        /// 清空选项卡
+        /// 移除所有选项卡
         /// </summary>
         public void Clear()
         {
@@ -127,7 +142,7 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             _selectedTabItem = null;
-            _content = null;
+            _selectedTabContent = null;
 
             for (int i = _tabItems.Count; i >= 0; i--)
             {
@@ -136,13 +151,14 @@ namespace Nebulae.RimWorld.UI.Controls
                 _tabItems.RemoveAt(i);
             }
 
-            _tabPanel.Clear();
+            _tabItems.Clear();
 
             InvalidateMeasure();
         }
 
+
         /// <summary>
-        /// 移除选项卡
+        /// 移除指定选项卡
         /// </summary>
         ///<param name="item">要移除的选项卡</param>
         public void Remove(TabItem item)
@@ -155,7 +171,6 @@ namespace Nebulae.RimWorld.UI.Controls
             item.Container = null;
 
             _tabItems.Remove(item);
-            _tabPanel.Remove(item);
 
             if (ReferenceEquals(_selectedTabItem, item))
             {
@@ -166,7 +181,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 else
                 {
                     _selectedTabItem = null;
-                    _content = null;
+                    _selectedTabContent = null;
                 }
             }
 
@@ -188,11 +203,25 @@ namespace Nebulae.RimWorld.UI.Controls
                 }
 
                 _selectedTabItem = item;
-                _content = item.Content;
+                _selectedTabContent = item.Content;
 
                 item.Selected = true;
 
-                _tabPanel.InvalidateDrawableChildren();
+                int index = 0;
+                int tabCount = _tabItems.Count;
+                _renderedItems = new TabItem[tabCount];
+
+                for (int i = 0; i < _tabItems.Count; i++)
+                {
+                    var tab = _tabItems[i];
+
+                    if (!tab.Selected)
+                    {
+                        _renderedItems[index++] = tab;
+                    }
+                }
+
+                _renderedItems[tabCount - 1] = item;
             }
         }
 
@@ -206,11 +235,15 @@ namespace Nebulae.RimWorld.UI.Controls
             Clear();
 
             _tabItems = new List<TabItem>(tabItems.Where(x => x != null).Distinct());
-            _tabPanel.Set(tabItems);
 
             if (_tabItems.Count > 0)
             {
-                _tabItems.ForEach(x => { x.Container = this; });
+                for (int i = 0; i < _tabItems.Count; i++)
+                {
+                    var tab = _tabItems[i];
+                    tab.Container = this;
+                    tab.Selected = false;
+                }
 
                 Select(_tabItems[0]);
             }
@@ -234,28 +267,83 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Rect renderRect = base.ArrangeCore(availableRect);
 
-            Rect tabPanelRect = _tabPanel.Arrange(renderRect);
+            int tabCount = _tabItems.Count;
 
-            Rect contentRect = new Rect(
-                renderRect.x,
-                tabPanelRect.yMax,
-                renderRect.width,
-                Mathf.Max(0f, renderRect.height - tabPanelRect.height));
-
-            _tabItems.ForEach(x => x.Content?.Arrange(contentRect));
-
-            if (_tabItems.Count > 0)
-            {
-                _backgroundRect = new Rect(
-                    renderRect.x,
-                    _tabItems[0].RenderRect.yMax - 1f,
-                    renderRect.width,
-                    renderRect.height - _tabPanel.ItemHeight + 1f);
-            }
-            else
+            if (tabCount < 1)
             {
                 _backgroundRect = renderRect;
+                return renderRect;
             }
+
+            // Prepare
+
+            float tabHeight = TabHeight;
+            float tabWidth = TabWidth;
+
+            float currentX = 0f;
+            float currentY = 0f;
+
+            Size tabSize = new Size(
+                tabWidth > 1f
+                    ? Mathf.Min(tabWidth, renderRect.width)
+                    : tabWidth * renderRect.width,
+                tabHeight > 1f
+                    ? tabHeight
+                    : tabHeight * renderRect.width);
+            Rect tabContentRect = new Rect(
+                renderRect.x,
+                renderRect.y + _tabPanelSize.Height,
+                renderRect.width,
+                Mathf.Max(0f, renderRect.height - _tabPanelSize.Height));
+
+            // Arrange tabs and save render order
+
+            _renderedItems = new TabItem[tabCount];
+            int index = 0;
+
+            for (int i = 0; i < tabCount; i++)
+            {
+                var tab = _tabItems[i];
+
+            ArrangeStart:
+                if (currentX + tabSize.Width > RenderSize.Width)
+                {
+                    currentX = 0f;
+                    currentY += tabSize.Height + RowMargin;   // 换行
+
+                    goto ArrangeStart;  // 重新排列该控件
+                }
+                else
+                {
+                    if (currentX > 0f)
+                    {
+                        currentX -= IntersectedWidth;
+                    }
+
+                    tab.Arrange(new Rect(
+                        currentX + availableRect.x,
+                        currentY + availableRect.y,
+                        tabSize.Width,
+                        tabSize.Height));
+
+                    currentX += tabSize.Width;
+                }
+
+                tab.Content?.Arrange(tabContentRect);
+
+                if (!tab.Selected)
+                {
+                    _renderedItems[index++] = tab;
+                }
+            }
+
+            _renderedItems[tabCount - 1] = _selectedTabItem;
+
+            _backgroundRect = new Rect(
+                renderRect.x,
+                _tabItems[0].RenderRect.yMax - 1f,
+                renderRect.width,
+                renderRect.height - tabHeight + 1f);
 
             return renderRect;
         }
@@ -264,24 +352,28 @@ namespace Nebulae.RimWorld.UI.Controls
         protected override void DrawCore()
         {
             Widgets.DrawTexturePart(_backgroundRect, _backgroundUVRect, TabItem.TabAtlas);
+            UIUtility.DrawBorder(_backgroundRect, Color.gray);
 
-            Color color = GUI.color;
-            GUI.color = Color.gray;
+            for (int i = 0; i < _renderedItems.Length; i++)
+            {
+                _renderedItems[i].Draw();
+            }
 
-            // Left
-            GUI.DrawTexture(new Rect(_backgroundRect.x, _backgroundRect.y, 1f, _backgroundRect.height), BaseContent.WhiteTex);
-            // Top
-            GUI.DrawTexture(new Rect(_backgroundRect.x, _backgroundRect.y, _backgroundRect.width, 1f), BaseContent.WhiteTex);
-            // Right
-            GUI.DrawTexture(new Rect(_backgroundRect.xMax - 1f, _backgroundRect.y, 1f, _backgroundRect.height), BaseContent.WhiteTex);
-            // Bottom
-            GUI.DrawTexture(new Rect(_backgroundRect.x, _backgroundRect.yMax - 1f, _backgroundRect.width, 1f), BaseContent.WhiteTex);
+            _selectedTabContent?.Draw();
+        }
 
-            GUI.color = color;
+        /// <inheritdoc/>
+        protected internal override IEnumerable<Control> EnumerateLogicalChildren()
+        {
+            for (int i = 0; i < _tabItems.Count; i++)
+            {
+                yield return _tabItems[i];
 
-            _tabPanel.Draw();
-            _selectedTabItem?.Draw();
-            _content?.Draw();
+                if (_tabItems[i].Content is Control control)
+                {
+                    yield return control;
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -289,13 +381,62 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Size renderSize = base.MeasureCore(availableSize);
 
-            Size tabPanelSize = _tabPanel.Measure(renderSize);
+            if (_tabItems.Count < 1)
+            {
+                _tabPanelSize = Size.Empty;
+                return renderSize;
+            }
 
-            Size contentSize = new Size(
-                renderSize.Width,
-                Mathf.Max(0f, renderSize.Height - tabPanelSize.Height));
+            // Prepare
 
-            _tabItems.ForEach(x => x.Content?.Measure(contentSize));
+            float tabHeight = TabHeight;
+            float tabWidth = TabWidth;
+
+            tabWidth = tabWidth > 1f
+                    ? Mathf.Min(tabWidth, renderSize.Width)
+                    : tabWidth * renderSize.Width;
+
+            tabHeight = tabHeight > 1f
+                    ? tabHeight
+                    : tabHeight * renderSize.Height;
+
+            int tabColumnCount;
+            int tabRowCount;
+
+            // Calculate row count and column count
+
+            float restColumnWidth = renderSize.Width - tabWidth;
+
+            if (restColumnWidth > tabWidth - IntersectedWidth)
+            {
+                tabColumnCount = 1 + (int)(restColumnWidth / (tabWidth - IntersectedWidth));
+            }
+            else
+            {
+                tabColumnCount = 1;
+            }
+
+            tabRowCount = _tabItems.Count / tabColumnCount;
+
+            if (_tabItems.Count % tabColumnCount > 0)
+            {
+                tabRowCount++;
+            }
+
+            // Prepare for measure
+
+            Size tabSize = new Size(tabWidth, tabHeight);
+            _tabPanelSize = new Size(renderSize.Width, (tabHeight + 2f) * tabRowCount);
+            Size tabContentSize = new Size(renderSize.Width,
+                Mathf.Max(0f, renderSize.Height - _tabPanelSize.Height));
+
+            for (int i = 0; i < _tabItems.Count; i++)
+            {
+                var tab = _tabItems[i];
+
+                tab.Measure(tabSize);
+                tab.Content?.Measure(tabContentSize);
+            }
 
             return renderSize;
         }
@@ -305,8 +446,13 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             visiableRect = base.SegmentCore(visiableRect);
 
-            _tabPanel.Segment(visiableRect);
-            _tabItems.ForEach(x => x.Content?.Segment(visiableRect));
+            for (int i = 0; i < _tabItems.Count; i++)
+            {
+                var tab = _tabItems[i];
+
+                tab.Segment(visiableRect);
+                tab.Content?.Segment(visiableRect);
+            }
 
             return visiableRect;
         }
