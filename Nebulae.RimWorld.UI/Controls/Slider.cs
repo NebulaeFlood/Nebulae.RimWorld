@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.Utilities;
 using UnityEngine;
 using Verse;
@@ -8,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 滑块控件，用于选取数字
     /// </summary>
-    public class Slider : FrameworkControl
+    public class Slider : Control
     {
         private float _maximun = 99999f;
         private float _minimun = -99999f;
@@ -76,6 +77,24 @@ namespace Nebulae.RimWorld.UI.Controls
                 new PropertyMetadata(0f));
         #endregion
 
+        #region VerticalAlignment
+        /// <summary>
+        /// 获取或设置控件垂直对齐方式
+        /// </summary>
+        public VerticalAlignment VerticalAlignment
+        {
+            get { return (VerticalAlignment)GetValue(VerticalAlignmentProperty); }
+            set { SetValue(VerticalAlignmentProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="VerticalAlignment"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty VerticalAlignmentProperty =
+            DependencyProperty.Register(nameof(VerticalAlignment), typeof(VerticalAlignment), typeof(Slider),
+                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Measure));
+        #endregion
+
         #endregion
 
 
@@ -86,6 +105,20 @@ namespace Nebulae.RimWorld.UI.Controls
         {
         }
 
+
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
+
+        /// <inheritdoc/>
+        protected override Rect ArrangeCore(Rect availableRect)
+        {
+            return RenderSize.AlignToArea(availableRect, HorizontalAlignment.Stretch, VerticalAlignment);
+        }
 
         /// <inheritdoc/>
         protected override void DrawCore()
@@ -108,5 +141,13 @@ namespace Nebulae.RimWorld.UI.Controls
                 middleAlignment: true,
                 roundTo: _step);
         }
+
+        /// <inheritdoc/>
+        protected override Size MeasureCore(Size availableSize)
+        {
+            return new Size(availableSize.Width, 12f);
+        }
+
+        #endregion
     }
 }
