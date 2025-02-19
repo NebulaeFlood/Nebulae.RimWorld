@@ -8,7 +8,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 用户控件
     /// </summary>
-    /// <remarks>方便使用控件组成新控件。</remarks>
+    /// <remarks>方便使用控件组成新控件。需要在构造函数中手动调用 <see cref="Initialize"/> 方法。</remarks>
     public abstract class UserControl : Control
     {
         private Control _content;
@@ -19,14 +19,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public UserControl()
         {
-            _content = CreateContent();
-
-            if (_content is null)
-            {
-                throw new InvalidOperationException("The content control of a page control cannot be null.");
-            }
-
-            _content.SetParent(this);
         }
 
 
@@ -82,6 +74,21 @@ namespace Nebulae.RimWorld.UI.Controls
         protected internal override IEnumerable<Control> EnumerateLogicalChildren()
         {
             yield return _content;
+        }
+
+        /// <summary>
+        /// 初始化控件
+        /// </summary>
+        protected void Initialize()
+        {
+            _content = CreateContent();
+
+            if (_content is null)
+            {
+                throw new InvalidOperationException("The content control of a page control cannot be null.");
+            }
+
+            _content.SetParent(this);
         }
 
         /// <inheritdoc/>
