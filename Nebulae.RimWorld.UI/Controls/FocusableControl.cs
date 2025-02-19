@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Utilities;
+using System;
 using UnityEngine;
 using Verse;
 
@@ -161,6 +162,15 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 绘制可焦聚的控件
         /// </summary>
         protected abstract void DrawControl();
+
+        /// <inheritdoc/>
+        protected override void OnDebugDraw(DebugContent content)
+        {
+            if (content.HasFlag(DebugContent.HitTestRect))
+            {
+                UIUtility.DrawBorder(ContentRect.IntersectWith(RenderRect), UIUtility.HitBoxRectBorderColor);
+            }
+        }
 
         #endregion
 

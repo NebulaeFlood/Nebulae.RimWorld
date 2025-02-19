@@ -41,7 +41,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="root">目标控件</param>
         public static void ShowInfo(this Control root)
         {
-            LogicalTreeInfoWindow.ShowWindow(root);
+            DebugWindow.ShowWindow(root);
         }
 
         /// <summary>

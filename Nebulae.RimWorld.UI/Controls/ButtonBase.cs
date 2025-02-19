@@ -189,7 +189,7 @@ namespace Nebulae.RimWorld.UI.Controls
             if (content.HasFlag(DebugContent.HitTestRect)
                 && (_hitTestRect.width > 0f || _hitTestRect.height > 0f))
             {
-                UIUtility.DrawBorder(_hitTestRect, new Color(0f, 0f, 1f, 1f));
+                UIUtility.DrawBorder(_hitTestRect, UIUtility.HitBoxRectBorderColor);
             }
         }
 

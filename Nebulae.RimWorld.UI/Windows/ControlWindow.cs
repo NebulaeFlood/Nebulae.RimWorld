@@ -37,6 +37,7 @@ namespace Nebulae.RimWorld.UI.Windows
         #endregion
 
 
+        internal static readonly WeakCollection<ControlWindow> Windows = new WeakCollection<ControlWindow>();
         internal readonly LayoutManager LayoutManager;
 
 
@@ -50,6 +51,8 @@ namespace Nebulae.RimWorld.UI.Windows
 
         private Rect _clientRect;
         private Rect _nonClientRect;
+
+        private Thickness _padding = 18f;
 
         private bool _isOpen = false;
 
@@ -166,7 +169,23 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public Rect NonClientRect => _nonClientRect;
 
+
+        /// <summary>
+        /// 窗口内容边距
+        /// </summary>
+        public Thickness Padding
+        {
+            get => _padding;
+            set => _padding = value;
+        }
+
         #endregion
+
+
+        /// <summary>
+        /// 窗口内容边距
+        /// </summary>
+        protected override sealed float Margin => 0f;
 
 
         /// <summary>
@@ -179,6 +198,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
             LayoutManager = new LayoutManager(this);
             UIPatch.UIEvent.Manage(this);
+            Windows.Add(this);
         }
 
 
@@ -257,24 +277,21 @@ namespace Nebulae.RimWorld.UI.Windows
         public sealed override void DoWindowContents(Rect inRect)
         {
             _nonClientRect = inRect;
+            inRect -= _padding;
 
-            if (doCloseX && Margin < DefaultCloseButtonDesiredHeight)
+            if (doCloseX)
             {
-                inRect.yMin += DefaultCloseButtonDesiredHeight - Margin;
+                inRect.yMin += Mathf.Abs(_padding.Top - DefaultCloseButtonDesiredHeight);
             }
 
             if (doCloseButton)
             {
-                inRect.height -= FooterRowHeight;
+                inRect.height -= Mathf.Max(_padding.Bottom, FooterRowHeight);
             }
 
             if (_clientRect != inRect)
             {
-                if (!_clientRect.IsPositionOnlyChanged(inRect))
-                {
-                    LayoutManager.InvalidateLayout();
-                }
-
+                LayoutManager.InvalidateLayout();
                 _clientRect = inRect;
             }
 
@@ -283,19 +300,19 @@ namespace Nebulae.RimWorld.UI.Windows
             if (Prefs.DevMode && !IsDebugWindow)
             {
                 if (Widgets.ButtonText(new Rect(
-                    _nonClientRect.xMax - 194f,
-                    _nonClientRect.yMax - 24f,
-                    100f,
-                    24f), "ForceLayout"))
+                    _nonClientRect.x,
+                    _nonClientRect.y,
+                    150f,
+                    24f), "Debug: ForceLayout"))
                 {
                     LayoutManager.InvalidateLayout();
                 }
 
                 if (Widgets.ButtonText(new Rect(
-                    _nonClientRect.xMax - 90f,
-                    _nonClientRect.yMax - 24f,
-                    90f,
-                    24f), "ShowInfo") && Content is Control control)
+                    _nonClientRect.x + 154f,
+                    _nonClientRect.y,
+                    140f,
+                    24f), "Debug: ShowInfo") && Content is Control control)
                 {
                     control.ShowInfo();
                 }
@@ -307,6 +324,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public override void PostClose()
         {
+            Windows.Purge();
             base.PostClose();
             _isOpen = false;
         }

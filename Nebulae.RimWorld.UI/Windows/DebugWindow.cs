@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Controls;
+﻿using LudeonTK;
+using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Panels;
 using Nebulae.RimWorld.UI.Utilities;
 using System.Collections.Generic;
@@ -12,20 +13,21 @@ namespace Nebulae.RimWorld.UI.Windows
     /// <summary>
     /// 用于显示控件信息的窗口
     /// </summary>
-    public sealed class LogicalTreeInfoWindow : ControlWindow
+    public sealed class DebugWindow : ControlWindow
     {
-        private static readonly LogicalTreeInfoWindow _instance;
-        private static readonly SortedSet<Control> _sources = new SortedSet<Control>(ControlComparer.Instance);
+        private static readonly DebugWindow _instance;
         private static readonly OptionPanel _optionPanel;
 
 
-        static LogicalTreeInfoWindow()
+        static DebugWindow()
         {
             _optionPanel = new OptionPanel();
-            _instance = new LogicalTreeInfoWindow { Content = _optionPanel };
+            _instance = new DebugWindow { Content = _optionPanel };
+
+            Windows.Remove(_instance);
         }
 
-        private LogicalTreeInfoWindow()
+        private DebugWindow()
         {
             draggable = true;
             doCloseButton = false;
@@ -48,12 +50,29 @@ namespace Nebulae.RimWorld.UI.Windows
 
         #region Public Method
 
+        /// <summary>
+        /// 显示所有的除了 <see cref="DebugWindow"/> 以外的 <see cref="ControlWindow"/> 的调试按钮
+        /// </summary>
+        [DebugAction("Nubulae's UI Control", "Show Debug Buttons", allowedGameStates = AllowedGameStates.Entry, displayPriority = 1)]
+        public static void DrawDebugButtons()
+        {
+            Windows.ForEach(x => x.IsDebugWindow = false);
+        }
+
+        /// <summary>
+        /// 隐藏所有的除了 <see cref="DebugWindow"/> 以外的 <see cref="ControlWindow"/> 的调试按钮
+        /// </summary>
+        [DebugAction("Nubulae's UI Control", "Hide Debug Buttons", allowedGameStates = AllowedGameStates.Entry, displayPriority = 0)]
+        public static void HideDebugButtons()
+        {
+            Windows.ForEach(x => x.IsDebugWindow = true);
+        }
+
         /// <inheritdoc/>
         public override void PostClose()
         {
             base.PostClose();
             _optionPanel.Reset();
-            _sources.Clear();
         }
 
         /// <summary>
@@ -74,27 +93,6 @@ namespace Nebulae.RimWorld.UI.Windows
         #endregion
 
 
-        //------------------------------------------------------
-        //
-        //  Internal Static Methods
-        //
-        //------------------------------------------------------
-
-        #region Internal Static Methods
-
-        internal static void AddSource(Control source)
-        {
-            _sources.Add(source);
-        }
-
-        internal static void RemoveSource(Control source)
-        {
-            _sources.Remove(source);
-        }
-
-        #endregion
-
-
         /// <inheritdoc/>
         protected override void SetInitialSizeAndPosition()
         {
@@ -106,15 +104,15 @@ namespace Nebulae.RimWorld.UI.Windows
             var node = new Expander
             {
                 Text = source.ToString(),
-                Tooltip = $"Type:\n{source.Type}\n" +
-                    $"Name:\n{source.Name}\n" +
-                    $"RenderRect:\n{source.RenderRect}\n" +
-                    $"DesiredRect:\n{source.DesiredRect}\n" +
-                    $"ContentRect:\n{source.ContentRect}\n" +
-                    $"Visibility:\n{source.Visibility}\n" +
-                    $"IsArrangeValid:\n{source.IsArrangeValid}\n" +
-                    $"IsMeasureValid:\n{source.IsMeasureValid}\n" +
-                    $"IsSegmentValid:\n{source.IsSegmentValid}\n"
+                Tooltip = $"<color=yellow>Type</color>:\n{source.Type}\n\n" +
+                    $"<color=yellow>Name</color>:\n{source.Name}\n\n" +
+                    $"<color=yellow>RenderRect</color>:\n{source.RenderRect}\n\n" +
+                    $"<color=yellow>DesiredRect</color>:\n{source.DesiredRect}\n\n" +
+                    $"<color=yellow>ContentRect</color>:\n{source.ContentRect}\n\n" +
+                    $"<color=yellow>Visibility</color>:\n{source.Visibility}\n\n" +
+                    $"<color=yellow>IsArrangeValid</color>:\n{source.IsArrangeValid}\n\n" +
+                    $"<color=yellow>IsMeasureValid</color>:\n{source.IsMeasureValid}\n\n" +
+                    $"<color=yellow>IsSegmentValid</color>:\n{source.IsSegmentValid}"
             };
             node.Clicked += _optionPanel.SetInfo;
             var children = source.EnumerateLogicalChildren();
@@ -134,35 +132,6 @@ namespace Nebulae.RimWorld.UI.Windows
             return node;
         }
 
-
-        //------------------------------------------------------
-        //
-        //  Private Classes
-        //
-        //------------------------------------------------------
-
-        #region Private Classes
-
-        private class ControlComparer : IComparer<Control>
-        {
-            public static readonly IComparer<Control> Instance = new ControlComparer();
-
-            public int Compare(Control x, Control y)
-            {
-                if (ReferenceEquals(x, y))
-                {
-                    return 0;
-                }
-                else if (x.Rank >= y.Rank)
-                {
-                    return -1;
-                }
-                else
-                {
-                    return 1;
-                }
-            }
-        }
 
         private class OptionPanel : Control
         {
@@ -272,15 +241,15 @@ namespace Nebulae.RimWorld.UI.Windows
             {
                 _infoViewer.Arrange(new Rect(
                     availableRect.x,
-                    availableRect.y + 24f * 4f,
+                    availableRect.y + 120f,
                     availableRect.width,
                     300f));
 
                 _treeViewer.Arrange(new Rect(
                     availableRect.x,
-                    availableRect.y + 24f * 4f + 308f,
+                    availableRect.y + 428f,
                     availableRect.width,
-                    availableRect.height - 24f * 4f - 308f));
+                    availableRect.height - 428f));
 
                 return availableRect;
             }
@@ -296,23 +265,27 @@ namespace Nebulae.RimWorld.UI.Windows
                         var anchor = Text.Anchor;
                         Text.Anchor = TextAnchor.MiddleLeft;
 
-                        DrawCheckBox(checkBoxRect, "Show Layout Rect", ref _sourceWindow.DebugDrawDesiredRect, false);
+                        DrawCheckBox(checkBoxRect, "Hide Dbug Buttons", ref _sourceWindow.IsDebugWindow);
                         checkBoxRect.y += 24f;
-                        DrawCheckBox(checkBoxRect, "Show Render Rect", ref _sourceWindow.DebugDrawRenderRect, false);
+                        DrawCheckBox(checkBoxRect, "Show HitBox Rect", ref _sourceWindow.DebugDrawHitTestRect);
                         checkBoxRect.y += 24f;
-                        DrawCheckBox(checkBoxRect, "Show HitBox Rect", ref _sourceWindow.DebugDrawHitTestRect, false);
+                        DrawCheckBox(checkBoxRect, "Show Layout Rect", ref _sourceWindow.DebugDrawDesiredRect);
                         checkBoxRect.y += 24f;
-                        DrawCheckBox(checkBoxRect, "Show Visible Rect", ref _sourceWindow.DebugDrawContentRect, false);
+                        DrawCheckBox(checkBoxRect, "Show Render Rect", ref _sourceWindow.DebugDrawRenderRect);
+                        checkBoxRect.y += 24f;
+                        DrawCheckBox(checkBoxRect, "Show Visible Rect", ref _sourceWindow.DebugDrawContentRect);
 
                         Text.Anchor = anchor;
                     }
                     else
                     {
+                        DrawEntry(checkBoxRect, "Hide Dbug Buttons");
+                        checkBoxRect.y += 24f;
+                        DrawEntry(checkBoxRect, "Show HitBox Rect");
+                        checkBoxRect.y += 24f;
                         DrawEntry(checkBoxRect, "Show Layout Rect");
                         checkBoxRect.y += 24f;
                         DrawEntry(checkBoxRect, "Show Render Rect");
-                        checkBoxRect.y += 24f;
-                        DrawEntry(checkBoxRect, "Show HitBox Rect");
                         checkBoxRect.y += 24f;
                         DrawEntry(checkBoxRect, "Show Visible Rect");
                     }
@@ -341,7 +314,7 @@ namespace Nebulae.RimWorld.UI.Windows
             protected override Size MeasureCore(Size availableSize)
             {
                 _infoViewer.Measure(new Size(availableSize.Width, 300f));
-                _treeViewer.Measure(new Size(availableSize.Width, availableSize.Height - 24f * 4f - 308f));
+                _treeViewer.Measure(new Size(availableSize.Width, availableSize.Height - 428f));
                 return availableSize;
             }
 
@@ -364,14 +337,14 @@ namespace Nebulae.RimWorld.UI.Windows
 
             #region Private Methods
 
-            private static void DrawCheckBox(Rect renderRect, string text, ref bool result, bool isDisabled)
+            private static void DrawCheckBox(Rect renderRect, string text, ref bool result)
             {
                 GUI.Label(renderRect, text);
                 Widgets.Checkbox(
                     renderRect.xMax - 24f,
                     renderRect.y,
                     ref result,
-                    disabled: isDisabled,
+                    disabled: false,
                     texChecked: Widgets.CheckboxOnTex,
                     texUnchecked: Widgets.CheckboxOffTex);
             }
@@ -388,7 +361,5 @@ namespace Nebulae.RimWorld.UI.Windows
 
             #endregion
         }
-
-        #endregion
     }
 }

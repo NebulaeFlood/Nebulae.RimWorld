@@ -10,6 +10,27 @@ namespace Nebulae.RimWorld.UI.Utilities
     public static class UIUtility
     {
         /// <summary>
+        /// <see cref="Control.ContentRect"/> 边框颜色
+        /// </summary>
+        public static readonly Color ContentRectBorderColor = new Color(0f, 1f, 0f, 1f);
+
+        /// <summary>
+        /// <see cref="Control.DesiredRect"/> 边框颜色
+        /// </summary>
+        public static readonly Color DesiredRectBorderColor = new Color(1f, 0.9215686f, 0.0156862f, 1f);
+
+        /// <summary>
+        /// 可交互区域边框颜色
+        /// </summary>
+        public static readonly Color HitBoxRectBorderColor = new Color(0f, 0f, 1f, 1f);
+
+        /// <summary>
+        /// <see cref="Control.RenderRect"/> 边框颜色
+        /// </summary>
+        public static readonly Color RederRectBorderColor = new Color(1f, 1f, 1f, 1f);
+
+
+        /// <summary>
         /// 计算按照指定对齐方式放置到指定区域后的矩形
         /// </summary>
         /// <param name="rectSize">要放置的矩形大小</param>
@@ -235,19 +256,6 @@ namespace Nebulae.RimWorld.UI.Utilities
             float height = Mathf.Min(rect.yMax, anotherRect.yMax) - top;
 
             return new Rect(left, top, width > 0 ? width : 0, height > 0 ? height : 0);
-        }
-
-        /// <summary>
-        /// 判断矩形是否仅有位置发生变化
-        /// </summary>
-        /// <param name="rect">要判断的矩形</param>
-        /// <param name="previousRect">要比较的矩形</param>
-        /// <returns>矩形是否仅有位置发生变化。</returns>
-        public static bool IsPositionOnlyChanged(this Rect rect, Rect previousRect)
-        {
-            return rect.width == previousRect.width
-                && rect.height == previousRect.height
-                && (rect.x != previousRect.x || rect.y != previousRect.y);
         }
 
         /// <summary>

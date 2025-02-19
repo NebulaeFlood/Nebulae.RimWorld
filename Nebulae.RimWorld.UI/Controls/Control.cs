@@ -429,17 +429,17 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (content.HasFlag(DebugContent.RenderRect) && RenderSize != 0f)
             {
-                UIUtility.DrawBorder(RenderRect, new Color(1f, 1f, 1f, 1f));
+                UIUtility.DrawBorder(RenderRect, UIUtility.RederRectBorderColor);
             }
 
             if (content.HasFlag(DebugContent.ContentRect) && ContentSize != 0f)
             {
-                UIUtility.DrawBorder(ContentRect, new Color(0f, 1f, 0f, 1f));
+                UIUtility.DrawBorder(ContentRect, UIUtility.ContentRectBorderColor);
             }
 
             if (content.HasFlag(DebugContent.DesiredRect) && DesiredSize != 0f)
             {
-                UIUtility.DrawBorder(DesiredRect, new Color(1f, 0.92156863f, 0.015686275f, 1f));
+                UIUtility.DrawBorder(DesiredRect, UIUtility.DesiredRectBorderColor);
             }
 
             OnDebugDraw(content);

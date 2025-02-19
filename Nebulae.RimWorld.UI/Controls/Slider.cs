@@ -148,6 +148,16 @@ namespace Nebulae.RimWorld.UI.Controls
             return new Size(availableSize.Width, 12f);
         }
 
+
+        /// <inheritdoc/>
+        protected override void OnDebugDraw(DebugContent content)
+        {
+            if (content.HasFlag(DebugContent.HitTestRect))
+            {
+                UIUtility.DrawBorder(RenderRect, UIUtility.HitBoxRectBorderColor);
+            }
+        }
+
         #endregion
     }
 }
