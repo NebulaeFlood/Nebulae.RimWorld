@@ -11,9 +11,30 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class Slider : Control
     {
+        /// <summary>
+        /// 滑块的高度
+        /// </summary>
+        public const float SliderHeight = 12f;
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private bool _drawExtremeValues = false;
+        private Rect _leftValueRect;
+        private Rect _rightValueRect;
+
+        private Rect _sliderRect;
+
         private float _maximun = 99999f;
         private float _minimun = -99999f;
         private float _step = 0.1f;
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -23,6 +44,15 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Public Properties
+
+        /// <summary>
+        /// 是否显示最大值和最小值
+        /// </summary>
+        public bool DrawExtremeValues
+        {
+            get => _drawExtremeValues;
+            set => _drawExtremeValues = value;
+        }
 
         /// <summary>
         /// 数字的最大值
@@ -77,24 +107,6 @@ namespace Nebulae.RimWorld.UI.Controls
                 new PropertyMetadata(0f));
         #endregion
 
-        #region VerticalAlignment
-        /// <summary>
-        /// 获取或设置控件垂直对齐方式
-        /// </summary>
-        public VerticalAlignment VerticalAlignment
-        {
-            get { return (VerticalAlignment)GetValue(VerticalAlignmentProperty); }
-            set { SetValue(VerticalAlignmentProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="VerticalAlignment"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty VerticalAlignmentProperty =
-            DependencyProperty.Register(nameof(VerticalAlignment), typeof(VerticalAlignment), typeof(Slider),
-                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Measure));
-        #endregion
-
         #endregion
 
 
@@ -117,7 +129,26 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
-            return RenderSize.AlignToArea(availableRect, HorizontalAlignment.Stretch, VerticalAlignment);
+            if (!_drawExtremeValues)
+            {
+                _sliderRect = new Size(availableRect.width, SliderHeight)
+                    .AlignToArea(availableRect, HorizontalAlignment.Stretch, VerticalAlignment.Center);
+
+                return availableRect;
+            }
+
+            float leftMargin = _minimun.ToString().CalculateLength(GameFont.Tiny) + 2f;
+            float rightMargin = _maximun.ToString().CalculateLength(GameFont.Tiny) + 6f;
+
+            Size sliderSize = new Size(availableRect.width - leftMargin - rightMargin, SliderHeight);
+
+            _sliderRect = sliderSize.AlignToArea(new Rect(availableRect.x + leftMargin, availableRect.y, sliderSize.Width, availableRect.height),
+                HorizontalAlignment.Stretch, VerticalAlignment.Bottom);
+
+            _leftValueRect = availableRect;
+            _rightValueRect = new Rect(_sliderRect.xMax, availableRect.y, availableRect.xMax - _sliderRect.xMax, availableRect.height);
+
+            return availableRect;
         }
 
         /// <inheritdoc/>
@@ -133,8 +164,22 @@ namespace Nebulae.RimWorld.UI.Controls
                 }
             }
 
+            if (_drawExtremeValues)
+            {
+                TextAnchor anchor = Text.Anchor;
+                GameFont font = Text.Font;
+                Text.Font = GameFont.Tiny;
+                Text.Anchor = TextAnchor.UpperLeft;
+
+                GUI.Label(_leftValueRect, _minimun.ToString());
+                GUI.Label(_rightValueRect, _maximun.ToString());
+
+                Text.Anchor = anchor;
+                Text.Font = font;
+            }
+
             Value = Widgets.HorizontalSlider(
-                RenderRect,
+                _sliderRect,
                 Value,
                 _minimun,
                 _maximun,
@@ -143,9 +188,9 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected override Size MeasureCore(Size availableSize)
+        override protected Size MeasureCore(Size availableSize)
         {
-            return new Size(availableSize.Width, 12f);
+            return new Size(availableSize.Width, GameFont.Tiny.GetHeight());
         }
 
 
@@ -154,7 +199,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             if (content.HasFlag(DebugContent.HitTestRect))
             {
-                UIUtility.DrawBorder(RenderRect, UIUtility.HitBoxRectBorderColor);
+                UIUtility.DrawBorder(_sliderRect, UIUtility.HitBoxRectBorderColor);
             }
         }
 
