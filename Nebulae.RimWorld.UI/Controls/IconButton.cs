@@ -17,11 +17,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public const float DefaultIconSize = 24f;
 
-        /// <summary>
-        /// 按钮的默认内边距
-        /// </summary>
-        public const float DefaultPadding = 5f;
-
 
         /// <summary>
         /// 关闭按钮的混合色
@@ -38,10 +33,10 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Private Fields
 
         private Size _iconRenderSize = Size.Empty;
-        private Rect _iconDesiredRect;
+        private Rect _iconRenderRect;
 
         private Size _textRenderSize = Size.Empty;
-        private Rect _textDesiredRect;
+        private Rect _textRenderRect;
 
         private Color _compositionColor = Color.white;
 
@@ -142,12 +137,6 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
-        static IconButton()
-        {
-            PaddingProperty.OverrideMetadata(typeof(IconButton),
-                new ControlPropertyMetadata(new Thickness(DefaultPadding), ControlRelation.Measure));
-        }
-
         /// <summary>
         /// 初始化 <see cref="IconButton"/> 的新实例
         /// </summary>
@@ -189,7 +178,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if ((_status & ContentStatus.IconSetted) != 0)
             {
-                _iconDesiredRect = _iconRenderSize
+                _iconRenderRect = _iconRenderSize
                     .AlignToArea(
                         contentRenderRect,
                         HorizontalAlignment.Left.ReverseIf(_reverseContent),
@@ -197,19 +186,19 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else
             {
-                _iconDesiredRect = Rect.zero;
+                _iconRenderRect = Rect.zero;
             }
 
             if ((_status & ContentStatus.TextSetted) != 0)
             {
-                _textDesiredRect = _textRenderSize.AlignToArea(
+                _textRenderRect = _textRenderSize.AlignToArea(
                     contentRenderRect,
                     HorizontalAlignment.Right.ReverseIf(_reverseContent),
                     VerticalAlignment.Center);
             }
             else
             {
-                _textDesiredRect = Rect.zero;
+                _textRenderRect = Rect.zero;
             }
 
             return renderRect;
@@ -257,7 +246,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 GameText.Anchor = TextAnchor.MiddleLeft;
                 GameText.Font = FontSize;
 
-                Widgets.Label(_textDesiredRect, Text);
+                Widgets.Label(_textRenderRect, Text);
 
                 GameText.Font = font;
                 GameText.Anchor = anchor;
@@ -272,7 +261,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     GUI.color = _compositionColor * GenUI.MouseoverColor;
                 }
 
-                GUI.DrawTexture(_iconDesiredRect, _icon, ScaleMode.ScaleToFit);
+                GUI.DrawTexture(_iconRenderRect, _icon, ScaleMode.ScaleToFit);
             }
 
             GUI.color = currentColor;
@@ -315,7 +304,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (_iconHitOnly)
             {
-                UpdateHitTestRect(_iconDesiredRect);
+                UpdateHitTestRect(_iconRenderRect);
             }
             else
             {
