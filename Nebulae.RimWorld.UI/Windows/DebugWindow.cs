@@ -103,15 +103,18 @@ namespace Nebulae.RimWorld.UI.Windows
             var node = new Expander
             {
                 Text = source.ToString(),
-                Tooltip = $"<color=yellow>Type</color>:\n{source.Type}\n\n" +
-                    $"<color=yellow>Name</color>:\n{source.Name}\n\n" +
-                    $"<color=yellow>RenderRect</color>:\n{source.RenderRect}\n\n" +
-                    $"<color=yellow>DesiredRect</color>:\n{source.DesiredRect}\n\n" +
-                    $"<color=yellow>ContentRect</color>:\n{source.ContentRect}\n\n" +
-                    $"<color=yellow>Visibility</color>:\n{source.Visibility}\n\n" +
-                    $"<color=yellow>IsArrangeValid</color>:\n{source.IsArrangeValid}\n\n" +
-                    $"<color=yellow>IsMeasureValid</color>:\n{source.IsMeasureValid}\n\n" +
-                    $"<color=yellow>IsSegmentValid</color>:\n{source.IsSegmentValid}"
+                Tooltip =
+                    GenerateInfoLine("Type", source.Type) +
+                    GenerateInfoLine("Name", source.Name) +
+                    GenerateInfoLine("RenderRect", source.RenderRect) +
+                    GenerateInfoLine("DesiredRect", source.DesiredRect) +
+                    GenerateInfoLine("ContentRect", source.ContentRect) +
+                    GenerateInfoLine("Visibility", source.Visibility) +
+                    GenerateInfoLine("IsArrangeValid", source.IsArrangeValid) +
+                    GenerateInfoLine("IsMeasureValid", source.IsMeasureValid) +
+                    GenerateInfoLine("IsSegmentValid", source.IsSegmentValid) +
+                    GenerateInfoLine("ShowTooltip", source.ShowTooltip) +
+                    GenerateInfo("Tooltip", source.Tooltip.text)
             };
             node.Clicked += _optionPanel.SetInfo;
             var children = source.EnumerateLogicalChildren();
@@ -129,6 +132,16 @@ namespace Nebulae.RimWorld.UI.Windows
             }
 
             return node;
+        }
+
+        private static string GenerateInfo(string key, object value)
+        {
+            return $"<color=yellow>{key}</color>:\n{value}";
+        }
+
+        private static string GenerateInfoLine(string key, object value)
+        {
+            return $"<color=yellow>{key}</color>:\n{value}\n\n";
         }
 
 
