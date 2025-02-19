@@ -78,6 +78,22 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
+
+        /// <inheritdoc/>
+        protected override Rect ArrangeCore(Rect availableRect)
+        {
+            Rect renderRect = base.ArrangeCore(availableRect);
+            renderRect.height = Mathf.Max(renderRect.height, RenderSize.Height);
+            return renderRect;
+        }
+
         /// <inheritdoc/>
         protected override void DrawCore()
         {
@@ -87,7 +103,7 @@ namespace Nebulae.RimWorld.UI.Controls
             GameText.Anchor = _anchor;
             GameText.Font = FontSize;
 
-            Widgets.Label(RenderRect, Text);
+            GUI.Label(RenderRect, Text);
 
             GameText.Anchor = currentAnchor;
             GameText.Font = currentFont;
@@ -100,5 +116,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 availableSize.Width,
                 Text.CalculateHeight(availableSize.Width, FontSize));
         }
+
+        #endregion
     }
 }
