@@ -51,7 +51,14 @@ namespace Nebulae.RimWorld.UI.Controls
         public bool DrawExtremeValues
         {
             get => _drawExtremeValues;
-            set => _drawExtremeValues = value;
+            set
+            {
+                if (_drawExtremeValues != value)
+                {
+                    _drawExtremeValues = value;
+                    InvalidateMeasure();
+                }
+            }
         }
 
         /// <summary>
