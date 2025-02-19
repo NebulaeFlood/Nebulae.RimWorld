@@ -599,6 +599,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="parent">设置给控件的父控件</param>
         public void SetParent(Control parent)
         {
+            if (ReferenceEquals(Parent, parent))
+            {
+                return;
+            }
+
             if (parent is null)
             {
                 IsChild = false;
@@ -608,17 +613,11 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else
             {
+                IsChild = true;
                 Owner = parent.Owner;
+                Parent = parent;
+                Rank = parent.Rank + 1;
             }
-
-            if (ReferenceEquals(Parent, parent))
-            {
-                return;
-            }
-
-            IsChild = true;
-            Parent = parent;
-            Rank = parent.Rank + 1;
 
             foreach (var child in LogicalChildren)
             {
