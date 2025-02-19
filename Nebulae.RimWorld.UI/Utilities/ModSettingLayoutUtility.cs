@@ -109,7 +109,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             return new Grid
             {
                 Tooltip = tooltip,
-                ShowTooltip = string.IsNullOrEmpty(tooltip)
+                ShowTooltip = !string.IsNullOrEmpty(tooltip)
             }
                 .SetSize(new float[] { Grid.Remain, 100f }, new float[] { 32f, GameFont.Tiny.GetHeight() })
                 .Set(
