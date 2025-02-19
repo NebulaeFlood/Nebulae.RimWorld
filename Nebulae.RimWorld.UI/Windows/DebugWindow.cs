@@ -37,7 +37,6 @@ namespace Nebulae.RimWorld.UI.Windows
             layer = WindowLayer.Super;
 
             InitialWidth = 300f;
-            InitialHeight = Verse.UI.screenHeight;
             IsDebugWindow = true;
         }
 
@@ -96,7 +95,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <inheritdoc/>
         protected override void SetInitialSizeAndPosition()
         {
-            windowRect = new Rect(0f, 0f, InitialWidth, InitialHeight);
+            windowRect = new Rect(0f, 0f, InitialWidth, Verse.UI.screenHeight);
         }
 
         private static Expander GenerateTreeInfo(Control source)
