@@ -189,7 +189,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (_isEmpty)
             {
-                _labelRect = new Rect(renderRect.x + 8f, renderRect.y, renderRect.width, buttonHeight);
+                _labelRect = new Rect(renderRect.x + 6f, renderRect.y, renderRect.width, buttonHeight);
 
                 return renderRect;
             }
