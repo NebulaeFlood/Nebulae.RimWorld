@@ -134,9 +134,10 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 foreach (var control in _measureQueue)
                 {
+                    // Means that the control is a scroll viewer.
                     if (control.IsChild)
                     {
-                        control.Parent.Measure(control.Parent.DesiredSize);
+                        control.Measure(control.DesiredSize);
                     }
                     else
                     {
@@ -152,9 +153,10 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 foreach (var control in _arrangeQueue)
                 {
+                    // Means that the control is a scroll viewer.
                     if (control.IsChild)
                     {
-                        control.Parent.Arrange(control.Parent.DesiredRect);
+                        control.Arrange(control.DesiredRect);
                     }
                     else
                     {
@@ -170,9 +172,10 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 foreach (var control in _segmentQueue)
                 {
+                    // Means that the control is a scroll viewer.
                     if (control.IsChild)
                     {
-                        control.Parent.Segment(control.Parent.ContentRect);
+                        control.Segment(control.ContentRect);
                     }
                     else
                     {
