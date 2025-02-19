@@ -58,7 +58,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             control.SetParent(_owner);
             _children.Add(control);
-
             _owner.InvalidateFilter();
         }
 
@@ -123,6 +122,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             {
                 _children[i].SetParent(_owner);
             }
+
+            _owner.InvalidateFilter();
         }
 
         /// <summary>
@@ -142,6 +143,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             {
                 _children[i].SetParent(_owner);
             }
+
+            _owner.InvalidateFilter();
 
             return (TOwner)_owner;
         }
