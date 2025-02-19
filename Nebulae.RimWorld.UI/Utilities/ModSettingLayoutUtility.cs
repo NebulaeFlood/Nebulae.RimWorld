@@ -85,6 +85,7 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             var slider = new Slider
             {
+                DrawExtremeValues = true,
                 Maximum = maxValue,
                 Minimum = minValue,
                 Step = silderStep,
