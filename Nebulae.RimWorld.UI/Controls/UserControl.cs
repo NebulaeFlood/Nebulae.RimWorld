@@ -28,6 +28,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <remarks>将会移除内容控件及其子控件的所有绑定关系。</remarks>
         public void ResetContent()
         {
+            if (_content is null)
+            {
+                throw new InvalidOperationException($"{Type} is subclass of {typeof(UserControl)} but {typeof(UserControl)}.Initialize method has not been called.");
+            }
+
             if (CreateContent() is Control control)
             {
                 _content.Unbind();
@@ -73,6 +78,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected internal override IEnumerable<Control> EnumerateLogicalChildren()
         {
+            if (_content is null)
+            {
+                throw new InvalidOperationException($"{Type} is subclass of {typeof(UserControl)} but {typeof(UserControl)}.Initialize method has not been called.");
+            }
+
             yield return _content;
         }
 

@@ -11,11 +11,11 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         internal LogicalTreeException(Control control, string message, Exception innerException) :
-            base(CreateMessageText(control, message), innerException)
+            base(CreateMessageText(control, message, hasInnerException: true), innerException)
         {
         }
 
-        private static string CreateMessageText(Control control, string message)
+        private static string CreateMessageText(Control control, string message, bool hasInnerException = false)
         {
             string test = "An control";
 
@@ -24,6 +24,11 @@ namespace Nebulae.RimWorld.UI.Controls
                 : " named: " + control.Name;
 
             test += "raised an logical tree error: " + message;
+
+            if (hasInnerException)
+            {
+                test += " --->";
+            }
 
             return test;
         }

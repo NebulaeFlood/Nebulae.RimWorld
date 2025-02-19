@@ -351,7 +351,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 }
                 else
                 {
-                    throw new InvalidCastException($"Default binding converter can not cast type {sourceType} to type {targetType}.");
+                    throw new InvalidCastException($"Default binding converter can not cast type: {sourceType} to type: {targetType}.");
                 }
 
                 _createdConverters.Add(key, converter);

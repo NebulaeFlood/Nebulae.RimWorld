@@ -37,7 +37,7 @@ namespace Nebulae.RimWorld.UI
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"An exception occured when try finish quest from {_actionQueue[i].Method.DeclaringType}: {e}");
+                    Log.Error($"An exception occured when try finish quest from {_actionQueue[i].Method.DeclaringType}. ---> {e}");
                 }
             }
 
