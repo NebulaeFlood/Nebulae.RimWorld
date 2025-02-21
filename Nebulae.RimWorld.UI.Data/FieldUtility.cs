@@ -61,7 +61,7 @@ namespace Nebulae.RimWorld.UI.Data
         /// <param name="flags">搜索字段的方式</param>
         /// <returns>获取字段值的委托。</returns>
         /// <exception cref="MissingFieldException">当无法在 <typeparamref name="TClass"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
-        public static FieldAccesser<TClass, TField> CreateFieldAccesser<TClass,TField>(
+        public static FieldAccesser<TClass, TField> CreateFieldAccesser<TClass, TField>(
             string name,
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
         {
@@ -96,8 +96,8 @@ namespace Nebulae.RimWorld.UI.Data
         /// <exception cref="MissingFieldException">当无法在 <paramref name="obj"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法将字段值转化为 <typeparamref name="T"/> 类型时发生。</exception>
         public static T GetValue<T>(
-            this Type type, 
-            string name, 
+            this Type type,
+            string name,
             object obj,
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
         {
