@@ -37,10 +37,6 @@ namespace Nebulae.RimWorld.UI.Windows
         #endregion
 
 
-        internal static readonly WeakSet<ControlWindow> Windows = new WeakSet<ControlWindow>();
-        internal readonly LayoutManager LayoutManager;
-
-
         //------------------------------------------------------
         //
         //  Private Fields
@@ -48,6 +44,8 @@ namespace Nebulae.RimWorld.UI.Windows
         //------------------------------------------------------
 
         #region Private Fields
+
+        private readonly LayoutManager _layoutManager;
 
         private Rect _clientRect;
         private Rect _nonClientRect;
@@ -58,42 +56,6 @@ namespace Nebulae.RimWorld.UI.Windows
 
         private float _initialHeight = DefaultWindowHeight;
         private float _initialWidth = DefaultWindowWidth;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Public Fields
-        //
-        //------------------------------------------------------
-
-        #region Public Fields
-
-        /// <summary>
-        /// 是否绘制控件可见区域
-        /// </summary>
-        public bool DebugDrawContentRect = false;
-
-        /// <summary>
-        /// 是否绘制控件布局区域
-        /// </summary>
-        public bool DebugDrawDesiredRect = false;
-
-        /// <summary>
-        /// 是否绘制控件绘制区域
-        /// </summary>
-        public bool DebugDrawRenderRect = false;
-
-        /// <summary>
-        /// 是否绘制按钮可交互区域
-        /// </summary>
-        public bool DebugDrawHitTestRect = false;
-
-        /// <summary>
-        /// 是否是作为显示调试信息的窗口
-        /// </summary>
-        public bool IsDebugWindow = false;
 
         #endregion
 
@@ -116,8 +78,8 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public Control Content
         {
-            get => LayoutManager.Root;
-            set => LayoutManager.Root = value;
+            get => _layoutManager.Root;
+            set => _layoutManager.Root = value;
         }
 
         /// <summary>
@@ -137,10 +99,15 @@ namespace Nebulae.RimWorld.UI.Windows
                 {
                     _initialHeight = value;
 
-                    LayoutManager.InvalidateLayout();
+                    _layoutManager.InvalidateLayout();
                 }
             }
         }
+
+        /// <summary>
+        /// 窗口控件布局管理器
+        /// </summary>
+        public LayoutManager LayoutManager => _layoutManager;
 
         /// <summary>
         /// 窗口是否正在呈现
@@ -159,7 +126,7 @@ namespace Nebulae.RimWorld.UI.Windows
                 {
                     _initialWidth = value;
 
-                    LayoutManager.InvalidateLayout();
+                    _layoutManager.InvalidateLayout();
                 }
             }
         }
@@ -205,9 +172,8 @@ namespace Nebulae.RimWorld.UI.Windows
             doCloseButton = true;
             doCloseX = true;
 
-            LayoutManager = new LayoutManager(this);
+            _layoutManager = new LayoutManager(this);
             UIPatch.UIEvent.Manage(this);
-            Windows.Add(this);
         }
 
 
@@ -227,46 +193,9 @@ namespace Nebulae.RimWorld.UI.Windows
         public void CloseWindow(ButtonBase button, EventArgs args) => Close();
 
         /// <summary>
-        /// 获取要绘制的调试内容
-        /// </summary>
-        /// <returns>要绘制的调试内容。</returns>
-        public DebugContent GetDebugContent()
-        {
-            DebugContent content = DebugContent.Empty;
-
-            if (DebugDrawContentRect)
-            {
-                content |= DebugContent.ContentRect;
-            }
-
-            if (DebugDrawDesiredRect)
-            {
-                content |= DebugContent.DesiredRect;
-            }
-
-            if (DebugDrawHitTestRect)
-            {
-                content |= DebugContent.HitTestRect;
-            }
-
-            if (DebugDrawRenderRect)
-            {
-                content |= DebugContent.RenderRect;
-            }
-
-            return content;
-        }
-
-        /// <summary>
         /// 开始呈现窗口
         /// </summary>
         public void Show() => Find.WindowStack.Add(this);
-
-        /// <inheritdoc/>
-        public void UIEventHandler(UIEventType type)
-        {
-            LayoutManager.InvalidateLayout();
-        }
 
         #endregion
 
@@ -300,32 +229,23 @@ namespace Nebulae.RimWorld.UI.Windows
 
             if (_clientRect != inRect)
             {
-                LayoutManager.InvalidateLayout();
+                _layoutManager.InvalidateLayout();
                 _clientRect = inRect;
             }
 
-            LayoutManager.Draw(inRect);
+            _layoutManager.Draw(inRect);
 
-            if (Prefs.DevMode && !IsDebugWindow)
+            if (Prefs.DevMode 
+                && _layoutManager.DebugDrawButtons)
             {
-                if (Widgets.ButtonText(new Rect(
-                    _nonClientRect.x,
-                    _nonClientRect.y,
-                    150f,
-                    24f), "Debug: ForceLayout"))
-                {
-                    LayoutManager.InvalidateLayout();
-                }
-
-                if (Widgets.ButtonText(new Rect(
-                    _nonClientRect.x + 154f,
-                    _nonClientRect.y,
-                    140f,
-                    24f), "Debug: ShowInfo") && Content is Control control)
-                {
-                    control.ShowInfo();
-                }
+                _layoutManager.DrawWindowDebugButtons(_nonClientRect);
             }
+        }
+
+        /// <inheritdoc/>
+        public virtual void HandleUIEvent(UIEventType type)
+        {
+            _layoutManager.InvalidateLayout();
         }
 
         /// <summary>
@@ -333,7 +253,6 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public override void PostClose()
         {
-            Windows.Purge();
             base.PostClose();
             _isOpen = false;
         }

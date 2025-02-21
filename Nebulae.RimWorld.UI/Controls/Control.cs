@@ -15,29 +15,39 @@ namespace Nebulae.RimWorld.UI.Controls
     public enum DebugContent : int
     {
         /// <summary>
+        /// 绘制所以预设内容
+        /// </summary>
+        All = 0b11111,
+
+        /// <summary>
         /// 不绘制内容
         /// </summary>
-        Empty = 0b0000,
+        Empty = 0b00000,
+
+        /// <summary>
+        /// 绘制调试按钮
+        /// </summary>
+        Buttons = 0b00001,
 
         /// <summary>
         /// 绘制 <see cref="Control.ContentRect"/>
         /// </summary>
-        ContentRect = 0b0001,
+        ContentRect = 0b00010,
 
         /// <summary>
         /// 绘制 <see cref="Control.DesiredRect"/>
         /// </summary>
-        DesiredRect = 0b0010,
+        DesiredRect = 0b00100,
 
         /// <summary>
         /// 绘制 <see cref="Control.RenderRect"/>
         /// </summary>
-        RenderRect = 0b0100,
+        RenderRect = 0b01000,
 
         /// <summary>
         /// 绘制按钮的可交互区域
         /// </summary>
-        HitTestRect = 0b1000
+        HitTestRect = 0b10000
     }
 
 
@@ -140,7 +150,8 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _showTooltip = false;
         private TipSignal _tooltip = string.Empty;
 
-        private ControlWindow _owner;
+        private LayoutManager _layoutManager;
+        private Window _owner;
 
         #endregion
 
@@ -165,7 +176,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     return false;
                 }
 
-                if (Owner.LayoutManager.IsArrangeValid(this))
+                if (LayoutManager.IsArrangeValid(this))
                 {
                     return true;
                 }
@@ -177,23 +188,9 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 控件是否独立于 <see cref="ControlWindow"/>
+        /// 控件是否独立于 <see cref="LayoutManager"/>
         /// </summary>
-        public bool IsIndependent
-        {
-            get => _isIndependent;
-            set
-            {
-                if (_isIndependent)
-                {
-                    _isIndependent = value;
-                }
-                else
-                {
-                    SetParent(null);
-                }
-            }
-        }
+        public bool IsIndependent => _isIndependent;
 
         /// <summary>
         /// 控件度量是否有效
@@ -207,7 +204,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     return false;
                 }
 
-                if (Owner.LayoutManager.IsMeasureValid(this))
+                if (LayoutManager.IsMeasureValid(this))
                 {
                     return true;
                 }
@@ -230,7 +227,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     return false;
                 }
 
-                if (Owner.LayoutManager.IsSegmentValid(this))
+                if (LayoutManager.IsSegmentValid(this))
                 {
                     return true;
                 }
@@ -238,6 +235,29 @@ namespace Nebulae.RimWorld.UI.Controls
                 _isSegmentValid = false;
 
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 控件的布局管理器
+        /// </summary>
+        public LayoutManager LayoutManager
+        {
+            get => _layoutManager;
+            internal set
+            {
+                if (value is null)
+                {
+                    _isIndependent = true;
+                    _layoutManager = null;
+                    _owner = null;
+                }
+                else
+                {
+                    _isIndependent = false;
+                    _layoutManager = value;
+                    _owner = value.Owner;
+                }
             }
         }
 
@@ -288,10 +308,10 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 负责呈现控件的 <see cref="ControlWindow"/>
+        /// 负责呈现控件的窗口
         /// </summary>
         /// <remarks>当 <see cref="IsIndependent"/> 为 <see langword="true"/> 时必定为 <see langword="null"/>。</remarks>
-        public ControlWindow Owner
+        public Window Owner
         {
             get
             {
@@ -300,23 +320,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     return null;
                 }
 
-                if (_owner != null)
-                {
-                    return _owner;
-                }
-
-                if (!IsChild)
-                {
-                    new LogicalTreeException(this, $"Cannot find this control in any logical tree while {Type}.IsIndependent is false.");
-                }
-
-                _owner = Parent.Owner;
                 return _owner;
-            }
-            internal set
-            {
-                _isIndependent = value is null;
-                _owner = value;
             }
         }
 
@@ -482,7 +486,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (Prefs.DevMode && !_isIndependent)
             {
-                DebugDraw(Owner.GetDebugContent());
+                DebugDraw(LayoutManager.DebugContent);
             }
         }
 
@@ -514,7 +518,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            Owner.LayoutManager.InvalidateArrange(this);
+            LayoutManager.InvalidateArrange(this);
         }
 
         /// <summary>
@@ -537,7 +541,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            Owner.LayoutManager.InvalidateMeasure(this);
+            LayoutManager.InvalidateMeasure(this);
         }
 
         /// <summary>
@@ -559,7 +563,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            Owner.LayoutManager.InvalidateSegment(this);
+            LayoutManager.InvalidateSegment(this);
         }
 
         /// <summary>
@@ -624,21 +628,21 @@ namespace Nebulae.RimWorld.UI.Controls
             if (parent is null)
             {
                 IsChild = false;
-                Owner = null;
+                LayoutManager = null;
                 Parent = null;
                 Rank = 0;
             }
             else
             {
                 IsChild = true;
-                Owner = parent.Owner;
+                LayoutManager = parent.LayoutManager;
                 Parent = parent;
                 Rank = parent.Rank + 1;
             }
 
             foreach (var child in LogicalChildren)
             {
-                child.Owner = _owner;
+                child.LayoutManager = _layoutManager;
                 child.Rank = child.Parent.Rank + 1;
             }
         }

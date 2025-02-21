@@ -48,13 +48,11 @@ namespace Nebulae.RimWorld.UI.Controls
                     throw new Exception($"{this}.AssociatedWindow cannot be null.");
                 }
 
-                try
+                _associatedWindow = Owner;
+
+                if (_associatedWindow is null)
                 {
-                    _associatedWindow = Owner;
-                }
-                catch (Exception e)
-                {
-                    new Exception($"{this}.AssociatedWindow cannot be null.", e);
+                    throw new Exception($"{this}.AssociatedWindow cannot be null.");
                 }
 
                 return _associatedWindow;

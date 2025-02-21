@@ -1,7 +1,9 @@
-﻿using Nebulae.RimWorld.UI.Windows;
+﻿using Nebulae.RimWorld.UI.Utilities;
+using Nebulae.RimWorld.UI.Windows;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
@@ -30,11 +32,130 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _isSegmentValid = false;
         private readonly SortedSet<Control> _segmentQueue = new SortedSet<Control>(ControlComparer.Instance);
 
-        private ControlWindow _owner;
+        private Window _owner;
         private Control _root;
+
+        private DebugContent _debugContent = DebugContent.Buttons;
 
         #endregion
 
+
+        //------------------------------------------------------
+        //
+        //  Public Properties
+        //
+        //------------------------------------------------------
+
+        #region Public Properties
+
+        /// <summary>
+        /// 要绘制的调试内容
+        /// </summary>
+        public DebugContent DebugContent
+        {
+            get => _debugContent;
+            set => _debugContent = value;
+        }
+
+        /// <summary>
+        /// 是否绘制调试用按钮
+        /// </summary>
+        public bool DebugDrawButtons
+        {
+            get => _debugContent.HasFlag(DebugContent.Buttons);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.Buttons;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.Buttons;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否绘制控件可见区域
+        /// </summary>
+        public bool DebugDrawContentRect
+        {
+            get => _debugContent.HasFlag(DebugContent.ContentRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.ContentRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.ContentRect;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否绘制控件布局区域
+        /// </summary>
+        public bool DebugDrawDesiredRect
+        {
+            get => _debugContent.HasFlag(DebugContent.DesiredRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.DesiredRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.DesiredRect;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否绘制可交互区域
+        /// </summary>
+        public bool DebugDrawHitTestRect
+        {
+            get => _debugContent.HasFlag(DebugContent.HitTestRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.HitTestRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.HitTestRect;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否绘制控件绘制区域
+        /// </summary>
+        public bool DebugDrawRenderRect
+        {
+            get => _debugContent.HasFlag(DebugContent.RenderRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.RenderRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.RenderRect;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 拥有该控件管理器的窗口
+        /// </summary>
+        public Window Owner => _owner;
 
         /// <summary>
         /// 获取或设置根控件
@@ -61,7 +182,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     }
 
                     _root.IsChild = false;
-                    _root.Owner = _owner;
+                    _root.LayoutManager = this;
                     _root.Parent = null;
                     _root.Rank = 0;
 
@@ -69,7 +190,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     {
                         try
                         {
-                            child.Owner = _owner;
+                            child.LayoutManager = this;
                             child.Rank = child.Parent.Rank + 1;
                         }
                         catch (Exception e)
@@ -81,14 +202,38 @@ namespace Nebulae.RimWorld.UI.Controls
             }
         }
 
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Constructors
+        //
+        //------------------------------------------------------
+
+        #region Constructors
 
         /// <summary>
         /// 初始化 <see cref="LayoutManager"/> 的新实例
         /// </summary>
-        public LayoutManager(ControlWindow owner)
+        public LayoutManager()
         {
+        }
+
+        /// <summary>
+        /// 初始化 <see cref="LayoutManager"/> 的新实例
+        /// </summary>
+        public LayoutManager(Window owner)
+        {
+            if (owner is null)
+            {
+                throw new ArgumentNullException(nameof(owner));
+            }
+
             _owner = owner;
         }
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -188,6 +333,32 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             _root.Draw();
+        }
+
+        /// <summary>
+        /// 绘制窗口调试按钮
+        /// </summary>
+        /// <param name="nonClientRect">窗口的非客户区</param>
+        public void DrawWindowDebugButtons(Rect nonClientRect)
+        {
+            if (Widgets.ButtonText(new Rect(
+                nonClientRect.x,
+                nonClientRect.y,
+                150f,
+                24f), "Debug: ForceLayout"))
+            {
+                InvalidateLayout();
+            }
+
+            if (Widgets.ButtonText(new Rect(
+                nonClientRect.x + 154f,
+                nonClientRect.y,
+                140f,
+                24f), "Debug: ShowInfo")
+                && !_isEmpty)
+            {
+                _root.ShowInfo();
+            }
         }
 
         /// <summary>

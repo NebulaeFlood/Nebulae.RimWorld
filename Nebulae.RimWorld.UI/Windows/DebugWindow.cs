@@ -16,15 +16,13 @@ namespace Nebulae.RimWorld.UI.Windows
     public sealed class DebugWindow : ControlWindow
     {
         private static readonly DebugWindow _instance;
-        private static readonly OptionPanel _optionPanel;
+        private static readonly InfoPanel _optionPanel;
 
 
         static DebugWindow()
         {
-            _optionPanel = new OptionPanel();
+            _optionPanel = new InfoPanel();
             _instance = new DebugWindow { Content = _optionPanel };
-
-            Windows.Remove(_instance);
         }
 
         private DebugWindow()
@@ -37,7 +35,7 @@ namespace Nebulae.RimWorld.UI.Windows
             layer = WindowLayer.Super;
 
             InitialWidth = 300f;
-            IsDebugWindow = true;
+            LayoutManager.DebugContent = DebugContent.Empty;
         }
 
 
@@ -48,30 +46,6 @@ namespace Nebulae.RimWorld.UI.Windows
         //------------------------------------------------------
 
         #region Public Method
-
-        /// <summary>
-        /// 显示所有的除了 <see cref="DebugWindow"/> 以外的 <see cref="ControlWindow"/> 的调试按钮
-        /// </summary>
-        [DebugAction("Nubulae's UI Control", "Show Debug Buttons", allowedGameStates = AllowedGameStates.Entry, displayPriority = 1)]
-        public static void DrawDebugButtons()
-        {
-            foreach (var window in Windows)
-            {
-                window.IsDebugWindow = false;
-            }
-        }
-
-        /// <summary>
-        /// 隐藏所有的除了 <see cref="DebugWindow"/> 以外的 <see cref="ControlWindow"/> 的调试按钮
-        /// </summary>
-        [DebugAction("Nubulae's UI Control", "Hide Debug Buttons", allowedGameStates = AllowedGameStates.Entry, displayPriority = 0)]
-        public static void HideDebugButtons()
-        {
-            foreach (var window in Windows)
-            {
-                window.IsDebugWindow = true;
-            }
-        }
 
         /// <inheritdoc/>
         public override void PostClose()
@@ -152,8 +126,16 @@ namespace Nebulae.RimWorld.UI.Windows
         }
 
 
-        private class OptionPanel : Control
+        private class InfoPanel : Control
         {
+            //------------------------------------------------------
+            //
+            //  Private Fields
+            //
+            //------------------------------------------------------
+
+            #region Private Fields
+
             private static readonly Color _backgroundColor = new Color(0.2f, 0.2f, 0.2f);
             private static readonly Color _backgroundBorderColor = new Color(0.6f, 0.6f, 0.6f);
 
@@ -161,12 +143,21 @@ namespace Nebulae.RimWorld.UI.Windows
             private readonly ScrollViewer _infoViewer;
             private readonly ScrollViewer _treeViewer;
 
+            private LayoutManager _sourceTree;
+
             private bool _initialized = false;
             private bool _sourceInLayoutTree;
-            private ControlWindow _sourceWindow;
+
+            private bool _sourceDrawButtons;
+            private bool _sourceDrawContentRect;
+            private bool _sourceDrawDesiredRect;
+            private bool _sourceDrawHitTestRect;
+            private bool _sourceDrawRenderRect;
+
+            #endregion
 
 
-            public OptionPanel()
+            public InfoPanel()
             {
                 _infoBox = new TextBlock
                 {
@@ -209,11 +200,7 @@ namespace Nebulae.RimWorld.UI.Windows
                 }
 
                 _sourceInLayoutTree = false;
-                _sourceWindow.DebugDrawContentRect = false;
-                _sourceWindow.DebugDrawDesiredRect = false;
-                _sourceWindow.DebugDrawHitTestRect = false;
-                _sourceWindow.DebugDrawRenderRect = false;
-                _sourceWindow = null;
+                _sourceTree = null;
             }
 
             public void SetInfo(Expander sender, Control content)
@@ -231,10 +218,16 @@ namespace Nebulae.RimWorld.UI.Windows
 
                 _initialized = true;
 
-                if (source.Owner is ControlWindow window)
+                if (source.LayoutManager is LayoutManager manager)
                 {
-                    _sourceWindow = window;
                     _sourceInLayoutTree = true;
+                    _sourceTree = manager;
+
+                    _sourceDrawButtons = manager.DebugDrawButtons;
+                    _sourceDrawContentRect = manager.DebugDrawContentRect;
+                    _sourceDrawDesiredRect = manager.DebugDrawDesiredRect;
+                    _sourceDrawHitTestRect = manager.DebugDrawHitTestRect;
+                    _sourceDrawRenderRect = manager.DebugDrawRenderRect;
                 }
                 else
                 {
@@ -284,21 +277,27 @@ namespace Nebulae.RimWorld.UI.Windows
                         var anchor = Text.Anchor;
                         Text.Anchor = TextAnchor.MiddleLeft;
 
-                        DrawCheckBox(checkBoxRect, "Hide Dbug Buttons", ref _sourceWindow.IsDebugWindow);
+                        DrawCheckBox(checkBoxRect, "Show Debug Buttons", ref _sourceDrawButtons);
                         checkBoxRect.y += 24f;
-                        DrawCheckBox(checkBoxRect, "Show HitBox Rect", ref _sourceWindow.DebugDrawHitTestRect);
+                        DrawCheckBox(checkBoxRect, "Show HitBox Rect", ref _sourceDrawHitTestRect);
                         checkBoxRect.y += 24f;
-                        DrawCheckBox(checkBoxRect, "Show Layout Rect", ref _sourceWindow.DebugDrawDesiredRect);
+                        DrawCheckBox(checkBoxRect, "Show Layout Rect", ref _sourceDrawDesiredRect);
                         checkBoxRect.y += 24f;
-                        DrawCheckBox(checkBoxRect, "Show Render Rect", ref _sourceWindow.DebugDrawRenderRect);
+                        DrawCheckBox(checkBoxRect, "Show Render Rect", ref _sourceDrawRenderRect);
                         checkBoxRect.y += 24f;
-                        DrawCheckBox(checkBoxRect, "Show Visible Rect", ref _sourceWindow.DebugDrawContentRect);
+                        DrawCheckBox(checkBoxRect, "Show Visible Rect", ref _sourceDrawContentRect);
 
                         Text.Anchor = anchor;
+
+                        _sourceTree.DebugDrawButtons = _sourceDrawButtons;
+                        _sourceTree.DebugDrawContentRect = _sourceDrawContentRect;
+                        _sourceTree.DebugDrawDesiredRect = _sourceDrawDesiredRect;
+                        _sourceTree.DebugDrawHitTestRect = _sourceDrawHitTestRect;
+                        _sourceTree.DebugDrawRenderRect = _sourceDrawRenderRect;
                     }
                     else
                     {
-                        DrawEntry(checkBoxRect, "Hide Dbug Buttons");
+                        DrawEntry(checkBoxRect, "Show Debug Buttons");
                         checkBoxRect.y += 24f;
                         DrawEntry(checkBoxRect, "Show HitBox Rect");
                         checkBoxRect.y += 24f;
