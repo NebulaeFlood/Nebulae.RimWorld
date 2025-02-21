@@ -37,7 +37,7 @@ namespace Nebulae.RimWorld.UI.Windows
         #endregion
 
 
-        internal static readonly WeakCollection<ControlWindow> Windows = new WeakCollection<ControlWindow>();
+        internal static readonly WeakSet<ControlWindow> Windows = new WeakSet<ControlWindow>();
         internal readonly LayoutManager LayoutManager;
 
 
