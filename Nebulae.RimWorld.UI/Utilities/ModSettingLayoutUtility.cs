@@ -2,6 +2,7 @@
 using Nebulae.RimWorld.UI.Converters;
 using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Data.Binding;
+using Nebulae.RimWorld.Utilities;
 using System;
 using UnityEngine;
 using Verse;
