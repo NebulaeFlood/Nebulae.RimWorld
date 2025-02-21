@@ -102,7 +102,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         ~BindingBase()
 #pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
         {
-            System.Diagnostics.Debug.WriteLine($"A {Mode} Binding from [{SourceMember.GetHashCode()}]{_sourceType}.{_sourcePath} to [{TargetMember.GetHashCode()}]{_targetType}.{_targetPath} is being collected.");
+            System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A {Mode} Binding from [{SourceMember.GetHashCode()}]{_sourceType}.{_sourcePath} to [{TargetMember.GetHashCode()}]{_targetType}.{_targetPath} has been collected.");
         }
 #endif
 

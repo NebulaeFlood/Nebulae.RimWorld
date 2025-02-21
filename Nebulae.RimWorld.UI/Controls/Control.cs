@@ -382,6 +382,23 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
+#if DEBUG
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        ~Control()
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        {
+            if (string.IsNullOrWhiteSpace(_name))
+            {
+                System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A control of type {Type} has been collected.");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A control named {_name} of type {Type} has been collected.");
+            }
+        }
+#endif
+
+
         //------------------------------------------------------
         //
         //  Public Methods

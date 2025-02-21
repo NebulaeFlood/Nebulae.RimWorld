@@ -188,6 +188,15 @@ namespace Nebulae.RimWorld.UI.Windows
         protected override sealed float Margin => 0f;
 
 
+#if DEBUG
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        ~ControlWindow()
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        {
+            System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A window of type {GetType()} has been collected.");
+        }
+#endif
+
         /// <summary>
         /// 初始化 <see cref="ControlWindow"/> 的新实例
         /// </summary>
