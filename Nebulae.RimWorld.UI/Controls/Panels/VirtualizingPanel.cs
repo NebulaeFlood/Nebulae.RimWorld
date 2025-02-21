@@ -8,7 +8,8 @@
         /// <inheritdoc/>
         protected override bool IsDrawable(Control child)
         {
-            return base.IsDrawable(child)
+            return child.RenderSize.Height > float.Epsilon
+                && child.RenderSize.Width > float.Epsilon
                 && ContentRect.Overlaps(child.RenderRect);
         }
     }

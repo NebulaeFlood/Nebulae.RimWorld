@@ -43,12 +43,12 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <see cref="Panel"/> 包含的子控件
         /// </summary>
         /// <remarks>对于 <see cref="Grid"/>，部分项可能为 <see langword="null"/>。</remarks>
-        protected PanelChildrenCollection Children => _children;
+        protected internal PanelChildrenCollection Children => _children;
 
         /// <summary>
         /// <see cref="Filter"/> 过滤后的子控件
         /// </summary>
-        internal protected Control[] FilteredChildren
+        protected internal Control[] FilteredChildren
         {
             get
             {
@@ -57,7 +57,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     return _filteredChildren;
                 }
 
-                _filteredChildren = FindFilteredChildren().ToArray();
+                _filteredChildren = FindFilteredChildren();
                 _isFilteredChildrenValid = true;
                 return _filteredChildren;
             }
@@ -71,9 +71,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// 获取或设置子控件过滤器
         /// </summary>
-        public Func<Control, bool> Filter
+        public Predicate<Control> Filter
         {
-            get { return (Func<Control, bool>)GetValue(FilterProperty); }
+            get { return (Predicate<Control>)GetValue(FilterProperty); }
             set { SetValue(FilterProperty, value); }
         }
 
@@ -81,7 +81,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 标识 <see cref="Filter"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty FilterProperty =
-            DependencyProperty.Register(nameof(Filter), typeof(Func<Control, bool>), typeof(Panel),
+            DependencyProperty.Register(nameof(Filter), typeof(Predicate<Control>), typeof(Panel),
                 new ControlPropertyMetadata(null, OnFilterChanged, ControlRelation.Measure));
 
         private static void OnFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -143,6 +143,15 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         #endregion
 
 
+        internal void ClearInternal()
+        {
+            _drawableChildren = Array.Empty<Control>();
+            _filteredChildren = Array.Empty<Control>();
+
+            InvalidateFilter();
+        }
+
+
         //------------------------------------------------------
         //
         //  Protected Methods
@@ -172,7 +181,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             if (!_isDrawableChildrenValid)
             {
                 _drawableChildren = FindDrawableChildren().ToArray();
-
                 _isDrawableChildrenValid = true;
             }
 
@@ -185,10 +193,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected internal override IEnumerable<Control> EnumerateLogicalChildren()
         {
-            foreach (var item in _children)
-            {
-                yield return item;
-            }
+            return _children;
         }
 
         /// <summary>
@@ -205,8 +210,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected sealed override Size MeasureCore(Size availableSize)
         {
-            _isDrawableChildrenValid = false;
-
             return MeasureOverride(base.MeasureCore(availableSize));
         }
 
@@ -251,7 +254,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <returns>当前条件下可以被绘制的子控件</returns>
         private IEnumerable<Control> FindDrawableChildren()
         {
-            Control[] filteredChildren = FilteredChildren;
+            var filteredChildren = FilteredChildren;
+
             for (int i = 0; i < filteredChildren.Length; i++)
             {
                 if (IsDrawable(filteredChildren[i]))
@@ -265,26 +269,17 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 查找 <see cref="Filter"/> 过滤后的子控件
         /// </summary>
         /// <returns><see cref="Filter"/> 过滤后的子控件</returns>
-        private IEnumerable<Control> FindFilteredChildren()
+        private Control[] FindFilteredChildren()
         {
-            Func<Control, bool> filter = Filter;
+            var filter = Filter;
 
             if (filter is null)
             {
-                foreach (var child in _children)
-                {
-                    yield return child;
-                }
+                return _children.ToArray();
             }
             else
             {
-                foreach (var child in _children)
-                {
-                    if (filter.Invoke(child))
-                    {
-                        yield return child;
-                    }
-                }
+                return _children.FindAll(filter).ToArray();
             }
         }
 

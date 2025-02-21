@@ -26,6 +26,12 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
 
         /// <summary>
+        /// 获取集合中的控件数
+        /// </summary>
+        public int Count => _children.Count;
+
+
+        /// <summary>
         /// 初始化 <see cref="PanelChildrenCollection"/> 的新实例
         /// </summary>
         /// <param name="panel">拥有此集合的 <see cref="Panel"/></param>
@@ -73,7 +79,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             _children.Clear();
             _children.TrimExcess();
-            _owner.InvalidateFilter();
+            _owner.ClearInternal();
         }
 
         /// <summary>
@@ -84,6 +90,16 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         public bool Contains(Control control)
         {
             return _children.Contains(control);
+        }
+
+        /// <summary>
+        /// 获取集合中满足指定条件的所有控件
+        /// </summary>
+        /// <param name="match">判断条件</param>
+        /// <returns>集合中满足指定条件的所有控件。</returns>
+        public List<Control> FindAll(Predicate<Control> match)
+        {
+            return _children.FindAll(match);
         }
 
         /// <summary>
@@ -165,6 +181,12 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             }
             return false;
         }
+
+        /// <summary>
+        /// 将集合中的控件复制到新数组
+        /// </summary>
+        /// <returns>包含集合中的控件副本的数组。</returns>
+        public Control[] ToArray() => _children.ToArray();
 
         #endregion
 

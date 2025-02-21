@@ -1,6 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Windows;
-using Nebulae.RimWorld.WeakEventManagers;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -88,7 +87,7 @@ namespace Nebulae.RimWorld.UI
             /// </summary>
             /// <param name="mod">设置被更新的 Mod</param>
             /// <param name="settings">新的设置内容</param>
-            public void Invoke(Mod mod, T settings)
+            internal void Invoke(Mod mod, T settings)
             {
                 var subscribers = GetSubcribers();
 

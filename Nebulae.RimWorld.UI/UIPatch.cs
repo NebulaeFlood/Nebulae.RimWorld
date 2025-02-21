@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using Nebulae.RimWorld.WeakEventManagers;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -74,7 +73,7 @@ namespace Nebulae.RimWorld.UI
         /// 调用所有订阅者的事件处理方法
         /// </summary>
         /// <param name="eventType">事件类型</param>
-        public void Invoke(UIEventType eventType)
+        internal void Invoke(UIEventType eventType)
         {
             var subscribers = GetSubcribers();
 

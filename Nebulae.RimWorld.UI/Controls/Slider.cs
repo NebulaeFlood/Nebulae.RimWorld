@@ -1,6 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
-using Nebulae.RimWorld.Utilities;
 using UnityEngine;
 using Verse;
 
@@ -144,7 +143,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return availableRect;
             }
 
-            float leftMargin = _minimun.ToString().CalculateLength(GameFont.Tiny) + 2f;
+            float leftMargin = _minimun.ToString().CalculateLength(GameFont.Tiny) + 6f;
             float rightMargin = _maximun.ToString().CalculateLength(GameFont.Tiny) + 6f;
 
             Size sliderSize = new Size(availableRect.width - leftMargin - rightMargin, SliderHeight);
