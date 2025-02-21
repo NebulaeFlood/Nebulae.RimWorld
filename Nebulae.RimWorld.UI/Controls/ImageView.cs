@@ -8,6 +8,26 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class ImageView : FrameworkControl
     {
+        private Color _compositionColor = Color.white;
+
+
+        //------------------------------------------------------
+        //
+        //  Public Properties
+        //
+        //------------------------------------------------------
+
+        #region Public Properties
+
+        /// <summary>
+        /// 图片混合色
+        /// </summary>
+        public Color CompositionColor
+        {
+            get => _compositionColor;
+            set => _compositionColor = value;
+        }
+
         #region ImageSource
         /// <summary>
         /// 获取或设置图片源
@@ -44,6 +64,9 @@ namespace Nebulae.RimWorld.UI.Controls
                 new ControlPropertyMetadata(ScaleMode.ScaleToFit, ControlRelation.Measure));
         #endregion
 
+        #endregion
+
+
 
         /// <summary>
         /// 初始化 <see cref="ImageView"/> 的新实例
@@ -64,9 +87,18 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override void DrawCore()
         {
-            if (ImageSource != null)
+            if (ImageSource is Texture2D image)
             {
-                GUI.DrawTexture(RenderRect, ImageSource, ScaleMode);
+                Color color = GUI.color;
+                Color compositionColor = new Color(
+                    _compositionColor.r,
+                    _compositionColor.g,
+                    _compositionColor.b,
+                    _compositionColor.a * color.a);
+
+                GUI.color = compositionColor;
+                GUI.DrawTexture(RenderRect, image, ScaleMode);
+                GUI.color = color;
             }
         }
 
