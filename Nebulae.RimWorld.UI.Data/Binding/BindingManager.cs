@@ -304,9 +304,25 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <param name="obj">要取消绑定关系的对象</param>
         public static void Unbind(object obj)
         {
-            GlobalBindings.RemoveWhere(x =>
-                ReferenceEquals(x.SourceMember.AssociatedObject, obj)
-                || ReferenceEquals(x.TargetMember.AssociatedObject, obj));
+            var anyUnbinded = false;
+            var bindings = GlobalBindings.ToArray();
+
+            for (int i = 0; i < bindings.Length; i++)
+            {
+                var binding = bindings[i];
+
+                if (ReferenceEquals(binding.SourceMember.AssociatedObject, obj)
+                    || ReferenceEquals(binding.TargetMember.AssociatedObject, obj))
+                {
+                    binding.Unbind();
+                    anyUnbinded = true;
+                }
+            }
+
+            if (anyUnbinded)
+            {
+                GlobalBindings.TrimExcess();
+            }
         }
 
 
