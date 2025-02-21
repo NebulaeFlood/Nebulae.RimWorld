@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.Utilities
@@ -12,34 +13,59 @@ namespace Nebulae.RimWorld.Utilities
     public static class AwaitUtility
     {
         /// <summary>
-        /// 等待游戏结束暂停
+        /// 等待指定秒
         /// </summary>
-        public static async void WaitUntilUnpaused()
+        /// <param name="seconds">要等待秒数</param>
+        /// <param name="useGameTickRate">等待时间是否受游戏速度影响</param>
+        /// <remarks>当 <paramref name="useGameTickRate"/> 为 <see langword="true"/> 时，等待时间仅受开始等待时的游戏速度影响。</remarks>
+        public static async Task WaitForSecondsAsync(float seconds, bool useGameTickRate = true)
         {
-            await Task.Run(() =>
+            if (useGameTickRate)
             {
-                while (Find.TickManager.Paused)
-                {
-                    Thread.Sleep(60);
-                }
-            });
+                await Task.Delay((seconds / Find.TickManager.TickRateMultiplier)
+                    .SecondsToTicks());
+            }
+            else
+            {
+                await Task.Delay(seconds.SecondsToTicks());
+            }
+        }
+
+        /// <summary>
+        /// 等待指定 Tick 数
+        /// </summary>
+        /// <param name="ticks">要等待的 Tick 数</param>
+        /// <param name="useGameTickRate">等待时间是否受游戏速度影响</param>
+        /// <remarks>当 <paramref name="useGameTickRate"/> 为 <see langword="true"/> 时，等待时间仅受开始等待时的游戏速度影响。</remarks>
+        public static async Task WaitForTicksAsync(int ticks, bool useGameTickRate = true)
+        {
+            if (useGameTickRate)
+            {
+                await Task.Delay(
+                    Mathf.RoundToInt(
+                        Mathf.RoundToInt((ticks / Find.TickManager.TickRateMultiplier) * 1000f)
+                            .TicksToSeconds()));
+            }
+            else
+            {
+                await Task.Delay(Mathf.RoundToInt(ticks.TicksToSeconds() * 1000f));
+            }
         }
 
         /// <summary>
         /// 等待游戏结束暂停
         /// </summary>
-        /// <param name="onGameUnpaused">游戏接触暂停时执行的操作</param>
-        public static async void WaitUntilUnpaused(Action onGameUnpaused)
+        public static async Task WaitForUnpauseAsync()
         {
-            await Task.Run(() =>
+            if (!Find.TickManager.Paused)
             {
-                while (Find.TickManager.Paused)
-                {
-                    Thread.Sleep(60);
-                }
-            });
+                return;
+            }
 
-            onGameUnpaused.Invoke();
+            while (Find.TickManager.Paused)
+            {
+                await Task.Delay(60);
+            }
         }
     }
 }
