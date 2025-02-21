@@ -67,7 +67,7 @@ namespace Nebulae.RimWorld.UI
         public sealed override string SettingsCategory() => CategoryLabel;
 
         /// <inheritdoc/>
-        public void UIEventHandler(UIEventType type)
+        public virtual void HandleUIEvent(UIEventType type)
         {
             if (type is UIEventType.LanguageChanged)
             {

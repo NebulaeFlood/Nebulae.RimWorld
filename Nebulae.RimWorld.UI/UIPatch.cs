@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using Nebulae.RimWorld.WeakEventManagers;
-using System;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -58,7 +57,7 @@ namespace Nebulae.RimWorld.UI
         /// 原版 UI 事件的处理器
         /// </summary>
         /// <param name="type">UI 事件的类型</param>
-        void UIEventHandler(UIEventType type);
+        void HandleUIEvent(UIEventType type);
     }
 
 
@@ -81,7 +80,7 @@ namespace Nebulae.RimWorld.UI
 
             for (int i = 0; i < subscribers.Length; i++)
             {
-                subscribers[i].UIEventHandler(eventType);
+                subscribers[i].HandleUIEvent(eventType);
             }
         }
     }

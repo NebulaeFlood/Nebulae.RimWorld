@@ -241,7 +241,6 @@ namespace Nebulae.RimWorld.UI.Utilities
             GUI.color = currentColor;
         }
 
-
         /// <summary>
         /// 计算两个矩形的交集
         /// </summary>

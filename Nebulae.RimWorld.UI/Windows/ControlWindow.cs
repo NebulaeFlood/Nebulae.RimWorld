@@ -1,5 +1,4 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
-using Nebulae.RimWorld.UI.Utilities;
 using System;
 using UnityEngine;
 using Verse;
@@ -235,7 +234,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
             _layoutManager.Draw(inRect);
 
-            if (Prefs.DevMode 
+            if (Prefs.DevMode
                 && _layoutManager.DebugDrawButtons)
             {
                 _layoutManager.DrawWindowDebugButtons(_nonClientRect);
