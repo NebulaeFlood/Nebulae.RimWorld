@@ -58,7 +58,7 @@ namespace Nebulae.RimWorld.UI.Windows
             foreach (var window in Windows)
             {
                 window.IsDebugWindow = false;
-        }
+            }
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Nebulae.RimWorld.UI.Windows
             foreach (var window in Windows)
             {
                 window.IsDebugWindow = true;
-        }
+            }
         }
 
         /// <inheritdoc/>
@@ -115,6 +115,7 @@ namespace Nebulae.RimWorld.UI.Windows
                     GenerateInfoLine("RenderRect", source.RenderRect) +
                     GenerateInfoLine("DesiredRect", source.DesiredRect) +
                     GenerateInfoLine("ContentRect", source.ContentRect) +
+                    (source is Panel panel ? GenerateInfoLine("ChildrenCount", panel.Children.Count) : string.Empty) +
                     GenerateInfoLine("Visibility", source.Visibility) +
                     GenerateInfoLine("IsArrangeValid", source.IsArrangeValid) +
                     GenerateInfoLine("IsMeasureValid", source.IsMeasureValid) +
@@ -127,14 +128,14 @@ namespace Nebulae.RimWorld.UI.Windows
 
             if (children.Any())
             {
-                var panel = new VirtualizingStackPanel { ChildMaxHeight = float.PositiveInfinity };
+                var contentPanel = new VirtualizingStackPanel { ChildMaxHeight = float.PositiveInfinity };
 
                 foreach (var child in source.EnumerateLogicalChildren())
                 {
-                    panel.Append(GenerateTreeInfo(child));
+                    contentPanel.Append(GenerateTreeInfo(child));
                 }
 
-                node.Content = panel;
+                node.Content = contentPanel;
             }
 
             return node;
