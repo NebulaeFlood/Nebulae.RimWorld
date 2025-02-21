@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Nebulae.RimWorld
 {
     /// <summary>
-    /// 弱引用集合
+    /// 弱引用集合，其中的对象不会重复
     /// </summary>
     /// <typeparam name="T">存储的对象类型</typeparam>
     /// <remarks>无法存放为 <see langword="null"/> 的对象。</remarks>
-    public class WeakCollection<T> : IEnumerable<T>, IWeakCollection where T : class
+    public class WeakSet<T> : IEnumerable<T>, IWeakCollection where T : class
     {
-        private readonly List<WeakReference<T>> _items;
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        private readonly HashSet<Entry> _items;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly WeakReference _obsoletedItem = new WeakReference(new object());
 
 
@@ -40,32 +45,32 @@ namespace Nebulae.RimWorld
         #region Constructors
 
         /// <summary>
-        /// 初始化 <see cref="WeakCollection{T}"/> 的新实例
+        /// 初始化 <see cref="WeakSet{T}"/> 的新实例
         /// </summary>
-        public WeakCollection()
+        public WeakSet()
         {
-            _items = new List<WeakReference<T>>();
+            _items = new HashSet<Entry>();
         }
 
         /// <summary>
-        /// 初始化 <see cref="WeakCollection{T}"/> 的新实例
+        /// 初始化 <see cref="WeakSet{T}"/> 的新实例
         /// </summary>
         /// <param name="capcity">集合的初始容量</param>
-        public WeakCollection(int capcity)
+        public WeakSet(int capcity)
         {
-            _items = new List<WeakReference<T>>(capcity);
+            _items = new HashSet<Entry>(capcity);
         }
 
         /// <summary>
-        /// 初始化 <see cref="WeakCollection{T}"/> 的新实例
+        /// 初始化 <see cref="WeakList{T}"/> 的新实例
         /// </summary>
         /// <param name="items">集合的初始元素</param>
-        public WeakCollection(IEnumerable<T> items)
+        public WeakSet(IEnumerable<T> items)
         {
-            _items = new List<WeakReference<T>>(
+            _items = new HashSet<Entry>(
                 from item in items
                 where item != null
-                select new WeakReference<T>(item));
+                select new Entry(item));
         }
 
         #endregion
@@ -92,7 +97,7 @@ namespace Nebulae.RimWorld
                 return;
             }
 
-            _items.Add(new WeakReference<T>(item));
+            _items.Add(new Entry(item));
         }
 
         /// <summary>
@@ -117,31 +122,7 @@ namespace Nebulae.RimWorld
                 return false;
             }
 
-            return _items.FindIndex(x =>
-                x.TryGetTarget(out T target)
-                && ReferenceEquals(target, item)) >= 0;
-        }
-
-        /// <summary>
-        /// 对集合中的每个对象执行指定操作
-        /// </summary>
-        /// <param name="action">要执行的操作</param>
-        public void ForEach(Action<T> action)
-        {
-            PrivatePurge();
-
-            if (action is null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < _items.Count; i++)
-            {
-                if (_items[i].TryGetTarget(out T target))
-                {
-                    action(target);
-                }
-            }
+            return _items.TryGetValue(new Entry(item), out _);
         }
 
 
@@ -168,7 +149,7 @@ namespace Nebulae.RimWorld
         /// </summary>
         public void Purge()
         {
-            if (_items.RemoveAll(x => !x.TryGetTarget(out _)) > 0)
+            if (_items.RemoveWhere(x => !x.TryGetTarget(out _)) > 0)
             {
                 _items.TrimExcess();
             }
@@ -188,18 +169,7 @@ namespace Nebulae.RimWorld
                 return false;
             }
 
-            int index = _items.FindIndex(x =>
-                x.TryGetTarget(out T target)
-                && ReferenceEquals(target, item));
-
-            if (index < 0)
-            {
-                return false;
-            }
-
-            _items.RemoveAt(index);
-
-            return true;
+            return _items.Remove(new Entry(item));
         }
 
         #endregion
@@ -226,6 +196,63 @@ namespace Nebulae.RimWorld
             Purge();
 
             _obsoletedItem.Target = new object();
+        }
+
+
+        /// <summary>
+        /// 集合的条目
+        /// </summary>
+        private readonly struct Entry : IEquatable<Entry>
+        {
+            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+            private readonly int _hashCode;
+            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+            private readonly WeakReference<T> _reference;
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            internal T Value => _reference.TryGetTarget(out T target) ? target : null;
+
+
+            /// <summary>
+            /// 初始化 <see cref="Entry"/> 的新实例
+            /// </summary>
+            /// <param name="target"></param>
+            internal Entry(T target)
+            {
+                _reference = new WeakReference<T>(target);
+                _hashCode = target.GetHashCode();
+            }
+
+
+            public bool Equals(Entry other)
+            {
+                if (_reference.TryGetTarget(out T targetA) && _reference.TryGetTarget(out T targetB))
+                {
+                    return ReferenceEquals(targetA, targetB);
+                }
+                return !_reference.TryGetTarget(out T _) && !other._reference.TryGetTarget(out T _);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj is Entry other)
+                {
+                    if (_reference.TryGetTarget(out T targetA) && _reference.TryGetTarget(out T targetB))
+                    {
+                        return ReferenceEquals(targetA, targetB);
+                    }
+                    return !_reference.TryGetTarget(out T _) && !other._reference.TryGetTarget(out T _);
+                }
+                return false;
+            }
+
+            public override int GetHashCode() => _hashCode;
+
+
+            public bool TryGetTarget(out T target)
+            {
+                return _reference.TryGetTarget(out target);
+            }
         }
     }
 }
