@@ -296,6 +296,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                     binding.Unbind();
                 }
             }
+
+            GlobalBindings.TrimExcess();
         }
 
         /// <summary>
