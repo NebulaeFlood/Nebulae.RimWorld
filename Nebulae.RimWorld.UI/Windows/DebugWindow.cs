@@ -55,7 +55,10 @@ namespace Nebulae.RimWorld.UI.Windows
         [DebugAction("Nubulae's UI Control", "Show Debug Buttons", allowedGameStates = AllowedGameStates.Entry, displayPriority = 1)]
         public static void DrawDebugButtons()
         {
-            Windows.ForEach(x => x.IsDebugWindow = false);
+            foreach (var window in Windows)
+            {
+                window.IsDebugWindow = false;
+        }
         }
 
         /// <summary>
@@ -64,7 +67,10 @@ namespace Nebulae.RimWorld.UI.Windows
         [DebugAction("Nubulae's UI Control", "Hide Debug Buttons", allowedGameStates = AllowedGameStates.Entry, displayPriority = 0)]
         public static void HideDebugButtons()
         {
-            Windows.ForEach(x => x.IsDebugWindow = true);
+            foreach (var window in Windows)
+            {
+                window.IsDebugWindow = true;
+        }
         }
 
         /// <inheritdoc/>
