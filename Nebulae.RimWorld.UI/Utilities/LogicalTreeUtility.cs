@@ -1,6 +1,8 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Data.Binding;
 using Nebulae.RimWorld.UI.Windows;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nebulae.RimWorld.UI.Utilities
 {
@@ -10,6 +12,23 @@ namespace Nebulae.RimWorld.UI.Utilities
     /// </summary>
     public static class LogicalTreeUtility
     {
+        /// <summary>
+        /// 获取控件树上的所有控件
+        /// </summary>
+        /// <param name="manager">控件树</param>
+        /// <returns>控件树上的所有控件。</returns>
+        public static IEnumerable<Control> GetLogicalChildren(this LayoutManager manager)
+        {
+            if (manager.Root is Control control)
+            {
+                return control.LogicalChildren;
+            }
+            else
+            {
+                return Enumerable.Empty<Control>();
+            }
+        }
+
         /// <summary>
         /// 判断指定控件是否为该控件的父控件
         /// </summary>
@@ -55,6 +74,40 @@ namespace Nebulae.RimWorld.UI.Utilities
             foreach (var child in root.LogicalChildren)
             {
                 BindingManager.Unbind(child);
+            }
+        }
+
+        /// <summary>
+        /// 解除控件树上的所有绑定关系
+        /// </summary>
+        /// <param name="manager">目标控件树</param>
+        public static void Unbind(this LayoutManager manager)
+        {
+            if (manager.Root is Control root)
+            {
+                BindingManager.Unbind(root);
+
+                foreach (var child in root.LogicalChildren)
+                {
+                    BindingManager.Unbind(child);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 解除窗口的控件树上的所有绑定关系
+        /// </summary>
+        /// <param name="window">目标窗口</param>
+        public static void Unbind(this ControlWindow window)
+        {
+            if (window.Content is Control root)
+            {
+                BindingManager.Unbind(root);
+
+                foreach (var child in root.LogicalChildren)
+                {
+                    BindingManager.Unbind(child);
+                }
             }
         }
     }
