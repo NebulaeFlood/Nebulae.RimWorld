@@ -60,6 +60,11 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         public static T Settings => _settings;
 
+        /// <summary>
+        /// Mod 设置窗口
+        /// </summary>
+        public static ModSettingWindow SettingWindow => _settingWindow;
+
 
         /// <summary>
         /// 为 <see cref="NebulaeMod{T}"/> 及其派生类实现基本初始化
