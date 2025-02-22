@@ -194,7 +194,7 @@ namespace Nebulae.RimWorld.UI.Controls
                         }
                         catch (Exception e)
                         {
-                            throw new LogicalTreeException(child, "[NebulaeFlood's Lib] A error occured when setting the root of a layout tree, please check that the parent-child relationship between controls has been set correctly.", e);
+                            throw new LogicalTreeException(child, "A error occured when setting the root of a layout tree, please check that the parent-child relationship between controls has been set correctly.", e);
                         }
                     }
                 }
@@ -384,7 +384,7 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else if (control.Parent is ScrollViewer viewer)
             {
-                if (viewer.IsArrangeValid)
+                if (!IsInfected(viewer, _arrangeQueue))
                 {
                     if (_arrangeQueue.Count > 0)
                     {
@@ -394,7 +394,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     _arrangeQueue.Add(viewer);
                 }
 
-                if (viewer.IsSegmentValid)
+                if (!IsInfected(viewer, _segmentQueue))
                 {
                     if (_segmentQueue.Count > 0)
                     {
@@ -438,7 +438,7 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else if (control.Parent is ScrollViewer viewer)
             {
-                if (viewer.IsMeasureValid)
+                if (!IsInfected(viewer, _measureQueue))
                 {
                     if (_measureQueue.Count > 0)
                     {
@@ -448,7 +448,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     _measureQueue.Add(viewer);
                 }
 
-                if (viewer.IsArrangeValid)
+                if (!IsInfected(viewer, _arrangeQueue))
                 {
                     if (_arrangeQueue.Count > 0)
                     {
@@ -458,7 +458,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     _arrangeQueue.Add(viewer);
                 }
 
-                if (viewer.IsSegmentValid)
+                if (!IsInfected(viewer, _segmentQueue))
                 {
                     if (_segmentQueue.Count > 0)
                     {
@@ -500,7 +500,7 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else if (control.Parent is ScrollViewer viewer)
             {
-                if (viewer.IsSegmentValid)
+                if (!IsInfected(viewer, _segmentQueue))
                 {
                     if (_segmentQueue.Count > 0)
                     {
@@ -535,7 +535,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return true;
             }
 
-            return IsInfected(control, _arrangeQueue);
+            return !IsInfected(control, _arrangeQueue);
         }
 
         /// <summary>
@@ -555,7 +555,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return true;
             }
 
-            return IsInfected(control, _measureQueue);
+            return !IsInfected(control, _measureQueue);
         }
 
         /// <summary>
@@ -575,7 +575,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return true;
             }
 
-            return IsInfected(control, _segmentQueue);
+            return !IsInfected(control, _segmentQueue);
         }
 
         #endregion
