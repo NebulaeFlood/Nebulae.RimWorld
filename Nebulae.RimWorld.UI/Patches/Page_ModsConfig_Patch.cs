@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Nebulae.RimWorld.Utilities;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -22,11 +23,9 @@ namespace Nebulae.RimWorld.UI.Patches
             {
                 var code = codes[i];
 
-                if (patched)
-                {
-                    yield return code;
-                }
-                else if (code.opcode == OpCodes.Ldstr && code.operand is "ModOptions")
+                if (!patched
+                    && code.opcode == OpCodes.Ldstr 
+                    && code.operand is "ModOptions")
                 {
                     yield return codes[i++];
                     yield return codes[i++];
@@ -47,6 +46,11 @@ namespace Nebulae.RimWorld.UI.Patches
                     yield return code;
                 }
             }
+
+            if (!patched)
+            {
+                "NebulaeFlood's Lib".Error($"Failed to patch method: {typeof(Page_ModsConfig)}.DoModInfo");
+            }
         }
 
         private static Action CreateDelegate(Mod mod)
@@ -55,9 +59,9 @@ namespace Nebulae.RimWorld.UI.Patches
             {
                 Window settingWindow;
 
-                if (mod is NebulaeModBase nebulaeMod)
+                if (mod is INebulaeMod nebulaeMod)
                 {
-                    settingWindow = nebulaeMod.SettingWindow;
+                    settingWindow = nebulaeMod.GetSettingWindow();
                 }
                 else
                 {

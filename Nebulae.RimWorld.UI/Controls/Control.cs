@@ -510,15 +510,13 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
-            _isArrangeValid = false;
-            _isSegmentValid = false;
-
-            if (_isIndependent)
+            if (!_isIndependent)
             {
-                return;
+                LayoutManager.InvalidateArrange(this);
             }
 
-            LayoutManager.InvalidateArrange(this);
+            _isArrangeValid = false;
+            _isSegmentValid = false;
         }
 
         /// <summary>
@@ -532,16 +530,14 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
+            if (!_isIndependent)
+            {
+                LayoutManager.InvalidateMeasure(this);
+            }
+
             _isArrangeValid = false;
             _isMeasureValid = false;
             _isSegmentValid = false;
-
-            if (_isIndependent)
-            {
-                return;
-            }
-
-            LayoutManager.InvalidateMeasure(this);
         }
 
         /// <summary>
@@ -554,16 +550,14 @@ namespace Nebulae.RimWorld.UI.Controls
             if (!_isSegmentValid)
             {
                 return;
+            }        
+
+            if (!_isIndependent)
+            {
+                LayoutManager.InvalidateSegment(this);
             }
 
             _isSegmentValid = false;
-
-            if (_isIndependent)
-            {
-                return;
-            }
-
-            LayoutManager.InvalidateSegment(this);
         }
 
         /// <summary>

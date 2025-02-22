@@ -1,10 +1,24 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.UI.Windows;
 using Nebulae.RimWorld.WeakEventManagers;
+using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
 {
+    /// <summary>
+    /// 定义一个使用 <see cref="Control"/> 作为设置窗口的 Mod
+    /// </summary>
+    public interface INebulaeMod 
+    {
+        /// <summary>
+        /// 获取设置窗口
+        /// </summary>
+        /// <returns>Mod 的设置窗口</returns>
+        ModSettingWindow GetSettingWindow();
+    }
+
     /// <summary>
     /// 定义一个 Mod 设置事件的订阅者
     /// </summary>
@@ -24,10 +38,17 @@ namespace Nebulae.RimWorld.UI
     /// 使用 <see cref="Control"/> 作为设置窗口的内容的 Mod 基类
     /// </summary>
     /// <typeparam name="T">Mod 设置类的类型</typeparam>
-    public abstract class NebulaeMod<T> : NebulaeModBase where T : ModSettings, new()
+    public abstract class NebulaeMod<T> : Mod, INebulaeMod, IUIEventListener
+        where T : ModSettings, new()
     {
         private static T _settings;
+        private static ModSettingWindow _settingWindow;
 
+
+        /// <summary>
+        /// 显示在 Mod 选项的标签名称
+        /// </summary>
+        public abstract string CategoryLabel { get; }
 
         /// <summary>
         /// Mod 设置事件管理器
@@ -47,8 +68,55 @@ namespace Nebulae.RimWorld.UI
         protected NebulaeMod(ModContentPack content) : base(content)
         {
             _settings = GetSettings<T>();
+
+            StartUpQuestManager.AddQuest(InitializeSettingWindow);
         }
 
+
+        //------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Methods
+
+        /// <summary>
+        /// 在窗口控件上方绘制的内容
+        /// </summary>
+        /// <param name="clientRect">允许绘制的区域</param>
+        public override void DoSettingsWindowContents(Rect clientRect) { }
+
+        /// <inheritdoc/>
+        public ModSettingWindow GetSettingWindow() => _settingWindow;
+
+        /// <inheritdoc/>
+        public virtual void HandleUIEvent(UIEventType type)
+        {
+            if (type is UIEventType.LanguageChanged)
+            {
+                InitializeSettingWindow();
+            }
+        }
+
+        /// <summary>
+        /// 初始化设置窗口
+        /// </summary>
+        public void InitializeSettingWindow()
+        {
+            if (_settingWindow != null)
+            {
+                _settingWindow.Unbind();
+            }
+
+            _settingWindow = CreateSettingWindow();
+            _settingWindow.Content = CreateContent();
+        }
+
+        /// <summary>
+        /// 显示在 Mod 选项的标签名称
+        /// </summary>
+        public sealed override string SettingsCategory() => CategoryLabel;
 
         /// <summary>
         /// 保存 Mos 设置
@@ -59,19 +127,30 @@ namespace Nebulae.RimWorld.UI
             SettingsEvent.Invoke(this, _settings);
         }
 
+        #endregion
 
-        /// <inheritdoc/>
-        public sealed override ModSettingWindow CreateSettingWindow()
-        {
-            return new ModSettingWindow(this) { Content = CreateContent() };
-        }
 
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
 
         /// <summary>
         /// 创建 Mod 设置窗口的内容
         /// </summary>
         /// <returns>Mod 设置窗口的内容</returns>
         protected abstract Control CreateContent();
+
+        /// <summary>
+        /// 创建 Mod 设置窗口
+        /// </summary>
+        /// <returns>Mod 设置窗口</returns>
+        protected virtual ModSettingWindow CreateSettingWindow() => new ModSettingWindow(this);
+
+        #endregion
 
 
         /// <summary>

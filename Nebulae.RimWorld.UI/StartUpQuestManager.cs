@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.Utilities;
+using System;
 using System.Collections.Generic;
 using Verse;
 
@@ -37,7 +38,7 @@ namespace Nebulae.RimWorld.UI
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"An exception occured when try finish quest from {_actionQueue[i].Method.DeclaringType}. ---> {e}");
+                    "NebulaeFlood's Lib".Error($"An exception occured when try finish quest from {_actionQueue[i].Method.DeclaringType}. ---> {e}");
                 }
             }
 

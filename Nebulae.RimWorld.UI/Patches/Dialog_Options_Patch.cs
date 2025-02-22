@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Nebulae.RimWorld.Utilities;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -39,13 +40,18 @@ namespace Nebulae.RimWorld.UI.Patches
                     yield return code;
                 }
             }
+
+            if (!patched)
+            {
+                "NebulaeFlood's Lib".Error($"Failed to patch method: {typeof(Dialog_Options)}.DoModOptions");
+            }
         }
 
         private static Window ReplaceModSettingWindow(Window window, Mod mod)
         {
-            if (mod is NebulaeModBase nebulaeMod)
+            if (mod is INebulaeMod nebulaeMod)
             {
-                return nebulaeMod.SettingWindow;
+                return nebulaeMod.GetSettingWindow();
             }
             else
             {

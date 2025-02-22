@@ -194,7 +194,7 @@ namespace Nebulae.RimWorld.UI.Controls
                         }
                         catch (Exception e)
                         {
-                            throw new LogicalTreeException(child, "A error occured when setting the root of a layout tree, please check that the parent-child relationship between controls has been set correctly.", e);
+                            throw new LogicalTreeException(child, "[NebulaeFlood's Lib] A error occured when setting the root of a layout tree, please check that the parent-child relationship between controls has been set correctly.", e);
                         }
                     }
                 }
@@ -384,19 +384,24 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else if (control.Parent is ScrollViewer viewer)
             {
-                if (_arrangeQueue.Add(viewer))
+                if (viewer.IsArrangeValid)
                 {
-                    if (_arrangeQueue.Count > 1)
+                    if (_arrangeQueue.Count > 0)
                     {
                         _arrangeQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                    }
+
+                    _arrangeQueue.Add(viewer);
+                }
+
+                if (viewer.IsSegmentValid)
+                {
+                    if (_segmentQueue.Count > 0)
+                    {
                         _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
                     }
 
                     _segmentQueue.Add(viewer);
-                }
-                else if (_segmentQueue.Add(viewer) && _segmentQueue.Count > 1)
-                {
-                    _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
                 }
 
                 _isArrangeValid = false;
@@ -433,31 +438,34 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else if (control.Parent is ScrollViewer viewer)
             {
-                if (_measureQueue.Add(viewer))
+                if (viewer.IsMeasureValid)
                 {
-                    if (_measureQueue.Count > 1)
+                    if (_measureQueue.Count > 0)
+                    {
+                        _measureQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                    }
+
+                    _measureQueue.Add(viewer);
+                }
+
+                if (viewer.IsArrangeValid)
+                {
+                    if (_arrangeQueue.Count > 0)
                     {
                         _arrangeQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
-                        _measureQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
-                        _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
                     }
 
                     _arrangeQueue.Add(viewer);
-                    _segmentQueue.Add(viewer);
                 }
-                else if (_arrangeQueue.Add(viewer))
+
+                if (viewer.IsSegmentValid)
                 {
-                    if (_arrangeQueue.Count > 1)
+                    if (_segmentQueue.Count > 0)
                     {
-                        _arrangeQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
                         _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
                     }
 
                     _segmentQueue.Add(viewer);
-                }
-                else if (_segmentQueue.Add(viewer) && _segmentQueue.Count > 1)
-                {
-                    _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
                 }
 
                 _isArrangeValid = false;
@@ -492,9 +500,14 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else if (control.Parent is ScrollViewer viewer)
             {
-                if (_segmentQueue.Add(viewer) && _segmentQueue.Count > 1)
+                if (viewer.IsSegmentValid)
                 {
-                    _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                    if (_segmentQueue.Count > 0)
+                    {
+                        _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
+                    }
+
+                    _segmentQueue.Add(viewer);
                 }
 
                 _isSegmentValid = false;
@@ -512,7 +525,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>控件排布是否有效。</returns>
         public bool IsArrangeValid(Control control)
         {
-            if (_isDirty)
+            if (_isDirty || _isEmpty)
             {
                 return false;
             }
@@ -522,20 +535,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return true;
             }
 
-            foreach (var item in _arrangeQueue)
-            {
-                if (item.Rank > control.Rank)
-                {
-                    return false;
-                }
-                else if (ReferenceEquals(item, control)
-                    || CanInfectLayout(item, control))
-                {
-                    break;
-                }
-            }
-
-            return true;
+            return IsInfected(control, _arrangeQueue);
         }
 
         /// <summary>
@@ -545,7 +545,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>控件度量是否有效。</returns>
         public bool IsMeasureValid(Control control)
         {
-            if (_isDirty)
+            if (_isDirty || _isEmpty)
             {
                 return false;
             }
@@ -555,20 +555,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return true;
             }
 
-            foreach (var item in _measureQueue)
-            {
-                if (item.Rank > control.Rank)
-                {
-                    return false;
-                }
-                else if (ReferenceEquals(item, control)
-                    || CanInfectLayout(item, control))
-                {
-                    break;
-                }
-            }
-
-            return true;
+            return IsInfected(control, _measureQueue);
         }
 
         /// <summary>
@@ -578,7 +565,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>控件分割是否有效。</returns>
         public bool IsSegmentValid(Control control)
         {
-            if (_isDirty)
+            if (_isDirty || _isEmpty)
             {
                 return false;
             }
@@ -588,20 +575,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 return true;
             }
 
-            foreach (var item in _segmentQueue)
-            {
-                if (item.Rank > control.Rank)
-                {
-                    return false;
-                }
-                else if (ReferenceEquals(item, control)
-                    || CanInfectLayout(item, control))
-                {
-                    break;
-                }
-            }
-
-            return true;
+            return IsInfected(control, _segmentQueue);
         }
 
         #endregion
@@ -613,13 +587,13 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 Control parent = target.Parent;
 
-                if (parent is ScrollViewer)
-                {
-                    return false;
-                }
-                else if (ReferenceEquals(instigator, parent))
+                if (ReferenceEquals(instigator, parent))
                 {
                     return true;
+                }
+                else if (parent is ScrollViewer)
+                {
+                    return false;
                 }
                 else
                 {
@@ -630,6 +604,25 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 return false;
             }
+        }
+
+        private static bool IsInfected(Control control, SortedSet<Control> layoutQueue)
+        {
+            foreach (var item in layoutQueue)
+            {
+                if (item.Rank > control.Rank)
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(item, control)
+                    || CanInfectLayout(item, control))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
 
