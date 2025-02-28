@@ -1,6 +1,7 @@
 ﻿using RimWorld;
 using UnityEngine;
 using Verse;
+using GameText = Verse.Text;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
@@ -8,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// 按钮控件
     /// </summary>
     [StaticConstructorOnStartup]
-    public class Button : IconButton
+    public class Button : ButtonBase
     {
         /// <summary>
         /// 默认的光标位于按钮上方时的按钮背景
@@ -22,6 +23,10 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 默认的按钮被按下时的按钮背景
         /// </summary>
         public static readonly Texture2D DefaultPressedBackground = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGClick");
+        /// <summary>
+        /// 破坏性按钮的默认混合色
+        /// </summary>
+        public static readonly Color DistructiveButtonComposition = new Color(1f, 0.3f, 0.35f);
 
 
         //------------------------------------------------------
@@ -34,9 +39,11 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private bool _isTextureAtlas = true;
 
-        private Texture2D _mouseOverBackground = DefaultMouseOverBackground;
+        private Texture2D _hoveredBackground = DefaultMouseOverBackground;
         private Texture2D _normalBackground = DefaultNormalBackground;
         private Texture2D _pressedBackground = DefaultPressedBackground;
+
+        private Color _compositionColor = Color.white;
 
         #endregion
 
@@ -48,6 +55,15 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Public Properties
+
+        /// <summary>
+        /// 按钮激活时，按钮材质的混合色
+        /// </summary>
+        public Color CompositionColor
+        {
+            get => _compositionColor;
+            set => _compositionColor = value;
+        }
 
         /// <summary>
         /// 按钮材质是否为纹理图集（图像精灵）
@@ -63,8 +79,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public Texture2D MouseOverBackground
         {
-            get => _mouseOverBackground;
-            set => _mouseOverBackground = value;
+            get => _hoveredBackground;
+            set => _hoveredBackground = value;
         }
 
         /// <summary>
@@ -98,31 +114,59 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         /// <inheritdoc/>
-        protected override void DrawBackground(
-            Rect renderRect,
-            bool isEnabled,
-            bool isCursorOver,
-            bool isPressing)
+        protected override void DrawButton(ButtonStatus status)
         {
-            Texture2D background = _normalBackground;
-            if (isEnabled && isCursorOver)
-            {
-                background = _mouseOverBackground;
+            Color color = GUI.color;
+            Color contentColor = GUI.contentColor;
+            bool isDisabled = status.HasFlag(ButtonStatus.Disabled);
 
-                if (isPressing)
-                {
-                    background = _pressedBackground;
-                }
+            if (isDisabled)
+            {
+                GUI.color = _compositionColor * Widgets.InactiveColor * color;
+                GUI.contentColor = _compositionColor * Widgets.InactiveColor * contentColor;
+            }
+
+            Texture2D background;
+
+            if (status is ButtonStatus.Pressed)
+            {
+                background = _pressedBackground;
+            }
+            else if (status is ButtonStatus.Hovered)
+            {
+                background = _hoveredBackground;
+            }
+            else
+            {
+                background = _normalBackground;
             }
 
             if (_isTextureAtlas)
             {
-                Widgets.DrawAtlas(renderRect, background);
+                Widgets.DrawAtlas(RenderRect, background);
             }
             else
             {
-                GUI.DrawTexture(renderRect, background);
+                GUI.DrawTexture(RenderRect, background);
             }
+
+            string text = Text;
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                TextAnchor anchor = GameText.Anchor;
+                GameFont font = GameText.Font;
+                GameText.Anchor = TextAnchor.MiddleCenter;
+                GameText.Font = FontSize;
+
+                Widgets.Label(RenderRect, text);
+
+                GameText.Font = font;
+                GameText.Anchor = anchor;
+            }
+
+            GUI.color = color;
+            GUI.contentColor = contentColor;
         }
     }
 }

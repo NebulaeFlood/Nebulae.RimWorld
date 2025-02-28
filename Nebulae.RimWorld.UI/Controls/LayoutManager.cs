@@ -31,7 +31,7 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _isSegmentValid = false;
         private readonly SortedSet<Control> _segmentQueue = new SortedSet<Control>(ControlComparer.Instance);
 
-        private Window _owner;
+        private readonly Window _owner;
         private Control _root;
 
         private DebugContent _debugContent = DebugContent.Buttons;
@@ -118,16 +118,16 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public bool DebugDrawHitTestRect
         {
-            get => _debugContent.HasFlag(DebugContent.HitTestRect);
+            get => _debugContent.HasFlag(DebugContent.ControlRect);
             set
             {
                 if (value)
                 {
-                    _debugContent |= DebugContent.HitTestRect;
+                    _debugContent |= DebugContent.ControlRect;
                 }
                 else
                 {
-                    _debugContent &= ~DebugContent.HitTestRect;
+                    _debugContent &= ~DebugContent.ControlRect;
                 }
             }
         }
@@ -204,21 +204,6 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
-        //------------------------------------------------------
-        //
-        //  Constructors
-        //
-        //------------------------------------------------------
-
-        #region Constructors
-
-        /// <summary>
-        /// 初始化 <see cref="LayoutManager"/> 的新实例
-        /// </summary>
-        public LayoutManager()
-        {
-        }
-
         /// <summary>
         /// 初始化 <see cref="LayoutManager"/> 的新实例
         /// </summary>
@@ -231,8 +216,6 @@ namespace Nebulae.RimWorld.UI.Controls
 
             _owner = owner;
         }
-
-        #endregion
 
 
         //------------------------------------------------------

@@ -204,7 +204,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override void OnDebugDraw(DebugContent content)
         {
-            if (content.HasFlag(DebugContent.HitTestRect))
+            if (content.HasFlag(DebugContent.ControlRect))
             {
                 UIUtility.DrawBorder(_sliderRect, UIUtility.HitBoxRectBorderColor);
             }

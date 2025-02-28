@@ -82,6 +82,8 @@ namespace Nebulae.RimWorld.UI.Controls
         protected FocusableControl()
         {
             _focusIndex = "Nebulae.RimWorld.UI.Controls.FocusableControl" + _globeIndex++.ToString();
+
+            IsHitTestVisible = true;
         }
 
 
@@ -114,6 +116,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public void LostFocus()
         {
+            _status &= ~Status.ForceFocusing;
             _status |= Status.LossingFocus;
         }
 
@@ -145,8 +148,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 _status = Status.Normal;
             }
             else if (!isFocusing
-                && (_status.HasFlag(Status.ForceFocusing)
-                    || _status.HasFlag(Status.WillFocus)))
+                && _status.HasFlag(Status.WillFocus))
             {
                 Verse.UI.FocusControl(_focusIndex, AssociatedWindow);
 
@@ -164,7 +166,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override void OnDebugDraw(DebugContent content)
         {
-            if (content.HasFlag(DebugContent.HitTestRect))
+            if (content.HasFlag(DebugContent.ControlRect))
             {
                 UIUtility.DrawBorder(ContentRect.IntersectWith(RenderRect), UIUtility.HitBoxRectBorderColor);
             }
@@ -188,15 +190,8 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (!_status.HasFlag(Status.ForceFocusing))
             {
-                EventType eventType = Event.current.type;
-
-                if (eventType is EventType.MouseDrag)
-                {
-                    return true;
-                }
-
-                if (eventType is EventType.MouseDown
-                    && !ContentRect.Contains(Event.current.mousePosition))
+                if (Event.current.type is EventType.MouseDown
+                    && !IsCursorOver)
                 {
                     _status |= Status.LossingFocus;
                     return true;
@@ -212,7 +207,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Normal = 0b0000,
             Focusing = 0b0001,
-            ForceFocusing = 0b0010,
+            ForceFocusing = 0b0110,
             WillFocus = 0b0100,
             LossingFocus = 0b1000
         }

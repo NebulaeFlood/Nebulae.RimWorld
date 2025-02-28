@@ -207,37 +207,25 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 绘制按钮背景
         /// </summary>
-        /// <param name="renderRect">允许绘制背景的区域</param>
-        /// <param name="isEnabled">按钮是否被启用，用于判断应该绘制的状态背景</param>
-        /// <param name="isCursorOver">光标是否位于控件上方，用于判断应该绘制的状态背景</param>
-        /// <param name="isPressing">按钮是否被按下</param>
-        protected virtual void DrawBackground(
-            Rect renderRect,
-            bool isEnabled,
-            bool isCursorOver,
-            bool isPressing)
+        /// <param name="status">按钮状态</param>
+        protected virtual void DrawBackground(ButtonStatus status)
         {
         }
 
         /// <inheritdoc/>
-        protected override sealed void DrawButton(
-            Rect renderRect,
-            bool isEnabled,
-            bool isCursorOver,
-            bool isPressing)
+        protected override sealed void DrawButton(ButtonStatus status)
         {
-            Color currentColor = GUI.color;
-            Color buttonColor = isEnabled
-                ? Color.white
-                : Widgets.InactiveColor;
+            Color color = GUI.color;
+            Color contentColor = GUI.contentColor;
+            bool isDisabled = status.HasFlag(ButtonStatus.Disabled);
 
-            GUI.color = _compositionColor * buttonColor;
+            if (isDisabled)
+            {
+                GUI.color = _compositionColor * Widgets.InactiveColor * color;
+                GUI.contentColor = _compositionColor * Widgets.InactiveColor * contentColor;
+            }
 
-            DrawBackground(
-                renderRect,
-                isEnabled,
-                isCursorOver,
-                isPressing);
+            DrawBackground(status);
 
             if ((_status & ContentStatus.TextSetted) != 0)
             {
@@ -254,17 +242,31 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if ((_status & ContentStatus.IconSetted) != 0)
             {
-                if (isEnabled
-                    && _iconHighlightable
-                    && isCursorOver)
+                if (_iconHighlightable
+                    && status.HasFlag(ButtonStatus.Hovered))
                 {
-                    GUI.color = _compositionColor * GenUI.MouseoverColor;
+                    color = GUI.color;
+                    GUI.color = _compositionColor * GenUI.MouseoverColor * color;
                 }
 
                 GUI.DrawTexture(_iconRenderRect, _icon, ScaleMode.ScaleToFit);
             }
 
-            GUI.color = currentColor;
+            GUI.color = color;
+            GUI.contentColor = color;
+        }
+
+        /// <inheritdoc/>
+        protected override Rect HitTestCore(Rect contentRect)
+        {
+            if (_iconHitOnly)
+            {
+                return _iconRenderRect;
+            }
+            else
+            {
+                return contentRect;
+            }
         }
 
         /// <inheritdoc/>
@@ -295,23 +297,6 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             return base.MeasureCore(availableSize);
-        }
-
-        /// <inheritdoc/>
-        protected override Rect SegmentCore(Rect visiableRect)
-        {
-            visiableRect = visiableRect.IntersectWith(RenderRect);
-
-            if (_iconHitOnly)
-            {
-                UpdateHitTestRect(_iconRenderRect);
-            }
-            else
-            {
-                UpdateHitTestRect(visiableRect);
-            }
-
-            return visiableRect;
         }
 
         #endregion

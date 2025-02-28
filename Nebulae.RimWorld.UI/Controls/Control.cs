@@ -15,7 +15,7 @@ namespace Nebulae.RimWorld.UI.Controls
     public enum DebugContent : int
     {
         /// <summary>
-        /// 绘制所以预设内容
+        /// 绘制所有预设内容
         /// </summary>
         All = 0b11111,
 
@@ -35,19 +35,19 @@ namespace Nebulae.RimWorld.UI.Controls
         ContentRect = 0b00010,
 
         /// <summary>
+        /// 绘制 <see cref="Control.ControlRect"/>
+        /// </summary>
+        ControlRect = 0b00100,
+
+        /// <summary>
         /// 绘制 <see cref="Control.DesiredRect"/>
         /// </summary>
-        DesiredRect = 0b00100,
+        DesiredRect = 0b01000,
 
         /// <summary>
         /// 绘制 <see cref="Control.RenderRect"/>
         /// </summary>
-        RenderRect = 0b01000,
-
-        /// <summary>
-        /// 绘制按钮的可交互区域
-        /// </summary>
-        HitTestRect = 0b10000
+        RenderRect = 0b10000
     }
 
 
@@ -65,16 +65,28 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Public Fields
 
         /// <summary>
-        /// 控件控制呈现的可见区域
+        /// 控件呈现内容的可见区域
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
         public Rect ContentRect;
 
         /// <summary>
-        /// 控件控制呈现的可见尺寸
+        /// 控件呈现内容的可见尺寸
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
         public Size ContentSize;
+
+        /// <summary>
+        /// 控件响应用户交互的区域
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
+        public Rect ControlRect;
+
+        /// <summary>
+        /// 控件响应用户交互的尺寸
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
+        public Size ControlSize;
 
         /// <summary>
         /// 控件需要占用的布局区域
@@ -141,10 +153,11 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private string _name = string.Empty;
 
-        private bool _isArrangeValid = false;
-
+        private bool _isDraggable = false;
+        private bool _isHitTestVisible = false;
         private bool _isIndependent = true;
 
+        private bool _isArrangeValid = false;
         private bool _isMeasureValid = false;
         private bool _isSegmentValid = false;
 
@@ -167,6 +180,27 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Pubilc Properties
 
         /// <summary>
+        /// 光标是否位于控件上方
+        /// </summary>
+        public bool IsCursorOver => ReferenceEquals(CursorUtility.HoveredControl, this);
+
+        /// <summary>
+        /// 控件是否正在被拖动
+        /// </summary>
+        public bool IsDragging => ReferenceEquals(CursorUtility.DraggingControl, this);
+
+        /// <summary>
+        /// 正在拖动的控件是否正在该控件上方
+        /// </summary>
+        public bool IsDragOwer => CursorUtility.AnyDragging && ReferenceEquals(CursorUtility.HoveredControl, this);
+
+        /// <summary>
+        /// 光标是否在控件上方按下
+        /// </summary>
+        public bool IsPressing => ReferenceEquals(CursorUtility.PressingControl, this);
+
+
+        /// <summary>
         /// 控件布局是否有效
         /// </summary>
         public bool IsArrangeValid
@@ -186,6 +220,35 @@ namespace Nebulae.RimWorld.UI.Controls
                 _isArrangeValid = false;
 
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 控件是否可拖动
+        /// </summary>
+        public bool IsDraggable
+        {
+            get => _isDraggable;
+            set => _isDraggable = value;
+        }
+
+        /// <summary>
+        /// 控件是否能够交互
+        /// </summary>
+        public bool IsHitTestVisible
+        {
+            get => _isHitTestVisible;
+            set
+            {
+                if (_isHitTestVisible != value)
+                {
+                    _isHitTestVisible = value && Opacity > 0f;
+
+                    ControlRect = _isHitTestVisible
+                        ? HitTestCore(ContentRect)
+                        : new Rect(ContentRect.x, ContentRect.y, 0f, 0f);
+                    ContentSize = ContentRect;
+                }
             }
         }
 
@@ -489,6 +552,11 @@ namespace Nebulae.RimWorld.UI.Controls
                 UIUtility.DrawBorder(DesiredRect, UIUtility.DesiredRectBorderColor);
             }
 
+            if (content.HasFlag(DebugContent.ControlRect) && ControlSize != 0f)
+            {
+                UIUtility.DrawBorder(ControlRect, UIUtility.HitBoxRectBorderColor);
+            }
+
             OnDebugDraw(content);
         }
 
@@ -501,6 +569,13 @@ namespace Nebulae.RimWorld.UI.Controls
                 || RenderSize.Height <= float.Epsilon)
             {
                 return;
+            }
+
+            if (_isHitTestVisible
+                && ControlRect.Contains(Event.current.mousePosition)
+                && ReferenceEquals(Owner, CursorUtility.HoveredWindow))
+            {
+                CursorUtility.HoveredControl = this;
             }
 
             Color color = GUI.color;
@@ -519,7 +594,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (Prefs.DevMode && !_isIndependent)
             {
-                DebugDraw(LayoutManager.DebugContent);
+                DebugDraw(_layoutManager.DebugContent);
             }
         }
 
@@ -535,7 +610,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 无效化控件排布
         /// </summary>
-        /// <exception cref="InvalidOperationException">当一个不是 <see cref="ControlWindow"/> 的 <see cref="ControlWindow.Content"/> 的控件或其子控件尝试无效化排布时发生。</exception>
         public void InvalidateArrange()
         {
             if (!_isArrangeValid)
@@ -555,7 +629,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 无效化控件度量
         /// </summary>
-        /// <exception cref="InvalidOperationException">当一个不是 <see cref="ControlWindow"/> 的 <see cref="ControlWindow.Content"/> 的控件或其子控件尝试无效化度量时发生。</exception>
         public void InvalidateMeasure()
         {
             if (!_isMeasureValid)
@@ -576,14 +649,13 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 无效化控件分割
         /// </summary>
-        /// <remarks>控件分割：由该控件控制呈现的可见区域。</remarks>
-        /// <exception cref="InvalidOperationException">当一个不是 <see cref="ControlWindow"/> 的 <see cref="ControlWindow.Content"/> 的控件或其子控件尝试无效化分割时发生。</exception>
+        /// <remarks>将会影响 <see cref="ContentRect"/> 和 <see cref="ControlRect"/> 及其对应的 <see cref="Size"/>。</remarks>
         public void InvalidateSegment()
         {
             if (!_isSegmentValid)
             {
                 return;
-            }        
+            }
 
             if (!_isIndependent)
             {
@@ -619,22 +691,33 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 计算该控件控制呈现的可见区域
+        /// 计算该控件呈现内容的可见区域
         /// </summary>
-        /// <param name="visiableRect">控件的可见区域</param>
-        /// <returns>该控件控制呈现的可见区域。</returns>
+        /// <param name="visiableRect">允许控件显示的区域</param>
+        /// <returns>该控件呈现内容的可见区域。</returns>
         public Rect Segment(Rect visiableRect)
         {
             if (!(Visibility is Visibility.Collapsed))
             {
                 ContentRect = SegmentCore(RenderRect.IntersectWith(visiableRect));
+
+                if (_isHitTestVisible)
+                {
+                    ControlRect = HitTestCore(ContentRect);
+                }
+                else
+                {
+                    ControlRect = new Rect(visiableRect.x, visiableRect.y, 0f, 0f);
+                }
             }
             else
             {
                 ContentRect = new Rect(visiableRect.x, visiableRect.y, 0f, 0f);
+                ControlRect = ContentRect;
             }
 
             ContentSize = ContentRect;
+            ControlSize = ControlRect;
 
             _isSegmentValid = true;
 
@@ -662,7 +745,7 @@ namespace Nebulae.RimWorld.UI.Controls
             else
             {
                 IsChild = true;
-                LayoutManager = parent.LayoutManager;
+                LayoutManager = parent._layoutManager;
                 Parent = parent;
                 Rank = parent.Rank + 1;
             }
@@ -671,6 +754,32 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 child.LayoutManager = _layoutManager;
                 child.Rank = child.Parent.Rank + 1;
+            }
+        }
+
+        /// <summary>
+        /// 设置当前控件的父控件
+        /// </summary>
+        /// <param name="parent">设置给控件的父控件</param>
+        /// <remarks>这个方法应只用于初始化控件。</remarks>
+        public void SetParentSilently(Control parent)
+        {
+            if (ReferenceEquals(Parent, parent))
+            {
+                return;
+            }
+
+            if (parent is null)
+            {
+                IsChild = false;
+                LayoutManager = null;
+                Parent = null;
+            }
+            else
+            {
+                IsChild = true;
+                LayoutManager = parent._layoutManager;
+                Parent = parent;
             }
         }
 
@@ -718,6 +827,16 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
+        /// 计算控件响应用户交互的区域
+        /// </summary>
+        /// <param name="contentRect">控件呈现内容的可见区域</param>
+        /// <returns>控件响应用户交互的区域。</returns>
+        protected virtual Rect HitTestCore(Rect contentRect)
+        {
+            return contentRect;
+        }
+
+        /// <summary>
         /// 计算呈现控件内容需要的尺寸
         /// </summary>
         /// <param name="availableSize">分配给控件的可用空间</param>
@@ -729,6 +848,44 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="content">要绘制的调试内容</param>
         protected virtual void OnDebugDraw(DebugContent content)
+        {
+        }
+
+        /// <summary>
+        /// 当控件正在被拖动时执行的方法
+        /// </summary>
+        /// <param name="cursorPos">光标的坐标（和窗口在同一坐标系）</param>
+        protected internal virtual void OnDragging(Vector2 cursorPos)
+        {
+        }
+
+        /// <summary>
+        /// 当拖动的控件在此控件上方时执行的方法
+        /// </summary>
+        /// <param name="draggingControl">正在拖动的控件</param>
+        protected internal virtual void OnDragOver(Control draggingControl)
+        {
+        }
+
+        /// <summary>
+        /// 当控件开始被拖动时执行的方法
+        /// </summary>
+        protected internal virtual void OnDragStart()
+        {
+        }
+
+        /// <summary>
+        /// 当控件停止被拖动时执行的方法
+        /// </summary>
+        protected internal virtual void OnDragStop()
+        {
+        }
+
+        /// <summary>
+        /// 当正在拖动的控件在此控件内被放下时执行的方法
+        /// </summary>
+        /// <param name="droppedControl">被放下的控件</param>
+        protected internal virtual void OnDrop(Control droppedControl)
         {
         }
 
@@ -750,10 +907,10 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 计算该控件控制呈现的可见区域
+        /// 计算该控件呈现内容的可见区域
         /// </summary>
-        /// <param name="visiableRect">控件的可见区域</param>
-        /// <returns>该控件控制呈现的可见区域。</returns>
+        /// <param name="visiableRect">允许控件显示的区域</param>
+        /// <returns>该控件呈现内容的可见区域。</returns>
         protected virtual Rect SegmentCore(Rect visiableRect)
         {
             return visiableRect;

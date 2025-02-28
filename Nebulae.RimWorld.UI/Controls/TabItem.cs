@@ -129,7 +129,7 @@ namespace Nebulae.RimWorld.UI.Controls
         public TabItem()
         {
             ClickSound = SoundDefOf.RowTabSelect;
-            MouseOverSound = SoundDefOf.Mouseover_Tab;
+            CursorOverSound = SoundDefOf.Mouseover_Tab;
         }
 
 
@@ -159,14 +159,20 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected override void DrawButton(Rect renderRect, bool isEnabled, bool isCursorOver, bool isPressing)
+        protected override void DrawButton(ButtonStatus status)
         {
             Color color = GUI.color;
             Color textColor;
 
             Rect labelRect;
 
-            if (isCursorOver || _selected)
+            if (status is ButtonStatus.Pressed
+                || _selected)
+            {
+                labelRect = RenderRect;
+                textColor = Color.yellow;
+            }
+            else if (status is ButtonStatus.Hovered)
             {
                 labelRect = new Rect(RenderRect.x + 1f, RenderRect.y, RenderRect.width, RenderRect.height);
                 textColor = Color.yellow;
@@ -177,7 +183,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 textColor = Color.white;
             }
 
-            if (!isEnabled)
+            if (status.HasFlag(ButtonStatus.Disabled))
             {
                 GUI.color = Color.white * Widgets.InactiveColor;
 
@@ -188,7 +194,7 @@ namespace Nebulae.RimWorld.UI.Controls
             Widgets.DrawTexturePart(_midRect, _midUVRect, TabAtlas);
             Widgets.DrawTexturePart(_rightRect, _rightUVRect, TabAtlas);
 
-            if (!Selected)
+            if (!_selected)
             {
                 Widgets.DrawTexturePart(_bottomRect, _bottomUVRect, TabAtlas);
             }
@@ -205,6 +211,16 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
+        protected override Rect HitTestCore(Rect contentRect)
+        {
+            return contentRect.IntersectWith(new Rect(
+                RenderRect.x + TabControl.IntersectedWidth,
+                RenderRect.y,
+                RenderSize.Width - 2f * TabControl.IntersectedWidth,
+                RenderSize.Height));
+        }
+
+        /// <inheritdoc/>
         protected override void OnClick()
         {
             if (_container is null)
@@ -218,20 +234,6 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 ClickSound?.PlayOneShotOnCamera();
             }
-        }
-
-        /// <inheritdoc/>
-        protected override Rect SegmentCore(Rect visiableRect)
-        {
-            visiableRect = visiableRect.IntersectWith(RenderRect);
-
-            UpdateHitTestRect(visiableRect.IntersectWith(new Rect(
-                RenderRect.x + TabControl.IntersectedWidth,
-                RenderRect.y,
-                RenderSize.Width - 2f * TabControl.IntersectedWidth,
-                RenderSize.Height)));
-
-            return visiableRect;
         }
 
         #endregion

@@ -1,13 +1,38 @@
 ﻿using Nebulae.RimWorld.UI.Data;
-using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
 using System;
-using UnityEngine;
 using Verse;
 using Verse.Sound;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
+    /// <summary>
+    /// 按钮的 UI 状态
+    /// </summary>
+    [Flags]
+    public enum ButtonStatus : int
+    {
+        /// <summary>
+        /// 正常状态
+        /// </summary>
+        Normal = 0b000,
+
+        /// <summary>
+        /// 禁止状态
+        /// </summary>
+        Disabled = 0b001,
+
+        /// <summary>
+        /// 高亮状态
+        /// </summary>
+        Hovered = 0b010,
+
+        /// <summary>
+        /// 按下状态
+        /// </summary>
+        Pressed = 0b110,
+    }
+
     /// <summary>
     /// 所有按钮控件的基类，定义了其共同特性
     /// </summary>
@@ -38,12 +63,11 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Private Fields
 
         private SoundDef _clickSound = SoundDefOf.Click;
-        private SoundDef _mouseOverSound = SoundDefOf.Mouseover_Standard;
+        private SoundDef _cursorOverSound = SoundDefOf.Mouseover_Standard;
 
+        private bool _cursorOverSoundPlayed = false;
         private bool _isEnabled = true;
         private bool _playMouseOverSound = true;
-
-        private Rect _hitTestRect;
 
         #endregion
 
@@ -55,6 +79,15 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Public Properties
+
+        /// <summary>
+        /// 当光标位于按钮上方时播放的音效
+        /// </summary>
+        public SoundDef CursorOverSound
+        {
+            get => _cursorOverSound;
+            set => _cursorOverSound = value;
+        }
 
         /// <summary>
         /// 单击按钮时触发的声音
@@ -93,15 +126,6 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 当光标位于按钮上方时播放的音效
-        /// </summary>
-        public SoundDef MouseOverSound
-        {
-            get => _mouseOverSound;
-            set => _mouseOverSound = value;
-        }
-
-        /// <summary>
         /// 当光标位于按钮上方时是否播放音效
         /// </summary>
         public bool PlayMouseOverSound
@@ -131,6 +155,22 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
+        /// <summary>
+        /// 为 <see cref="ButtonBase"/> 派生类实现基本初始化
+        /// </summary>
+        protected ButtonBase()
+        {
+            IsHitTestVisible = true;
+        }
+
+
+        internal void Click()
+        {
+            OnClick();
+            _clicked.Invoke(this, EventArgs.Empty);
+        }
+
+
         //------------------------------------------------------
         //
         //  Protected Methods
@@ -142,54 +182,52 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 绘制按钮
         /// </summary>
-        /// <param name="renderRect">允许绘制的区域</param>
-        /// <param name="isEnabled">按钮是否被启用</param>
-        /// <param name="isCursorOver">光标是否位于按钮上方</param>
-        /// <param name="isPressing">按钮是否被按下</param>
-        protected abstract void DrawButton(
-            Rect renderRect,
-            bool isEnabled,
-            bool isCursorOver,
-            bool isPressing);
+        /// <param name="status">按钮状态</param>
+        protected abstract void DrawButton(ButtonStatus status);
 
         /// <inheritdoc/>
         protected sealed override void DrawCore()
         {
-            bool isMouseOver = _hitTestRect.Contains(Event.current.mousePosition);
-            bool isPressing = isMouseOver && Input.GetMouseButton(0);
+            bool isCursorOver = IsCursorOver;
+            bool isPressing = IsPressing;
 
-            DrawButton(
-                RenderRect,
-                _isEnabled,
-                isMouseOver,
-                isPressing);
-
-            if (_playMouseOverSound)
-            {
-                MouseoverSounds.DoRegion(_hitTestRect, _mouseOverSound);
-            }
+            ButtonStatus status;
 
             if (!_isEnabled)
+            {
+                status = ButtonStatus.Disabled;
+            }
+            else if (isPressing)
+            {
+                status = ButtonStatus.Pressed;
+            }
+            else if (isCursorOver)
+            {
+                status = ButtonStatus.Hovered;
+            }
+            else
+            {
+                status = ButtonStatus.Normal;
+            }
+
+            DrawButton(status);
+
+            if (!_playMouseOverSound)
             {
                 return;
             }
 
-            if (isMouseOver
-                && GUI.Button(_hitTestRect, string.Empty, Widgets.EmptyStyle))
+            if (isCursorOver || isPressing)
             {
-                OnClick();
-
-                _clicked.Invoke(this, EventArgs.Empty);
+                if (!_cursorOverSoundPlayed)
+                {
+                    _cursorOverSoundPlayed = true;
+                    _cursorOverSound.PlayOneShotOnCamera();
+                }
             }
-        }
-
-        /// <inheritdoc/>
-        protected override void OnDebugDraw(DebugContent content)
-        {
-            if (content.HasFlag(DebugContent.HitTestRect)
-                && (_hitTestRect.width > 0f || _hitTestRect.height > 0f))
+            else
             {
-                UIUtility.DrawBorder(_hitTestRect, UIUtility.HitBoxRectBorderColor);
+                _cursorOverSoundPlayed = false;
             }
         }
 
@@ -199,25 +237,6 @@ namespace Nebulae.RimWorld.UI.Controls
         protected virtual void OnClick()
         {
             _clickSound?.PlayOneShotOnCamera();
-        }
-
-        /// <inheritdoc/>
-        protected override Rect SegmentCore(Rect visiableRect)
-        {
-            visiableRect = visiableRect.IntersectWith(RenderRect);
-
-            UpdateHitTestRect(visiableRect);
-
-            return visiableRect;
-        }
-
-        /// <summary>
-        /// 更新按钮可交互区域
-        /// </summary>
-        /// <param name="hitTestRect">按钮可交互的区域</param>
-        protected void UpdateHitTestRect(Rect hitTestRect)
-        {
-            _hitTestRect = hitTestRect;
         }
 
         #endregion
