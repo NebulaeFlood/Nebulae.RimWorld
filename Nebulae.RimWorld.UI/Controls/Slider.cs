@@ -195,19 +195,15 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
+        protected override void DrawInnerControlRect()
+        {
+            UIUtility.DrawBorder(_sliderRect, UIUtility.ControlRectBorderColor);
+        }
+
+        /// <inheritdoc/>
         override protected Size MeasureCore(Size availableSize)
         {
             return new Size(availableSize.Width, GameFont.Tiny.GetHeight());
-        }
-
-
-        /// <inheritdoc/>
-        protected override void OnDebugDraw(DebugContent content)
-        {
-            if (content.HasFlag(DebugContent.ControlRect))
-            {
-                UIUtility.DrawBorder(_sliderRect, UIUtility.HitBoxRectBorderColor);
-            }
         }
 
         #endregion

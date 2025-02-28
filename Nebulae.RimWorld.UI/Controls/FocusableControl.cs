@@ -75,6 +75,11 @@ namespace Nebulae.RimWorld.UI.Controls
             }
         }
 
+        /// <summary>
+        /// 控件是否已经获取焦点
+        /// </summary>
+        public bool IsFocusing => _status.HasFlag(Status.Focusing);
+
 
         /// <summary>
         /// 为 <see cref="FocusableControl"/> 派生类实现基本初始化
@@ -162,15 +167,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 绘制可焦聚的控件
         /// </summary>
         protected abstract void DrawControl();
-
-        /// <inheritdoc/>
-        protected override void OnDebugDraw(DebugContent content)
-        {
-            if (content.HasFlag(DebugContent.ControlRect))
-            {
-                UIUtility.DrawBorder(ContentRect.IntersectWith(RenderRect), UIUtility.HitBoxRectBorderColor);
-            }
-        }
 
         #endregion
 

@@ -86,11 +86,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         /// <inheritdoc/>
-        protected override void DrawBackground(
-            Rect renderRect,
-            bool isEnabled,
-            bool isCursorOver,
-            bool isPressing)
+        protected override void DrawBackground(ButtonStatus status)
         {
             switch (Status)
             {

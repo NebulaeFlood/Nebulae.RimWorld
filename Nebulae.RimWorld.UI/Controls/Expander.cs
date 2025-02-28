@@ -77,7 +77,6 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private Rect _expandButtonRect;
         private Rect _labelRect;
-        private Rect _hitTestRect;
 
         #endregion
 
@@ -170,6 +169,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public Expander()
         {
+            IsHitTestVisible = true;
         }
 
 
@@ -220,7 +220,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 _clicked.Invoke(this, _content);
             }
 
-            if (_hitTestRect.Contains(Event.current.mousePosition))
+            if (IsCursorOver)
             {
                 GUI.DrawTexture(_labelRect, TexUI.HighlightTex);
             }
@@ -262,6 +262,12 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
+        protected override void DrawInnerControlRect()
+        {
+            UIUtility.DrawBorder(_expandButtonRect, UIUtility.ControlRectBorderColor);
+        }
+
+        /// <inheritdoc/>
         protected internal override IEnumerable<Control> EnumerateLogicalChildren()
         {
             if (_isEmpty)
@@ -270,6 +276,12 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             yield return _content;
+        }
+
+        /// <inheritdoc/>
+        protected override Rect HitTestCore(Rect contentRect)
+        {
+            return _labelRect.IntersectWith(contentRect);
         }
 
         /// <inheritdoc/>
@@ -289,9 +301,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect SegmentCore(Rect visiableRect)
         {
-            _hitTestRect = _labelRect.IntersectWith(visiableRect);
-            _hitTestRect = _labelRect.IntersectWith(contentRect);
-
             if (!_isEmpty)
             {
                 _content.Segment(visiableRect);

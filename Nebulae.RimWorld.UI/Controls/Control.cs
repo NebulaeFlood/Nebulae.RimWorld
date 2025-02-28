@@ -554,10 +554,9 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (content.HasFlag(DebugContent.ControlRect) && ControlSize != 0f)
             {
-                UIUtility.DrawBorder(ControlRect, UIUtility.HitBoxRectBorderColor);
+                UIUtility.DrawBorder(ControlRect, UIUtility.ControlRectBorderColor);
+                DrawInnerControlRect();
             }
-
-            OnDebugDraw(content);
         }
 
         /// <summary>
@@ -818,6 +817,13 @@ namespace Nebulae.RimWorld.UI.Controls
         protected abstract void DrawCore();
 
         /// <summary>
+        /// 绘制控件内部不是由 <see cref="Control"/> 控制的可交互区域边界
+        /// </summary>
+        protected virtual void DrawInnerControlRect()
+        {
+        }
+
+        /// <summary>
         /// 获取逻辑子控件
         /// </summary>
         /// <returns>与该控件直接关联的逻辑子控件。</returns>
@@ -842,14 +848,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="availableSize">分配给控件的可用空间</param>
         /// <returns>呈现控件内容需要的尺寸。</returns>
         protected virtual Size MeasureCore(Size availableSize) => availableSize;
-
-        /// <summary>
-        /// 当 <see cref="DebugDraw"/> 被调用时执行的函数
-        /// </summary>
-        /// <param name="content">要绘制的调试内容</param>
-        protected virtual void OnDebugDraw(DebugContent content)
-        {
-        }
 
         /// <summary>
         /// 当控件正在被拖动时执行的方法
