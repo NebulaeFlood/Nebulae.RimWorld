@@ -120,6 +120,17 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
+        /// 将控件插入或移动到面板中的指定控件之前
+        /// </summary>
+        /// <param name="control">要插入的控件</param>
+        /// <param name="index">被挤开的控件</param>
+        /// <returns>若插入了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool Insert(Control control, Control index)
+        {
+            return Children.Insert(index, control);
+        }
+
+        /// <summary>
         /// 移除面板中的指定控件
         /// </summary>
         /// <param name="control">要移除的控件</param>

@@ -225,8 +225,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         {
             _isDrawableChildrenValid = false;
 
-            visiableRect = visiableRect.IntersectWith(RenderRect);
-
             var children = FilteredChildren;
 
             for (int i = 0; i < children.Length; i++)

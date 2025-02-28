@@ -152,6 +152,34 @@ namespace Nebulae.RimWorld.UI.Controls
             InvalidateMeasure();
         }
 
+        /// <summary>
+        /// 插入选项卡
+        /// </summary>
+        /// <param name="item">要插入的选项卡</param>
+        /// <param name="index">被挤开的选项卡</param>
+        public void Insert(TabItem item, TabItem index)
+        {
+            if (item is null || index is null)
+            {
+                return;
+            }
+
+            int i = _tabItems.IndexOf(index);
+
+            if (i < 0)
+            {
+                return;
+            }
+
+            if (!_tabItems.Remove(item))
+            {
+                item.Container = this;
+            }
+
+            _tabItems.Insert(i, index);
+
+            InvalidateMeasure();
+        }
 
         /// <summary>
         /// 移除指定选项卡
@@ -440,8 +468,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect SegmentCore(Rect visiableRect)
         {
-            visiableRect = base.SegmentCore(visiableRect);
-
             for (int i = 0; i < _tabItems.Count; i++)
             {
                 var tab = _tabItems[i];

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
 {
@@ -103,21 +104,39 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 对集合的每个控件执行指定操作
+        /// 将控件插入到集合中的指定控件之前
         /// </summary>
-        /// <param name="action">对每个控件执行的操作</param>
-        public void ForEach(Action<Control> action)
+        /// <param name="control">要插入的控件</param>
+        /// <param name="index">被挤开的控件</param>
+        /// <returns>若插入了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool Insert(Control control, Control index)
         {
-            for (int i = 0; i < _children.Count; i++)
+            if (control is null || index is null)
             {
-                action(_children[i]);
+                return false;
             }
+
+            int i = _children.IndexOf(index);
+
+            if (i < 0)
+            {
+                return false;
+            }
+
+            control.SetParent(_owner);
+
+            _children.Remove(control);
+            _children.Insert(i, control);
+
+            _owner.InvalidateFilter();
+
+            return true;
         }
 
         /// <summary>
         /// 获取循环访问集合的枚举器
         /// </summary>
-        /// <returns>循环访问集合的枚举器</returns>
+        /// <returns>循环访问集合的枚举器。</returns>
         public IEnumerator<Control> GetEnumerator()
         {
             return _children.GetEnumerator();
@@ -147,7 +166,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <typeparam name="TOwner">拥有该集合的控件</typeparam>
         /// <param name="controls">要置入的控件</param>
-        /// <returns>拥有该集合的控件</returns>
+        /// <returns>拥有该集合的控件。</returns>
         /// <remarks>将移除所有原有控件。</remarks>
         public TOwner OverrideCollection<TOwner>(params Control[] controls) where TOwner : Panel
         {
@@ -172,6 +191,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <returns>若删除了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Remove(Control control)
         {
+            if (control is null)
+            {
+                return false;
+            }
+
             if (_children.Remove(control))
             {
                 control.SetParent(null);
@@ -179,6 +203,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
                 return true;
             }
+
             return false;
         }
 
