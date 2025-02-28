@@ -627,7 +627,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             if (!(Visibility is Visibility.Collapsed))
             {
-                ContentRect = SegmentCore(visiableRect);
+                ContentRect = SegmentCore(RenderRect.IntersectWith(visiableRect));
             }
             else
             {
@@ -756,7 +756,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>该控件控制呈现的可见区域。</returns>
         protected virtual Rect SegmentCore(Rect visiableRect)
         {
-            return visiableRect.IntersectWith(RenderRect);
+            return visiableRect;
         }
 
         #endregion

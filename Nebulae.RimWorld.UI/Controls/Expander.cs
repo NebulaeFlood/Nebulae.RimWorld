@@ -289,15 +289,15 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect SegmentCore(Rect visiableRect)
         {
-            Rect contentRect = visiableRect.IntersectWith(RenderRect);
+            _hitTestRect = _labelRect.IntersectWith(visiableRect);
             _hitTestRect = _labelRect.IntersectWith(contentRect);
 
             if (!_isEmpty)
             {
-                _content.Segment(contentRect);
+                _content.Segment(visiableRect);
             }
 
-            return contentRect;
+            return visiableRect;
         }
 
         #endregion
