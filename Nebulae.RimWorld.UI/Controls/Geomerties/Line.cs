@@ -79,12 +79,12 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
         /// <inheritdoc/>
         protected override void DrawCore()
         {
-            Color currentColor = GUI.color;
-            GUI.color = _color;
+            Color color = GUI.color;
+            GUI.color = _color * color;
 
             GUI.DrawTexture(RenderRect, BaseContent.WhiteTex);
 
-            GUI.color = currentColor;
+            GUI.color = color;
         }
 
         /// <inheritdoc/>

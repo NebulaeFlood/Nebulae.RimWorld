@@ -137,6 +137,8 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Privaet Fields
 
+        private Color _opacityColor = new Color(1f, 1f, 1f, 1f);
+
         private string _name = string.Empty;
 
         private bool _isArrangeValid = false;
@@ -306,6 +308,30 @@ namespace Nebulae.RimWorld.UI.Controls
             get => _name;
             set => _name = value;
         }
+
+        #region Opacity
+        /// <summary>
+        /// 获取或设置控件的不透明度
+        /// </summary>
+        public float Opacity
+        {
+            get { return (float)GetValue(OpacityProperty); }
+            set { SetValue(OpacityProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Opacity"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty OpacityProperty =
+            DependencyProperty.Register(nameof(Opacity), typeof(float), typeof(Control),
+                new PropertyMetadata(1f, OnOpacityChanged));
+
+        private static void OnOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (Control)d;
+            control._opacityColor = new Color(1f, 1f, 1f, (float)e.NewValue);
+        }
+        #endregion
 
         /// <summary>
         /// 负责呈现控件的窗口
@@ -477,7 +503,14 @@ namespace Nebulae.RimWorld.UI.Controls
                 return;
             }
 
+            Color color = GUI.color;
+            Color contentColor = GUI.contentColor;
+
+            GUI.color = _opacityColor;
+            GUI.contentColor = _opacityColor;
             DrawCore();
+            GUI.color = color;
+            GUI.contentColor = contentColor;
 
             if (_showTooltip && _shouldShowTooltip)
             {

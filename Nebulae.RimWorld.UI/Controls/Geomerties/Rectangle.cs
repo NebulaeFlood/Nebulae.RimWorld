@@ -63,13 +63,12 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
         protected override void DrawCore()
         {
             Rect renderRect = RenderRect;
-
-            Color currentColor = GUI.color;
-            GUI.color = _fillColor;
+            Color color = GUI.color;
+            GUI.color = _fillColor * color;
 
             GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
 
-            GUI.color = _borderColor;
+            GUI.color = _borderColor * color;
 
             float x = renderRect.x;
             float y = renderRect.y;
@@ -88,7 +87,7 @@ namespace Nebulae.RimWorld.UI.Controls.Geomerties
                 GUI.DrawTexture(new Rect(x, y + height - _borderThickness.Bottom, width, _borderThickness.Bottom), BaseContent.WhiteTex);
             }
 
-            GUI.color = currentColor;
+            GUI.color = color;
         }
     }
 }
