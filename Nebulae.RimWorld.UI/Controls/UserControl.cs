@@ -98,7 +98,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 throw new InvalidOperationException("The content control of a page control cannot be null.");
             }
 
-            _content.SetParent(this);
+            _content.SetParentSilently(this);
         }
 
         /// <inheritdoc/>

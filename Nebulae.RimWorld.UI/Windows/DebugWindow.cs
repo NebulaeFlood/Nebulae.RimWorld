@@ -168,10 +168,10 @@ namespace Nebulae.RimWorld.UI.Windows
                     Margin = 4f,
                     Content = _infoBox
                 };
-                _infoViewer.SetParent(this);
+                _infoViewer.SetParentSilently(this);
 
                 _treeViewer = new ScrollViewer { Margin = 4f };
-                _treeViewer.SetParent(this);
+                _treeViewer.SetParentSilently(this);
             }
 
 
@@ -337,10 +337,9 @@ namespace Nebulae.RimWorld.UI.Windows
 
             protected override Rect SegmentCore(Rect visiableRect)
             {
-                Rect contentRect = visiableRect.IntersectWith(RenderRect);
-                _infoViewer.Segment(contentRect);
-                _treeViewer.Segment(contentRect);
-                return contentRect;
+                _infoViewer.Segment(visiableRect);
+                _treeViewer.Segment(visiableRect);
+                return visiableRect;
             }
 
             #endregion

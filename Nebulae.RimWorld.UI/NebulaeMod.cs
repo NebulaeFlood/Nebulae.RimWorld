@@ -10,7 +10,7 @@ namespace Nebulae.RimWorld.UI
     /// <summary>
     /// 定义一个使用 <see cref="Control"/> 作为设置窗口的 Mod
     /// </summary>
-    public interface INebulaeMod 
+    public interface INebulaeMod
     {
         /// <summary>
         /// 获取设置窗口

@@ -3,7 +3,6 @@ using System;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Data
 {

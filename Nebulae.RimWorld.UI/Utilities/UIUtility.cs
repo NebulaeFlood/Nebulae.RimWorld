@@ -22,7 +22,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// 可交互区域边框颜色
         /// </summary>
-        public static readonly Color HitBoxRectBorderColor = new Color(0f, 0f, 1f, 1f);
+        public static readonly Color ControlRectBorderColor = new Color(0f, 0f, 1f, 1f);
 
         /// <summary>
         /// <see cref="Control.RenderRect"/> 边框颜色
@@ -107,8 +107,8 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="borderColor">边框颜色</param>
         public static void DrawBorder(Rect renderRect, Color borderColor)
         {
-            Color currentColor = GUI.color;
-            GUI.color = borderColor;
+            Color color = GUI.color;
+            GUI.color = borderColor * color;
 
             float x = renderRect.x;
             float y = renderRect.y;
@@ -124,7 +124,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             // Bottom
             GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
 
-            GUI.color = currentColor;
+            GUI.color = color;
         }
 
         /// <summary>
@@ -135,8 +135,8 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="borderColor">边框颜色</param>
         public static void DrawBorder(Rect renderRect, Thickness borderThickness, Color borderColor)
         {
-            Color currentColor = GUI.color;
-            GUI.color = borderColor;
+            Color color = GUI.color;
+            GUI.color = borderColor * color;
 
             float x = renderRect.x;
             float y = renderRect.y;
@@ -155,7 +155,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 GUI.DrawTexture(new Rect(x, y + height - borderThickness.Bottom, width, borderThickness.Bottom), BaseContent.WhiteTex);
             }
 
-            GUI.color = currentColor;
+            GUI.color = color;
         }
 
         /// <summary>
@@ -165,12 +165,12 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="fillColor">矩形颜色</param>
         public static void DrawRectangle(Rect renderRect, Color fillColor)
         {
-            Color currentColor = GUI.color;
-            GUI.color = fillColor;
+            Color color = GUI.color;
+            GUI.color = fillColor * color;
 
             GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
 
-            GUI.color = currentColor;
+            GUI.color = color;
         }
 
         /// <summary>
@@ -181,12 +181,12 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="borderColor">边框颜色</param>
         public static void DrawRectangle(Rect renderRect, Color fillColor, Color borderColor)
         {
-            Color currentColor = GUI.color;
-            GUI.color = fillColor;
+            Color color = GUI.color;
+            GUI.color = fillColor * color;
 
             GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
 
-            GUI.color = borderColor;
+            GUI.color = borderColor * color;
 
             float x = renderRect.x;
             float y = renderRect.y;
@@ -202,7 +202,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             // Bottom
             GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
 
-            GUI.color = currentColor;
+            GUI.color = color;
         }
 
         /// <summary>
@@ -214,12 +214,12 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="borderColor">边框颜色</param>
         public static void DrawRectangle(Rect renderRect, Color fillColor, Thickness borderThickness, Color borderColor)
         {
-            Color currentColor = GUI.color;
-            GUI.color = fillColor;
+            Color color = GUI.color;
+            GUI.color = fillColor * color;
 
             GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
 
-            GUI.color = borderColor;
+            GUI.color = borderColor * color;
 
             float x = renderRect.x;
             float y = renderRect.y;
@@ -238,7 +238,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 GUI.DrawTexture(new Rect(x, y + height - borderThickness.Bottom, width, borderThickness.Bottom), BaseContent.WhiteTex);
             }
 
-            GUI.color = currentColor;
+            GUI.color = color;
         }
 
         /// <summary>
@@ -359,6 +359,71 @@ namespace Nebulae.RimWorld.UI.Utilities
             {
                 return align;
             }
+        }
+
+        /// <summary>
+        /// 显示控件预览
+        /// </summary>
+        /// <param name="control">要显示预览的控件</param>
+        /// <param name="xOffset">预览窗口在 x 坐标的偏移量</param>
+        /// <param name="yOffset">预览窗口在 y 坐标的偏移量</param>
+        /// <param name="opacity">预览的不透明度</param>
+        public static void ShowPreview(
+            this Control control,
+            float xOffset = 16f,
+            float yOffset = 16f,
+            float opacity = 0.8f)
+        {
+            ShowPreview(control, control.RenderSize, xOffset, yOffset, opacity);
+        }
+
+        /// <summary>
+        /// 显示控件预览
+        /// </summary>
+        /// <param name="control">要显示预览的控件</param>
+        /// <param name="bounds">预览窗口大小</param>
+        /// <param name="xOffset">预览窗口在 x 坐标的偏移量</param>
+        /// <param name="yOffset">预览窗口在 y 坐标的偏移量</param>
+        /// <param name="opacity">预览的不透明度</param>
+        public static void ShowPreview(
+            this Control control,
+            Size bounds,
+            float xOffset = 16f,
+            float yOffset = 16f,
+            float opacity = 0.8f)
+        {
+            Find.WindowStack.ImmediateWindow(
+                2351 + control.GetHashCode(),
+                new Rect(
+                    CursorUtility.CursorPosition.x + xOffset + bounds.Width > Verse.UI.screenWidth
+                        ? CursorUtility.CursorPosition.x - bounds.Width
+                        : CursorUtility.CursorPosition.x + xOffset,
+                    CursorUtility.CursorPosition.y + yOffset,
+                    bounds.Width,
+                    bounds.Height),
+                WindowLayer.Super,
+                () => DrawPreviewControl(control, bounds, opacity),
+                doBackground: false,
+                shadowAlpha: 0f);
+        }
+
+
+
+        private static void DrawPreviewControl(Control control, Size bounds, float opacity)
+        {
+            float x = control.RenderRect.x;
+            float y = control.RenderRect.y;
+            float width = x + bounds.Width;
+            float height = y + bounds.Height;
+
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            float tempOpacity = control.Opacity;
+            control.Opacity = opacity;
+            control.Draw();
+            control.Opacity = tempOpacity;
+
+            GUI.EndGroup();
         }
     }
 }
