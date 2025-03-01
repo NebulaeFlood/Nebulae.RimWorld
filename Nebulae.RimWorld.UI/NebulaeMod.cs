@@ -176,7 +176,7 @@ namespace Nebulae.RimWorld.UI
             {
                 var subscribers = GetSubcribers();
 
-                for (int i = 0; i < subscribers.Length; i++)
+                for (int i = subscribers.Count; i >= 0; i--)
                 {
                     subscribers[i].HandleModSettingsUpdated(mod, settings);
                 }
