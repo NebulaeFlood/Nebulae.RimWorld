@@ -335,7 +335,7 @@ namespace Nebulae.RimWorld.UI.Controls
             if (Widgets.ButtonText(new Rect(
                 nonClientRect.x + 154f,
                 nonClientRect.y,
-                140f,
+                130f,
                 24f), "Debug: ShowInfo")
                 && !_isEmpty)
             {
