@@ -28,8 +28,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         internal static bool PressingWindowDraggable;
 
 
-        private static float _pressingStartTime;
-        private static Vector2 _pressingPos;
+        private static Vector2 _pressStartPos;
 
 
         internal static void Click()
@@ -49,20 +48,11 @@ namespace Nebulae.RimWorld.UI.Utilities
                 DraggingControl.OnDragging(CursorPosition);
                 HoveredControl?.OnDragOver(DraggingControl);
             }
-            else if (AnyPressing
-                && PressingControl.IsDraggable
-                && Event.current.type is EventType.Repaint)
+            else if (CanDrag())
             {
-                if (!ReferenceEquals(HoveredControl, PressingControl)
-                || (_pressingStartTime + 0.45f < Time.realtimeSinceStartup
-                        && _pressingPos != CursorPosition))
-                {
-                    AnyDragging = true;
-                    DraggingControl = PressingControl;
-                    DraggingControl.OnDragStart();
-                }
-
-                _pressingPos = CursorPosition;
+                AnyDragging = true;
+                DraggingControl = PressingControl;
+                DraggingControl.OnDragStart();
             }
         }
 
@@ -95,8 +85,28 @@ namespace Nebulae.RimWorld.UI.Utilities
                 PressingWindowDraggable = HoveredWindow.draggable;
                 PressingWindow.draggable = false;
 
-                _pressingStartTime = Time.realtimeSinceStartup;
+                _pressStartPos = CursorPosition;
             }
+        }
+
+
+        private static bool CanDrag()
+        {
+            if (AnyPressing
+                && PressingControl.IsDraggable)
+            {
+                if (!ReferenceEquals(HoveredControl, PressingControl))
+                {
+                    return true;
+                }
+
+                float x = CursorPosition.x - _pressStartPos.x;
+                float y = CursorPosition.y - _pressStartPos.y;
+
+                return x * x + y * y > 2500f;
+            }
+
+            return false;
         }
     }
 }
