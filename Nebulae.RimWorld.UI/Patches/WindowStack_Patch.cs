@@ -19,27 +19,15 @@ namespace Nebulae.RimWorld.UI.Patches
 
             if (Input.GetMouseButton(0))
             {
-                CursorUtility.IsPressing = true;
+                if (!CursorUtility.IsPressing)
+                {
+                    CursorUtility.IsPressing = true;
+                    CursorUtility.PressStart = true;
+                }
             }
             else if (CursorUtility.IsPressing)
             {
-                CursorUtility.Click();
-                CursorUtility.Drop();
-
-                CursorUtility.DraggingControl = null;
-                CursorUtility.PressingControl = null;
-
-                if (CursorUtility.PressingWindowDraggable)
-                {
-                    CursorUtility.PressingWindow.draggable = true;
-                    CursorUtility.PressingWindowDraggable = false;
-                }
-
-                CursorUtility.PressingWindow = null;
-
-                CursorUtility.AnyDragging = false;
-                CursorUtility.AnyPressing = false;
-                CursorUtility.IsPressing = false;
+                CursorUtility.ReleaseButton();
             }
         }
 

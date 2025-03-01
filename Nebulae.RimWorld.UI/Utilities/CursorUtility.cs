@@ -23,22 +23,15 @@ namespace Nebulae.RimWorld.UI.Utilities
 
         internal static bool AnyDragging;
         internal static bool AnyPressing;
+
+        internal static bool IsDraggable;
         internal static bool IsPressing;
 
+        internal static bool PressStart;
         internal static bool PressingWindowDraggable;
 
 
         private static Vector2 _pressStartPos;
-
-
-        internal static void Click()
-        {
-            if (ReferenceEquals(HoveredControl, PressingControl)
-                && PressingControl is ButtonBase button)
-            {
-                button.Click();
-            }
-        }
 
 
         internal static void Drag()
@@ -48,7 +41,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 DraggingControl.OnDragging(CursorPosition);
                 HoveredControl?.OnDragOver(DraggingControl);
             }
-            else if (CanDrag())
+            else if (IsDraggable && CanDrag())
             {
                 AnyDragging = true;
                 DraggingControl = PressingControl;
@@ -56,7 +49,77 @@ namespace Nebulae.RimWorld.UI.Utilities
             }
         }
 
-        internal static void Drop()
+        internal static void Press()
+        {
+            if (PressStart)
+            {
+                PressStart = false;
+            }
+            else
+            {
+                return;
+            }
+
+            if (HoveredControl is null
+                || HoveredWindow is null)
+            {
+                return;
+            }
+
+            AnyPressing = true;
+            IsDraggable = HoveredControl.IsDraggable;
+            PressingControl = HoveredControl;
+            PressingWindow = HoveredWindow;
+            PressingWindowDraggable = HoveredWindow.draggable;
+            PressingWindow.draggable = false;
+
+            _pressStartPos = CursorPosition;
+        }
+
+        internal static void ReleaseButton()
+        {
+            Click();
+            Drop();
+
+            DraggingControl = null;
+            PressingControl = null;
+
+            if (PressingWindowDraggable)
+            {
+                PressingWindow.draggable = true;
+                PressingWindowDraggable = false;
+            }
+
+            PressingWindow = null;
+
+            AnyDragging = false;
+            AnyPressing = false;
+            IsDraggable = false;
+            IsPressing = false;
+            PressStart = false;
+        }
+
+
+        private static bool CanDrag()
+        {
+            float x = CursorPosition.x - _pressStartPos.x;
+            float y = CursorPosition.y - _pressStartPos.y;
+
+            return x * x + y * y > 2500f
+                || (Event.current.type is EventType.Repaint
+                    && !ReferenceEquals(HoveredControl, PressingControl));
+        }
+
+        private static void Click()
+        {
+            if (ReferenceEquals(HoveredControl, PressingControl)
+                && PressingControl is ButtonBase button)
+            {
+                button.Click();
+            }
+        }
+
+        private static void Drop()
         {
             if (!AnyDragging)
             {
@@ -65,48 +128,6 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             DraggingControl.OnDragStop();
             HoveredControl?.OnDrop(DraggingControl);
-        }
-
-        internal static void Press()
-        {
-            if (HoveredControl is null
-                || HoveredWindow is null)
-            {
-                return;
-            }
-
-            if (!AnyPressing
-                && IsPressing
-                && !AnyDragging)
-            {
-                AnyPressing = true;
-                PressingControl = HoveredControl;
-                PressingWindow = HoveredWindow;
-                PressingWindowDraggable = HoveredWindow.draggable;
-                PressingWindow.draggable = false;
-
-                _pressStartPos = CursorPosition;
-            }
-        }
-
-
-        private static bool CanDrag()
-        {
-            if (AnyPressing
-                && PressingControl.IsDraggable)
-            {
-                if (!ReferenceEquals(HoveredControl, PressingControl))
-                {
-                    return true;
-                }
-
-                float x = CursorPosition.x - _pressStartPos.x;
-                float y = CursorPosition.y - _pressStartPos.y;
-
-                return x * x + y * y > 2500f;
-            }
-
-            return false;
         }
     }
 }

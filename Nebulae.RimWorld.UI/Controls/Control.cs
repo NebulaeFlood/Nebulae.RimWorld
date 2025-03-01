@@ -181,22 +181,26 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 光标是否位于控件上方
         /// </summary>
-        public bool IsCursorOver => ReferenceEquals(CursorUtility.HoveredControl, this);
+        public bool IsCursorOver => !CursorUtility.IsPressing
+            && ReferenceEquals(CursorUtility.HoveredControl, this);
 
         /// <summary>
         /// 控件是否正在被拖动
         /// </summary>
-        public bool IsDragging => ReferenceEquals(CursorUtility.DraggingControl, this);
+        public bool IsDragging => CursorUtility.AnyDragging
+            && ReferenceEquals(CursorUtility.DraggingControl, this);
 
         /// <summary>
         /// 正在拖动的控件是否正在该控件上方
         /// </summary>
-        public bool IsDragOwer => CursorUtility.AnyDragging && ReferenceEquals(CursorUtility.HoveredControl, this);
+        public bool IsDragOwer => CursorUtility.AnyDragging
+            && ReferenceEquals(CursorUtility.HoveredControl, this);
 
         /// <summary>
         /// 光标是否在控件上方按下
         /// </summary>
-        public bool IsPressing => ReferenceEquals(CursorUtility.PressingControl, this);
+        public bool IsPressing => CursorUtility.AnyPressing
+            && ReferenceEquals(CursorUtility.PressingControl, this);
 
 
         /// <summary>
