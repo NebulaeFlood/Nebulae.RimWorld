@@ -155,14 +155,25 @@ namespace Nebulae.RimWorld
         /// <remarks>此方法设计用于方便对集合内容进行访问，使用时注意不要破坏当前引用关系，</remarks>
         public IEnumerator<T> GetEnumerator()
         {
-            Purge();
+            bool anyDead = false;
 
-            foreach (var item in _items)
+            for (int i = _items.Count - 1; i >= 0; i--)
             {
-                if (item.TryGetTarget(out T target))
+                if (_items[i].TryGetTarget(out T target))
                 {
                     yield return target;
                 }
+                else
+                {
+                    _items.RemoveAt(i);
+
+                    anyDead = true;
+                }
+            }
+
+            if (anyDead)
+            {
+                _items.TrimExcess();
             }
         }
 
