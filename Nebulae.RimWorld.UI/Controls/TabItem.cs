@@ -168,7 +168,12 @@ namespace Nebulae.RimWorld.UI.Controls
                 labelRect = RenderRect;
                 GUI.contentColor = contentColor * Widgets.InactiveColor;
             }
-            else if (_selected || status.HasFlag(ButtonStatus.Hovered))
+            else if (_selected || status is ButtonStatus.Pressed)
+            {
+                labelRect = RenderRect;
+                GUI.contentColor = contentColor * Color.yellow;
+            }
+            else if (status.HasFlag(ButtonStatus.Hovered))
             {
                 labelRect = new Rect(RenderRect.x + 1f, RenderRect.y, RenderRect.width, RenderRect.height);
                 GUI.contentColor = contentColor * Color.yellow;
