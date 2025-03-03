@@ -59,8 +59,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
-            _content.Arrange(availableRect);
-            return availableRect;
+            return _content.Arrange(availableRect);
         }
 
         /// <summary>
@@ -104,15 +103,13 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            _content.Measure(availableSize);
-            return availableSize;
+            return _content.Measure(availableSize);
         }
 
         /// <inheritdoc/>
         protected override Rect SegmentCore(Rect visiableRect)
         {
-            _content.Segment(visiableRect);
-            return visiableRect;
+            return _content.Segment(visiableRect);
         }
 
         #endregion
