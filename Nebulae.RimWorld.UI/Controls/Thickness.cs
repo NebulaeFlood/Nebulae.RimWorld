@@ -120,6 +120,19 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
+        /// 规范化此 <see cref="Thickness"/>
+        /// </summary>
+        /// <returns>规范后的该 <see cref="Thickness"/>。</returns>
+        public Thickness Normalize()
+        {
+            return new Thickness(
+                Left > 0 ? Mathf.Round(Left) : 0f,
+                Top > 0 ? Mathf.Round(Top) : 0f,
+                Right > 0 ? Mathf.Round(Right) : 0f,
+                Bottom > 0 ? Mathf.Round(Bottom) : 0f);
+        }
+
+        /// <summary>
         /// 返回表示当前对象的字符串
         /// </summary>
         /// <returns>表示当前对象的字符串</returns>
