@@ -1,8 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Data.Binding;
 using Nebulae.RimWorld.UI.Windows;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Nebulae.RimWorld.UI.Utilities
 {
@@ -13,20 +11,18 @@ namespace Nebulae.RimWorld.UI.Utilities
     public static class LogicalTreeUtility
     {
         /// <summary>
-        /// 获取控件树上的所有控件
+        /// 获取控件所在控件树的根控件
         /// </summary>
-        /// <param name="manager">控件树</param>
-        /// <returns>控件树上的所有控件。</returns>
-        public static IEnumerable<Control> GetLogicalChildren(this LayoutManager manager)
+        /// <param name="control">位于控件树上的控件</param>
+        /// <returns><paramref name="control"/> 所在控件树的根控件。</returns>
+        public static Control GetLogicalRoot(this Control control)
         {
-            if (manager.Root is Control control)
+            if (control.IsIndependent)
             {
-                return control.LogicalChildren;
+                return control;
             }
-            else
-            {
-                return Enumerable.Empty<Control>();
-            }
+
+            return control.LayoutManager.Root;
         }
 
         /// <summary>
