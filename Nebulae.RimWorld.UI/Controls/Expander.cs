@@ -12,23 +12,8 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 拓展器控件
     /// </summary>
-    public class Expander : FrameworkControl
+    public class Expander : ButtonBase
     {
-        #region Clicked
-
-        private readonly WeakEvent<Expander, Control> _clicked = new WeakEvent<Expander, Control>();
-
-        /// <summary>
-        /// 拓展器被单击时发生的弱事件
-        /// </summary>
-        public event Action<Expander, Control> Clicked
-        {
-            add => _clicked.Add(value, value.Invoke);
-            remove => _clicked.Remove(value);
-        }
-
-        #endregion
-
         #region Collapsed 
 
         private readonly WeakEvent<Expander, Control> _collapsed = new WeakEvent<Expander, Control>();
@@ -71,9 +56,6 @@ namespace Nebulae.RimWorld.UI.Controls
         private Control _content;
         private bool _isEmpty = true;
         private bool _isExpanded = false;
-
-        private GameFont _fontSize = GameFont.Small;
-        private string _text = string.Empty;
 
         private Rect _expandButtonRect;
         private Rect _labelRect;
@@ -134,24 +116,6 @@ namespace Nebulae.RimWorld.UI.Controls
             }
         }
 
-        /// <summary>
-        /// 字体大小
-        /// </summary>
-        public GameFont FontSize
-        {
-            get => _fontSize;
-            set => _fontSize = value;
-        }
-
-        /// <summary>
-        /// 控件文本
-        /// </summary>
-        public string Text
-        {
-            get => _text;
-            set => _text = value;
-        }
-
         #endregion
 
 
@@ -169,7 +133,9 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public Expander()
         {
+            ClickSound = SoundDefOf.Tick_Tiny;
             IsHitTestVisible = true;
+            PlayCursorOverSound = false;
         }
 
 
@@ -212,15 +178,19 @@ namespace Nebulae.RimWorld.UI.Controls
             return renderRect;
         }
 
-        /// <inheritdoc/>
-        protected override void DrawCore()
-        {
-            if (GUI.Button(_labelRect, string.Empty, Widgets.EmptyStyle))
-            {
-                _clicked.Invoke(this, _content);
-            }
 
-            if (IsCursorOver)
+        /// <inheritdoc/>
+        protected override void DrawButton(ButtonStatus status)
+        {
+            Color color = GUI.color;
+
+            bool isEnabled = !status.HasFlag(ButtonStatus.Disabled);
+
+            if (!isEnabled)
+            {
+                GUI.color = Widgets.InactiveColor * color;
+            }
+            else if (status.HasFlag(ButtonStatus.Hovered))
             {
                 GUI.DrawTexture(_labelRect, TexUI.HighlightTex);
             }
@@ -229,8 +199,8 @@ namespace Nebulae.RimWorld.UI.Controls
             GameFont font = GameText.Font;
 
             GameText.Anchor = TextAnchor.MiddleLeft;
-            GameText.Font = _fontSize;
-            GUI.Label(_labelRect, _text);
+            GameText.Font = FontSize;
+            GUI.Label(_labelRect, Text);
             GameText.Anchor = anchor;
             GameText.Font = font;
 
@@ -241,7 +211,8 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (_isExpanded)
             {
-                if (Widgets.ButtonImage(_expandButtonRect, TexButton.Collapse))
+                if (Widgets.ButtonImage(_expandButtonRect, TexButton.Collapse)
+                    && isEnabled)
                 {
                     IsExpanded = false;
                     _collapsed.Invoke(this, _content);
@@ -252,7 +223,8 @@ namespace Nebulae.RimWorld.UI.Controls
             }
             else
             {
-                if (Widgets.ButtonImage(_expandButtonRect, TexButton.Reveal))
+                if (Widgets.ButtonImage(_expandButtonRect, TexButton.Reveal)
+                    && isEnabled)
                 {
                     IsExpanded = true;
                     _expanded.Invoke(this, _content);
@@ -264,7 +236,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override void DrawInnerControlRect()
         {
-            UIUtility.DrawBorder(_expandButtonRect, UIUtility.ControlRectBorderColor);
+            UIUtility.DrawBorder(_expandButtonRect, UIUtility.ControlRectBorderBrush);
         }
 
         /// <inheritdoc/>
