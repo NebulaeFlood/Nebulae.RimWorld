@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Panels;
 using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -202,7 +203,7 @@ namespace Nebulae.RimWorld.UI.Windows
                 _sourceTree = null;
             }
 
-            public void SetInfo(Expander sender, Control content)
+            public void SetInfo(ButtonBase sender, EventArgs args)
             {
                 _infoBox.Text = sender.Tooltip.text;
             }

@@ -216,19 +216,18 @@ namespace Nebulae.RimWorld.UI.Controls
         protected override sealed void DrawButton(ButtonStatus status)
         {
             Color color = GUI.color;
-            Color contentColor = GUI.contentColor;
             bool isDisabled = status.HasFlag(ButtonStatus.Disabled);
 
-            if (isDisabled)
-            {
-                GUI.color = _compositionColor * Widgets.InactiveColor * color;
-                GUI.contentColor = _compositionColor * Widgets.InactiveColor * contentColor;
-            }
+            GUI.color = isDisabled
+                ? _compositionColor * Widgets.InactiveColor * color
+                : _compositionColor * color;
 
             DrawBackground(status);
 
             if ((_status & ContentStatus.TextSetted) != 0)
             {
+                GUI.color = Color.white;
+
                 TextAnchor anchor = GameText.Anchor;
                 GameFont font = GameText.Font;
                 GameText.Anchor = TextAnchor.MiddleLeft;
@@ -243,17 +242,16 @@ namespace Nebulae.RimWorld.UI.Controls
             if ((_status & ContentStatus.IconSetted) != 0)
             {
                 if (_iconHighlightable
+                    && !isDisabled
                     && status.HasFlag(ButtonStatus.Hovered))
                 {
-                    color = GUI.color;
-                    GUI.color = _compositionColor * GenUI.MouseoverColor * color;
+                    GUI.color = _compositionColor * color * GenUI.MouseoverColor;
                 }
 
                 GUI.DrawTexture(_iconRenderRect, _icon, ScaleMode.ScaleToFit);
             }
 
             GUI.color = color;
-            GUI.contentColor = color;
         }
 
         /// <inheritdoc/>

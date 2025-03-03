@@ -30,6 +30,15 @@ namespace Nebulae.RimWorld.UI.Utilities
         public static readonly Color RederRectBorderColor = new Color(1f, 1f, 1f, 1f);
 
 
+        internal static readonly GUIStyle[] InputBoxStyles = new GUIStyle[12];
+
+
+        /// <summary>
+        /// UI 界面材质是否已完全加载
+        /// </summary>
+        public static bool SourceInitialized { get; internal set; }
+
+
         /// <summary>
         /// 计算按照指定对齐方式放置到指定区域后的矩形
         /// </summary>
@@ -104,6 +113,28 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// 绘制边框
         /// </summary>
         /// <param name="renderRect">绘制边框的区域</param>
+        /// <param name="borderBrush">边框画刷</param>
+        public static void DrawBorder(Rect renderRect, Texture2D borderBrush)
+        {
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
+            // Left
+            GUI.DrawTexture(new Rect(x, y, 1f, height), borderBrush);
+            // Top
+            GUI.DrawTexture(new Rect(x, y, width, 1f), borderBrush);
+            // Right
+            GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), borderBrush);
+            // Bottom
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), borderBrush);
+        }
+
+        /// <summary>
+        /// 绘制边框
+        /// </summary>
+        /// <param name="renderRect">绘制边框的区域</param>
         /// <param name="borderColor">边框颜色</param>
         public static void DrawBorder(Rect renderRect, Color borderColor)
         {
@@ -125,6 +156,32 @@ namespace Nebulae.RimWorld.UI.Utilities
             GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
 
             GUI.color = color;
+        }
+
+        /// <summary>
+        /// 绘制边框
+        /// </summary>
+        /// <param name="renderRect">绘制边框的区域</param>
+        /// <param name="borderThickness">边框粗细</param>
+        /// <param name="borderBrush">边框画刷</param>
+        public static void DrawBorder(Rect renderRect, Thickness borderThickness, Texture2D borderBrush)
+        {
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
+            if (borderThickness != 0f)
+            {
+                // Left
+                GUI.DrawTexture(new Rect(x, y, borderThickness.Left, height), borderBrush);
+                // Top
+                GUI.DrawTexture(new Rect(x, y, width, borderThickness.Top), borderBrush);
+                // Right
+                GUI.DrawTexture(new Rect(x + width - borderThickness.Right, y, borderThickness.Right, height), borderBrush);
+                // Bottom
+                GUI.DrawTexture(new Rect(x, y + height - borderThickness.Bottom, width, borderThickness.Bottom), borderBrush);
+            }
         }
 
         /// <summary>
@@ -159,6 +216,52 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
+        /// 绘制线段
+        /// </summary>
+        /// <param name="renderRect">绘制线段的位置</param>
+        /// <param name="lineColor">线段颜色</param>
+        public static void DrawLine(Rect renderRect, Color lineColor)
+        {
+            Color color = GUI.color;
+            GUI.color = lineColor * color;
+
+            GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
+
+            GUI.color = color;
+        }
+
+        /// <summary>
+        /// 绘制多条线段
+        /// </summary>
+        /// <param name="brush">线段画刷</param>
+        /// <param name="renderRects">绘制线段的位置</param>
+        public static void DrawLines(Texture2D brush, params Rect[] renderRects)
+        {
+            for (int i = 0; i < renderRects.Length; i++)
+            {
+                GUI.DrawTexture(renderRects[i], brush);
+            }
+        }
+
+        /// <summary>
+        /// 绘制多条线段
+        /// </summary>
+        /// <param name="lineColor">线段颜色</param>
+        /// <param name="renderRects">绘制线段的位置</param>
+        public static void DrawLines(Color lineColor, params Rect[] renderRects)
+        {
+            Color color = GUI.color;
+            GUI.color = lineColor * color;
+
+            for (int i = 0; i < renderRects.Length; i++)
+            {
+                GUI.DrawTexture(renderRects[i], BaseContent.WhiteTex);
+        }
+
+            GUI.color = color;
+        }
+
+        /// <summary>
         /// 绘制矩形
         /// </summary>
         /// <param name="renderRect">绘制矩形的区域</param>
@@ -169,6 +272,61 @@ namespace Nebulae.RimWorld.UI.Utilities
             GUI.color = fillColor * color;
 
             GUI.DrawTexture(renderRect, BaseContent.WhiteTex);
+
+            GUI.color = color;
+        }
+
+        /// <summary>
+        /// 绘制有边框的矩形
+        /// </summary>
+        /// <param name="renderRect">绘制矩形的区域</param>
+        /// <param name="background">背景画刷</param>
+        /// <param name="borderBrush">边框画刷</param>
+        public static void DrawRectangle(Rect renderRect, Texture2D background, Texture2D borderBrush)
+        {
+            GUI.DrawTexture(renderRect, background);
+
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
+            // Left
+            GUI.DrawTexture(new Rect(x, y, 1f, height), borderBrush);
+            // Top
+            GUI.DrawTexture(new Rect(x, y, width, 1f), borderBrush);
+            // Right
+            GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), borderBrush);
+            // Bottom
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), borderBrush);
+        }
+
+        /// <summary>
+        /// 绘制有边框的矩形
+        /// </summary>
+        /// <param name="renderRect">绘制矩形的区域</param>
+        /// <param name="background">背景画刷</param>
+        /// <param name="borderColor">边框颜色</param>
+        public static void DrawRectangle(Rect renderRect, Texture2D background, Color borderColor)
+        {
+            GUI.DrawTexture(renderRect, background);
+
+            Color color = GUI.color;
+            GUI.color = borderColor * color;
+
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
+            // Left
+            GUI.DrawTexture(new Rect(x, y, 1f, height), BaseContent.WhiteTex);
+            // Top
+            GUI.DrawTexture(new Rect(x, y, width, 1f), BaseContent.WhiteTex);
+            // Right
+            GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), BaseContent.WhiteTex);
+            // Bottom
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
 
             GUI.color = color;
         }
@@ -209,6 +367,35 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// 绘制有边框的矩形
         /// </summary>
         /// <param name="renderRect">绘制矩形的区域</param>
+        /// <param name="background">背景画刷</param>
+        /// <param name="borderThickness">边框粗细</param>
+        /// <param name="borderBrush">边框画刷</param>
+        public static void DrawRectangle(Rect renderRect, Texture2D background, Thickness borderThickness, Texture2D borderBrush)
+        {
+            GUI.DrawTexture(renderRect, background);
+
+            float x = renderRect.x;
+            float y = renderRect.y;
+            float width = renderRect.width;
+            float height = renderRect.height;
+
+            if (borderThickness != 0f)
+            {
+                // Left
+                GUI.DrawTexture(new Rect(x, y, borderThickness.Left, height), borderBrush);
+                // Top
+                GUI.DrawTexture(new Rect(x, y, width, borderThickness.Top), borderBrush);
+                // Right
+                GUI.DrawTexture(new Rect(x + width - borderThickness.Right, y, borderThickness.Right, height), borderBrush);
+                // Bottom
+                GUI.DrawTexture(new Rect(x, y + height - borderThickness.Bottom, width, borderThickness.Bottom), borderBrush);
+            }
+        }
+
+        /// <summary>
+        /// 绘制有边框的矩形
+        /// </summary>
+        /// <param name="renderRect">绘制矩形的区域</param>
         /// <param name="fillColor">矩形颜色</param>
         /// <param name="borderThickness">边框粗细</param>
         /// <param name="borderColor">边框颜色</param>
@@ -239,6 +426,42 @@ namespace Nebulae.RimWorld.UI.Utilities
             }
 
             GUI.color = color;
+        }
+
+        /// <summary>
+        /// 绘制输入框
+        /// </summary>
+        /// <param name="renderRect">绘制控件的位置</param>
+        /// <param name="text">输入框内的文字</param>
+        /// <param name="fontSize">字体尺寸</param>
+        /// <param name="isReadOnly">输入框是否为只读状态</param>
+        /// <param name="wrapText">输入框文字是否自动换行</param>
+        /// <returns>用户输入后的文字。</returns>
+        public static string DrawInputBox(Rect renderRect, string text, GameFont fontSize, bool isReadOnly, bool wrapText)
+        {
+            int style;
+
+            switch (fontSize)
+            {
+                case GameFont.Tiny:
+                    style = 0;
+                    break;
+                case GameFont.Medium:
+                    style = 2;
+                    break;
+                default:
+                    style = 1;
+                    break;
+            }
+
+            if (isReadOnly)
+            {
+                style += 3;
+            }
+
+            return wrapText
+                ? GUI.TextArea(renderRect, text, InputBoxStyles[style])
+                : GUI.TextField(renderRect, text, InputBoxStyles[style + 6]);
         }
 
         /// <summary>
@@ -374,7 +597,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             float yOffset = 16f,
             float opacity = 0.8f)
         {
-            ShowPreview(control, control.RenderSize, xOffset, yOffset, opacity);
+            ShowPreview(control, control.RenderRect, xOffset, yOffset, opacity);
         }
 
         /// <summary>
@@ -395,10 +618,10 @@ namespace Nebulae.RimWorld.UI.Utilities
             Find.WindowStack.ImmediateWindow(
                 2351 + control.GetHashCode(),
                 new Rect(
-                    CursorUtility.CursorPosition.x + xOffset + bounds.Width > Verse.UI.screenWidth
-                        ? CursorUtility.CursorPosition.x - bounds.Width
-                        : CursorUtility.CursorPosition.x + xOffset,
-                    CursorUtility.CursorPosition.y + yOffset,
+                    MouseUtility.CursorPosition.x + xOffset + bounds.Width > Verse.UI.screenWidth
+                        ? MouseUtility.CursorPosition.x - bounds.Width
+                        : MouseUtility.CursorPosition.x + xOffset,
+                    MouseUtility.CursorPosition.y + yOffset,
                     bounds.Width,
                     bounds.Height),
                 WindowLayer.Super,
@@ -407,6 +630,33 @@ namespace Nebulae.RimWorld.UI.Utilities
                 shadowAlpha: 0f);
         }
 
+
+        internal static void InitializeStyles()
+        {
+            GUIStyle style;
+
+            for (int i = 0; i < 3; i++)
+            {
+                style = new GUIStyle(Text.textAreaStyles[i]) { richText = true };
+                InputBoxStyles[i] = style;
+                InputBoxStyles[i + 3] = new GUIStyle(style)
+                {
+                    focused = style.normal,
+                    hover = style.normal
+                };
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                style = new GUIStyle(Text.textFieldStyles[i]) { richText = true };
+                InputBoxStyles[i + 6] = style;
+                InputBoxStyles[i + 9] = new GUIStyle(style)
+                {
+                    focused = style.normal,
+                    hover = style.normal
+                };
+            }
+        }
 
 
         private static void DrawPreviewControl(Control control, Size bounds, float opacity)
@@ -418,10 +668,15 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             GUI.BeginGroup(new Rect(-x, -y, width, height));
 
-            float tempOpacity = control.Opacity;
-            control.Opacity = opacity;
+            Color color = GUI.color;
+            Color contentColor = GUI.contentColor;
+            Color opacityColor = new Color(1f, 1f, 1f, opacity);
+
+            GUI.color = opacityColor * color;
+            GUI.contentColor = opacityColor * contentColor;
             control.Draw();
-            control.Opacity = tempOpacity;
+            GUI.color = color;
+            GUI.contentColor = contentColor;
 
             GUI.EndGroup();
         }

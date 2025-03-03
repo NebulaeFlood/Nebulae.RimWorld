@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.Utilities;
+﻿using Nebulae.RimWorld.UI.Utilities;
+using Nebulae.RimWorld.Utilities;
 using System;
 using System.Collections.Generic;
 using Verse;
@@ -53,7 +54,9 @@ namespace Nebulae.RimWorld.UI
     {
         static StartUp()
         {
+            UIUtility.InitializeStyles();
             StartUpQuestManager.FinishQuests();
+            UIUtility.SourceInitialized = true;
         }
     }
 }

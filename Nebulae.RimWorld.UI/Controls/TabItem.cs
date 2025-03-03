@@ -1,5 +1,4 @@
-﻿using Nebulae.RimWorld.UI.Utilities;
-using RimWorld;
+﻿using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -115,7 +114,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     _selected = value;
 
-                    PlayMouseOverSound = !value;
+                    PlayCursorOverSound = !_selected;
                 }
             }
         }
@@ -161,33 +160,22 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override void DrawButton(ButtonStatus status)
         {
-            Color color = GUI.color;
-            Color textColor;
-
+            Color contentColor = GUI.contentColor;
             Rect labelRect;
 
-            if (status is ButtonStatus.Pressed
-                || _selected)
+            if (status.HasFlag(ButtonStatus.Disabled))
             {
                 labelRect = RenderRect;
-                textColor = Color.yellow;
+                GUI.contentColor = contentColor * Widgets.InactiveColor;
             }
-            else if (status is ButtonStatus.Hovered)
+            else if (_selected || status.HasFlag(ButtonStatus.Hovered))
             {
                 labelRect = new Rect(RenderRect.x + 1f, RenderRect.y, RenderRect.width, RenderRect.height);
-                textColor = Color.yellow;
+                GUI.contentColor = contentColor * Color.yellow;
             }
             else
             {
                 labelRect = RenderRect;
-                textColor = Color.white;
-            }
-
-            if (status.HasFlag(ButtonStatus.Disabled))
-            {
-                GUI.color = Color.white * Widgets.InactiveColor;
-
-                textColor *= Widgets.InactiveColor;
             }
 
             Widgets.DrawTexturePart(_leftRect, _leftUVRect, TabAtlas);
@@ -199,25 +187,13 @@ namespace Nebulae.RimWorld.UI.Controls
                 Widgets.DrawTexturePart(_bottomRect, _bottomUVRect, TabAtlas);
             }
 
-            GUI.color = textColor;
-
             TextAnchor anchor = GameText.Anchor;
             GameText.Anchor = TextAnchor.MiddleCenter;
 
             Widgets.Label(labelRect, Text);
 
             GameText.Anchor = anchor;
-            GUI.color = color;
-        }
-
-        /// <inheritdoc/>
-        protected override Rect HitTestCore(Rect contentRect)
-        {
-            return contentRect.IntersectWith(new Rect(
-                RenderRect.x + TabControl.IntersectedWidth,
-                RenderRect.y,
-                RenderSize.Width - 2f * TabControl.IntersectedWidth,
-                RenderSize.Height));
+            GUI.contentColor = contentColor;
         }
 
         /// <inheritdoc/>

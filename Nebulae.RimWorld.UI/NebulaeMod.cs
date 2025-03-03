@@ -75,6 +75,7 @@ namespace Nebulae.RimWorld.UI
             _settings = GetSettings<T>();
 
             StartUpQuestManager.AddQuest(InitializeSettingWindow);
+            UIPatch.UIEvent.Manage(this);
         }
 
 
@@ -176,7 +177,7 @@ namespace Nebulae.RimWorld.UI
             {
                 var subscribers = GetSubcribers();
 
-                for (int i = subscribers.Count; i >= 0; i--)
+                for (int i = subscribers.Count - 1; i >= 0; i--)
                 {
                     subscribers[i].HandleModSettingsUpdated(mod, settings);
                 }

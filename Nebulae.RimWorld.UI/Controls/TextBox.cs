@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
@@ -11,6 +12,9 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class TextBox : FocusableControl
     {
+        internal static readonly GUIStyle[] Styles;
+
+
         private bool _isReadOnly = false;
         private bool _wrapText = true;
 
@@ -114,41 +118,35 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override void DrawControl()
         {
-            GameFont currentFont = GameText.Font;
-            GameText.Font = FontSize;
+            Color color = GUI.color;
+            GameFont controlFont = FontSize;
+            GameFont font = GameText.Font;
+            GameText.Font = controlFont;
 
-            if (_wrapText)
+            bool isDisabled = !IsEnabled;
+
+            if (isDisabled)
             {
-                if (_isReadOnly)
-                {
-                    GUI.TextArea(RenderRect, Text, GameText.CurTextAreaReadOnlyStyle);
-                }
-                else
-                {
-                    string text = GUI.TextArea(RenderRect, Text, GameText.CurTextAreaStyle);
-                    if (Text != text && (InputValidator is null || InputValidator.IsMatch(text)))
-                    {
-                        Text = text;
-                    }
-                }
+                GUI.color = color * Widgets.InactiveColor;
+            }
+
+            if (_isReadOnly || isDisabled)
+            {
+                UIUtility.DrawInputBox(RenderRect, Text, controlFont, true, _wrapText);
             }
             else
             {
-                if (_isReadOnly)
+                string text = Text;
+                string buffer = UIUtility.DrawInputBox(RenderRect, text, controlFont, false, _wrapText);
+
+                if (text != buffer && (InputValidator is null || InputValidator.IsMatch(buffer)))
                 {
-                    GUI.TextField(RenderRect, Text, GameText.CurTextFieldStyle);
-                }
-                else
-                {
-                    string text = GUI.TextField(RenderRect, Text, GameText.CurTextFieldStyle);
-                    if (Text != text && (InputValidator is null || InputValidator.IsMatch(text)))
-                    {
-                        Text = text;
-                    }
+                    Text = buffer;
                 }
             }
 
-            GameText.Font = currentFont;
+            GUI.color = color;
+            GameText.Font = font;
         }
     }
 }

@@ -104,6 +104,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public void ForceFocus()
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             _status = Status.ForceFocusing;
         }
 
@@ -112,6 +117,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public void GetFocus()
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             _status = Status.WillFocus;
         }
 
@@ -142,7 +152,6 @@ namespace Nebulae.RimWorld.UI.Controls
             DrawControl();
 
             bool isFocusing = UpdateStatus();
-            bool isForceFocusing = _status.HasFlag(Status.ForceFocusing);
 
             if (_status.HasFlag(Status.LossingFocus))
             {
@@ -156,7 +165,7 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 Verse.UI.FocusControl(_focusIndex, AssociatedWindow);
 
-                _status = isForceFocusing
+                _status = _status.HasFlag(Status.ForceFocusing)
                      ? Status.Focusing | Status.ForceFocusing
                      : Status.Focusing;
             }
@@ -172,25 +181,35 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private bool UpdateStatus()
         {
-            if (_focusIndex == GUI.GetNameOfFocusedControl())
+            if (_focusIndex != GUI.GetNameOfFocusedControl())
             {
-                FocusingControl = this;
+                if (OriginalEventUtility.EventType is EventType.MouseDown
+                    && IsCursorOver)
+                {
+                    _status |= Status.WillFocus;
+                }
 
-                _status |= Status.Focusing;
-            }
-            else
-            {
                 return false;
             }
 
-            if (!_status.HasFlag(Status.ForceFocusing))
+            FocusingControl = this;
+
+            _status |= Status.Focusing;
+
+            if (!IsEnabled)
             {
-                if (Event.current.type is EventType.MouseDown
-                    && !IsCursorOver)
-                {
-                    _status |= Status.LossingFocus;
-                    return true;
-                }
+                _status |= Status.LossingFocus;
+
+                return true;
+            }
+
+            if (!_status.HasFlag(Status.ForceFocusing)
+                && OriginalEventUtility.EventType is EventType.MouseDown
+                && !IsCursorOver)
+            {
+                _status |= Status.LossingFocus;
+
+                return true;
             }
 
             return true;

@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
 using System;
 using Verse;
@@ -65,9 +66,9 @@ namespace Nebulae.RimWorld.UI.Controls
         private SoundDef _clickSound = SoundDefOf.Click;
         private SoundDef _cursorOverSound = SoundDefOf.Mouseover_Standard;
 
-        private bool _cursorOverSoundPlayed = false;
-        private bool _isEnabled = true;
         private bool _playMouseOverSound = true;
+
+        private string _text = string.Empty;
 
         #endregion
 
@@ -117,40 +118,22 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
         /// <summary>
-        /// 按钮是否启用
-        /// </summary>
-        public bool IsEnabled
-        {
-            get => _isEnabled;
-            set => _isEnabled = value;
-        }
-
-        /// <summary>
         /// 当光标位于按钮上方时是否播放音效
         /// </summary>
-        public bool PlayMouseOverSound
+        public bool PlayCursorOverSound
         {
             get => _playMouseOverSound;
             set => _playMouseOverSound = value;
         }
 
-        #region Text
         /// <summary>
-        /// 获取或设置按钮文本
+        /// 按钮的文本
         /// </summary>
         public string Text
         {
-            get { return (string)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            get => _text;
+            set => _text = value ?? string.Empty;
         }
-
-        /// <summary>
-        /// 标识 <see cref="Text"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty TextProperty =
-            DependencyProperty.Register(nameof(Text), typeof(string), typeof(ButtonBase),
-                new PropertyMetadata(string.Empty));
-        #endregion
 
         #endregion
 
@@ -188,47 +171,32 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected sealed override void DrawCore()
         {
-            bool isCursorOver = IsCursorOver;
             bool isPressing = IsPressing;
+            bool isCursorOver = MouseUtility.LeftButtonPressing
+                ? isPressing
+                : IsCursorOver;
 
             ButtonStatus status;
 
-            if (!_isEnabled)
-            {
-                status = ButtonStatus.Disabled;
-            }
-            else if (isPressing)
-            {
-                status = ButtonStatus.Pressed;
-            }
-            else if (isCursorOver)
-            {
-                status = ButtonStatus.Hovered;
-            }
-            else
+            if (IsEnabled)
             {
                 status = ButtonStatus.Normal;
             }
-
-            DrawButton(status);
-
-            if (!_playMouseOverSound)
-            {
-                return;
-            }
-
-            if (isCursorOver || isPressing)
-            {
-                if (!_cursorOverSoundPlayed)
-                {
-                    _cursorOverSoundPlayed = true;
-                    _cursorOverSound.PlayOneShotOnCamera();
-                }
-            }
             else
             {
-                _cursorOverSoundPlayed = false;
+                status = ButtonStatus.Disabled;
             }
+
+            if (isPressing)
+            {
+                status |= ButtonStatus.Pressed;
+            }
+            else if (isCursorOver)
+            {
+                status |= ButtonStatus.Hovered;
+            }
+
+            DrawButton(status);
         }
 
         /// <summary>
@@ -237,6 +205,20 @@ namespace Nebulae.RimWorld.UI.Controls
         protected virtual void OnClick()
         {
             _clickSound?.PlayOneShotOnCamera();
+        }
+
+        /// <inheritdoc/>
+        protected internal override void OnCursorEnter()
+        {
+            if (MouseUtility.IsPressing
+                || !IsEnabled
+                || !_playMouseOverSound
+                || _cursorOverSound is null)
+            {
+                return;
+            }
+
+            _cursorOverSound.PlayOneShotOnCamera();
         }
 
         #endregion

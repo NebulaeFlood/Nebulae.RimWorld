@@ -53,7 +53,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 所有控件的基类，定义了控件的共同特性
     /// </summary>
-    public abstract class Control : DependencyObject
+    public abstract partial class Control : DependencyObject
     {
         //------------------------------------------------------
         //
@@ -153,6 +153,7 @@ namespace Nebulae.RimWorld.UI.Controls
         private string _name = string.Empty;
 
         private bool _isDraggable = false;
+        private bool _isEnabled = true;
         private bool _isHitTestVisible = false;
         private bool _isIndependent = true;
 
@@ -181,26 +182,25 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 光标是否位于控件上方
         /// </summary>
-        public bool IsCursorOver => !CursorUtility.IsPressing
-            && ReferenceEquals(CursorUtility.HoveredControl, this);
+        public bool IsCursorOver => ReferenceEquals(MouseUtility.HoveredControl, this);
 
         /// <summary>
         /// 控件是否正在被拖动
         /// </summary>
-        public bool IsDragging => CursorUtility.AnyDragging
-            && ReferenceEquals(CursorUtility.DraggingControl, this);
+        public bool IsDragging => MouseUtility.AnyDragging
+            && ReferenceEquals(MouseUtility.DraggingControl, this);
 
         /// <summary>
         /// 正在拖动的控件是否正在该控件上方
         /// </summary>
-        public bool IsDragOwer => CursorUtility.AnyDragging
-            && ReferenceEquals(CursorUtility.HoveredControl, this);
+        public bool IsDragOwer => MouseUtility.AnyDragging
+            && ReferenceEquals(MouseUtility.HoveredControl, this);
 
         /// <summary>
         /// 光标是否在控件上方按下
         /// </summary>
-        public bool IsPressing => CursorUtility.AnyPressing
-            && ReferenceEquals(CursorUtility.PressingControl, this);
+        public bool IsPressing => MouseUtility.AnyPressing
+            && ReferenceEquals(MouseUtility.PressingControl, this);
 
 
         /// <summary>
@@ -233,6 +233,31 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             get => _isDraggable;
             set => _isDraggable = value;
+        }
+
+        /// <summary>
+        /// 是否在界面中启用该控件
+        /// </summary>
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set
+            {
+                if (_isEnabled != value)
+                {
+                    _isEnabled = value;
+                    _shouldShowTooltip = _isEnabled && _showTooltip
+                        && (!string.IsNullOrEmpty(_tooltip.text)
+                            || _tooltip.textGetter != null);
+
+                    foreach (var child in LogicalChildren)
+                    {
+                        child.IsEnabled = _isEnabled;
+                    }
+
+                    OnIsEnabledChanged(_isEnabled);
+                }
+            }
         }
 
         /// <summary>
@@ -355,7 +380,7 @@ namespace Nebulae.RimWorld.UI.Controls
         public Thickness Margin
         {
             get { return (Thickness)GetValue(MarginProperty); }
-            set { SetValue(MarginProperty, value); }
+            set { SetValue(MarginProperty, value.Normalize()); }
         }
 
         /// <summary>
@@ -423,7 +448,7 @@ namespace Nebulae.RimWorld.UI.Controls
         public Thickness Padding
         {
             get { return (Thickness)GetValue(PaddingProperty); }
-            set { SetValue(PaddingProperty, value); }
+            set { SetValue(PaddingProperty, value.Normalize()); }
         }
 
         /// <summary>
@@ -440,7 +465,13 @@ namespace Nebulae.RimWorld.UI.Controls
         public bool ShowTooltip
         {
             get => _showTooltip;
-            set => _showTooltip = value;
+            set
+            {
+                _showTooltip = value;
+                _shouldShowTooltip = _isEnabled && _showTooltip
+                    && (!string.IsNullOrEmpty(_tooltip.text)
+                        || _tooltip.textGetter != null);
+        }
         }
 
         /// <summary>
@@ -452,8 +483,9 @@ namespace Nebulae.RimWorld.UI.Controls
             set
             {
                 _tooltip = value;
-                _shouldShowTooltip = !string.IsNullOrEmpty(value.text)
-                    || value.textGetter != null;
+                _shouldShowTooltip = _isEnabled && _showTooltip
+                    && (!string.IsNullOrEmpty(value.text)
+                        || value.textGetter != null);
             }
         }
 
@@ -575,9 +607,9 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (_isHitTestVisible
                 && ControlRect.Contains(Event.current.mousePosition)
-                && ReferenceEquals(Owner, CursorUtility.HoveredWindow))
+                && ReferenceEquals(Owner, MouseUtility.HoveredWindow))
             {
-                CursorUtility.HoveredControl = this;
+                MouseUtility.CurrentHoveredControl = this;
             }
 
             Color color = GUI.color;
@@ -589,7 +621,7 @@ namespace Nebulae.RimWorld.UI.Controls
             GUI.color = color;
             GUI.contentColor = contentColor;
 
-            if (_showTooltip && _shouldShowTooltip)
+            if (_shouldShowTooltip && !MouseUtility.IsPressing)
             {
                 TooltipHandler.TipRegion(ContentRect, _tooltip);
             }
@@ -851,61 +883,6 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="availableSize">分配给控件的可用空间</param>
         /// <returns>呈现控件内容需要的尺寸。</returns>
         protected virtual Size MeasureCore(Size availableSize) => availableSize;
-
-        /// <summary>
-        /// 当控件正在被拖动时执行的方法
-        /// </summary>
-        /// <param name="cursorPos">光标的坐标（和窗口在同一坐标系）</param>
-        protected internal virtual void OnDragging(Vector2 cursorPos)
-        {
-        }
-
-        /// <summary>
-        /// 当拖动的控件在此控件上方时执行的方法
-        /// </summary>
-        /// <param name="draggingControl">正在拖动的控件</param>
-        protected internal virtual void OnDragOver(Control draggingControl)
-        {
-        }
-
-        /// <summary>
-        /// 当控件开始被拖动时执行的方法
-        /// </summary>
-        protected internal virtual void OnDragStart()
-        {
-        }
-
-        /// <summary>
-        /// 当控件停止被拖动时执行的方法
-        /// </summary>
-        protected internal virtual void OnDragStop()
-        {
-        }
-
-        /// <summary>
-        /// 当正在拖动的控件在此控件内被放下时执行的方法
-        /// </summary>
-        /// <param name="droppedControl">被放下的控件</param>
-        protected internal virtual void OnDrop(Control droppedControl)
-        {
-        }
-
-        /// <inheritdoc/>
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args)
-        {
-            if ((_isArrangeValid || _isMeasureValid)
-                && args.Metadata is ControlPropertyMetadata metadata)
-            {
-                if (metadata.Relation is ControlRelation.Measure)
-                {
-                    InvalidateMeasure();
-                }
-                else if (metadata.Relation is ControlRelation.Arrange)
-                {
-                    InvalidateArrange();
-                }
-            }
-        }
 
         /// <summary>
         /// 计算该控件呈现内容的可见区域
