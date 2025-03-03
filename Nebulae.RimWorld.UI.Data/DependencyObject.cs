@@ -17,9 +17,9 @@ namespace Nebulae.RimWorld.UI.Data
         /// <summary>
         /// 提供给 <see cref="BindingBase"/> 的当依赖属性值发生变化时触发的事件
         /// </summary>
-        internal event PropertyChangedCallback DependencyPropertyChanged
+        internal event DependencyPropertyChangedEventHandler DependencyPropertyChanged
         {
-            add => _dependencyPropertyChanged.Add(value, value.Invoke);
+            add => _dependencyPropertyChanged.Add(value);
             remove => _dependencyPropertyChanged.Remove(value);
         }
 
@@ -87,7 +87,11 @@ namespace Nebulae.RimWorld.UI.Data
                     return;
                 }
 
-                if (CompareAndUpdate(oldEntry.TemporaryValue, oldEntry.Value, ForceValueStatus.Common, out var newEntry))
+                if (CompareAndUpdate(
+                    oldEntry.TemporaryValue,
+                    oldEntry.Value,
+                    ForceValueStatus.Common,
+                    out var newEntry))
                 {
                     return;
                 }
