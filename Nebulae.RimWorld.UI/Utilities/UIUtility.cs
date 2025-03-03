@@ -12,22 +12,22 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// <see cref="Control.ContentRect"/> 边框颜色
         /// </summary>
-        public static readonly Color ContentRectBorderColor = new Color(0f, 1f, 0f, 1f);
+        public static readonly Texture2D ContentRectBorderBrush = new Color(0f, 1f, 0f, 1f).ToBrush();
 
         /// <summary>
         /// <see cref="Control.DesiredRect"/> 边框颜色
         /// </summary>
-        public static readonly Color DesiredRectBorderColor = new Color(1f, 0.9215686f, 0.0156862f, 1f);
+        public static readonly Texture2D DesiredRectBorderBrush = new Color(1f, 0.9215686f, 0.0156862f, 1f).ToBrush();
 
         /// <summary>
         /// 可交互区域边框颜色
         /// </summary>
-        public static readonly Color ControlRectBorderColor = new Color(0f, 0f, 1f, 1f);
+        public static readonly Texture2D ControlRectBorderBrush = new Color(0f, 0f, 1f, 1f).ToBrush();
 
         /// <summary>
         /// <see cref="Control.RenderRect"/> 边框颜色
         /// </summary>
-        public static readonly Color RederRectBorderColor = new Color(1f, 1f, 1f, 1f);
+        public static readonly Texture2D RederRectBorderBrush = new Color(1f, 1f, 1f, 1f).ToBrush();
 
 
         internal static readonly GUIStyle[] InputBoxStyles = new GUIStyle[12];
@@ -107,6 +107,36 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             Text.Font = currentFont;
             return new Size(width, height);
+        }
+
+        /// <summary>
+        /// 在一个新位置绘制控件的副本
+        /// </summary>
+        /// <param name="control">要绘制的控件</param>
+        /// <param name="renderRect">绘制副本的位置</param>
+        /// <param name="opacity">副本的不透明度</param>
+        public static void DrawAt(this Control control, Rect renderRect, float opacity = 1f)
+        {
+            float x = control.RenderRect.x;
+            float y = control.RenderRect.y;
+            float width = x + renderRect.width;
+            float height = y + renderRect.height;
+
+            GUI.BeginClip(renderRect);
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            Color color = GUI.color;
+            Color contentColor = GUI.contentColor;
+            Color opacityColor = new Color(1f, 1f, 1f, opacity);
+
+            GUI.color = opacityColor * color;
+            GUI.contentColor = opacityColor * contentColor;
+            control.Draw();
+            GUI.color = color;
+            GUI.contentColor = contentColor;
+
+            GUI.EndGroup();
+            GUI.EndClip();
         }
 
         /// <summary>
@@ -256,7 +286,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             for (int i = 0; i < renderRects.Length; i++)
             {
                 GUI.DrawTexture(renderRects[i], BaseContent.WhiteTex);
-        }
+            }
 
             GUI.color = color;
         }

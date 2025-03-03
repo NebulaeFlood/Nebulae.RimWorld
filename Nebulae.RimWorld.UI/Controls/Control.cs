@@ -471,7 +471,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 _shouldShowTooltip = _isEnabled && _showTooltip
                     && (!string.IsNullOrEmpty(_tooltip.text)
                         || _tooltip.textGetter != null);
-        }
+            }
         }
 
         /// <summary>
@@ -574,22 +574,22 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (content.HasFlag(DebugContent.RenderRect) && RenderSize != 0f)
             {
-                UIUtility.DrawBorder(RenderRect, UIUtility.RederRectBorderColor);
+                UIUtility.DrawBorder(RenderRect, UIUtility.RederRectBorderBrush);
             }
 
             if (content.HasFlag(DebugContent.ContentRect) && ContentSize != 0f)
             {
-                UIUtility.DrawBorder(ContentRect, UIUtility.ContentRectBorderColor);
+                UIUtility.DrawBorder(ContentRect, UIUtility.ContentRectBorderBrush);
             }
 
             if (content.HasFlag(DebugContent.DesiredRect) && DesiredSize != 0f)
             {
-                UIUtility.DrawBorder(DesiredRect, UIUtility.DesiredRectBorderColor);
+                UIUtility.DrawBorder(DesiredRect, UIUtility.DesiredRectBorderBrush);
             }
 
             if (content.HasFlag(DebugContent.ControlRect) && ControlSize != 0f)
             {
-                UIUtility.DrawBorder(ControlRect, UIUtility.ControlRectBorderColor);
+                UIUtility.DrawBorder(ControlRect, UIUtility.ControlRectBorderBrush);
                 DrawInnerControlRect();
             }
         }
@@ -615,8 +615,8 @@ namespace Nebulae.RimWorld.UI.Controls
             Color color = GUI.color;
             Color contentColor = GUI.contentColor;
 
-            GUI.color = _opacityColor;
-            GUI.contentColor = _opacityColor;
+            GUI.color = _opacityColor * color;
+            GUI.contentColor = _opacityColor * contentColor;
             DrawCore();
             GUI.color = color;
             GUI.contentColor = contentColor;
