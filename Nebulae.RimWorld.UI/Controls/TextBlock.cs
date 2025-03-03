@@ -103,7 +103,7 @@ namespace Nebulae.RimWorld.UI.Controls
             GameText.Anchor = _anchor;
             GameText.Font = FontSize;
 
-            GUI.Label(RenderRect, Text);
+            Widgets.Label(RenderRect, Text);
 
             GameText.Anchor = currentAnchor;
             GameText.Font = currentFont;
