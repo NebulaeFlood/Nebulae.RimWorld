@@ -91,6 +91,7 @@ namespace Nebulae.RimWorld.UI.Windows
                     GenerateInfoLine("ContentRect", source.ContentRect) +
                     (source is Panel panel ? GenerateInfoLine("ChildrenCount", panel.Children.Count) : string.Empty) +
                     GenerateInfoLine("Visibility", source.Visibility) +
+                    GenerateInfoLine("IsEnabled", source.IsEnabled) +
                     GenerateInfoLine("IsArrangeValid", source.IsArrangeValid) +
                     GenerateInfoLine("IsMeasureValid", source.IsMeasureValid) +
                     GenerateInfoLine("IsSegmentValid", source.IsSegmentValid) +
@@ -318,7 +319,7 @@ namespace Nebulae.RimWorld.UI.Windows
                 {
                     var anchor = Text.Anchor;
                     Text.Anchor = TextAnchor.MiddleCenter;
-                    GUI.Label(RenderRect, "Please select source to get info.");
+                    Widgets.Label(RenderRect, "Please select source to get info.");
                     Text.Anchor = anchor;
                 }
             }
@@ -356,7 +357,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
             private static void DrawCheckBox(Rect renderRect, string text, ref bool result)
             {
-                GUI.Label(renderRect, text);
+                Widgets.Label(renderRect, text);
                 Widgets.Checkbox(
                     renderRect.xMax - 24f,
                     renderRect.y,
@@ -370,9 +371,9 @@ namespace Nebulae.RimWorld.UI.Windows
             {
                 var anchor = Text.Anchor;
                 Text.Anchor = TextAnchor.MiddleLeft;
-                GUI.Label(renderRect, text);
+                Widgets.Label(renderRect, text);
                 Text.Anchor = TextAnchor.MiddleRight;
-                GUI.Label(renderRect, "Invalid");
+                Widgets.Label(renderRect, "Invalid");
                 Text.Anchor = anchor;
             }
 
