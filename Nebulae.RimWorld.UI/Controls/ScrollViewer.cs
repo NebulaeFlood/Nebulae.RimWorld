@@ -30,7 +30,9 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _shouldUpdateSegment = true;
 
         private float _horizontalOffset = 0f;
+        private float _horizontalMaxOffset = 0f;
         private float _verticalOffset = 0f;
+        private float _verticalMaxOffset = 0f;
         private float _viewHeight = 0f;
         private float _viewWidth = 0f;
 
@@ -233,7 +235,7 @@ namespace Nebulae.RimWorld.UI.Controls
                         0f,
                         Mathf.Max(_content.DesiredSize.Width, _viewWidth),
                         isHorizontal: true)
-                            .Clamp(0f, Mathf.Max(0f, _content.DesiredSize.Width - _viewWidth));
+                            .Clamp(0f, Mathf.Max(0f, _horizontalMaxOffset));
 
                     _shouldUpdateSegment = _shouldUpdateSegment || _horizontalOffset != horizontalOffset;
                     _horizontalOffset = horizontalOffset;
@@ -256,7 +258,7 @@ namespace Nebulae.RimWorld.UI.Controls
                         0f,
                         Mathf.Max(_content.DesiredSize.Height, _viewHeight),
                         isHorizontal: false)
-                            .Clamp(0f, Mathf.Max(0f, _content.DesiredSize.Height - _viewHeight));
+                            .Clamp(0f, _verticalMaxOffset);
 
                     _shouldUpdateSegment = _shouldUpdateSegment || _verticalOffset != verticalOffset;
                     _verticalOffset = verticalOffset;
@@ -340,9 +342,6 @@ namespace Nebulae.RimWorld.UI.Controls
             _shouldDrawHorizontalScrollBar = HorizontalScrollBarVisibility is ScrollBarVisibility.Visible;
             _shouldDrawVerticalScrollBar = VerticalScrollBarVisibility is ScrollBarVisibility.Visible;
 
-            _horizontalOffset = 0f;
-            _verticalOffset = 0f;
-
             if (_content is null)
             {
                 _viewHeight = _shouldDrawHorizontalScrollBar
@@ -352,6 +351,12 @@ namespace Nebulae.RimWorld.UI.Controls
                 _viewWidth = _shouldDrawVerticalScrollBar
                     ? renderSize.Width - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right
                     : renderSize.Width;
+
+                _horizontalOffset = 0f;
+                _horizontalMaxOffset = 0f;
+
+                _verticalOffset = 0f;
+                _verticalMaxOffset = 0f;
             }
             else
             {
@@ -395,6 +400,11 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 _viewHeight = contentAvailableHeight;
                 _viewWidth = contentAvailableWidth;
+
+                _horizontalMaxOffset = Mathf.Max(0f, contentSize.Width - _viewWidth);
+                _horizontalOffset = _horizontalOffset.Clamp(0f, _horizontalMaxOffset);
+                _verticalMaxOffset = Mathf.Max(0f, contentSize.Height - _viewHeight);
+                _verticalOffset = _verticalOffset.Clamp(0f, _verticalMaxOffset);
             }
 
             return renderSize;
