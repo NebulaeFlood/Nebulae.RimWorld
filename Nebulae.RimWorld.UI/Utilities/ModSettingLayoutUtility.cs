@@ -2,7 +2,6 @@
 using Nebulae.RimWorld.UI.Converters;
 using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Data.Binding;
-using Nebulae.RimWorld.Utilities;
 using System;
 using UnityEngine;
 using Verse;
@@ -74,7 +73,7 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             var numberBox = new NumberBox
             {
-                Margin = new Thickness(0f, 8f, 0f, 0f),
+                Margin = new Thickness(8f, 0f, 0f, 0f),
                 DecimalPartDigit = decimalPartDigit,
                 Maximum = maxValue,
                 Minimum = minValue,
@@ -109,10 +108,10 @@ namespace Nebulae.RimWorld.UI.Utilities
                 Tooltip = tooltip,
                 ShowTooltip = !string.IsNullOrEmpty(tooltip)
             }
-                .SetSize(new float[] { Grid.Remain, 100f }, new float[] { 32f, GameFont.Tiny.GetHeight() })
+                .SetSize(new float[] { Grid.Remain, 100f }, new float[] { 32f, 28f })
                 .Set(
-                    entryLabel, numberBox,
-                    slider, slider
+                    entryLabel, entryLabel,
+                    slider, numberBox
                 );
         }
     }
