@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.Utilities;
 using System;
 using System.Text.RegularExpressions;
@@ -201,16 +202,26 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override void DrawControl()
         {
-            GameFont currentFont = Text.Font;
-            Text.Font = FontSize;
+            Color color = GUI.color;
+            GameFont controlFont = FontSize;
+            GameFont font = Text.Font;
+            Text.Font = controlFont;
 
-            if (_isReadOnly)
+            bool isDisabled = !IsEnabled;
+
+            if (isDisabled)
             {
-                GUI.TextField(RenderRect, _buffer, Text.CurTextFieldStyle);
+                GUI.color = color * Widgets.InactiveColor;
+            }
+
+            if (_isReadOnly || isDisabled)
+            {
+                UIUtility.DrawInputBox(RenderRect, _buffer, controlFont, true, false);
             }
             else
             {
-                string text = GUI.TextField(RenderRect, _buffer, Text.CurTextFieldStyle);
+                string text = UIUtility.DrawInputBox(RenderRect, _buffer, controlFont, false, false);
+
                 if (_buffer != text && _inputValidator.IsMatch(text))
                 {
                     float value = text.Prase(0f).Clamp(_minimun, _maximun);
@@ -221,7 +232,8 @@ namespace Nebulae.RimWorld.UI.Controls
                 }
             }
 
-            Text.Font = currentFont;
+            GUI.color = color;
+            Text.Font = font;
         }
     }
 }
