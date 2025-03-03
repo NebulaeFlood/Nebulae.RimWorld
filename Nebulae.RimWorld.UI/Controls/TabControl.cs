@@ -27,6 +27,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private List<TabItem> _tabItems = new List<TabItem>(1);
         private TabItem[] _renderedItems;
+        private Rect[] _renderedLines;
 
         private TabItem _selectedTabItem;
         private Control _selectedTabContent;
@@ -324,6 +325,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             _renderedItems = new TabItem[tabCount];
             int index = 0;
+            int rowIndex = 0;
 
             for (int i = 0; i < tabCount; i++)
             {
@@ -334,6 +336,12 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     currentX = 0f;
                     currentY += tabSize.Height + RowMargin;   // 换行
+
+                    _renderedLines[rowIndex++] = new Rect(
+                        renderRect.x,
+                        renderRect.y + currentY + tabSize.Height - 1f,
+                        RenderSize.Width,
+                        1f);
 
                     goto ArrangeStart;  // 重新排列该控件
                 }
@@ -376,7 +384,8 @@ namespace Nebulae.RimWorld.UI.Controls
         protected override void DrawCore()
         {
             Widgets.DrawTexturePart(_backgroundRect, _backgroundUVRect, TabItem.TabAtlas);
-            UIUtility.DrawBorder(_backgroundRect, Color.gray);
+            UIUtility.DrawBorder(_backgroundRect, BrushUtility.Grey);
+            UIUtility.DrawLines(BrushUtility.Grey, _renderedLines);
 
             for (int i = 0; i < _renderedItems.Length; i++)
             {
@@ -446,6 +455,8 @@ namespace Nebulae.RimWorld.UI.Controls
             {
                 tabRowCount++;
             }
+
+            _renderedLines = new Rect[tabColumnCount - 1];
 
             // Prepare for measure
 
