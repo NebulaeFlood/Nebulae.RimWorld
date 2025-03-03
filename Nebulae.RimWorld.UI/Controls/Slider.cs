@@ -1,20 +1,47 @@
 ﻿using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.Utilities;
+using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.Sound;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
     /// 滑块控件，用于选取数字
     /// </summary>
+    [StaticConstructorOnStartup]
     public class Slider : Control
     {
         /// <summary>
+        /// 滑轨的混合色
+        /// </summary>
+        public static readonly Color SliderRailColor = new Color(0.6f, 0.6f, 0.6f, 1f);
+
+        /// <summary>
+        /// 滑轨的图像
+        /// </summary>
+        public static readonly Texture2D SliderHandle = ContentFinder<Texture2D>.Get("UI/Buttons/SliderHandle");
+
+        /// <summary>
+        /// 滑块的图像
+        /// </summary>
+        public static readonly Texture2D SliderRailAtlas = ContentFinder<Texture2D>.Get("UI/Buttons/SliderRail");
+
+        /// <summary>
         /// 滑块的高度
         /// </summary>
-        public const float SliderHeight = 12f;
+        public const float HandleSize = 12f;
+
+        /// <summary>
+        /// 滑轨的高度
+        /// </summary>
+        public const float RailHeight = 8f;
+
+
+        private static float _lastSoundPlayedTime = -1f;
+
 
         //------------------------------------------------------
         //
@@ -23,10 +50,6 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Private Fields
-
-        private bool _drawExtremeValues = false;
-        private Rect _leftValueRect;
-        private Rect _rightValueRect;
 
         private Rect _sliderRect;
 
@@ -45,21 +68,23 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Public Properties
 
+        #region DrawExtremeValues
         /// <summary>
-        /// 是否显示最大值和最小值
+        /// 获取或设置指示绘制最值提示的值
         /// </summary>
         public bool DrawExtremeValues
         {
-            get => _drawExtremeValues;
-            set
-            {
-                if (_drawExtremeValues != value)
-                {
-                    _drawExtremeValues = value;
-                    InvalidateMeasure();
-                }
-            }
+            get { return (bool)GetValue(DrawExtremeValuesProperty); }
+            set { SetValue(DrawExtremeValuesProperty, value); }
         }
+
+        /// <summary>
+        /// 标识 <see cref="DrawExtremeValues"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty DrawExtremeValuesProperty =
+            DependencyProperty.Register(nameof(DrawExtremeValues), typeof(bool), typeof(Slider),
+                new ControlPropertyMetadata(false, ControlRelation.Measure));
+        #endregion
 
         /// <summary>
         /// 数字的最大值
@@ -111,7 +136,17 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register(nameof(Value), typeof(float), typeof(Slider),
-                new PropertyMetadata(0f));
+                new PropertyMetadata(0f, OnValueChanged));
+
+        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (Time.realtimeSinceStartup > _lastSoundPlayedTime + 0.075f
+                && UIUtility.SourceInitialized)
+            {
+                _lastSoundPlayedTime = Time.realtimeSinceStartup;
+                SoundDefOf.DragSlider.PlayOneShotOnCamera();
+            }
+        }
         #endregion
 
         #endregion
@@ -122,6 +157,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public Slider()
         {
+            IsHitTestVisible = true;
         }
 
 
@@ -136,76 +172,122 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
-            if (!_drawExtremeValues)
-            {
-                _sliderRect = new Size(availableRect.width, SliderHeight)
-                    .AlignToArea(availableRect, HorizontalAlignment.Stretch, VerticalAlignment.Center);
+            Rect renderRect = RenderSize.AlignToArea(availableRect,
+                HorizontalAlignment.Stretch, VerticalAlignment.Center);
 
-                return availableRect;
+            Size sliderSize = new Size(RenderSize.Width - 12f, HandleSize);
+
+            if (!DrawExtremeValues)
+            {
+                _sliderRect = sliderSize
+                    .AlignToArea(renderRect, HorizontalAlignment.Center, VerticalAlignment.Center);
+
+                return renderRect;
             }
 
-            float leftMargin = _minimun.ToString().CalculateLength(GameFont.Tiny) + 6f;
-            float rightMargin = _maximun.ToString().CalculateLength(GameFont.Tiny) + 6f;
+            _sliderRect = sliderSize.AlignToArea(renderRect,
+                HorizontalAlignment.Center, VerticalAlignment.Bottom);
 
-            Size sliderSize = new Size(availableRect.width - leftMargin - rightMargin, SliderHeight);
-
-            _sliderRect = sliderSize.AlignToArea(new Rect(availableRect.x + leftMargin, availableRect.y, sliderSize.Width, availableRect.height),
-                HorizontalAlignment.Stretch, VerticalAlignment.Bottom);
-
-            _leftValueRect = availableRect;
-            _rightValueRect = new Rect(_sliderRect.xMax, availableRect.y, availableRect.xMax - _sliderRect.xMax, availableRect.height);
-
-            return availableRect;
+            return renderRect;
         }
 
         /// <inheritdoc/>
         protected override void DrawCore()
         {
-            if (RenderRect.Contains(Event.current.mousePosition))
-            {
-                EventType eventType = Event.current.type;
+            Color color = GUI.color;
 
-                if (eventType is EventType.MouseDown)
-                {
-                    FocusableControl.FocusingControl?.LostFocus();
-                }
+            if (!IsEnabled)
+            {
+                GUI.color = color * SliderRailColor;
             }
 
-            if (_drawExtremeValues)
+            float currentValue = Value;
+
+            DrawSlider(
+                _sliderRect,
+                currentValue,
+                _minimun,
+                _maximun);
+
+            if (MouseUtility.IsHitTesting
+                && IsPressing)
+            {
+                Value = Mathf.Round(Mathf.Clamp(
+                    (Event.current.mousePosition.x - _sliderRect.x)
+                        / _sliderRect.width * (_maximun - _minimun)
+                    + _minimun,
+                    _minimun,
+                    _maximun) / _step) * _step;
+            }
+
+            if (DrawExtremeValues)
             {
                 TextAnchor anchor = Text.Anchor;
                 GameFont font = Text.Font;
                 Text.Font = GameFont.Tiny;
                 Text.Anchor = TextAnchor.UpperLeft;
 
-                GUI.Label(_leftValueRect, _minimun.ToString());
-                GUI.Label(_rightValueRect, _maximun.ToString());
+                Widgets.Label(RenderRect, _minimun.ToString());
+
+                Text.Anchor = TextAnchor.UpperRight;
+
+                Widgets.Label(RenderRect, _maximun.ToString());
 
                 Text.Anchor = anchor;
                 Text.Font = font;
             }
 
-            Value = Widgets.HorizontalSlider(
-                _sliderRect,
-                Value,
-                _minimun,
-                _maximun,
-                middleAlignment: true,
-                roundTo: _step);
+            GUI.color = color;
         }
 
         /// <inheritdoc/>
-        protected override void DrawInnerControlRect()
+        protected override Rect HitTestCore(Rect contentRect)
         {
-            UIUtility.DrawBorder(_sliderRect, UIUtility.ControlRectBorderColor);
+            return contentRect.IntersectWith(new Rect(
+                _sliderRect.x - 6f,
+                _sliderRect.y,
+                _sliderRect.width + 12f,
+                HandleSize));
         }
 
         /// <inheritdoc/>
         override protected Size MeasureCore(Size availableSize)
         {
-            return new Size(availableSize.Width, GameFont.Tiny.GetHeight());
+            return new Size(availableSize.Width, DrawExtremeValues ? HandleSize + 12f : HandleSize);
         }
 
         #endregion
+
+
+        private static void DrawSlider(
+            Rect sliderRect,
+            float value,
+            float min,
+            float max)
+        {
+            float handlePos = Mathf.Clamp(
+                sliderRect.x + sliderRect.width * Mathf.InverseLerp(min, max, value) - 6f,
+                sliderRect.x - 6f,
+                sliderRect.xMax - 6f);
+
+            Rect handleRect = new Rect(
+                handlePos,
+                sliderRect.y,
+                HandleSize,
+                HandleSize);
+
+            Rect trackRect = new Rect(
+                sliderRect.x,
+                sliderRect.y + 2f,
+                sliderRect.width,
+                sliderRect.height - 4f);
+
+            Color color = GUI.color;
+            GUI.color = color * SliderRailColor;
+            Widgets.DrawAtlas(trackRect, SliderRailAtlas);
+            GUI.color = color;
+
+            GUI.DrawTexture(handleRect, SliderHandle);
+        }
     }
 }
