@@ -92,6 +92,8 @@ namespace Nebulae.RimWorld.UI.Windows
                     (source is Panel panel ? GenerateInfoLine("ChildrenCount", panel.Children.Count) : string.Empty) +
                     GenerateInfoLine("Visibility", source.Visibility) +
                     GenerateInfoLine("IsEnabled", source.IsEnabled) +
+                    GenerateInfoLine("IsDraggable", source.IsDraggable) +
+                    GenerateInfoLine("IsHitTestVisible", source.IsHitTestVisible) +
                     GenerateInfoLine("IsArrangeValid", source.IsArrangeValid) +
                     GenerateInfoLine("IsMeasureValid", source.IsMeasureValid) +
                     GenerateInfoLine("IsSegmentValid", source.IsSegmentValid) +
@@ -168,11 +170,16 @@ namespace Nebulae.RimWorld.UI.Windows
                 _infoViewer = new ScrollViewer
                 {
                     Margin = 4f,
-                    Content = _infoBox
+                    Content = _infoBox,
+                    IsHitTestVisible = true
                 };
                 _infoViewer.SetParentSilently(this);
 
-                _treeViewer = new ScrollViewer { Margin = 4f };
+                _treeViewer = new ScrollViewer
+                {
+                    Margin = 4f,
+                    IsHitTestVisible = true
+                };
                 _treeViewer.SetParentSilently(this);
             }
 
