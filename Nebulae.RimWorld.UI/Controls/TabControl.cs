@@ -317,9 +317,9 @@ namespace Nebulae.RimWorld.UI.Controls
                     : tabHeight * renderRect.width);
             Rect tabContentRect = new Rect(
                 renderRect.x,
-                renderRect.y + _tabPanelSize.Height,
+                renderRect.y + _tabPanelSize.Height + 1f,
                 renderRect.width,
-                Mathf.Max(0f, renderRect.height - _tabPanelSize.Height));
+                Mathf.Max(0f, renderRect.height - _tabPanelSize.Height - 1f));
 
             // Arrange tabs and save render order
 
@@ -463,7 +463,7 @@ namespace Nebulae.RimWorld.UI.Controls
             Size tabSize = new Size(tabWidth, tabHeight);
             _tabPanelSize = new Size(renderSize.Width, (tabHeight + 2f) * tabRowCount);
             Size tabContentSize = new Size(renderSize.Width,
-                Mathf.Max(0f, renderSize.Height - _tabPanelSize.Height));
+                Mathf.Max(0f, renderSize.Height - _tabPanelSize.Height - 1f));
 
             for (int i = 0; i < _tabItems.Count; i++)
             {
