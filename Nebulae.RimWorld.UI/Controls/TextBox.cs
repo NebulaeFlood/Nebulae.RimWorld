@@ -12,9 +12,6 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public class TextBox : FocusableControl
     {
-        internal static readonly GUIStyle[] Styles;
-
-
         private bool _isReadOnly = false;
         private bool _wrapText = true;
 
