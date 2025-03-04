@@ -36,7 +36,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 最小的相邻可选值的差值
         /// </summary>
-        public float SilderStep = 1f;
+        public float SliderStep = 1f;
 
 
         /// <summary>

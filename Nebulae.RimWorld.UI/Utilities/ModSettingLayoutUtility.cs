@@ -274,7 +274,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 DisplayAsPercent = entry.SliderInfo.DisplayAsPercent,
                 Maximum = entry.SliderInfo.MaxValue,
                 Minimum = entry.SliderInfo.MinValue,
-                Step = entry.SliderInfo.SilderStep,
+                Step = entry.SliderInfo.SliderStep,
                 Value = value
             };
 
