@@ -70,6 +70,7 @@ namespace Nebulae.RimWorld.Utilities
                 return;
             }
 
+            obj.OnTickStart();
             _objectsNeedToTick.Add(obj);
         }
 
