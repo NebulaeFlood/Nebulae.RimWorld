@@ -14,6 +14,11 @@ namespace Nebulae.RimWorld.UI.Automation
         public int DecimalPartDigit = 0;
 
         /// <summary>
+        /// 以百分数形式显示数值
+        /// </summary>
+        public bool DisplayAsPercent;
+
+        /// <summary>
         /// 最大值
         /// </summary>
         public readonly float MaxValue;

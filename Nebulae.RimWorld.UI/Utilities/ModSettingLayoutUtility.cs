@@ -154,6 +154,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="maxValue">选项的最大值</param>
         /// <param name="decimalPartDigit">小数部分的位数</param>
         /// <param name="silderStep">最小的相邻可选值的差值</param>
+        /// <param name="displayAsPercent">是否以小数形式显示值</param>
         /// <returns>指定条目对应的带有输入和滑动两种修改方式的布局。</returns>
         /// <exception cref="MissingFieldException">当无法在 <typeparamref name="T"/> 中找到名为 <paramref name="entryName"/> 的字段时发生。</exception>
         public static Grid CreateNumberEntry<T>(
@@ -164,7 +165,8 @@ namespace Nebulae.RimWorld.UI.Utilities
             float minValue,
             float maxValue,
             int decimalPartDigit,
-            float silderStep) where T : ModSettings
+            float silderStep,
+            bool displayAsPercent = false) where T : ModSettings
         {
             float value = typeof(T).GetValue<float>(entryName, settings);
 
@@ -179,6 +181,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             {
                 Margin = new Thickness(8f, 0f, 0f, 0f),
                 DecimalPartDigit = decimalPartDigit,
+                DisplayAsPercent = displayAsPercent,
                 Maximum = maxValue,
                 Minimum = minValue,
                 Value = value
@@ -187,6 +190,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             var slider = new Slider
             {
                 DrawExtremeValues = true,
+                DisplayAsPercent = displayAsPercent,
                 Maximum = maxValue,
                 Minimum = minValue,
                 Step = silderStep,
@@ -258,6 +262,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             {
                 Margin = new Thickness(8f, 0f, 0f, 0f),
                 DecimalPartDigit = entry.SliderInfo.DecimalPartDigit,
+                DisplayAsPercent = entry.SliderInfo.DisplayAsPercent,
                 Maximum = entry.SliderInfo.MaxValue,
                 Minimum = entry.SliderInfo.MinValue,
                 Value = value
@@ -266,6 +271,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             var slider = new Slider
             {
                 DrawExtremeValues = true,
+                DisplayAsPercent = entry.SliderInfo.DisplayAsPercent,
                 Maximum = entry.SliderInfo.MaxValue,
                 Minimum = entry.SliderInfo.MinValue,
                 Step = entry.SliderInfo.SilderStep,
