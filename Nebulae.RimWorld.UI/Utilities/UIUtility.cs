@@ -7,6 +7,7 @@ namespace Nebulae.RimWorld.UI.Utilities
     /// <summary>
     /// 界面工具类
     /// </summary>
+    [StaticConstructorOnStartup]
     public static class UIUtility
     {
         /// <summary>
@@ -30,13 +31,19 @@ namespace Nebulae.RimWorld.UI.Utilities
         public static readonly Texture2D RederRectBorderBrush = new Color(1f, 1f, 1f, 1f).ToBrush();
 
 
-        internal static readonly GUIStyle[] InputBoxStyles = new GUIStyle[12];
+        private static readonly GUIStyle[] _inputBoxStyles = new GUIStyle[12];
 
 
         /// <summary>
-        /// UI 界面材质是否已完全加载
+        /// UI 界面资源是否已完全加载
         /// </summary>
         public static bool SourceInitialized { get; internal set; }
+
+
+        static UIUtility()
+        {
+            InitializeStyles();
+        }
 
 
         /// <summary>
@@ -490,8 +497,8 @@ namespace Nebulae.RimWorld.UI.Utilities
             }
 
             return wrapText
-                ? GUI.TextArea(renderRect, text, InputBoxStyles[style])
-                : GUI.TextField(renderRect, text, InputBoxStyles[style + 6]);
+                ? GUI.TextArea(renderRect, text, _inputBoxStyles[style])
+                : GUI.TextField(renderRect, text, _inputBoxStyles[style + 6]);
         }
 
         /// <summary>
@@ -668,8 +675,8 @@ namespace Nebulae.RimWorld.UI.Utilities
             for (int i = 0; i < 3; i++)
             {
                 style = new GUIStyle(Text.textAreaStyles[i]) { richText = true };
-                InputBoxStyles[i] = style;
-                InputBoxStyles[i + 3] = new GUIStyle(style)
+                _inputBoxStyles[i] = style;
+                _inputBoxStyles[i + 3] = new GUIStyle(style)
                 {
                     focused = style.normal,
                     hover = style.normal
@@ -679,8 +686,8 @@ namespace Nebulae.RimWorld.UI.Utilities
             for (int i = 0; i < 3; i++)
             {
                 style = new GUIStyle(Text.textFieldStyles[i]) { richText = true };
-                InputBoxStyles[i + 6] = style;
-                InputBoxStyles[i + 9] = new GUIStyle(style)
+                _inputBoxStyles[i + 6] = style;
+                _inputBoxStyles[i + 9] = new GUIStyle(style)
                 {
                     focused = style.normal,
                     hover = style.normal

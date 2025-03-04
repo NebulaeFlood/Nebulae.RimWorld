@@ -39,7 +39,8 @@ namespace Nebulae.RimWorld.UI
                 }
                 catch (Exception e)
                 {
-                    "NebulaeFlood's Lib".Error($"An exception occured when try finish quest from {_actionQueue[i].Method.DeclaringType}. ---> {e}");
+                    var method = _actionQueue[i].Method;
+                    "NebulaeFlood's Lib".Error($"An exception occured when try finish quest from {method.DeclaringType}.{method.Name}. ---> {e}");
                 }
             }
 
@@ -54,7 +55,6 @@ namespace Nebulae.RimWorld.UI
     {
         static StartUp()
         {
-            UIUtility.InitializeStyles();
             StartUpQuestManager.FinishQuests();
             UIUtility.SourceInitialized = true;
         }

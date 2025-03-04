@@ -136,17 +136,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register(nameof(Value), typeof(float), typeof(Slider),
-                new PropertyMetadata(0f, OnValueChanged));
-
-        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (Time.realtimeSinceStartup > _lastSoundPlayedTime + 0.075f
-                && UIUtility.SourceInitialized)
-            {
-                _lastSoundPlayedTime = Time.realtimeSinceStartup;
-                SoundDefOf.DragSlider.PlayOneShotOnCamera();
-            }
-        }
+                new PropertyMetadata(0f));
         #endregion
 
         #endregion
@@ -212,12 +202,23 @@ namespace Nebulae.RimWorld.UI.Controls
             if (MouseUtility.IsHitTesting
                 && IsPressing)
             {
-                Value = Mathf.Round(Mathf.Clamp(
+                float value = Mathf.Round(Mathf.Clamp(
                     (Event.current.mousePosition.x - _sliderRect.x)
                         / _sliderRect.width * (_maximun - _minimun)
                     + _minimun,
                     _minimun,
                     _maximun) / _step) * _step;
+
+                if (currentValue != value)
+                {
+                    Value = value;
+
+                    if (Time.realtimeSinceStartup > _lastSoundPlayedTime + 0.075f)
+                    {
+                        _lastSoundPlayedTime = Time.realtimeSinceStartup;
+                        SoundDefOf.DragSlider.PlayOneShotOnCamera();
+                    }
+                }
             }
 
             if (DrawExtremeValues)
