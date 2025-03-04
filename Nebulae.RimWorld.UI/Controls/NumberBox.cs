@@ -56,10 +56,16 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     _decimalPartDigit = value;
 
-                    _buffer = string.Format("{0:F" + value + "}", Value);
-                    _inputValidator = _displayAsPercent
-                        ? new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{Math.Max(value - 2, 0)}}})?%$")
-                        : new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{value}}})?$");
+                    if (_displayAsPercent)
+                    {
+                        _buffer = string.Format("{0:F" + Math.Max(_decimalPartDigit - 2, 0) + "}%", Value * 100f);
+                        _inputValidator = new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{Math.Max(_decimalPartDigit - 2, 0)}}})?%$");
+                    }
+                    else
+                    {
+                        _buffer = string.Format("{0:F" + _decimalPartDigit + "}", Value);
+                        _inputValidator = new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{_decimalPartDigit}}})?$");
+                    }
                 }
             }
         }
@@ -76,13 +82,16 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     _displayAsPercent = value;
 
-                    _buffer = value
-                        ? string.Format("{0:F" + Math.Max(_decimalPartDigit - 2, 0) + "}%", Value * 100f)
-                        : string.Format("{0:F" + _decimalPartDigit + "}", Value * 100f);
-
-                    _inputValidator = value
-                        ? new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{Math.Max(_decimalPartDigit - 2, 0)}}})?%$")
-                        : new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{_decimalPartDigit}}})?$");
+                    if (_displayAsPercent)
+                    {
+                        _buffer = string.Format("{0:F" + Math.Max(_decimalPartDigit - 2, 0) + "}%", Value * 100f);
+                        _inputValidator = new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{Math.Max(_decimalPartDigit - 2, 0)}}})?%$");
+                    }
+                    else
+                    {
+                        _buffer = string.Format("{0:F" + _decimalPartDigit + "}", Value);
+                        _inputValidator = new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{_decimalPartDigit}}})?$");
+                    }
                 }
             }
         }
@@ -122,8 +131,18 @@ namespace Nebulae.RimWorld.UI.Controls
             get => _maximun;
             set
             {
-                _maximun = value;
-                SetValue(ValueProperty, value.Clamp(_minimun, value));
+                if (_maximun != value)
+                {
+                    _maximun = value;
+
+                    float current = Value;
+                    float result = current.Clamp(_minimun, _maximun);
+
+                    if (current != result)
+                    {
+                        SetValue(ValueProperty, result);
+                    }
+                }
             }
         }
 
@@ -135,8 +154,18 @@ namespace Nebulae.RimWorld.UI.Controls
             get => _minimun;
             set
             {
-                _minimun = value;
-                SetValue(ValueProperty, value.Clamp(value, _maximun));
+                if (_minimun != value)
+                {
+                    _minimun = value;
+
+                    float current = Value;
+                    float result = current.Clamp(_minimun, _maximun);
+
+                    if (current != result)
+                    {
+                        SetValue(ValueProperty, result);
+                    }
+                }
             }
         }
 
@@ -161,29 +190,20 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             NumberBox numberBox = (NumberBox)d;
 
-            int decimalPartDigit = numberBox.DecimalPartDigit;
-            if (numberBox.DisplayAsPercent)
+
+            int decimalPartDigit;
+
+            if (numberBox._displayAsPercent)
             {
-                decimalPartDigit -= 2;
-                if (decimalPartDigit < 1)
-                {
-                    numberBox._buffer = $"{numberBox.Value * 100f}%";
-                }
-                else
-                {
-                    numberBox._buffer = string.Format("{0:F" + decimalPartDigit + "}%", numberBox.Value * 100f);
-                }
+                decimalPartDigit = Math.Max(numberBox._decimalPartDigit - 2, 0);
+                numberBox._buffer = string.Format("{0:F" + decimalPartDigit + "}%", (float)e.NewValue * 100f);
+                numberBox._inputValidator = new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{decimalPartDigit}}})?%$");
             }
             else
             {
-                if (decimalPartDigit < 1)
-                {
-                    numberBox._buffer = numberBox.Value.ToString();
-                }
-                else
-                {
-                    numberBox._buffer = string.Format("{0:F" + decimalPartDigit + "}", numberBox.Value);
-                }
+                decimalPartDigit = numberBox._decimalPartDigit;
+                numberBox._buffer = string.Format("{0:F" + decimalPartDigit + "}", e.NewValue);
+                numberBox._inputValidator = new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{numberBox._decimalPartDigit}}})?$");
             }
         }
         #endregion
@@ -224,11 +244,9 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 if (_buffer != text && _inputValidator.IsMatch(text))
                 {
-                    float value = text.Prase(0f).Clamp(_minimun, _maximun);
-                    _buffer = DisplayAsPercent
-                        ? string.Format($"{{0:F{Math.Max(_decimalPartDigit - 2, 0)}}}%", value * 100f)
-                        : value.ToString();
-                    Value = value;
+                    Value = _displayAsPercent
+                        ? (text.Remove(text.Length - 1).Prase(_minimun) * 0.01f).Clamp(_minimun, _maximun)
+                        : text.Prase(_minimun).Clamp(_minimun, _maximun);
                 }
             }
 
