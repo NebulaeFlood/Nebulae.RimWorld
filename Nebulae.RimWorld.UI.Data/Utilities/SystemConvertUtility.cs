@@ -24,7 +24,7 @@
 
 using System;
 
-namespace Nebulae.RimWorld.UI.Data.Binding.Converters
+namespace Nebulae.RimWorld.UI.Data.Utilities
 {
     internal static class SystemConvertUtility
     {

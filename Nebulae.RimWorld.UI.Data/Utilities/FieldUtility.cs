@@ -1,10 +1,9 @@
-﻿using Nebulae.RimWorld.UI.Data.Binding.Converters;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Nebulae.RimWorld.UI.Data
+namespace Nebulae.RimWorld.UI.Data.Utilities
 {
     /// <summary>
     /// 字段访问器
@@ -255,7 +254,7 @@ namespace Nebulae.RimWorld.UI.Data
         {
             if (type.GetField(name, flags) is FieldInfo field)
             {
-                return GetValue<T>(field, obj);
+                return field.GetValue<T>(obj);
             }
             else
             {
@@ -308,7 +307,7 @@ namespace Nebulae.RimWorld.UI.Data
 
             if (classType.GetField(name, flags) is FieldInfo field)
             {
-                return GetValue<T>(field, obj);
+                return field.GetValue<T>(obj);
             }
             else
             {
