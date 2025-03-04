@@ -26,6 +26,27 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
+        /// 获取控件特定类型的父控件
+        /// </summary>
+        /// <typeparam name="T">父控件的类型</typeparam>
+        /// <param name="control">要获取父控件的控件</param>
+        /// <returns>控件的特定类型的父控件，若不存在，则返回 <see langword="null"/>。</returns>
+        public static Control GetParent<T>(this Control control) where T : Control
+        {
+            if (control.IsIndependent)
+            {
+                return null;
+            }
+
+            if (control.Parent is T parent)
+            {
+                return parent;
+            }
+
+            return GetParent<T>(control.Parent);
+        }
+
+        /// <summary>
         /// 判断指定控件是否为该控件的父控件
         /// </summary>
         /// <param name="control">要判断父控件的控件</param>
