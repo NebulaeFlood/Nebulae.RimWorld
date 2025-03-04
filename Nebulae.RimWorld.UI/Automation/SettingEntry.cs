@@ -28,11 +28,11 @@ namespace Nebulae.RimWorld.UI.Automation
                 : overriddenName;
             SliderInfo = sliderInfo;
 
-            Label = (standardKey + "." + Name + "." + "Label").Translate();
+            Label = (standardKey + "." + Name + "." + "Label").Translate().Resolve();
 
             if (containTooltip)
             {
-                Tooltip = (standardKey + "." + Name + "." + "Tooltip").Translate();
+                Tooltip = (standardKey + "." + Name + "." + "Tooltip").Translate().Resolve();
             }
             else
             {
