@@ -47,9 +47,9 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 var entry = _invocationList[i];
                 var binding = entry.Subscriber;
 
-                if ((ReferenceEquals(sender, binding.SourceMember.AssociatedObject)
+                if ((ReferenceEquals(sender, binding.SourceMember.BindingTarget)
                     && args.Property.Name == binding.SourceMember.MemberName)
-                        || (ReferenceEquals(sender, binding.TargetMember.AssociatedObject)
+                        || (ReferenceEquals(sender, binding.TargetMember.BindingTarget)
                             && args.Property.Name == binding.TargetMember.MemberName))
                 {
                     entry.Handler(sender, args);
@@ -164,9 +164,9 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 var entry = _invocationList[i];
                 var binding = entry.Subscriber;
 
-                if ((ReferenceEquals(sender, binding.SourceMember.AssociatedObject)
+                if ((ReferenceEquals(sender, binding.SourceMember.BindingTarget)
                     && args.PropertyName == binding.SourceMember.MemberName)
-                        || (ReferenceEquals(sender, binding.TargetMember.AssociatedObject)
+                        || (ReferenceEquals(sender, binding.TargetMember.BindingTarget)
                             && args.PropertyName == binding.TargetMember.MemberName))
                 {
                     entry.Handler(sender, args);

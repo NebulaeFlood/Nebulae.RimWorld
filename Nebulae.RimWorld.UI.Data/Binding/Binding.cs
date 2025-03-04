@@ -34,12 +34,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 return;
             }
 
-            if (!IsBindingValid)
-            {
-                Unbind();
-            }
-
-            object value = SourceMember.Value;
+            object value = SourceMember.GetValue();
             if (!value.Equals(_sourceValueCache))
             {
                 _sourceValueCache = value;
@@ -47,11 +42,11 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                     ? Converter.Convert(value, _currentCulture)
                     : value;
 
-                TargetMember.Value = _targetValueCache;
+                TargetMember.SetValue(_targetValueCache);
             }
             else if (Mode is BindingMode.TwoWay)
             {
-                value = TargetMember.Value;
+                value = TargetMember.GetValue();
 
                 if (!value.Equals(_targetValueCache))
                 {
@@ -60,7 +55,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                         ? Converter.ConvertBack(value, _currentCulture)
                         : value;
 
-                    SourceMember.Value = _sourceValueCache;
+                    SourceMember.SetValue(_sourceValueCache);
                 }
             }
         }
@@ -89,13 +84,13 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <inheritdoc/>
         protected override void OnNotifiableSourceChanged(object sender, PropertyChangedEventArgs e)
         {
-            OnSourceChanged(SourceMember.Value);
+            OnSourceChanged(SourceMember.GetValue());
         }
 
         /// <inheritdoc/>
         protected override void OnNotifiableTargetChanged(object sender, PropertyChangedEventArgs e)
         {
-            OnTargetChanged(TargetMember.Value);
+            OnTargetChanged(TargetMember.GetValue());
         }
 
         #endregion
@@ -118,7 +113,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             {
                 _targetValueCache = convertedValue;
 
-                TargetMember.Value = convertedValue;
+                TargetMember.SetValue(convertedValue);
             }
         }
 
@@ -139,7 +134,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             {
                 _sourceValueCache = convertedValue;
 
-                SourceMember.Value = convertedValue;
+                SourceMember.SetValue(convertedValue);
             }
         }
     }

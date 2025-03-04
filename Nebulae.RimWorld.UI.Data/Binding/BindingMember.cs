@@ -7,7 +7,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
     /// <summary>
     /// 被绑定成员的信息
     /// </summary>
-    public readonly struct BindingMember : IEquatable<BindingMember>
+    public struct BindingMember : IEquatable<BindingMember>
     {
         //------------------------------------------------------
         //
@@ -18,6 +18,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         #region Pirvate Fields
 
         private readonly int _hashCode;
+
+        private bool _isValid;
 
         /// <summary>
         /// 成员值获取器
@@ -32,7 +34,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <summary>
         /// 绑定对象
         /// </summary>
-        private readonly WeakReference _target;
+        internal object _target;
 
         #endregion
 
@@ -84,32 +86,12 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <summary>
         /// 目标对象
         /// </summary>
-        public object AssociatedObject => IsStatic ? null : _target.Target;
+        public object BindingTarget => IsStatic ? null : _target;
 
         /// <summary>
-        /// 目标对象是否存活
+        /// 该信息是否有效
         /// </summary>
-        public bool IsAlive => IsStatic || _target.IsAlive;
-
-        /// <summary>
-        /// 获取或设置绑定成员的值
-        /// </summary>
-        /// <remarks>使用前注意判断绑定成员是否可读或可写。</remarks>
-        public object Value
-        {
-            get => IsStatic ? _memberGetter(null) : _memberGetter(_target.Target);
-            set
-            {
-                if (IsStatic)
-                {
-                    _memberSetter(null, value);
-                }
-                else
-                {
-                    _memberSetter(_target.Target, value);
-                }
-            }
-        }
+        public bool IsValid => _isValid;
 
         #endregion
 
@@ -194,8 +176,10 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             else
             {
                 _hashCode = target.GetHashCode() ^ MemberName.GetHashCode() ^ MemberType.GetHashCode();
-                _target = new WeakReference(target);
+                _target = target;
             }
+
+            _isValid = true;
         }
 
 
@@ -217,7 +201,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
             _memberSetter = (obj, val) => ((DependencyObject)obj).SetValueIntelligently(property, val);
 
             _hashCode = target.GetHashCode() ^ MemberName.GetHashCode() ^ MemberType.GetHashCode();
-            _target = new WeakReference(target);
+            _isValid = true;
+            _target = target;
         }
 
 
@@ -226,7 +211,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         {
             return obj is BindingMember other
                 && (MemberType is null && other.MemberType is null
-                    || (ReferenceEquals(AssociatedObject, other.AssociatedObject)
+                    || (ReferenceEquals(BindingTarget, other.BindingTarget)
                         && MemberName == other.MemberName
                         && MemberType == other.MemberType));
         }
@@ -235,7 +220,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         public bool Equals(BindingMember other)
         {
             return MemberType is null && other.MemberType is null
-                || (ReferenceEquals(AssociatedObject, other.AssociatedObject)
+                || (ReferenceEquals(BindingTarget, other.BindingTarget)
                     && MemberName == other.MemberName
                     && MemberType == other.MemberType);
         }
@@ -244,6 +229,40 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         public override int GetHashCode()
         {
             return _hashCode;
+        }
+
+        /// <summary>
+        /// 获取绑定成员的值
+        /// </summary>
+        /// <returns>绑定成员的值。</returns>
+        public object GetValue()
+        {
+            return IsStatic? _memberGetter(null) : _memberGetter(_target);
+        }
+
+        /// <summary>
+        /// 无效化该绑定成员
+        /// </summary>
+        public void Invalid()
+        {
+            _isValid = false;
+            _target = null;
+        }
+
+        /// <summary>
+        /// 设置绑定成员的值
+        /// </summary>
+        /// <param name="value">要设置的值</param>
+        public void SetValue(object value)
+        {
+            if (IsStatic)
+            {
+                _memberSetter(null, value);
+            }
+            else
+            {
+                _memberSetter(_target, value);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding.Converters;
+using Nebulae.RimWorld.UI.Data.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +12,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
     /// </summary>
     public abstract class BindingBase : IEquatable<BindingBase>
     {
-        private static readonly Dictionary<ConverterKey, IValueConverter> _createdConverters = new Dictionary<ConverterKey, IValueConverter>();
+        private static readonly Dictionary<ConverterKey, IValueConverter> _createdConverters =
+            new Dictionary<ConverterKey, IValueConverter>();
 
 
         //------------------------------------------------------
@@ -44,7 +46,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         #region Protected Fields
 
         /// <summary>
-        /// 成员间的转换器
+        /// 绑定成员间的值转换器
         /// </summary>
         protected readonly IValueConverter Converter;
 
@@ -54,7 +56,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         protected readonly BindingMode Mode;
 
         /// <summary>
-        /// 成员间是否需要使用 <see cref="Converter"/>
+        /// 绑定成员间是否需要使用 <see cref="Converter"/>
         /// </summary>
         /// <remarks>若为 <see langword="false"/>，<see cref="Converter"/> = <see langword="null"/>。</remarks>
         protected readonly bool ShouldConvert;
@@ -62,39 +64,24 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <summary>
         /// 绑定源成员的信息
         /// </summary>
-        internal protected readonly BindingMember SourceMember;
+        protected internal readonly BindingMember SourceMember;
 
         /// <summary>
         /// 绑定目标成员的信息
         /// </summary>
-        internal protected readonly BindingMember TargetMember;
+        protected internal readonly BindingMember TargetMember;
 
         #endregion
 
 
-        //------------------------------------------------------
-        //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
-        #region Public Properties
-
         /// <summary>
-        /// 绑定关系是否存在
+        /// 绑定关系是否可用
         /// </summary>
         public bool IsBinding
         {
             get => _isBinding;
             internal set => _isBinding = value;
         }
-
-        /// <summary>
-        /// 绑定对象是否支持绑定
-        /// </summary>
-        public bool IsBindingValid => SourceMember.IsAlive && TargetMember.IsAlive;
-
-        #endregion
 
 
 #if DEBUG
@@ -254,22 +241,22 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 return;
             }
 
-            if (SourceMember.AssociatedObject is DependencyObject dependencySource)
+            if (SourceMember.BindingTarget is DependencyObject dependencySource)
             {
                 dependencySource.DependencyPropertyChanged -= OnDependencySourceChanged;
             }
-            else if (SourceMember.AssociatedObject is INotifyPropertyChanged notifiableSource)
+            else if (SourceMember.BindingTarget is INotifyPropertyChanged notifiableSource)
             {
                 notifiableSource.PropertyChanged -= OnNotifiableSourceChanged;
             }
 
             if (Mode is BindingMode.TwoWay)
             {
-                if (TargetMember.AssociatedObject is DependencyObject dependencyTarget)
+                if (TargetMember.BindingTarget is DependencyObject dependencyTarget)
                 {
                     dependencyTarget.DependencyPropertyChanged -= OnDependencyTargetChanged;
                 }
-                else if (TargetMember.AssociatedObject is INotifyPropertyChanged notifiableTarget)
+                else if (TargetMember.BindingTarget is INotifyPropertyChanged notifiableTarget)
                 {
                     notifiableTarget.PropertyChanged -= OnNotifiableTargetChanged;
                 }
@@ -277,6 +264,8 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             _isBinding = false;
 
+            SourceMember.Invalid();
+            TargetMember.Invalid();
             BindingManager.GlobalBindings.Remove(this);
         }
 
