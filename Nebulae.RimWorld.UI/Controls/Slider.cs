@@ -40,9 +40,6 @@ namespace Nebulae.RimWorld.UI.Controls
         public const float RailHeight = 8f;
 
 
-        private static float _lastSoundPlayedTime = -1f;
-
-
         //------------------------------------------------------
         //
         //  Private Fields
@@ -50,6 +47,10 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Private Fields
+
+        private static float _lastSoundPlayedTime = -1f;
+
+        private bool _displayAsPercent;
 
         private Rect _sliderRect;
 
@@ -67,6 +68,15 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Public Properties
+
+        /// <summary>
+        /// 以百分比形式呈现数值
+        /// </summary>
+        public bool DisplayAsPercent
+        {
+            get => _displayAsPercent;
+            set => _displayAsPercent = value;
+        }
 
         #region DrawExtremeValues
         /// <summary>
@@ -223,16 +233,30 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (DrawExtremeValues)
             {
+                string minimun;
+                string maximun;
+
+                if (_displayAsPercent)
+                {
+                    minimun = _minimun.ToStringPercent();
+                    maximun = _maximun.ToStringPercent();
+                }
+                else
+                {
+                    minimun = _minimun.ToString();
+                    maximun = _maximun.ToString();
+                }
+
                 TextAnchor anchor = Text.Anchor;
                 GameFont font = Text.Font;
                 Text.Font = GameFont.Tiny;
                 Text.Anchor = TextAnchor.UpperLeft;
 
-                Widgets.Label(RenderRect, _minimun.ToString());
+                Widgets.Label(RenderRect, minimun);
 
                 Text.Anchor = TextAnchor.UpperRight;
 
-                Widgets.Label(RenderRect, _maximun.ToString());
+                Widgets.Label(RenderRect, maximun);
 
                 Text.Anchor = anchor;
                 Text.Font = font;
