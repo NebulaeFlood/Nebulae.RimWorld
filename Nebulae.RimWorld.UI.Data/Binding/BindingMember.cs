@@ -237,7 +237,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         /// <returns>绑定成员的值。</returns>
         public object GetValue()
         {
-            return IsStatic? _memberGetter(null) : _memberGetter(_target);
+            return IsStatic ? _memberGetter(null) : _memberGetter(_target);
         }
 
         /// <summary>

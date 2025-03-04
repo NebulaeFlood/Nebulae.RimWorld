@@ -6,6 +6,7 @@ namespace Nebulae.RimWorld.UI.Utilities
     /// <summary>
     /// 画刷工具类
     /// </summary>
+    [StaticConstructorOnStartup]
     public static class BrushUtility
     {
         /// <summary>

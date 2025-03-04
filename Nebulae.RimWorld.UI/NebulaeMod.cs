@@ -110,11 +110,7 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         public void InitializeSettingWindow()
         {
-            if (_settingWindow != null)
-            {
-                _settingWindow.Unbind();
-            }
-
+            _settingWindow?.Unbind();
             _settingWindow = CreateSettingWindow();
             _settingWindow.Content = CreateContent();
         }
