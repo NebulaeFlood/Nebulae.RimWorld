@@ -47,6 +47,27 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
+        /// 获取控件的指定代数的父控件
+        /// </summary>
+        /// <param name="control">要获取父控件的控件</param>
+        /// <param name="depth">指定的代数</param>
+        /// <returns>控件的指定代数的父控件，若不存在，则返回 <see langword="null"/>。</returns>
+        public static Control GetParent(this Control control, int depth)
+        {
+            if (control.IsIndependent)
+            {
+                return null;
+            }
+
+            if (depth < 0)
+            {
+                return control;
+            }
+
+            return GetParent(control.Parent, depth - 1);
+        }
+
+        /// <summary>
         /// 判断指定控件是否为该控件的父控件
         /// </summary>
         /// <param name="control">要判断父控件的控件</param>
