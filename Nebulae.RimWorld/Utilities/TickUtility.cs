@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace Nebulae.RimWorld.Utilities
@@ -87,6 +84,18 @@ namespace Nebulae.RimWorld.Utilities
 
             _objectsNeedToTick.Remove(obj);
             obj.OnTickStopped();
+        }
+
+
+        /// <summary>
+        /// 计算剩余的刻数，并判断是否小于零
+        /// </summary>
+        /// <param name="ticksLeft">剩余的刻数</param>
+        /// <returns>如果剩余的刻数小于零，返回 <see langword="true"/>；否则返回 <see langword="false"/>。</returns>
+        public static bool Time(ref int ticksLeft)
+        {
+            ticksLeft -= _intervalTick;
+            return ticksLeft < 0;
         }
 
 
