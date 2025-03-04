@@ -75,5 +75,14 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="fontSize">要获取高度的字体</param>
         /// <returns>字体的高度</returns>
         public static float GetHeight(this GameFont fontSize) => Text.LineHeightOf(fontSize);
+
+        /// <summary>
+        /// 翻译键并修复富文本
+        /// </summary>
+        /// <returns>翻译后的文字</returns>
+        public static string TranslateAndResolve(this string key)
+        {
+            return key.Translate().Resolve();
+        }
     }
 }
