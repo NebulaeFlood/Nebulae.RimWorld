@@ -185,7 +185,19 @@ namespace Nebulae.RimWorld.UI.Windows
         #region Public Methods
 
         /// <summary>
-        /// 点击 <see cref="ButtonBase"/> 后关闭窗口的 <see cref="ButtonBase.Clicked"/> 事件处理器
+        /// 关闭窗口
+        /// </summary>
+        /// <param name="doCloseSound">是否播放关闭窗口的音效</param>
+        public override void Close(bool doCloseSound = true)
+        {
+            if (_isOpen)
+            {
+                Find.WindowStack.TryRemove(this, doCloseSound);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="ButtonBase.Clicked"/> 事件处理器，用于关闭窗口
         /// </summary>
         /// <param name="button">被点击的按钮</param>
         /// <param name="args">事件数据</param>
@@ -194,7 +206,14 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <summary>
         /// 开始呈现窗口
         /// </summary>
-        public void Show() => Find.WindowStack.Add(this);
+        /// <param name="closeThenShow">是否关闭正在显示的窗口再打开</param>
+        public void Show(bool closeThenShow = true)
+        {
+            if (closeThenShow || !_isOpen)
+            {
+                Find.WindowStack.Add(this);
+            }
+        }
 
         #endregion
 
