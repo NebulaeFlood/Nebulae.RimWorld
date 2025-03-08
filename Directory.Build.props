@@ -17,7 +17,8 @@
 	</PropertyGroup>
 
 	<Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'RELEASE'">
-		<Exec Command="xcopy $(OutDir)$(TargetName).* $(SolutionDir)build\Assemblies\ /y" />
+		<Exec Command="xcopy $(OutDir)$(TargetName).dll $(SolutionDir)build\Assemblies\ /y" />
+		<Exec Command="xcopy $(OutDir)$(TargetName).xml $(SolutionDir)build\Assemblies\ /y" />
 	</Target>
 	
 </Project>
