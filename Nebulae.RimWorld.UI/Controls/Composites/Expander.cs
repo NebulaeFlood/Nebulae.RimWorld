@@ -162,7 +162,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             {
                 expander._expandButton.IsExpanded = true;
                 SoundDefOf.TabOpen.PlayOneShotOnCamera();
-                expander._collapsed.Invoke(expander, expander._content);
+                expander._expanded.Invoke(expander, expander._content);
             }
             else
             {
@@ -279,7 +279,11 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             {
                 _expandButton.Draw();
                 _label.Draw();
-                _content.Draw();
+                
+                if (_expandButton.IsExpanded)
+                {
+                    _content.Draw();
+                }
             }
         }
 
