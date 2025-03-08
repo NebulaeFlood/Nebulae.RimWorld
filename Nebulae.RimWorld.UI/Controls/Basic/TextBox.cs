@@ -264,7 +264,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <inheritdoc/>
-        protected override Rect HitTestCore(Rect contentRect)
+        protected override Rect AnalyseCore(Rect contentRect)
         {
             return _innerRect.IntersectWith(contentRect);
         }

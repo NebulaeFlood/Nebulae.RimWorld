@@ -12,5 +12,14 @@ namespace Nebulae.RimWorld.UI.Automation
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class DebugInfoEntryAttribute : Attribute
     {
+        /// <summary>
+        /// 条目的优先级
+        /// </summary>
+        public int Priority = int.MaxValue;
+
+        /// <summary>
+        /// 条目的别名
+        /// </summary>
+        public string Name = string.Empty;
     }
 }

@@ -67,7 +67,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 是否绘制高亮效果
         /// </summary>
-        /// <remarks>仅当 <see cref="Visual.HitTestVisible"/> 为 <see langword="true"/> 时有效。</remarks>
+        /// <remarks>仅当 <see cref="Visual.IsHitTestVisible"/> 为 <see langword="true"/> 时有效。</remarks>
         public bool DrawHighlight
         {
             get => _drawHighlight;
@@ -179,7 +179,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <inheritdoc/>
-        protected override Rect HitTestCore(Rect contentRect)
+        protected override Rect AnalyseCore(Rect contentRect)
         {
             return contentRect.IntersectWith(_onlyTextHitTestVisible
                 ? _textRect

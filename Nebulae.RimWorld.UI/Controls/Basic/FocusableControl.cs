@@ -87,7 +87,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             _focusIndex = "Nebulae.RimWorld.UI.Controls.FocusableControl" + _globeIndex++.ToString();
 
-            HitTestVisible = true;
+            IsHitTestVisible = true;
         }
 
 

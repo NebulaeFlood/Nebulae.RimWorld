@@ -128,7 +128,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public Border()
         {
-            HitTestVisible = true;
+            IsHitTestVisible = true;
         }
 
 

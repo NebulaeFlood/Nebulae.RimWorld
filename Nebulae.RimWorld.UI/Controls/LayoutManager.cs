@@ -96,6 +96,25 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
+        /// 是否绘制可交互区域
+        /// </summary>
+        public bool DebugDrawControlRect
+        {
+            get => _debugContent.HasFlag(DebugContent.ControlRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.ControlRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.ControlRect;
+                }
+            }
+        }
+
+        /// <summary>
         /// 是否绘制控件布局区域
         /// </summary>
         public bool DebugDrawDesiredRect
@@ -110,25 +129,6 @@ namespace Nebulae.RimWorld.UI.Controls
                 else
                 {
                     _debugContent &= ~DebugContent.DesiredRect;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否绘制可交互区域
-        /// </summary>
-        public bool DebugDrawHitTestRect
-        {
-            get => _debugContent.HasFlag(DebugContent.ControlRect);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.ControlRect;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.ControlRect;
                 }
             }
         }

@@ -157,7 +157,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public Slider()
         {
-            HitTestVisible = true;
+            IsHitTestVisible = true;
         }
 
 
@@ -266,7 +266,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <inheritdoc/>
-        protected override Rect HitTestCore(Rect contentRect)
+        protected override Rect AnalyseCore(Rect contentRect)
         {
             return contentRect.IntersectWith(new Rect(
                 _sliderRect.x - 6f,

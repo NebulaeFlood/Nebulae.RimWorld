@@ -200,8 +200,8 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// </summary>
         public bool TitleHitTestVisible
         {
-            get => _label.HitTestVisible;
-            set => _label.HitTestVisible = value;
+            get => _label.IsHitTestVisible;
+            set => _label.IsHitTestVisible = value;
         }
 
         /// <summary>

@@ -116,7 +116,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         protected ButtonBase()
         {
-            HitTestVisible = true;
+            IsHitTestVisible = true;
         }
 
 

@@ -38,7 +38,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             _parent = parent;
 
             SetParentSilently(parent);
-            HitTestVisible = true;
+            IsHitTestVisible = true;
         }
 
 

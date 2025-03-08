@@ -69,56 +69,56 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 控件呈现内容的可见区域
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
-        [DebugInfoEntry]
+        [DebugInfoEntry(Priority = 0)]
         public Rect ContentRect;
 
         /// <summary>
         /// 控件呈现内容的可见尺寸
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
-        [DebugInfoEntry]
+        [DebugInfoEntry(Priority = 0)]
         public Size ContentSize;
 
         /// <summary>
         /// 控件响应用户交互的区域
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
-        [DebugInfoEntry]
+        [DebugInfoEntry(Priority = 0)]
         public Rect ControlRect;
 
         /// <summary>
         /// 控件响应用户交互的尺寸
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
-        [DebugInfoEntry]
+        [DebugInfoEntry(Priority = 0)]
         public Size ControlSize;
 
         /// <summary>
         /// 控件需要占用的布局区域
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Arrange(Rect)"/>。</remarks>
-        [DebugInfoEntry]
+        [DebugInfoEntry(Priority = 0)]
         public Rect DesiredRect;
 
         /// <summary>
         /// 控件需要占用的布局尺寸
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Measure(Size)"/>。</remarks>
-        [DebugInfoEntry]
+        [DebugInfoEntry(Priority = 0)]
         public Size DesiredSize = Size.Empty;
 
         /// <summary>
         /// 计算的将要绘制的区域
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Arrange(Rect)"/>。</remarks>
-        [DebugInfoEntry]
+        [DebugInfoEntry(Priority = 0)]
         public Rect RenderRect;
 
         /// <summary>
         /// 计算的将要绘制的尺寸
         /// </summary>
         /// <remarks>使用前需保证已调用过 <see cref="Measure(Size)"/>。</remarks>
-        [DebugInfoEntry]
+        [DebugInfoEntry(Priority = 0)]
         public Size RenderSize = Size.Empty;
 
         #endregion
@@ -136,7 +136,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private bool _isDraggable = false;
         private bool _isEnabled = true;
-        private bool _hitTestVisible = false;
+        private bool _isHitTestVisible = false;
         private bool _isIndependent = true;
         private bool _isMeasureValid = false;
         private bool _isSegmentValid = false;
@@ -163,6 +163,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置控件的外部边距
         /// </summary>
+        [DebugInfoEntry(Priority = 1)]
         public Thickness Margin
         {
             get { return (Thickness)GetValue(MarginProperty); }
@@ -181,6 +182,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置控件的不透明度
         /// </summary>
+        [DebugInfoEntry(Priority = 2)]
         public float Opacity
         {
             get { return (float)GetValue(OpacityProperty); }
@@ -213,6 +215,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置控件内容的内部边距
         /// </summary>
+        [DebugInfoEntry(Priority = 1)]
         public Thickness Padding
         {
             get { return (Thickness)GetValue(PaddingProperty); }
@@ -231,6 +234,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置控件的显示状态
         /// </summary>
+        [DebugInfoEntry(Priority = -1)]
         public Visibility Visibility
         {
             get { return (Visibility)GetValue(VisibilityProperty); }
@@ -258,19 +262,44 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Public Properties
 
         /// <summary>
+        /// 控件布局是否有效
+        /// </summary>
+        [DebugInfoEntry(Priority = 0)]
+        public bool IsArrangeValid
+        {
+            get
+            {
+                if (!_isArrangeValid || _isIndependent)
+                {
+                    return false;
+                }
+
+                if (LayoutManager.IsArrangeValid(this))
+                {
+                    return true;
+                }
+
+                _isArrangeValid = false;
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 控件是否能够交互
         /// </summary>
-        public bool HitTestVisible
+        [DebugInfoEntry(Priority = 3)]
+        public bool IsHitTestVisible
         {
-            get => _hitTestVisible;
+            get => _isHitTestVisible;
             set
             {
-                if (_hitTestVisible != value)
+                if (_isHitTestVisible != value)
                 {
-                    _hitTestVisible = value;
+                    _isHitTestVisible = value;
 
-                    ControlRect = _hitTestVisible
-                        ? HitTestCore(ContentRect)
+                    ControlRect = _isHitTestVisible
+                        ? AnalyseCore(ContentRect)
                         : new Rect(ContentRect.x, ContentRect.y, 0f, 0f);
                     ContentSize = ContentRect;
                 }
@@ -280,13 +309,15 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 光标是否位于控件上方
         /// </summary>
-        /// <remarks>对于 <see cref="HitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
-        public bool IsCursorOver => _hitTestVisible
+        /// <remarks>对于 <see cref="IsHitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
+        [DebugInfoEntry(Priority = 5)]
+        public bool IsCursorOver => _isHitTestVisible
             && ReferenceEquals(MouseUtility.HoveredControl, this);
 
         /// <summary>
         /// 控件是否可拖动
         /// </summary>
+        [DebugInfoEntry(Priority = 3)]
         public bool IsDraggable
         {
             get => _isDraggable;
@@ -296,20 +327,23 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 控件是否正在被拖动
         /// </summary>
-        /// <remarks>对于 <see cref="HitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
+        /// <remarks>对于 <see cref="IsHitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
+        [DebugInfoEntry(Priority = 5)]
         public bool IsDragging => _isDraggable && MouseUtility.AnyDragging
             && ReferenceEquals(MouseUtility.DraggingControl, this);
 
         /// <summary>
         /// 正在拖动的控件是否正在该控件上方
         /// </summary>
-        /// <remarks>对于 <see cref="HitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
-        public bool IsDragOwer => _hitTestVisible && MouseUtility.AnyDragging
+        /// <remarks>对于 <see cref="IsHitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
+        [DebugInfoEntry(Priority = 5)]
+        public bool IsDragOwer => _isHitTestVisible && MouseUtility.AnyDragging
             && ReferenceEquals(MouseUtility.HoveredControl, this);
 
         /// <summary>
         /// 是否在界面中启用该控件
         /// </summary>
+        [DebugInfoEntry(Priority = 4)]
         public bool IsEnabled
         {
             get => _isEnabled;
@@ -332,11 +366,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 控件是否独立于 <see cref="LayoutManager"/>
         /// </summary>
+        [DebugInfoEntry(Priority = int.MinValue + 1)]
         public bool IsIndependent => _isIndependent;
 
         /// <summary>
         /// 控件度量是否有效
         /// </summary>
+        [DebugInfoEntry(Priority = 0)]
         public bool IsMeasureValid
         {
             get
@@ -360,13 +396,15 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 光标是否在控件上方按下
         /// </summary>
-        /// <remarks>对于 <see cref="HitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
-        public bool IsPressing => _hitTestVisible && MouseUtility.AnyPressing
+        /// <remarks>对于 <see cref="IsHitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
+        [DebugInfoEntry(Priority = 5)]
+        public bool IsPressing => _isHitTestVisible && MouseUtility.AnyPressing
             && ReferenceEquals(MouseUtility.PressingControl, this);
 
         /// <summary>
         /// 控件分割是否有效
         /// </summary>
+        [DebugInfoEntry(Priority = 0)]
         public bool IsSegmentValid
         {
             get
@@ -430,30 +468,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 控件布局是否有效
-        /// </summary>
-        public bool IsArrangeValid
-        {
-            get
-            {
-                if (!_isArrangeValid || _isIndependent)
-                {
-                    return false;
-                }
-
-                if (LayoutManager.IsArrangeValid(this))
-                {
-                    return true;
-                }
-
-                _isArrangeValid = false;
-
-                return false;
-            }
-        }
-        /// <summary>
         /// 控件名称
         /// </summary>
+        [DebugInfoEntry(Priority = int.MinValue)]
         public string Name
         {
             get => _name;
@@ -464,6 +481,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 负责呈现控件的窗口
         /// </summary>
         /// <remarks>当 <see cref="IsIndependent"/> 为 <see langword="true"/> 时必定为 <see langword="null"/>。</remarks>
+        [DebugInfoEntry(Priority = int.MinValue + 1)]
         public Window Owner
         {
             get
@@ -565,7 +583,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             }
             else
             {
-                if (_hitTestVisible
+                if (_isHitTestVisible
                     && MouseUtility.IsHitTesting
                     && ControlRect.Contains(Event.current.mousePosition)
                     && ReferenceEquals(Owner, MouseUtility.HoveredWindow))
@@ -696,8 +714,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             if (!(Visibility is Visibility.Collapsed))
             {
                 ContentRect = SegmentCore(RenderRect.IntersectWith(visiableRect));
-                ControlRect = _hitTestVisible
-                    ? HitTestCore(ContentRect)
+                ControlRect = _isHitTestVisible
+                    ? AnalyseCore(ContentRect)
                     : new Rect(visiableRect.x, visiableRect.y, 0f, 0f);
             }
             else
@@ -720,7 +738,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <param name="parent">设置给控件的父控件</param>
         public void SetParent(Visual parent)
         {
-            if (ReferenceEquals(Parent, parent))
+            if (ReferenceEquals(Parent, parent)
+                || ReferenceEquals(this, parent))
             {
                 return;
             }
@@ -754,7 +773,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <remarks>这个方法应只用于初始化控件。</remarks>
         public void SetParentSilently(Visual parent)
         {
-            if (ReferenceEquals(Parent, parent))
+            if (ReferenceEquals(Parent, parent)
+                || ReferenceEquals(this, parent))
             {
                 return;
             }
@@ -796,6 +816,16 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <summary>
+        /// 计算控件响应用户交互的区域
+        /// </summary>
+        /// <param name="contentRect">控件呈现内容的可见区域</param>
+        /// <returns>控件响应用户交互的区域。</returns>
+        protected virtual Rect AnalyseCore(Rect contentRect)
+        {
+            return contentRect;
+        }
+
+        /// <summary>
         /// 计算呈现控件内容需要的区域
         /// </summary>
         /// <param name="availableRect">允许排布的区域</param>
@@ -812,16 +842,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         protected virtual void DrawInnerControlRect()
         {
-        }
-
-        /// <summary>
-        /// 计算控件响应用户交互的区域
-        /// </summary>
-        /// <param name="contentRect">控件呈现内容的可见区域</param>
-        /// <returns>控件响应用户交互的区域。</returns>
-        protected virtual Rect HitTestCore(Rect contentRect)
-        {
-            return contentRect;
         }
 
         /// <summary>
