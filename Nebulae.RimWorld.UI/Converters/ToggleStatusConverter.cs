@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Data.Binding.Converters;
+﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Data.Binding.Converters;
 using System.Globalization;
 
 namespace Nebulae.RimWorld.UI.Converters

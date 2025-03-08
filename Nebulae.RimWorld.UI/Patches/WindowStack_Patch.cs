@@ -1,5 +1,8 @@
 ﻿using HarmonyLib;
 using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Utilities;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Verse;
@@ -11,16 +14,42 @@ namespace Nebulae.RimWorld.UI.Patches
     internal static class WindowStack_Patch
     {
         [HarmonyPrefix]
-        internal static void WindowStackOnGUIPrefix(WindowStack __instance)
+        internal static void WindowStackOnGUIPrefix(List<Window> ___windows)
         {
             Vector2 cursorPos = Input.mousePosition / Prefs.UIScale;
             cursorPos.y = Verse.UI.screenHeight - cursorPos.y;
 
             CursorPosition = cursorPos;
-            HoveredWindow = __instance.GetWindowAt(cursorPos);
-
             CurrentEvent = Event.current.type;
             IsHitTesting = CurrentEvent is EventType.Repaint;
+
+            if (CurrentEvent is EventType.KeyDown
+                || CurrentEvent is EventType.KeyUp)
+            {
+                KeyboardUtility.Event.Invoke();
+            }
+
+            if (!IsHitTesting)
+            {
+                return;
+            }
+
+            Window window;
+
+            for (int i = ___windows.Count - 1; i >= 0; i--)
+            {
+                window = ___windows[i];
+
+                if (window.ID >= 0
+                    && (window.absorbInputAroundWindow
+                        || window.windowRect.Contains(cursorPos)))
+                {
+                    HoveredWindow = window;
+                    return;
+                }
+            }
+
+            HoveredWindow = null;
         }
 
         [HarmonyPostfix]
@@ -36,6 +65,11 @@ namespace Nebulae.RimWorld.UI.Patches
                 if (AnyHovered)
                 {
                     HoveredControl.OnCursorLeave();
+
+                    if (AnyDragging)
+                    {
+                        HoveredControl.OnDragLeave(DraggingControl);
+                    }
                 }
 
                 AnyHovered = CurrentHoveredControl != null;
@@ -45,6 +79,11 @@ namespace Nebulae.RimWorld.UI.Patches
                 if (AnyHovered)
                 {
                     HoveredControl.OnCursorEnter();
+
+                    if (AnyDragging)
+                    {
+                        HoveredControl.OnDragEnter(DraggingControl);
+                    }
                 }
             }
 
@@ -93,10 +132,10 @@ namespace Nebulae.RimWorld.UI.Patches
 
                 if (AnyPressing
                     && ReferenceEquals(HoveredControl, PressingControl)
-                    && PressingControl.IsEnabled
-                    && PressingControl is ButtonBase button)
+                    && PressingControl.IsEnabled)
                 {
-                    button.Click();
+                    PressingControl.OnClick();
+                    PressingControl._click.Invoke(PressingControl, EventArgs.Empty);
                 }
 
                 if (AnyDragging)
@@ -216,6 +255,12 @@ namespace Nebulae.RimWorld.UI.Patches
                 AnyDragging = true;
                 DraggingControl = PressingControl;
                 DraggingControl.OnDragStart();
+
+                if (IsHitAvailable
+                    && !ReferenceEquals(DraggingControl, HoveredControl))
+                {
+                    HoveredControl.OnDragEnter(DraggingControl);
+                }
             }
 
             CurrentHoveredControl = null;

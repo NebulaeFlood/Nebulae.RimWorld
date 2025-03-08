@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Controls.Basic;
 using UnityEngine;
 using Verse;
 
@@ -22,7 +23,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// 正位于光标下方的控件
         /// </summary>
-        public static Control HoveredControl;
+        public static Visual HoveredControl;
 
         /// <summary>
         /// 正位于光标下方的窗口
@@ -40,9 +41,9 @@ namespace Nebulae.RimWorld.UI.Utilities
         public static bool IsPressing;
 
 
-        internal static Control CurrentHoveredControl;
-        internal static Control DraggingControl;
-        internal static Control PressingControl;
+        internal static Visual CurrentHoveredControl;
+        internal static Visual DraggingControl;
+        internal static Visual PressingControl;
 
         internal static Window PressingWindow;
 

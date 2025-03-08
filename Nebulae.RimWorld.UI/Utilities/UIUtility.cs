@@ -1,4 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.Utilities;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -11,12 +14,12 @@ namespace Nebulae.RimWorld.UI.Utilities
     public static class UIUtility
     {
         /// <summary>
-        /// <see cref="Control.ContentRect"/> 边框颜色
+        /// <see cref="Visual.ContentRect"/> 边框颜色
         /// </summary>
         public static readonly Texture2D ContentRectBorderBrush = new Color(0f, 1f, 0f, 1f).ToBrush();
 
         /// <summary>
-        /// <see cref="Control.DesiredRect"/> 边框颜色
+        /// <see cref="Visual.DesiredRect"/> 边框颜色
         /// </summary>
         public static readonly Texture2D DesiredRectBorderBrush = new Color(1f, 0.9215686f, 0.0156862f, 1f).ToBrush();
 
@@ -26,7 +29,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         public static readonly Texture2D ControlRectBorderBrush = new Color(0f, 0f, 1f, 1f).ToBrush();
 
         /// <summary>
-        /// <see cref="Control.RenderRect"/> 边框颜色
+        /// <see cref="Visual.RenderRect"/> 边框颜色
         /// </summary>
         public static readonly Texture2D RederRectBorderBrush = new Color(1f, 1f, 1f, 1f).ToBrush();
 
@@ -45,56 +48,175 @@ namespace Nebulae.RimWorld.UI.Utilities
             InitializeStyles();
         }
 
-
         /// <summary>
-        /// 计算按照指定对齐方式放置到指定区域后的矩形
+        /// 计算按照指定对齐方式将该尺寸的矩形放置到指定区域后的位置
         /// </summary>
         /// <param name="rectSize">要放置的矩形大小</param>
         /// <param name="availableArea">放置的区域</param>
-        /// <param name="horizontalAlignment">水平方向对齐方式</param>
-        /// <param name="verticalAlignment">垂直方向对齐方式</param>
-        /// <returns>放置后的矩形。</returns>
-        public static Rect AlignToArea(this Size rectSize, Rect availableArea, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+        /// <param name="anchor">对齐方式</param>
+        /// <returns>矩形放置到指定区域后的位置。</returns>
+        public static Rect AlignToArea(
+            this Size rectSize,
+            Rect availableArea,
+            TextAnchor anchor)
         {
-            Rect alignedRect = new Rect(availableArea.x, availableArea.y, 0f, 0f);
+            int index = (int)anchor;
+
+            HorizontalAlignment horizontalAlignment;
+
+            if (index % 3 == 0)
+            {
+                horizontalAlignment = HorizontalAlignment.Left;
+            }
+            else if (index % 3 == 1)
+            {
+                horizontalAlignment = HorizontalAlignment.Center;
+            }
+            else
+            {
+                horizontalAlignment = HorizontalAlignment.Right;
+            }
+
+            VerticalAlignment verticalAlignment;
+
+            if (index < 3)
+            {
+                verticalAlignment = VerticalAlignment.Top;
+            }
+            else if (index < 6)
+            {
+                verticalAlignment = VerticalAlignment.Center;
+            }
+            else
+            {
+                verticalAlignment = VerticalAlignment.Bottom;
+            }
+
+            float x = availableArea.x;
+            float y = availableArea.y;
+            float width;
+            float height;
 
             switch (horizontalAlignment)
             {
                 case HorizontalAlignment.Center:
-                    alignedRect.x += (availableArea.width - rectSize.Width) * 0.5f;
-                    alignedRect.width = rectSize.Width;
+                    x += (availableArea.width - rectSize.Width) * 0.5f;
+                    width = rectSize.Width;
                     break;
                 case HorizontalAlignment.Right:
-                    alignedRect.x += availableArea.width - rectSize.Width;
-                    alignedRect.width = rectSize.Width;
+                    x += availableArea.width - rectSize.Width;
+                    width = rectSize.Width;
                     break;
                 case HorizontalAlignment.Left:
-                    alignedRect.width = rectSize.Width;
+                    width = rectSize.Width;
                     break;
                 default:    // Stretch
-                    alignedRect.width = availableArea.width;
+                    width = availableArea.width;
                     break;
             }
 
             switch (verticalAlignment)
             {
                 case VerticalAlignment.Center:
-                    alignedRect.y += (availableArea.height - rectSize.Height) * 0.5f;
-                    alignedRect.height = rectSize.Height;
+                    y += (availableArea.height - rectSize.Height) * 0.5f;
+                    height = rectSize.Height;
                     break;
                 case VerticalAlignment.Bottom:
-                    alignedRect.y += availableArea.height - rectSize.Height;
-                    alignedRect.height = rectSize.Height;
+                    y += availableArea.height - rectSize.Height;
+                    height = rectSize.Height;
                     break;
                 case VerticalAlignment.Top:
-                    alignedRect.height = rectSize.Height;
+                    height = rectSize.Height;
                     break;
                 default:    // Stretch
-                    alignedRect.height = availableArea.height;
+                    height = availableArea.height;
                     break;
             }
 
-            return alignedRect;
+            return new Rect(x, y, width, height);
+        }
+
+        /// <summary>
+        /// 计算按照指定对齐方式将该尺寸的矩形放置到指定区域后的位置
+        /// </summary>
+        /// <param name="rectSize">要放置的矩形大小</param>
+        /// <param name="availableArea">放置的区域</param>
+        /// <param name="horizontalAlignment">水平方向对齐方式</param>
+        /// <param name="verticalAlignment">垂直方向对齐方式</param>
+        /// <returns>矩形放置到指定区域后的位置。</returns>
+        public static Rect AlignToArea(
+            this Size rectSize,
+            Rect availableArea,
+            HorizontalAlignment horizontalAlignment,
+            VerticalAlignment verticalAlignment)
+        {
+            float x = availableArea.x;
+            float y = availableArea.y;
+            float width;
+            float height;
+
+            switch (horizontalAlignment)
+            {
+                case HorizontalAlignment.Center:
+                    x += (availableArea.width - rectSize.Width) * 0.5f;
+                    width = rectSize.Width;
+                    break;
+                case HorizontalAlignment.Right:
+                    x += availableArea.width - rectSize.Width;
+                    width = rectSize.Width;
+                    break;
+                case HorizontalAlignment.Left:
+                    width = rectSize.Width;
+                    break;
+                default:    // Stretch
+                    width = availableArea.width;
+                    break;
+            }
+
+            switch (verticalAlignment)
+            {
+                case VerticalAlignment.Center:
+                    y += (availableArea.height - rectSize.Height) * 0.5f;
+                    height = rectSize.Height;
+                    break;
+                case VerticalAlignment.Bottom:
+                    y += availableArea.height - rectSize.Height;
+                    height = rectSize.Height;
+                    break;
+                case VerticalAlignment.Top:
+                    height = rectSize.Height;
+                    break;
+                default:    // Stretch
+                    height = availableArea.height;
+                    break;
+            }
+
+            return new Rect(x, y, width, height);
+        }
+
+        /// <summary>
+        /// 计算输入框尺寸
+        /// </summary>
+        /// <param name="text">输入框内的文字</param>
+        /// <param name="renderWidth">输入框绘制宽度</param>
+        /// <param name="fontSize">字体尺寸</param>
+        /// <param name="isReadOnly">输入框是否为只读状态</param>
+        /// <param name="wrapText">输入框文字是否自动换行</param>
+        /// <returns>输入框尺寸。</returns>
+        public static Size CalculateInputBoxSize(string text, float renderWidth, GameFont fontSize, bool isReadOnly, bool wrapText)
+        {
+            int index = (int)fontSize;
+
+            if (isReadOnly)
+            {
+                index += 3;
+            }
+
+            GUIStyle style = wrapText
+                ? _inputBoxStyles[index]
+                : _inputBoxStyles[index + 6];
+
+            return new Size(renderWidth, style.CalcHeight(new GUIContent(text), renderWidth));
         }
 
         /// <summary>
@@ -105,15 +227,19 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <returns>文字排成一行需要的尺寸。</returns>
         public static Size CalculateLineSize(this string text, GameFont fontSize)
         {
-            GameFont currentFont = Text.Font;
+            return new Size(text.CalculateLength(fontSize), Text.LineHeightOf(fontSize));
+        }
 
-            Text.Font = fontSize;
-
-            float width = Text.CalcSize(text).x;
-            float height = Text.LineHeightOf(fontSize);
-
-            Text.Font = currentFont;
-            return new Size(width, height);
+        /// <summary>
+        /// 计算文字的尺寸
+        /// </summary>
+        /// <param name="text">文字内容</param>
+        /// <param name="availableLength">文字要排成的指定长度</param>
+        /// <param name="fontSize">字体尺寸</param>
+        /// <returns>文字的尺寸。</returns>
+        public static Size CalculateSize(this string text, float availableLength, GameFont fontSize)
+        {
+            return new Size(availableLength, text.CalculateHeight(availableLength, fontSize));
         }
 
         /// <summary>
@@ -122,7 +248,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="control">要绘制的控件</param>
         /// <param name="renderRect">绘制副本的位置</param>
         /// <param name="opacity">副本的不透明度</param>
-        public static void DrawAt(this Control control, Rect renderRect, float opacity = 1f)
+        public static void DrawAt(this Visual control, Rect renderRect, float opacity = 1f)
         {
             float x = control.RenderRect.x;
             float y = control.RenderRect.y;
@@ -476,29 +602,31 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <returns>用户输入后的文字。</returns>
         public static string DrawInputBox(Rect renderRect, string text, GameFont fontSize, bool isReadOnly, bool wrapText)
         {
-            int style;
-
-            switch (fontSize)
-            {
-                case GameFont.Tiny:
-                    style = 0;
-                    break;
-                case GameFont.Medium:
-                    style = 2;
-                    break;
-                default:
-                    style = 1;
-                    break;
-            }
+            int index = (int)fontSize;
 
             if (isReadOnly)
             {
-                style += 3;
+                index += 3;
             }
 
             return wrapText
-                ? GUI.TextArea(renderRect, text, _inputBoxStyles[style])
-                : GUI.TextField(renderRect, text, _inputBoxStyles[style + 6]);
+                ? GUI.TextArea(renderRect, text, _inputBoxStyles[index])
+                : GUI.TextField(renderRect, text, _inputBoxStyles[index + 6]);
+        }
+
+        /// <summary>
+        /// 格式化控件尺寸
+        /// </summary>
+        /// <param name="size">要格式化的尺寸</param>
+        /// <returns>格式化后的尺寸</returns>
+        public static float FormatControlSize(this float size)
+        {
+            if (size < 0f || float.IsInfinity(size) || float.IsNaN(size))
+            {
+                return 0f;
+            }
+
+            return size;
         }
 
         /// <summary>
@@ -629,7 +757,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="yOffset">预览窗口在 y 坐标的偏移量</param>
         /// <param name="opacity">预览的不透明度</param>
         public static void ShowPreview(
-            this Control control,
+            this Visual control,
             float xOffset = 16f,
             float yOffset = 16f,
             float opacity = 0.8f)
@@ -646,7 +774,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="yOffset">预览窗口在 y 坐标的偏移量</param>
         /// <param name="opacity">预览的不透明度</param>
         public static void ShowPreview(
-            this Control control,
+            this Visual control,
             Size bounds,
             float xOffset = 16f,
             float yOffset = 16f,
@@ -696,7 +824,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
 
-        private static void DrawPreviewControl(Control control, Size bounds, float opacity)
+        private static void DrawPreviewControl(Visual control, Size bounds, float opacity)
         {
             float x = control.RenderRect.x;
             float y = control.RenderRect.y;
@@ -709,11 +837,13 @@ namespace Nebulae.RimWorld.UI.Utilities
             Color contentColor = GUI.contentColor;
             Color opacityColor = new Color(1f, 1f, 1f, opacity);
 
+            Visual.PreviewDraw = true;
             GUI.color = opacityColor * color;
             GUI.contentColor = opacityColor * contentColor;
             control.Draw();
             GUI.color = color;
             GUI.contentColor = contentColor;
+            Visual.PreviewDraw = false;
 
             GUI.EndGroup();
         }

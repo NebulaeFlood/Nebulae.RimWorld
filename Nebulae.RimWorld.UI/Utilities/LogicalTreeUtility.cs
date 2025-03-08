@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Data.Binding;
 using Nebulae.RimWorld.UI.Windows;
 
@@ -15,7 +16,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// </summary>
         /// <param name="control">位于控件树上的控件</param>
         /// <returns><paramref name="control"/> 所在控件树的根控件。</returns>
-        public static Control GetLogicalRoot(this Control control)
+        public static Visual GetLogicalRoot(this Visual control)
         {
             if (control.IsIndependent)
             {
@@ -31,7 +32,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <typeparam name="T">父控件的类型</typeparam>
         /// <param name="control">要获取父控件的控件</param>
         /// <returns>控件的特定类型的父控件，若不存在，则返回 <see langword="null"/>。</returns>
-        public static Control GetParent<T>(this Control control) where T : Control
+        public static Visual GetParent<T>(this Visual control) where T : Visual
         {
             if (control.IsIndependent)
             {
@@ -52,7 +53,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="control">要获取父控件的控件</param>
         /// <param name="depth">指定的代数</param>
         /// <returns>控件的指定代数的父控件，若不存在，则返回 <see langword="null"/>。</returns>
-        public static Control GetParent(this Control control, int depth)
+        public static Visual GetParent(this Visual control, int depth)
         {
             if (control.IsIndependent)
             {
@@ -73,7 +74,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="control">要判断父控件的控件</param>
         /// <param name="target">可能为 <paramref name="control"/> 的父控件的控件</param>
         /// <returns>如果 <paramref name="target"/> 为 <paramref name="control"/> 的父控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public static bool IsChildOf(this Control control, Control target)
+        public static bool IsChildOf(this Visual control, Visual target)
         {
             if (control.IsChild)
             {
@@ -96,7 +97,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// 显示以目标控件为根控件的控件树上的所有控件的信息
         /// </summary>
         /// <param name="root">目标控件</param>
-        public static void ShowInfo(this Control root)
+        public static void ShowInfo(this Visual root)
         {
             DebugWindow.ShowWindow(root);
         }
@@ -105,7 +106,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// 解除以目标控件为根控件的控件树上的所有绑定关系
         /// </summary>
         /// <param name="root">目标控件</param>
-        public static void Unbind(this Control root)
+        public static void Unbind(this Visual root)
         {
             BindingManager.Unbind(root);
 
@@ -121,7 +122,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="manager">目标控件树</param>
         public static void Unbind(this LayoutManager manager)
         {
-            if (manager.Root is Control root)
+            if (manager.Root is Visual root)
             {
                 BindingManager.Unbind(root);
 
@@ -138,7 +139,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="window">目标窗口</param>
         public static void Unbind(this ControlWindow window)
         {
-            if (window.Content is Control root)
+            if (window.Content is Visual root)
             {
                 BindingManager.Unbind(root);
 
