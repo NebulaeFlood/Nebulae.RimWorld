@@ -247,22 +247,26 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             Color color = GUI.color;
             bool isDisabled = status.HasFlag(ButtonStatus.Disabled);
 
-            GUI.color = isDisabled
-                ? _compositionColor * Widgets.InactiveColor * color
-                : _compositionColor * color;
+            if (isDisabled)
+            {
+                GUI.color *= _compositionColor * Widgets.InactiveColor;
+                GUI.contentColor *= Widgets.InactiveColor;
+            }
+            else
+            {
+                GUI.color *= _compositionColor;
+            }
 
             DrawBackground(status);
 
             if ((_status & ContentStatus.TextSetted) != 0)
             {
-                GUI.color = Color.white;
-
                 TextAnchor anchor = GameText.Anchor;
                 GameFont font = GameText.Font;
                 GameText.Anchor = TextAnchor.MiddleLeft;
                 GameText.Font = FontSize;
 
-                Widgets.Label(_textRenderRect, Text);
+                Widgets.Label(_textRenderRect, _text);
 
                 GameText.Font = font;
                 GameText.Anchor = anchor;

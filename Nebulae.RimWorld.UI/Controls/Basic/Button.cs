@@ -129,9 +129,15 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override void DrawButton(ButtonStatus status)
         {
-            GUI.color *= status.HasFlag(ButtonStatus.Disabled)
-                ? _compositionColor * Widgets.InactiveColor
-                : _compositionColor;
+            if (status.HasFlag(ButtonStatus.Disabled))
+            {
+                GUI.color *= _compositionColor * Widgets.InactiveColor;
+                GUI.contentColor *= Widgets.InactiveColor;
+            }
+            else
+            {
+                GUI.color *= _compositionColor;
+            }
 
             Texture2D background;
 
@@ -157,18 +163,14 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 GUI.DrawTexture(RenderRect, background);
             }
 
-            string text = Text;
-
-            if (!string.IsNullOrEmpty(text))
+            if (!string.IsNullOrEmpty(_text))
             {
-                GUI.color = Color.white;
-
                 TextAnchor anchor = GameText.Anchor;
                 GameFont font = GameText.Font;
                 GameText.Anchor = TextAnchor.MiddleCenter;
                 GameText.Font = FontSize;
 
-                Widgets.Label(RenderRect, text);
+                Widgets.Label(RenderRect, _text);
 
                 GameText.Font = font;
                 GameText.Anchor = anchor;

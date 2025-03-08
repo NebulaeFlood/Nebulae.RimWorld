@@ -174,23 +174,22 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override void DrawButton(ButtonStatus status)
         {
-            Color contentColor = GUI.contentColor;
             Rect labelRect;
 
             if (status.HasFlag(ButtonStatus.Disabled))
             {
                 labelRect = RenderRect;
-                GUI.contentColor = contentColor * Widgets.InactiveColor;
+                GUI.contentColor *= Widgets.InactiveColor;
             }
             else if (_selected || status is ButtonStatus.Pressed)
             {
                 labelRect = RenderRect;
-                GUI.contentColor = contentColor * Color.yellow;
+                GUI.contentColor *= Color.yellow;
             }
             else if (status.HasFlag(ButtonStatus.Hovered))
             {
                 labelRect = new Rect(RenderRect.x + 1f, RenderRect.y, RenderRect.width, RenderRect.height);
-                GUI.contentColor = contentColor * Color.yellow;
+                GUI.contentColor *= Color.yellow;
             }
             else
             {
@@ -212,7 +211,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             Widgets.Label(labelRect, _header);
 
             GameText.Anchor = anchor;
-            GUI.contentColor = contentColor;
         }
 
         /// <inheritdoc/>
