@@ -61,8 +61,6 @@ namespace Nebulae.RimWorld.UI.Utilities
         internal static bool RightButtonDown;
         internal static bool RightButtonPressing;
 
-        internal static EventType CurrentEvent;
-
         internal static Vector2 PressStartPos;
     }
 }

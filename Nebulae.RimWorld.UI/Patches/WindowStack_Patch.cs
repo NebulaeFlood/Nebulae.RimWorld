@@ -13,6 +13,9 @@ namespace Nebulae.RimWorld.UI.Patches
     [HarmonyPatch(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI))]
     internal static class WindowStack_Patch
     {
+        internal static Event CurrentEvent;
+        internal static EventType CurrentEventType;
+
         [HarmonyPrefix]
         internal static void WindowStackOnGUIPrefix(List<Window> ___windows)
         {
@@ -20,14 +23,12 @@ namespace Nebulae.RimWorld.UI.Patches
             cursorPos.y = Verse.UI.screenHeight - cursorPos.y;
 
             CursorPosition = cursorPos;
-            CurrentEvent = Event.current.type;
-            IsHitTesting = CurrentEvent is EventType.Repaint;
+            CurrentEvent = Event.current;
+            CurrentEventType = CurrentEvent.type;
+            IsHitTesting = CurrentEventType is EventType.Repaint;
 
-            if (CurrentEvent is EventType.KeyDown
-                || CurrentEvent is EventType.KeyUp)
-            {
-                KeyboardUtility.Event.Invoke();
-            }
+            GameStateEventUtility.CheckState(Current.ProgramState);
+            KeyboardEventUtility.CheckEvent(CurrentEvent, CurrentEventType);
 
             if (!IsHitTesting)
             {
