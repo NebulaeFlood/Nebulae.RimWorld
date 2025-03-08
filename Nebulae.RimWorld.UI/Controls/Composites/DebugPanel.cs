@@ -26,14 +26,14 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
 
         #region Private Fields
 
+        private readonly Grid _root;
+
         private readonly TextBlock _infoBox;
         private readonly ScrollViewer _infoViewer;
         private readonly ScrollViewer _treeViewer;
 
         private bool _isEmpty = true;
         private Visual _currentNode;
-
-        private Grid _root;
 
         private LayoutManager _sourceTree;
 

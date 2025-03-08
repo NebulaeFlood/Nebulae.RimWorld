@@ -279,7 +279,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             {
                 _expandButton.Draw();
                 _label.Draw();
-                
+
                 if (_expandButton.IsExpanded)
                 {
                     _content.Draw();

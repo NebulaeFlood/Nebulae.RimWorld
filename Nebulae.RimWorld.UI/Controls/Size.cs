@@ -1,5 +1,4 @@
-﻿using RimWorld;
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls
@@ -186,7 +185,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 width = Width * availableSize.Width;
             }
 
-            if  (Height < 0f)
+            if (Height < 0f)
             {
                 height = 0f;
             }
