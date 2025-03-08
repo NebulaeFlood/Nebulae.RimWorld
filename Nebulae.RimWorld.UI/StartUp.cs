@@ -1,10 +1,8 @@
-﻿using Nebulae.RimWorld.UI.Utilities;
-using Nebulae.RimWorld.Utilities;
+﻿using Nebulae.RimWorld.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Verse;
 
 namespace Nebulae.RimWorld.UI
 {

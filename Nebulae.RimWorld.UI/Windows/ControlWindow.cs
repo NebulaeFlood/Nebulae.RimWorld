@@ -1,6 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Basic;
-using System;
 using UnityEngine;
 using Verse;
 
