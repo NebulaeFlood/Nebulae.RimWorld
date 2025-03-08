@@ -40,7 +40,7 @@ namespace Nebulae.RimWorld.UI.Windows
             layer = WindowLayer.Super;
 
             InitialWidth = 300f;
-            LayoutManager.DebugContent = DebugContent.Empty;
+            LayoutManager.DebugContent = DebugContent.Buttons;
         }
 
 
@@ -59,17 +59,19 @@ namespace Nebulae.RimWorld.UI.Windows
             _optionPanel.Reset();
         }
 
+        /// <inheritdoc/>
+        public override void PostOpen()
+        {
+            base.PostOpen();
+            _optionPanel.ResetInfo();
+        }
+
         /// <summary>
         /// 显示控件树信息
         /// </summary>
         /// <param name="root">根控件</param>
         public static void ShowWindow(Visual root)
         {
-            if (_instance.IsOpen)
-            {
-                _instance.Close();
-            }
-
             _optionPanel.SetOptionContent(root, GenerateTreeInfo(root));
             _instance.Show(closeThenShow: false);
         }
@@ -147,11 +149,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
             public InfoPanel()
             {
-                _infoBox = new TextBlock
-                {
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch
-                };
+                _infoBox = new TextBlock();
                 _infoViewer = new ScrollViewer
                 {
                     Margin = 4f,
@@ -201,6 +199,16 @@ namespace Nebulae.RimWorld.UI.Windows
 
                 _sourceInLayoutTree = false;
                 _sourceTree = null;
+            }
+
+            public void ResetInfo()
+            {
+                _cachedInfos.Clear();
+                _cachedInfos.TrimExcess();
+
+                _currentSource = null;
+
+                _isEmpty = true;
             }
 
             public void SelectSource(Visual source)
@@ -394,7 +402,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
                     foreach (var info in _cachedInfos)
                     {
-                        text += info.Info + "\n";
+                        text += info.Info + "\n\n";
                     }
 
                     return text;
@@ -415,7 +423,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
                     foreach (var info in _cachedInfos)
                     {
-                        text += info.Info + "\n";
+                        text += info.Info + "\n\n";
                     }
 
                     return text;
