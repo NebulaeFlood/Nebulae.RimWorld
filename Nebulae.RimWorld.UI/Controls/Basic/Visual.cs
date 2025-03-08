@@ -511,9 +511,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <remarks>需要保证调用过 <see cref="Measure(Size)"/>。</remarks>
         public Rect Arrange(Rect availableRect)
         {
-            if (Visibility is Visibility.Collapsed
-                || availableRect.width < 1f
-                || availableRect.height < 1f)
+            if (Visibility is Visibility.Collapsed)
             {
                 RenderRect = new Rect(availableRect.x, availableRect.y, 0f, 0f);
                 DesiredRect = RenderRect;
@@ -683,9 +681,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <returns>控件需要占用的布局尺寸。</returns>
         public Size Measure(Size availableSize)
         {
-            if (Visibility is Visibility.Collapsed
-                || availableSize.Width < 1f
-                || availableSize.Height < 1f)
+            if (Visibility is Visibility.Collapsed)
             {
                 RenderSize = Size.Empty;
                 DesiredSize = Size.Empty;
@@ -710,9 +706,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <returns>该控件呈现内容的可见区域。</returns>
         public Rect Segment(Rect visiableRect)
         {
-            if (Visibility is Visibility.Collapsed
-                || visiableRect.width < 1f
-                || visiableRect.height < 1f)
+            if (Visibility is Visibility.Collapsed)
             {
                 ContentRect = new Rect(visiableRect.x, visiableRect.y, 0f, 0f);
                 ControlRect = ContentRect;
