@@ -162,25 +162,13 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             if (isExpanded)
             {
                 expander._expandButton.IsExpanded = true;
-
-                if (!UIUtility.SourceInitialized)
-                {
-                    return;
-                }
-
                 SoundDefOf.TabOpen.PlayOneShotOnCamera();
                 expander._collapsed.Invoke(expander, expander._content);
             }
             else
             {
                 expander._expandButton.IsExpanded = false;
-
-                if (!UIUtility.SourceInitialized)
-                {
-                    return;
-                }
-
-                SoundDefOf.TabOpen.PlayOneShotOnCamera();
+                SoundDefOf.TabClose.PlayOneShotOnCamera();
                 expander._collapsed.Invoke(expander, expander._content);
             }
         }
