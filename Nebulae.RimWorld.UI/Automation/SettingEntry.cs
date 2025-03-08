@@ -1,42 +1,48 @@
-﻿using System.Reflection;
+﻿using Nebulae.RimWorld.UI.Data.Utilities;
+using System.Reflection;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Automation
 {
-    internal struct SettingEntry
+    internal readonly struct SettingEntry
     {
-        internal bool IsBooleanEntry;
-        internal FieldInfo Field;
-        internal string Name;
-        internal NumberSettingEntryAttribute SliderInfo;
+        internal readonly SettingEntryBaseAttribute EntryInfo;
+        internal readonly SettingEntryType EntryType;
+        internal readonly FieldInfo Field;
+        internal readonly string Label;
+        internal readonly string Name;
+        internal readonly string Tooltip;
+        internal readonly object Value;
 
-        internal string Label;
-        internal string Tooltip;
 
-        internal SettingEntry(
-            FieldInfo field,
-            string overriddenName,
-            bool isBooleanEntry,
-            string standardKey,
-            bool containTooltip = true,
-            NumberSettingEntryAttribute sliderInfo = null)
+        internal SettingEntry(string standardKey, SettingEntryBaseAttribute info, FieldInfo field, object settings)
         {
+            EntryInfo = info;
+            EntryType = info.EntryType;
             Field = field;
-            IsBooleanEntry = isBooleanEntry;
-            Name = string.IsNullOrEmpty(overriddenName)
-                ? field.Name
-                : overriddenName;
-            SliderInfo = sliderInfo;
+            Name = field.Name;
 
-            Label = (standardKey + "." + Name + "." + "Label").Translate().Resolve();
+            string key = info.GetLabel(field);
 
-            if (containTooltip)
+            Label = (standardKey + "." + key + ".Label").Translate().Resolve();
+            Tooltip = info.Prompted
+                ? (standardKey + "." + key + ".Tooltip").Translate().Resolve()
+                : string.Empty;
+
+            switch (EntryType)
             {
-                Tooltip = (standardKey + "." + Name + "." + "Tooltip").Translate().Resolve();
-            }
-            else
-            {
-                Tooltip = string.Empty;
+                case SettingEntryType.Boolean:
+                    Value = field.GetValue<bool>(settings);
+                    break;
+                case SettingEntryType.Number:
+                    Value = field.GetValue<float>(settings);
+                    break;
+                case SettingEntryType.String:
+                    Value = field.GetValue<string>(settings);
+                    break;
+                default:
+                    Value = null;
+                    break;
             }
         }
     }

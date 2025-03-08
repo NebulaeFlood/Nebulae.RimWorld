@@ -6,7 +6,7 @@ namespace Nebulae.RimWorld.UI.Automation
     /// 标记成员为数值类型的设置条目
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false)]
-    public class NumberSettingEntryAttribute : Attribute
+    public class NumberSettingEntryAttribute : SettingEntryBaseAttribute
     {
         /// <summary>
         /// 小数部分的位数
@@ -29,11 +29,6 @@ namespace Nebulae.RimWorld.UI.Automation
         public readonly float MinValue;
 
         /// <summary>
-        /// 条目名称
-        /// </summary>
-        public string Name = string.Empty;
-
-        /// <summary>
         /// 最小的相邻可选值的差值
         /// </summary>
         public float SliderStep = 1f;
@@ -44,7 +39,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// </summary>
         /// <param name="min">条目的最小值</param>
         /// <param name="max">条目的最大值</param>
-        public NumberSettingEntryAttribute(float min, float max)
+        public NumberSettingEntryAttribute(float min, float max) : base(SettingEntryType.Number)
         {
             MinValue = min;
             MaxValue = max;
