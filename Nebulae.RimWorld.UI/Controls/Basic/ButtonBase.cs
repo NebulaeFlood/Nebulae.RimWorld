@@ -5,7 +5,7 @@ using System;
 using Verse;
 using Verse.Sound;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 按钮的 UI 状态
@@ -39,22 +39,6 @@ namespace Nebulae.RimWorld.UI.Controls
     /// </summary>
     public abstract class ButtonBase : FrameworkControl
     {
-        #region Clicked
-
-        private readonly WeakEvent<ButtonBase, EventArgs> _clicked = new WeakEvent<ButtonBase, EventArgs>();
-
-        /// <summary>
-        /// 单击按钮时发生的弱事件
-        /// </summary>
-        public event Action<ButtonBase, EventArgs> Clicked
-        {
-            add => _clicked.Add(value, value.Invoke);
-            remove => _clicked.Remove(value);
-        }
-
-        #endregion
-
-
         //------------------------------------------------------
         //
         //  Private Fields
@@ -63,12 +47,10 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Private Fields
 
-        private SoundDef _clickSound = SoundDefOf.Click;
-        private SoundDef _cursorOverSound = SoundDefOf.Mouseover_Standard;
+        private SoundDef _clickSound;
+        private SoundDef _cursorOverSound;
 
-        private bool _playMouseOverSound = true;
-
-        private string _text = string.Empty;
+        private bool _playCursorOverSound;
 
         #endregion
 
@@ -122,17 +104,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public bool PlayCursorOverSound
         {
-            get => _playMouseOverSound;
-            set => _playMouseOverSound = value;
-        }
-
-        /// <summary>
-        /// 按钮的文本
-        /// </summary>
-        public string Text
-        {
-            get => _text;
-            set => _text = value ?? string.Empty;
+            get => _playCursorOverSound;
+            set => _playCursorOverSound = value;
         }
 
         #endregion
@@ -143,14 +116,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         protected ButtonBase()
         {
-            IsHitTestVisible = true;
-        }
-
-
-        internal void Click()
-        {
-            OnClick();
-            _clicked.Invoke(this, EventArgs.Empty);
+            HitTestVisible = true;
         }
 
 
@@ -199,10 +165,8 @@ namespace Nebulae.RimWorld.UI.Controls
             DrawButton(status);
         }
 
-        /// <summary>
-        /// 按钮被单击时执行的方法
-        /// </summary>
-        protected virtual void OnClick()
+        /// <inheritdoc/>
+        protected internal override void OnClick()
         {
             _clickSound?.PlayOneShotOnCamera();
         }
@@ -212,13 +176,21 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             if (MouseUtility.IsPressing
                 || !IsEnabled
-                || !_playMouseOverSound
+                || !_playCursorOverSound
                 || _cursorOverSound is null)
             {
                 return;
             }
 
             _cursorOverSound.PlayOneShotOnCamera();
+        }
+
+        /// <summary>
+        /// 播放点击音效
+        /// </summary>
+        protected void PlayClickSound()
+        {
+            _clickSound?.PlayOneShotOnCamera();
         }
 
         #endregion

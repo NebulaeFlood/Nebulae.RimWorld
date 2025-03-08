@@ -4,7 +4,7 @@ using UnityEngine;
 using Verse;
 using GameText = Verse.Text;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 文本块控件
@@ -85,14 +85,6 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Protected Methods
-
-        /// <inheritdoc/>
-        protected override Rect ArrangeCore(Rect availableRect)
-        {
-            Rect renderRect = base.ArrangeCore(availableRect);
-            renderRect.height = Mathf.Max(renderRect.height, RenderSize.Height);
-            return renderRect;
-        }
 
         /// <inheritdoc/>
         protected override void DrawCore()

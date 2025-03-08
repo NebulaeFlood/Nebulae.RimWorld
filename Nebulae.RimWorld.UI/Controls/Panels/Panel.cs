@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,8 +22,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         private readonly PanelChildrenCollection _children;
 
-        private Control[] _drawableChildren;
-        private Control[] _filteredChildren;
+        private Visual[] _drawableChildren;
+        private Visual[] _filteredChildren;
 
         private bool _isDrawableChildrenValid = false;
         private bool _isFilteredChildrenValid = false;
@@ -47,7 +48,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// <see cref="Filter"/> 过滤后的子控件
         /// </summary>
-        protected internal Control[] FilteredChildren
+        protected internal Visual[] FilteredChildren
         {
             get
             {
@@ -70,9 +71,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// 获取或设置子控件过滤器
         /// </summary>
-        public Predicate<Control> Filter
+        public Predicate<Visual> Filter
         {
-            get { return (Predicate<Control>)GetValue(FilterProperty); }
+            get { return (Predicate<Visual>)GetValue(FilterProperty); }
             set { SetValue(FilterProperty, value); }
         }
 
@@ -80,7 +81,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 标识 <see cref="Filter"/> 依赖属性。
         /// </summary>
         public static readonly DependencyProperty FilterProperty =
-            DependencyProperty.Register(nameof(Filter), typeof(Predicate<Control>), typeof(Panel),
+            DependencyProperty.Register(nameof(Filter), typeof(Predicate<Visual>), typeof(Panel),
                 new ControlPropertyMetadata(null, OnFilterChanged, ControlRelation.Measure));
 
         private static void OnFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -144,8 +145,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         internal void ClearInternal()
         {
-            _drawableChildren = Array.Empty<Control>();
-            _filteredChildren = Array.Empty<Control>();
+            _drawableChildren = Array.Empty<Visual>();
+            _filteredChildren = Array.Empty<Visual>();
 
             InvalidateFilter();
         }
@@ -190,7 +191,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <inheritdoc/>
-        protected internal override IEnumerable<Control> EnumerateLogicalChildren()
+        protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
         {
             return _children;
         }
@@ -200,10 +201,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="child">要判断的子控件</param>
         /// <returns>子控件是否应该被绘制</returns>
-        protected virtual bool IsDrawable(Control child)
+        protected virtual bool IsDrawable(Visual child)
         {
-            return child.RenderSize.Height > float.Epsilon
-                && child.RenderSize.Width > float.Epsilon;
+            return !(child.RenderSize < Size.Epsilon);
         }
 
         /// <inheritdoc/>
@@ -249,7 +249,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 查找当前条件下可以被绘制的子控件
         /// </summary>
         /// <returns>当前条件下可以被绘制的子控件</returns>
-        private IEnumerable<Control> FindDrawableChildren()
+        private IEnumerable<Visual> FindDrawableChildren()
         {
             var filteredChildren = FilteredChildren;
 
@@ -266,7 +266,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 查找 <see cref="Filter"/> 过滤后的子控件
         /// </summary>
         /// <returns><see cref="Filter"/> 过滤后的子控件</returns>
-        private Control[] FindFilteredChildren()
+        private Visual[] FindFilteredChildren()
         {
             var filter = Filter;
 

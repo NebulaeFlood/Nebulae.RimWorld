@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 边框控件，用于装饰控件
@@ -22,7 +22,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private Thickness _borderThickness = Thickness.Empty;
 
-        private Control _content;
+        private Visual _content;
 
         private bool _isEmpty = true;
 
@@ -93,7 +93,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 内容控件
         /// </summary>
-        public Control Content
+        public Visual Content
         {
             get => _content;
             set
@@ -128,7 +128,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public Border()
         {
-            IsHitTestVisible = true;
+            HitTestVisible = true;
         }
 
 
@@ -180,7 +180,7 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected internal override IEnumerable<Control> EnumerateLogicalChildren()
+        protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
         {
             if (_isEmpty)
             {

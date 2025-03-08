@@ -6,7 +6,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 描述边框的粗细
     /// </summary>
-    public struct Thickness : IEquatable<Thickness>
+    public readonly struct Thickness : IEquatable<Thickness>
     {
         /// <summary>
         /// <see cref="Left"/>、<see cref="Top"/>、<see cref="Right"/> 和 <see cref="Bottom"/> 为 0 的 <see cref="Thickness"/>

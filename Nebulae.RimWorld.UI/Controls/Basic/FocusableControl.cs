@@ -2,7 +2,7 @@
 using UnityEngine;
 using Verse;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 可手动获取焦点的控件的基类，定义了其共同行为
@@ -87,7 +87,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             _focusIndex = "Nebulae.RimWorld.UI.Controls.FocusableControl" + _globeIndex++.ToString();
 
-            IsHitTestVisible = true;
+            HitTestVisible = true;
         }
 
 

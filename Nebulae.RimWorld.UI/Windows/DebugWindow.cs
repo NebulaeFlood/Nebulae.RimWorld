@@ -1,12 +1,17 @@
-﻿using Nebulae.RimWorld.UI.Controls;
+﻿using Nebulae.RimWorld.UI.Automation;
+using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Controls.Composites;
 using Nebulae.RimWorld.UI.Controls.Panels;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Networking.Types;
 using Verse;
-using TextBlock = Nebulae.RimWorld.UI.Controls.TextBlock;
+using Grid = Nebulae.RimWorld.UI.Controls.Panels.Grid;
+using TextBlock = Nebulae.RimWorld.UI.Controls.Basic.TextBlock;
 
 namespace Nebulae.RimWorld.UI.Windows
 {
@@ -28,7 +33,7 @@ namespace Nebulae.RimWorld.UI.Windows
         private DebugWindow()
         {
             draggable = true;
-            doCloseButton = false;
+            doCloseX = true;
             drawShadow = false;
             resizeable = true;
 
@@ -58,7 +63,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// 显示控件树信息
         /// </summary>
         /// <param name="root">根控件</param>
-        public static void ShowWindow(Control root)
+        public static void ShowWindow(Visual root)
         {
             if (_instance.IsOpen)
             {
@@ -66,7 +71,7 @@ namespace Nebulae.RimWorld.UI.Windows
             }
 
             _optionPanel.SetOptionContent(root, GenerateTreeInfo(root));
-            _instance.Show();
+            _instance.Show(closeThenShow: false);
         }
 
         #endregion
@@ -78,29 +83,14 @@ namespace Nebulae.RimWorld.UI.Windows
             windowRect = new Rect(0f, 0f, InitialWidth, Verse.UI.screenHeight);
         }
 
-        private static Expander GenerateTreeInfo(Control source)
+        private static Expander GenerateTreeInfo(Visual source)
         {
             var node = new Expander
             {
-                Text = source.ToString(),
-                Tooltip =
-                    GenerateInfoLine("Type", source.Type) +
-                    GenerateInfoLine("Name", source.Name) +
-                    GenerateInfoLine("RenderRect", source.RenderRect) +
-                    GenerateInfoLine("DesiredRect", source.DesiredRect) +
-                    GenerateInfoLine("ContentRect", source.ContentRect) +
-                    (source is Panel panel ? GenerateInfoLine("ChildrenCount", panel.Children.Count) : string.Empty) +
-                    GenerateInfoLine("Visibility", source.Visibility) +
-                    GenerateInfoLine("IsEnabled", source.IsEnabled) +
-                    GenerateInfoLine("IsDraggable", source.IsDraggable) +
-                    GenerateInfoLine("IsHitTestVisible", source.IsHitTestVisible) +
-                    GenerateInfoLine("IsArrangeValid", source.IsArrangeValid) +
-                    GenerateInfoLine("IsMeasureValid", source.IsMeasureValid) +
-                    GenerateInfoLine("IsSegmentValid", source.IsSegmentValid) +
-                    GenerateInfoLine("ShowTooltip", source.ShowTooltip) +
-                    GenerateInfo("Tooltip", source.Tooltip.text)
+                Title = source.ToString(),
+                TitleHitTestVisible = true
             };
-            node.Clicked += _optionPanel.SetInfo;
+            node.Click += delegate { _optionPanel.SelectSource(source); };
             var children = source.EnumerateLogicalChildren();
 
             if (children.Any())
@@ -116,16 +106,6 @@ namespace Nebulae.RimWorld.UI.Windows
             }
 
             return node;
-        }
-
-        private static string GenerateInfo(string key, object value)
-        {
-            return $"<color=yellow>{key}</color>:\n{value}";
-        }
-
-        private static string GenerateInfoLine(string key, object value)
-        {
-            return $"<color=yellow>{key}</color>:\n{value}\n\n";
         }
 
 
@@ -146,6 +126,9 @@ namespace Nebulae.RimWorld.UI.Windows
             private readonly ScrollViewer _infoViewer;
             private readonly ScrollViewer _treeViewer;
 
+            private bool _isEmpty = true;
+            private Visual _currentSource;
+
             private LayoutManager _sourceTree;
 
             private bool _initialized = false;
@@ -156,6 +139,8 @@ namespace Nebulae.RimWorld.UI.Windows
             private bool _sourceDrawDesiredRect;
             private bool _sourceDrawHitTestRect;
             private bool _sourceDrawRenderRect;
+
+            private static readonly List<DebugInfo> _cachedInfos = new List<DebugInfo>();
 
             #endregion
 
@@ -171,14 +156,14 @@ namespace Nebulae.RimWorld.UI.Windows
                 {
                     Margin = 4f,
                     Content = _infoBox,
-                    IsHitTestVisible = true
+                    HitTestVisible = true
                 };
                 _infoViewer.SetParentSilently(this);
 
                 _treeViewer = new ScrollViewer
                 {
                     Margin = 4f,
-                    IsHitTestVisible = true
+                    HitTestVisible = true
                 };
                 _treeViewer.SetParentSilently(this);
             }
@@ -199,8 +184,15 @@ namespace Nebulae.RimWorld.UI.Windows
                     return;
                 }
 
+                _cachedInfos.Clear();
+                _cachedInfos.TrimExcess();
+
+                _currentSource = null;
+
                 _infoBox.Text = string.Empty;
                 _initialized = false;
+
+                _isEmpty = true;
 
                 if (!_sourceInLayoutTree)
                 {
@@ -211,12 +203,16 @@ namespace Nebulae.RimWorld.UI.Windows
                 _sourceTree = null;
             }
 
-            public void SetInfo(ButtonBase sender, EventArgs args)
+            public void SelectSource(Visual source)
             {
-                _infoBox.Text = sender.Tooltip.text;
+                _currentSource = source;
+                _isEmpty = source is null;
+
+                _cachedInfos.Clear();
+                _cachedInfos.TrimExcess();
             }
 
-            public void SetOptionContent(Control source, Control content)
+            public void SetOptionContent(Visual source, Visual content)
             {
                 if (source is null)
                 {
@@ -278,6 +274,8 @@ namespace Nebulae.RimWorld.UI.Windows
             {
                 if (_initialized)
                 {
+                    _infoBox.Text = GenerateInfo();
+
                     Rect checkBoxRect = new Rect(RenderRect.x, RenderRect.y, RenderRect.width, 24f);
 
                     if (_sourceInLayoutTree)
@@ -331,7 +329,7 @@ namespace Nebulae.RimWorld.UI.Windows
                 }
             }
 
-            protected internal override IEnumerable<Control> EnumerateLogicalChildren()
+            protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
             {
                 yield return _infoViewer;
                 yield return _treeViewer;
@@ -382,6 +380,46 @@ namespace Nebulae.RimWorld.UI.Windows
                 Text.Anchor = TextAnchor.MiddleRight;
                 Widgets.Label(renderRect, "Invalid");
                 Text.Anchor = anchor;
+            }
+
+            private string GenerateInfo()
+            {
+                if (_isEmpty)
+                {
+                    return "Click any expander's title to get info.";
+                }
+                else if (_cachedInfos.Count > 0)
+                {
+                    string text = string.Empty;
+
+                    foreach (var info in _cachedInfos)
+                    {
+                        text += info.Info + "\n";
+                    }
+
+                    return text;
+                }
+                else
+                {
+                    string text = string.Empty;
+
+                    var members = _currentSource.Type.GetMembers();
+
+                    for (int i = 0; i < members.Length; i++)
+                    {
+                        if (DebugInfo.TryCreate(members[i], _currentSource, out var info))
+                        {
+                            _cachedInfos.Add(info);
+                        }
+                    }
+
+                    foreach (var info in _cachedInfos)
+                    {
+                        text += info.Info + "\n";
+                    }
+
+                    return text;
+                }
             }
 
             #endregion

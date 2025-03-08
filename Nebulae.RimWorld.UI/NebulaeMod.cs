@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.UI.Windows;
 using Nebulae.RimWorld.WeakEventManagers;
@@ -8,7 +9,7 @@ using Verse;
 namespace Nebulae.RimWorld.UI
 {
     /// <summary>
-    /// 定义一个使用 <see cref="Control"/> 作为设置窗口的 Mod
+    /// 定义一个使用 <see cref="Visual"/> 作为设置窗口的 Mod
     /// </summary>
     public interface INebulaeMod
     {
@@ -35,7 +36,7 @@ namespace Nebulae.RimWorld.UI
 
 
     /// <summary>
-    /// 使用 <see cref="Control"/> 作为设置窗口的内容的 Mod 基类
+    /// 使用 <see cref="Visual"/> 作为设置窗口的内容的 Mod 基类
     /// </summary>
     /// <typeparam name="T">Mod 设置类的类型</typeparam>
     public abstract class NebulaeMod<T> : Mod, INebulaeMod, IUIEventListener
@@ -74,7 +75,7 @@ namespace Nebulae.RimWorld.UI
         {
             _settings = GetSettings<T>();
 
-            StartUpQuestManager.AddQuest(InitializeSettingWindow);
+            StartUpQuestManager.AddQuest(Initialize);
             UIPatch.UIEvent.Manage(this);
         }
 
@@ -101,15 +102,17 @@ namespace Nebulae.RimWorld.UI
         {
             if (type is UIEventType.LanguageChanged)
             {
-                InitializeSettingWindow();
+                Initialize();
             }
         }
 
         /// <summary>
         /// 初始化设置窗口
         /// </summary>
-        public void InitializeSettingWindow()
+        public void Initialize()
         {
+            OnInitializing();
+
             _settingWindow?.Unbind();
             _settingWindow = CreateSettingWindow();
             _settingWindow.Content = CreateContent();
@@ -144,13 +147,20 @@ namespace Nebulae.RimWorld.UI
         /// 创建 Mod 设置窗口的内容
         /// </summary>
         /// <returns>Mod 设置窗口的内容</returns>
-        protected abstract Control CreateContent();
+        protected abstract Visual CreateContent();
 
         /// <summary>
         /// 创建 Mod 设置窗口
         /// </summary>
         /// <returns>Mod 设置窗口</returns>
         protected virtual ModSettingWindow CreateSettingWindow() => new ModSettingWindow(this);
+
+        /// <summary>
+        /// 创建 Mod 设置窗口前执行的方法
+        /// </summary>
+        protected virtual void OnInitializing()
+        {
+        }
 
         #endregion
 

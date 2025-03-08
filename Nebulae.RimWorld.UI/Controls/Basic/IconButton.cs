@@ -1,11 +1,12 @@
 ﻿using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using RimWorld;
 using System;
 using UnityEngine;
 using Verse;
 using GameText = Verse.Text;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 图标按钮
@@ -31,6 +32,8 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Private Fields
+
+        private string _text = string.Empty;
 
         private Size _iconRenderSize = Size.Empty;
         private Rect _iconRenderRect;
@@ -124,6 +127,15 @@ namespace Nebulae.RimWorld.UI.Controls
             set => _separateContent = value;
         }
 
+        /// <summary>
+        /// 按钮的文本
+        /// </summary>
+        public string Text
+        {
+            get => _text;
+            set => _text = value ?? string.Empty;
+        }
+
         #endregion
 
 
@@ -142,6 +154,9 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public IconButton()
         {
+            ClickSound = SoundDefOf.Click;
+            CursorOverSound = SoundDefOf.Mouseover_Standard;
+            PlayCursorOverSound = true;
         }
 
 
@@ -156,7 +171,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
-            Rect renderRect = base.ArrangeCore(availableRect);
+            Rect renderRect = RenderSize.AlignToArea(availableRect,
+                HorizontalAlignment, VerticalAlignment);
 
             if (_status is ContentStatus.None)
             {
@@ -250,8 +266,6 @@ namespace Nebulae.RimWorld.UI.Controls
 
                 GUI.DrawTexture(_iconRenderRect, _icon, ScaleMode.ScaleToFit);
             }
-
-            GUI.color = color;
         }
 
         /// <inheritdoc/>

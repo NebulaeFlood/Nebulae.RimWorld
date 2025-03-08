@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Controls.Basic;
 using System;
 using UnityEngine;
 using Verse;
@@ -75,7 +76,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <summary>
         /// 内容控件
         /// </summary>
-        public Control Content
+        public Visual Content
         {
             get => _layoutManager.Root;
             set => _layoutManager.Root = value;
@@ -168,9 +169,6 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public ControlWindow()
         {
-            doCloseButton = true;
-            doCloseX = true;
-
             _layoutManager = new LayoutManager(this);
             UIPatch.UIEvent.Manage(this);
         }
@@ -197,11 +195,11 @@ namespace Nebulae.RimWorld.UI.Windows
         }
 
         /// <summary>
-        /// <see cref="ButtonBase.Clicked"/> 事件处理器，用于关闭窗口
+        /// <see cref="Visual.Click"/> 事件处理器，用于关闭窗口
         /// </summary>
-        /// <param name="button">被点击的按钮</param>
+        /// <param name="control">被点击的控件</param>
         /// <param name="args">事件数据</param>
-        public void CloseWindow(ButtonBase button, EventArgs args) => Close();
+        public void CloseWindow(Visual control, EventArgs args) => Close();
 
         /// <summary>
         /// 开始呈现窗口

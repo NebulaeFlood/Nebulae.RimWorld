@@ -1,21 +1,22 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using System;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
     [Serializable]
     internal sealed class LogicalTreeException : Exception
     {
-        internal LogicalTreeException(Control control, string message) :
+        internal LogicalTreeException(Visual control, string message) :
             base(CreateMessageText(control, message))
         {
         }
 
-        internal LogicalTreeException(Control control, string message, Exception innerException) :
+        internal LogicalTreeException(Visual control, string message, Exception innerException) :
             base(CreateMessageText(control, message, hasInnerException: true), innerException)
         {
         }
 
-        private static string CreateMessageText(Control control, string message, bool hasInnerException = false)
+        private static string CreateMessageText(Visual control, string message, bool hasInnerException = false)
         {
             string test = "An control";
 

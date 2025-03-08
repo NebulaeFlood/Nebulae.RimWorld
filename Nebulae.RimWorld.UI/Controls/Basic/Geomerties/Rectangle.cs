@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using UnityEngine;
 using Verse;
 
-namespace Nebulae.RimWorld.UI.Controls.Geomerties
+namespace Nebulae.RimWorld.UI.Controls.Basic.Geomerties
 {
     /// <summary>
     /// 矩形图案

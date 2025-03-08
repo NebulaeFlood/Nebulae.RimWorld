@@ -1,9 +1,10 @@
-﻿using Nebulae.RimWorld.UI.Controls.Panels;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Controls.Panels;
 using Nebulae.RimWorld.UI.Data;
 using UnityEngine;
 using Verse;
 
-namespace Nebulae.RimWorld.UI.Controls.Geomerties
+namespace Nebulae.RimWorld.UI.Controls.Basic.Geomerties
 {
     /// <summary>
     /// 线条图案

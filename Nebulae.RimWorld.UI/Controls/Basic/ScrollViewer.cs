@@ -6,7 +6,7 @@ using UnityEngine;
 using Verse;
 using Verse.Steam;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 滚动视图控件
@@ -21,7 +21,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Private Fields
 
-        private Control _content;
+        private Visual _content;
 
         private bool _horizontalScroll = false;
 
@@ -50,7 +50,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 内容控件
         /// </summary>
-        public Control Content
+        public Visual Content
         {
             get => _content;
             set
@@ -69,6 +69,15 @@ namespace Nebulae.RimWorld.UI.Controls
                     _content.InvalidateMeasure();
                 }
             }
+        }
+
+        /// <summary>
+        /// 内容的水平偏移量
+        /// </summary>
+        public float HorizontalOffset
+        {
+            get => _horizontalOffset;
+            set => _horizontalOffset = Mathf.Clamp(value, 0f, _horizontalMaxOffset);
         }
 
         #region HorizontalScrollBarVisibility
@@ -96,6 +105,15 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             get => _horizontalScroll;
             set => _horizontalScroll = value;
+        }
+
+        /// <summary>
+        /// 内容的垂直偏移量
+        /// </summary>
+        public float VerticalOffset
+        {
+            get => _verticalOffset;
+            set => _verticalOffset = Mathf.Clamp(value, 0f, _verticalMaxOffset);
         }
 
         #region VerticalScrollBarVisibility
@@ -138,6 +156,49 @@ namespace Nebulae.RimWorld.UI.Controls
 
         //------------------------------------------------------
         //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Methods
+
+        /// <summary>
+        /// 滚动到底部
+        /// </summary>
+        public void ScrollToBottom()
+        {
+            _verticalOffset = _verticalMaxOffset;
+        }
+
+        /// <summary>
+        /// 滚动到最左处
+        /// </summary>
+        public void ScrollToLeft()
+        {
+            _horizontalOffset = 0f;
+        }
+
+        /// <summary>
+        /// 滚动到最右处
+        /// </summary>
+        public void ScrollToRight()
+        {
+            _horizontalOffset = _horizontalMaxOffset;
+        }
+
+        /// <summary>
+        /// 滚动到顶部
+        /// </summary>
+        public void ScrollToTop()
+        {
+            _verticalOffset = 0f;
+        }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
         //  Protected Methods
         //
         //------------------------------------------------------
@@ -155,7 +216,8 @@ namespace Nebulae.RimWorld.UI.Controls
                 Mathf.Min(_viewWidth, _content.DesiredSize.Width),
                 Mathf.Min(_viewHeight, _content.DesiredSize.Height)));
 
-            return base.ArrangeCore(availableRect);
+            return RenderSize.AlignToArea(availableRect,
+                HorizontalAlignment, VerticalAlignment);
         }
 
         /// <inheritdoc/>
@@ -324,7 +386,7 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected internal override IEnumerable<Control> EnumerateLogicalChildren()
+        protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
         {
             if (_content is null)
             {
@@ -376,6 +438,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 Size contentSize = _content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
 
                 bool shouldMeasureAgain = false;
+
                 if (!_shouldDrawHorizontalScrollBar
                     && HorizontalScrollBarVisibility != ScrollBarVisibility.Hidden
                     && contentSize.Width > contentAvailableWidth)
@@ -384,6 +447,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     shouldMeasureAgain = true;
                     _shouldDrawHorizontalScrollBar = true;
                 }
+
                 if (!_shouldDrawVerticalScrollBar
                     && VerticalScrollBarVisibility != ScrollBarVisibility.Hidden
                     && contentSize.Height > contentAvailableHeight)
@@ -415,7 +479,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             if (IsChild)
             {
-                Rect contentVisiableRect = visiableRect
+                Rect contentVisibleRect = visiableRect
                     .IntersectWith(new Rect(
                         RenderRect.x,
                         RenderRect.y,
@@ -425,8 +489,8 @@ namespace Nebulae.RimWorld.UI.Controls
                 _content?.Segment(new Rect(
                     _horizontalOffset,
                     _verticalOffset,
-                    contentVisiableRect.width,
-                    contentVisiableRect.height));
+                    contentVisibleRect.width,
+                    contentVisibleRect.height));
             }
             else
             {

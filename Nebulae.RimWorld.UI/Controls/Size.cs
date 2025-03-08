@@ -6,12 +6,17 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 用于指定宽度和高度
     /// </summary>
-    public struct Size : IEquatable<Size>
+    public readonly struct Size : IEquatable<Size>
     {
         /// <summary>
         /// <see cref="Width"/> 和 <see cref="Height"/> 为 0 的 <see cref="Size"/>
         /// </summary>
         public static readonly Size Empty = new Size(0f);
+
+        /// <summary>
+        /// 表示大于零的最小正 <see cref="Size"/>
+        /// </summary>
+        public static readonly Size Epsilon = new Size(1f);
 
 
         //------------------------------------------------------
@@ -306,8 +311,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="left">第一个 <see cref="Size"/> 对象</param>
         /// <param name="right">第二个 <see cref="Size"/> 对象</param>
-        /// <returns>如果 <paramref name="left"/> 的宽度和高度均小于 <paramref name="right"/>，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public static bool operator <(Size left, Size right) => left.Width < right.Width && left.Height < right.Height;
+        /// <returns>如果 <paramref name="left"/> 的宽度或高度小于 <paramref name="right"/>，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public static bool operator <(Size left, Size right) => left.Width < right.Width || left.Height < right.Height;
 
         /// <summary>
         /// 将两个 <see cref="Size"/> 对象相加，返回新 <see cref="Size"/> 对象

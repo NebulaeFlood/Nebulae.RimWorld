@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Data;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
@@ -94,7 +95,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="control">要添加的控件</param>
         /// <returns>该面板控件</returns>
-        public StackPanel Append(Control control)
+        public StackPanel Append(Visual control)
         {
             Children.Add(control);
             return this;
@@ -105,7 +106,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="controls">要添加的控件</param>
         /// <returns>该面板控件</returns>
-        public StackPanel Set(params Control[] controls)
+        public StackPanel Set(params Visual[] controls)
         {
             Children.OverrideCollection(controls);
             return this;
@@ -125,7 +126,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <param name="control">要插入的控件</param>
         /// <param name="index">被挤开的控件</param>
         /// <returns>若插入了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Insert(Control control, Control index)
+        public bool Insert(Visual control, Visual index)
         {
             return Children.Insert(index, control);
         }
@@ -135,7 +136,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="control">要移除的控件</param>
         /// <returns>若移除了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Remove(Control control)
+        public bool Remove(Visual control)
         {
             return Children.Remove(control);
         }
@@ -252,6 +253,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     childrenWidth = Mathf.Max(childrenWidth, childDesiredSize.Width);
                 }
             }
+
             return new Size(childrenWidth, childrenHeight);
         }
 

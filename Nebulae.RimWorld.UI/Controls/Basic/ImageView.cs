@@ -1,7 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Data;
 using UnityEngine;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 图片控件

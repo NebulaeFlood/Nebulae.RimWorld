@@ -1,17 +1,18 @@
-﻿using Nebulae.RimWorld.UI.Utilities;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Composites
 {
     /// <summary>
     /// 用户控件
     /// </summary>
     /// <remarks>方便使用控件组成新控件。需要在构造函数中手动调用 <see cref="Initialize"/> 方法。</remarks>
-    public abstract class UserControl : Control
+    public abstract class UserControl : Visual
     {
-        private Control _content;
+        private Visual _content;
 
 
         /// <summary>
@@ -33,7 +34,7 @@ namespace Nebulae.RimWorld.UI.Controls
                 throw new InvalidOperationException($"{Type} is subclass of {typeof(UserControl)} but {typeof(UserControl)}.Initialize method has not been called.");
             }
 
-            if (CreateContent() is Control control)
+            if (CreateContent() is Visual control)
             {
                 _content.Unbind();
                 _content.SetParent(null);
@@ -66,7 +67,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 创建内容控件
         /// </summary>
         /// <returns>页面的内容。</returns>
-        protected abstract Control CreateContent();
+        protected abstract Visual CreateContent();
 
         /// <inheritdoc/>
         protected override void DrawCore()
@@ -75,7 +76,7 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected internal override IEnumerable<Control> EnumerateLogicalChildren()
+        protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
         {
             if (_content is null)
             {

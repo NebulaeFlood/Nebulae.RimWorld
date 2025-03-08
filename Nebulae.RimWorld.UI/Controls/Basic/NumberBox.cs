@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 专用于输入数字的文本框控件
@@ -29,9 +29,13 @@ namespace Nebulae.RimWorld.UI.Controls
         private float _minimun = -99999f;
 
         private int _decimalPartDigit = 2;
-        private bool _displayAsPercent = false;
+        private bool _displayAsPercent;
 
-        private bool _isReadOnly = false;
+        private bool _isReadOnly;
+
+        private Thickness _backgroundExtension = Thickness.Empty;
+
+        private Rect _innerRect;
 
         #endregion
 
@@ -43,6 +47,47 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Public Properties
+
+        /// <summary>
+        /// 输入框背景拓展量
+        /// </summary>
+        /// <remarks>只有 <see cref="Thickness.Top"/> 和 <see cref="Thickness.Bottom"/> 有效。</remarks>
+        public Thickness BackgroundExtension
+        {
+            get => _backgroundExtension;
+            set
+            {
+                value = value.Normalize();
+                value = new Thickness(0f, value.Top, 0f, value.Bottom);
+
+                if (_backgroundExtension != value)
+                {
+                    _innerRect.yMax -= _backgroundExtension.Bottom;
+                    _innerRect.yMin += _backgroundExtension.Top;
+                    _backgroundExtension = value;
+                    _innerRect.yMax += _backgroundExtension.Bottom;
+                    _innerRect.yMin -= _backgroundExtension.Top;
+                }
+            }
+        }
+
+        #region BackgroundVerticalAlignment
+        /// <summary>
+        /// 获取或设置
+        /// </summary>
+        public VerticalAlignment BackgroundVerticalAlignment
+        {
+            get { return (VerticalAlignment)GetValue(BackgroundVerticalAlignmentProperty); }
+            set { SetValue(BackgroundVerticalAlignmentProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="BackgroundVerticalAlignment"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty BackgroundVerticalAlignmentProperty =
+            DependencyProperty.Register(nameof(BackgroundVerticalAlignment), typeof(VerticalAlignment), typeof(NumberBox),
+                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Arrange));
+        #endregion
 
         /// <summary>
         /// 小数点后最大位数
@@ -111,7 +156,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
             DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(NumberBox),
-                new PropertyMetadata(GameFont.Small));
+                new ControlPropertyMetadata(GameFont.Small, ControlRelation.Arrange));
         #endregion
 
         /// <summary>
@@ -184,7 +229,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register(nameof(Value), typeof(float), typeof(NumberBox),
-                new PropertyMetadata(0f, OnValueChanged));
+                new ControlPropertyMetadata(0f, OnValueChanged, ControlRelation.Arrange));
 
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -211,6 +256,12 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
+        static NumberBox()
+        {
+            HeightProperty.OverrideMetadata(typeof(NumberBox),
+                new ControlPropertyMetadata(34f, ControlRelation.Measure));
+        }
+
         /// <summary>
         /// 初始化 <see cref="NumberBox"/> 的新实例
         /// </summary>
@@ -218,6 +269,21 @@ namespace Nebulae.RimWorld.UI.Controls
         {
         }
 
+
+        /// <inheritdoc/>
+        protected override Rect ArrangeCore(Rect availableRect)
+        {
+            Rect renderRect = RenderSize.AlignToArea(availableRect,
+                HorizontalAlignment, VerticalAlignment);
+
+            _innerRect = _buffer.CalculateLineSize(FontSize).AlignToArea(renderRect,
+                HorizontalAlignment.Stretch, BackgroundVerticalAlignment);
+
+            _innerRect.yMax += _backgroundExtension.Bottom;
+            _innerRect.xMin -= _backgroundExtension.Top;
+
+            return renderRect;
+        }
 
         /// <inheritdoc/>
         protected override void DrawControl()
@@ -236,11 +302,11 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (_isReadOnly || isDisabled)
             {
-                UIUtility.DrawInputBox(RenderRect, _buffer, controlFont, true, false);
+                UIUtility.DrawInputBox(_innerRect, _buffer, controlFont, true, false);
             }
             else
             {
-                string text = UIUtility.DrawInputBox(RenderRect, _buffer, controlFont, false, false);
+                string text = UIUtility.DrawInputBox(_innerRect, _buffer, controlFont, false, false);
 
                 if (_buffer != text && _inputValidator.IsMatch(text))
                 {
@@ -252,6 +318,12 @@ namespace Nebulae.RimWorld.UI.Controls
 
             GUI.color = color;
             Text.Font = font;
+        }
+
+        /// <inheritdoc/>
+        protected override Rect HitTestCore(Rect contentRect)
+        {
+            return _innerRect.IntersectWith(contentRect);
         }
     }
 }

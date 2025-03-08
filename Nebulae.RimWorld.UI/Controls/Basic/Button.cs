@@ -3,7 +3,7 @@ using UnityEngine;
 using Verse;
 using GameText = Verse.Text;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 按钮控件
@@ -36,6 +36,8 @@ namespace Nebulae.RimWorld.UI.Controls
         //------------------------------------------------------
 
         #region Private Fields
+
+        private string _text = string.Empty;
 
         private bool _isTextureAtlas = true;
 
@@ -101,6 +103,15 @@ namespace Nebulae.RimWorld.UI.Controls
             set => _pressedBackground = value;
         }
 
+        /// <summary>
+        /// 按钮的文本
+        /// </summary>
+        public string Text
+        {
+            get => _text;
+            set => _text = value ?? string.Empty;
+        }
+
         #endregion
 
 
@@ -110,16 +121,17 @@ namespace Nebulae.RimWorld.UI.Controls
         public Button()
         {
             ClickSound = SoundDefOf.Click;
+            CursorOverSound = SoundDefOf.Mouseover_Standard;
+            PlayCursorOverSound = true;
         }
 
 
         /// <inheritdoc/>
         protected override void DrawButton(ButtonStatus status)
         {
-            Color color = GUI.color;
-            GUI.color = status.HasFlag(ButtonStatus.Disabled)
-                ? _compositionColor * Widgets.InactiveColor * color
-                : _compositionColor * color;
+            GUI.color *= status.HasFlag(ButtonStatus.Disabled)
+                ? _compositionColor * Widgets.InactiveColor
+                : _compositionColor;
 
             Texture2D background;
 
@@ -161,8 +173,6 @@ namespace Nebulae.RimWorld.UI.Controls
                 GameText.Font = font;
                 GameText.Anchor = anchor;
             }
-
-            GUI.color = color;
         }
     }
 }

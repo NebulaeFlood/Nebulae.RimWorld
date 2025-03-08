@@ -1,119 +1,21 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Automation;
+using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
-    /// 调试内容
+    /// 为 Nebulae Control 呈现提供支持
     /// </summary>
-    [Flags]
-    public enum DebugContent : int
+    public abstract partial class Visual : DependencyObject
     {
-        /// <summary>
-        /// 绘制所有预设内容
-        /// </summary>
-        All = 0b11111,
-
-        /// <summary>
-        /// 不绘制内容
-        /// </summary>
-        Empty = 0b00000,
-
-        /// <summary>
-        /// 绘制调试按钮
-        /// </summary>
-        Buttons = 0b00001,
-
-        /// <summary>
-        /// 绘制 <see cref="Control.ContentRect"/>
-        /// </summary>
-        ContentRect = 0b00010,
-
-        /// <summary>
-        /// 绘制 <see cref="Control.ControlRect"/>
-        /// </summary>
-        ControlRect = 0b00100,
-
-        /// <summary>
-        /// 绘制 <see cref="Control.DesiredRect"/>
-        /// </summary>
-        DesiredRect = 0b01000,
-
-        /// <summary>
-        /// 绘制 <see cref="Control.RenderRect"/>
-        /// </summary>
-        RenderRect = 0b10000
-    }
-
-
-    /// <summary>
-    /// 所有控件的基类，定义了控件的共同特性
-    /// </summary>
-    public abstract partial class Control : DependencyObject
-    {
-        //------------------------------------------------------
-        //
-        //  Public Fields
-        //
-        //------------------------------------------------------
-
-        #region Public Fields
-
-        /// <summary>
-        /// 控件呈现内容的可见区域
-        /// </summary>
-        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
-        public Rect ContentRect;
-
-        /// <summary>
-        /// 控件呈现内容的可见尺寸
-        /// </summary>
-        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
-        public Size ContentSize;
-
-        /// <summary>
-        /// 控件响应用户交互的区域
-        /// </summary>
-        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
-        public Rect ControlRect;
-
-        /// <summary>
-        /// 控件响应用户交互的尺寸
-        /// </summary>
-        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
-        public Size ControlSize;
-
-        /// <summary>
-        /// 控件需要占用的布局区域
-        /// </summary>
-        /// <remarks>使用前需保证已调用过 <see cref="Arrange(Rect)"/>。</remarks>
-        public Rect DesiredRect;
-
-        /// <summary>
-        /// 控件需要占用的布局尺寸
-        /// </summary>
-        /// <remarks>使用前需保证已调用过 <see cref="Measure(Size)"/>。</remarks>
-        public Size DesiredSize = Size.Empty;
-
-        /// <summary>
-        /// 计算的将要绘制的区域
-        /// </summary>
-        /// <remarks>使用前需保证已调用过 <see cref="Arrange(Rect)"/>。</remarks>
-        public Rect RenderRect;
-
-        /// <summary>
-        /// 计算的将要绘制的尺寸
-        /// </summary>
-        /// <remarks>使用前需保证已调用过 <see cref="Measure(Size)"/>。</remarks>
-        public Size RenderSize = Size.Empty;
-
-        #endregion
-
-
         //------------------------------------------------------
         //
         //  Internal Fields
@@ -130,12 +32,94 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 控件的父控件
         /// </summary>
-        internal Control Parent;
+        internal Visual Parent;
+
+        /// <summary>
+        /// 绘制预览状态
+        /// </summary>
+        internal static bool PreviewDraw = false;
 
         /// <summary>
         /// 控件在逻辑树中的层次
         /// </summary>
         internal int Rank = 0;
+
+        /// <summary>
+        /// 是否要绘制提示框
+        /// </summary>
+        internal bool ShouldShowTooltip;
+
+        /// <summary>
+        /// 提示框内容
+        /// </summary>
+        internal TipSignal TooltipContent = string.Empty;
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Public Fields
+        //
+        //------------------------------------------------------
+
+        #region Public Fields
+
+        /// <summary>
+        /// 控件呈现内容的可见区域
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
+        [DebugInfoEntry]
+        public Rect ContentRect;
+
+        /// <summary>
+        /// 控件呈现内容的可见尺寸
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
+        [DebugInfoEntry]
+        public Size ContentSize;
+
+        /// <summary>
+        /// 控件响应用户交互的区域
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
+        [DebugInfoEntry]
+        public Rect ControlRect;
+
+        /// <summary>
+        /// 控件响应用户交互的尺寸
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Segment(Rect)"/>。</remarks>
+        [DebugInfoEntry]
+        public Size ControlSize;
+
+        /// <summary>
+        /// 控件需要占用的布局区域
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Arrange(Rect)"/>。</remarks>
+        [DebugInfoEntry]
+        public Rect DesiredRect;
+
+        /// <summary>
+        /// 控件需要占用的布局尺寸
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Measure(Size)"/>。</remarks>
+        [DebugInfoEntry]
+        public Size DesiredSize = Size.Empty;
+
+        /// <summary>
+        /// 计算的将要绘制的区域
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Arrange(Rect)"/>。</remarks>
+        [DebugInfoEntry]
+        public Rect RenderRect;
+
+        /// <summary>
+        /// 计算的将要绘制的尺寸
+        /// </summary>
+        /// <remarks>使用前需保证已调用过 <see cref="Measure(Size)"/>。</remarks>
+        [DebugInfoEntry]
+        public Size RenderSize = Size.Empty;
 
         #endregion
 
@@ -148,24 +132,20 @@ namespace Nebulae.RimWorld.UI.Controls
 
         #region Privaet Fields
 
-        private Color _opacityColor = new Color(1f, 1f, 1f, 1f);
-
-        private string _name = string.Empty;
+        private bool _isArrangeValid = false;
 
         private bool _isDraggable = false;
         private bool _isEnabled = true;
-        private bool _isHitTestVisible = false;
+        private bool _hitTestVisible = false;
         private bool _isIndependent = true;
-
-        private bool _isArrangeValid = false;
         private bool _isMeasureValid = false;
         private bool _isSegmentValid = false;
 
-        private bool _shouldShowTooltip = false;
-        private bool _showTooltip = false;
-        private TipSignal _tooltip = string.Empty;
-
         private LayoutManager _layoutManager;
+
+        private string _name = string.Empty;
+
+        private Color _opacityColor = new Color(1f, 1f, 1f, 1f);
         private Window _owner;
 
         #endregion
@@ -173,58 +153,136 @@ namespace Nebulae.RimWorld.UI.Controls
 
         //------------------------------------------------------
         //
-        //  Pubilc Properties
+        //  Public Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Pubilc Properties
+        #region Public Dependency Properties
+
+        #region Margin
+        /// <summary>
+        /// 获取或设置控件的外部边距
+        /// </summary>
+        public Thickness Margin
+        {
+            get { return (Thickness)GetValue(MarginProperty); }
+            set { SetValue(MarginProperty, value.Normalize()); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Margin"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty MarginProperty =
+            DependencyProperty.Register(nameof(Margin), typeof(Thickness), typeof(Visual),
+                new ControlPropertyMetadata(Thickness.Empty, ControlRelation.Measure));
+        #endregion
+
+        #region Opacity
+        /// <summary>
+        /// 获取或设置控件的不透明度
+        /// </summary>
+        public float Opacity
+        {
+            get { return (float)GetValue(OpacityProperty); }
+            set { SetValue(OpacityProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Opacity"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty OpacityProperty =
+            DependencyProperty.Register(nameof(Opacity), typeof(float), typeof(Visual),
+                new PropertyMetadata(1f, OnOpacityChanged),
+                ValidateOpacity);
+
+        private static void OnOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (Visual)d;
+            float opacity = (float)e.NewValue;
+
+            control._opacityColor = new Color(1f, 1f, 1f, opacity);
+        }
+
+        private static bool ValidateOpacity(object value)
+        {
+            return (float)value >= 0f;
+        }
+        #endregion
+
+        #region Padding
+        /// <summary>
+        /// 获取或设置控件内容的内部边距
+        /// </summary>
+        public Thickness Padding
+        {
+            get { return (Thickness)GetValue(PaddingProperty); }
+            set { SetValue(PaddingProperty, value.Normalize()); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Padding"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty PaddingProperty =
+            DependencyProperty.Register(nameof(Padding), typeof(Thickness), typeof(Visual),
+                new ControlPropertyMetadata(Thickness.Empty, ControlRelation.Measure));
+        #endregion
+
+        #region Visibility
+        /// <summary>
+        /// 获取或设置控件的显示状态
+        /// </summary>
+        public Visibility Visibility
+        {
+            get { return (Visibility)GetValue(VisibilityProperty); }
+            set { SetValue(VisibilityProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Visibility"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty VisibilityProperty =
+            DependencyProperty.Register(nameof(Visibility), typeof(Visibility), typeof(Visual),
+                new PropertyMetadata(Visibility.Visible));
+
+        #endregion
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Properties
+
+        /// <summary>
+        /// 控件是否能够交互
+        /// </summary>
+        public bool HitTestVisible
+        {
+            get => _hitTestVisible;
+            set
+            {
+                if (_hitTestVisible != value)
+                {
+                    _hitTestVisible = value;
+
+                    ControlRect = _hitTestVisible
+                        ? HitTestCore(ContentRect)
+                        : new Rect(ContentRect.x, ContentRect.y, 0f, 0f);
+                    ContentSize = ContentRect;
+                }
+            }
+        }
 
         /// <summary>
         /// 光标是否位于控件上方
         /// </summary>
-        public bool IsCursorOver => ReferenceEquals(MouseUtility.HoveredControl, this);
-
-        /// <summary>
-        /// 控件是否正在被拖动
-        /// </summary>
-        public bool IsDragging => MouseUtility.AnyDragging
-            && ReferenceEquals(MouseUtility.DraggingControl, this);
-
-        /// <summary>
-        /// 正在拖动的控件是否正在该控件上方
-        /// </summary>
-        public bool IsDragOwer => MouseUtility.AnyDragging
+        /// <remarks>对于 <see cref="HitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
+        public bool IsCursorOver => _hitTestVisible
             && ReferenceEquals(MouseUtility.HoveredControl, this);
-
-        /// <summary>
-        /// 光标是否在控件上方按下
-        /// </summary>
-        public bool IsPressing => MouseUtility.AnyPressing
-            && ReferenceEquals(MouseUtility.PressingControl, this);
-
-
-        /// <summary>
-        /// 控件布局是否有效
-        /// </summary>
-        public bool IsArrangeValid
-        {
-            get
-            {
-                if (!_isArrangeValid || _isIndependent)
-                {
-                    return false;
-                }
-
-                if (LayoutManager.IsArrangeValid(this))
-                {
-                    return true;
-                }
-
-                _isArrangeValid = false;
-
-                return false;
-            }
-        }
 
         /// <summary>
         /// 控件是否可拖动
@@ -234,6 +292,20 @@ namespace Nebulae.RimWorld.UI.Controls
             get => _isDraggable;
             set => _isDraggable = value;
         }
+
+        /// <summary>
+        /// 控件是否正在被拖动
+        /// </summary>
+        /// <remarks>对于 <see cref="HitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
+        public bool IsDragging => _isDraggable && MouseUtility.AnyDragging
+            && ReferenceEquals(MouseUtility.DraggingControl, this);
+
+        /// <summary>
+        /// 正在拖动的控件是否正在该控件上方
+        /// </summary>
+        /// <remarks>对于 <see cref="HitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
+        public bool IsDragOwer => _hitTestVisible && MouseUtility.AnyDragging
+            && ReferenceEquals(MouseUtility.HoveredControl, this);
 
         /// <summary>
         /// 是否在界面中启用该控件
@@ -246,9 +318,6 @@ namespace Nebulae.RimWorld.UI.Controls
                 if (_isEnabled != value)
                 {
                     _isEnabled = value;
-                    _shouldShowTooltip = _isEnabled && _showTooltip
-                        && (!string.IsNullOrEmpty(_tooltip.text)
-                            || _tooltip.textGetter != null);
 
                     foreach (var child in LogicalChildren)
                     {
@@ -256,26 +325,6 @@ namespace Nebulae.RimWorld.UI.Controls
                     }
 
                     OnIsEnabledChanged(_isEnabled);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 控件是否能够交互
-        /// </summary>
-        public bool IsHitTestVisible
-        {
-            get => _isHitTestVisible;
-            set
-            {
-                if (_isHitTestVisible != value)
-                {
-                    _isHitTestVisible = value && Opacity > 0f;
-
-                    ControlRect = _isHitTestVisible
-                        ? HitTestCore(ContentRect)
-                        : new Rect(ContentRect.x, ContentRect.y, 0f, 0f);
-                    ContentSize = ContentRect;
                 }
             }
         }
@@ -307,6 +356,13 @@ namespace Nebulae.RimWorld.UI.Controls
                 return false;
             }
         }
+
+        /// <summary>
+        /// 光标是否在控件上方按下
+        /// </summary>
+        /// <remarks>对于 <see cref="HitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
+        public bool IsPressing => _hitTestVisible && MouseUtility.AnyPressing
+            && ReferenceEquals(MouseUtility.PressingControl, this);
 
         /// <summary>
         /// 控件分割是否有效
@@ -357,7 +413,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 控件的所有逻辑子控件
         /// </summary>
-        public IEnumerable<Control> LogicalChildren
+        public IEnumerable<Visual> LogicalChildren
         {
             get
             {
@@ -373,24 +429,28 @@ namespace Nebulae.RimWorld.UI.Controls
             }
         }
 
-        #region Margin
         /// <summary>
-        /// 获取或设置控件的外部边距
+        /// 控件布局是否有效
         /// </summary>
-        public Thickness Margin
+        public bool IsArrangeValid
         {
-            get { return (Thickness)GetValue(MarginProperty); }
-            set { SetValue(MarginProperty, value.Normalize()); }
+            get
+            {
+                if (!_isArrangeValid || _isIndependent)
+                {
+                    return false;
+                }
+
+                if (LayoutManager.IsArrangeValid(this))
+                {
+                    return true;
+                }
+
+                _isArrangeValid = false;
+
+                return false;
+            }
         }
-
-        /// <summary>
-        /// 标识 <see cref="Margin"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty MarginProperty =
-            DependencyProperty.Register(nameof(Margin), typeof(Thickness), typeof(Control),
-                new ControlPropertyMetadata(Thickness.Empty, ControlRelation.Measure));
-        #endregion
-
         /// <summary>
         /// 控件名称
         /// </summary>
@@ -399,30 +459,6 @@ namespace Nebulae.RimWorld.UI.Controls
             get => _name;
             set => _name = value;
         }
-
-        #region Opacity
-        /// <summary>
-        /// 获取或设置控件的不透明度
-        /// </summary>
-        public float Opacity
-        {
-            get { return (float)GetValue(OpacityProperty); }
-            set { SetValue(OpacityProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="Opacity"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty OpacityProperty =
-            DependencyProperty.Register(nameof(Opacity), typeof(float), typeof(Control),
-                new PropertyMetadata(1f, OnOpacityChanged));
-
-        private static void OnOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var control = (Control)d;
-            control._opacityColor = new Color(1f, 1f, 1f, (float)e.NewValue);
-        }
-        #endregion
 
         /// <summary>
         /// 负责呈现控件的窗口
@@ -441,90 +477,7 @@ namespace Nebulae.RimWorld.UI.Controls
             }
         }
 
-        #region Padding
-        /// <summary>
-        /// 获取或设置控件内容的内部边距
-        /// </summary>
-        public Thickness Padding
-        {
-            get { return (Thickness)GetValue(PaddingProperty); }
-            set { SetValue(PaddingProperty, value.Normalize()); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="Padding"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty PaddingProperty =
-            DependencyProperty.Register(nameof(Padding), typeof(Thickness), typeof(Control),
-                new ControlPropertyMetadata(Thickness.Empty, ControlRelation.Measure));
         #endregion
-
-        /// <summary>
-        /// 光标悬浮于控件上时是否显示提示框
-        /// </summary>
-        public bool ShowTooltip
-        {
-            get => _showTooltip;
-            set
-            {
-                _showTooltip = value;
-                _shouldShowTooltip = _isEnabled && _showTooltip
-                    && (!string.IsNullOrEmpty(_tooltip.text)
-                        || _tooltip.textGetter != null);
-            }
-        }
-
-        /// <summary>
-        /// 提示框文字
-        /// </summary>
-        public TipSignal Tooltip
-        {
-            get => _tooltip;
-            set
-            {
-                _tooltip = value;
-                _shouldShowTooltip = _isEnabled && _showTooltip
-                    && (!string.IsNullOrEmpty(value.text)
-                        || value.textGetter != null);
-            }
-        }
-
-        #region Visibility
-        /// <summary>
-        /// 获取或设置控件的显示状态
-        /// </summary>
-        public Visibility Visibility
-        {
-            get { return (Visibility)GetValue(VisibilityProperty); }
-            set { SetValue(VisibilityProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="Visibility"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty VisibilityProperty =
-            DependencyProperty.Register(nameof(Visibility), typeof(Visibility), typeof(Control),
-                new PropertyMetadata(Visibility.Visible));
-        #endregion
-
-        #endregion
-
-
-#if DEBUG
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
-        ~Control()
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
-        {
-            if (string.IsNullOrWhiteSpace(_name))
-            {
-                System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A control of type {Type} has been collected.");
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A control named {_name} of type {Type} has been collected.");
-            }
-        }
-#endif
 
 
         //------------------------------------------------------
@@ -543,7 +496,9 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <remarks>需要保证调用过 <see cref="Measure(Size)"/>。</remarks>
         public Rect Arrange(Rect availableRect)
         {
-            if (!(Visibility is Visibility.Collapsed))
+            if (!(Visibility is Visibility.Collapsed)
+                && availableRect.width > 0f
+                && availableRect.height > 0f)
             {
                 Thickness margin = Margin;
                 Thickness padding = Padding;
@@ -599,36 +554,43 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public void Draw()
         {
-            if (RenderSize.Width <= float.Epsilon
-                || RenderSize.Height <= float.Epsilon)
+            if (RenderSize < Size.Epsilon)
             {
                 return;
             }
 
-            if (_isHitTestVisible
-                && ControlRect.Contains(Event.current.mousePosition)
-                && ReferenceEquals(Owner, MouseUtility.HoveredWindow))
+            if (PreviewDraw)
             {
-                MouseUtility.CurrentHoveredControl = this;
+                DrawCore();
             }
-
-            Color color = GUI.color;
-            Color contentColor = GUI.contentColor;
-
-            GUI.color = _opacityColor * color;
-            GUI.contentColor = _opacityColor * contentColor;
-            DrawCore();
-            GUI.color = color;
-            GUI.contentColor = contentColor;
-
-            if (_shouldShowTooltip && !MouseUtility.IsPressing)
+            else
             {
-                TooltipHandler.TipRegion(ContentRect, _tooltip);
-            }
+                if (_hitTestVisible
+                    && MouseUtility.IsHitTesting
+                    && ControlRect.Contains(Event.current.mousePosition)
+                    && ReferenceEquals(Owner, MouseUtility.HoveredWindow))
+                {
+                    MouseUtility.CurrentHoveredControl = this;
+                }
 
-            if (Prefs.DevMode && !_isIndependent)
-            {
-                DebugDraw(_layoutManager.DebugContent);
+                Color color = GUI.color;
+                Color contentColor = GUI.contentColor;
+
+                GUI.color = _opacityColor * color;
+                GUI.contentColor = _opacityColor * contentColor;
+                DrawCore();
+                GUI.color = color;
+                GUI.contentColor = contentColor;
+
+                if (ShouldShowTooltip && !MouseUtility.IsPressing)
+                {
+                    TooltipHandler.TipRegion(ContentRect, TooltipContent);
+                }
+
+                if (Prefs.DevMode && !_isIndependent)
+                {
+                    DebugDraw(_layoutManager.DebugContent);
+                }
             }
         }
 
@@ -636,7 +598,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 获取控件的父控件
         /// </summary>
         /// <returns>控件的父控件。</returns>
-        public Control GetParent()
+        public Visual GetParent()
         {
             return Parent;
         }
@@ -734,15 +696,9 @@ namespace Nebulae.RimWorld.UI.Controls
             if (!(Visibility is Visibility.Collapsed))
             {
                 ContentRect = SegmentCore(RenderRect.IntersectWith(visiableRect));
-
-                if (_isHitTestVisible)
-                {
-                    ControlRect = HitTestCore(ContentRect);
-                }
-                else
-                {
-                    ControlRect = new Rect(visiableRect.x, visiableRect.y, 0f, 0f);
-                }
+                ControlRect = _hitTestVisible
+                    ? HitTestCore(ContentRect)
+                    : new Rect(visiableRect.x, visiableRect.y, 0f, 0f);
             }
             else
             {
@@ -762,7 +718,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 设置控件的父控件
         /// </summary>
         /// <param name="parent">设置给控件的父控件</param>
-        public void SetParent(Control parent)
+        public void SetParent(Visual parent)
         {
             if (ReferenceEquals(Parent, parent))
             {
@@ -796,7 +752,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="parent">设置给控件的父控件</param>
         /// <remarks>这个方法应只用于初始化控件。</remarks>
-        public void SetParentSilently(Control parent)
+        public void SetParentSilently(Visual parent)
         {
             if (ReferenceEquals(Parent, parent))
             {
@@ -852,19 +808,10 @@ namespace Nebulae.RimWorld.UI.Controls
         protected abstract void DrawCore();
 
         /// <summary>
-        /// 绘制控件内部不是由 <see cref="Control"/> 控制的可交互区域边界
+        /// 绘制控件内部不是由 <see cref="Visual"/> 控制的可交互区域边界
         /// </summary>
         protected virtual void DrawInnerControlRect()
         {
-        }
-
-        /// <summary>
-        /// 获取逻辑子控件
-        /// </summary>
-        /// <returns>与该控件直接关联的逻辑子控件。</returns>
-        protected internal virtual IEnumerable<Control> EnumerateLogicalChildren()
-        {
-            yield break;
         }
 
         /// <summary>
@@ -892,6 +839,15 @@ namespace Nebulae.RimWorld.UI.Controls
         protected virtual Rect SegmentCore(Rect visiableRect)
         {
             return visiableRect;
+        }
+
+        /// <summary>
+        /// 获取逻辑子控件
+        /// </summary>
+        /// <returns>与该控件直接关联的逻辑子控件。</returns>
+        protected internal virtual IEnumerable<Visual> EnumerateLogicalChildren()
+        {
+            yield break;
         }
 
         #endregion

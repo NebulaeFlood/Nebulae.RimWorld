@@ -1,11 +1,46 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Data;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
-    public abstract partial class Control : DependencyObject
+    public abstract partial class Visual
     {
+        //------------------------------------------------------
+        //
+        //  Events
+        //
+        //------------------------------------------------------
+
+        #region Events
+
+        #region Click
+
+        internal readonly WeakEvent<Visual, EventArgs> _click = new WeakEvent<Visual, EventArgs>();
+
+        /// <summary>
+        /// 单击按钮时发生的弱事件
+        /// </summary>
+        public event Action<Visual, EventArgs> Click
+        {
+            add => _click.Add(value, value.Invoke);
+            remove => _click.Remove(value);
+        }
+
+        #endregion
+
+        #endregion
+
+
+        /// <summary>
+        /// 当控件被鼠标左键单击时执行的方法
+        /// </summary>
+        protected internal virtual void OnClick()
+        {
+        }
+
         /// <summary>
         /// 当光标进入控件区域时执行的方法
         /// </summary>
@@ -21,6 +56,15 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
+        /// 当控件被拖入该控件时执行的方法
+        /// </summary>
+        /// <param name="draggingControl">正在拖动的控件</param>
+        protected internal virtual void OnDragEnter(Visual draggingControl)
+        {
+
+        }
+
+        /// <summary>
         /// 当控件正在被拖动时执行的方法
         /// </summary>
         /// <param name="cursorPos">光标的坐标（和窗口在同一坐标系）</param>
@@ -29,10 +73,18 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
+        /// 当控件被拖离该控件时执行的方法
+        /// </summary>
+        /// <param name="draggingControl">正在拖动的控件</param>
+        protected internal virtual void OnDragLeave(Visual draggingControl)
+        {
+        }
+
+        /// <summary>
         /// 当拖动的控件在此控件上方时执行的方法
         /// </summary>
         /// <param name="draggingControl">正在拖动的控件</param>
-        protected internal virtual void OnDragOver(Control draggingControl)
+        protected internal virtual void OnDragOver(Visual draggingControl)
         {
         }
 
@@ -54,7 +106,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 当正在拖动的控件在此控件内被放下时执行的方法
         /// </summary>
         /// <param name="droppedControl">被放下的控件</param>
-        protected internal virtual void OnDrop(Control droppedControl)
+        protected internal virtual void OnDrop(Visual droppedControl)
         {
         }
 
@@ -106,5 +158,22 @@ namespace Nebulae.RimWorld.UI.Controls
                 }
             }
         }
+
+
+#if DEBUG
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        ~Visual()
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        {
+            if (string.IsNullOrWhiteSpace(_name))
+            {
+                System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A control of type {Type} has been collected.");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A control named {_name} of type {Type} has been collected.");
+            }
+        }
+#endif
     }
 }

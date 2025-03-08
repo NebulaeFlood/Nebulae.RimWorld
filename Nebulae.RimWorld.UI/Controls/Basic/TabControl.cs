@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 包含多个选项卡的控件
@@ -30,7 +30,7 @@ namespace Nebulae.RimWorld.UI.Controls
         private Rect[] _renderedLines;
 
         private TabItem _selectedTabItem;
-        private Control _selectedTabContent;
+        private Visual _selectedTabContent;
 
         private Rect _backgroundRect;
         private static readonly Rect _backgroundUVRect = new Rect(0.49f, 0.49f, 0.02f, 0.02f);
@@ -290,7 +290,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
-            Rect renderRect = base.ArrangeCore(availableRect);
+            Rect renderRect = RenderSize.AlignToArea(availableRect,
+                HorizontalAlignment, VerticalAlignment);
 
             int tabCount = _tabItems.Count;
 
@@ -396,13 +397,13 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected internal override IEnumerable<Control> EnumerateLogicalChildren()
+        protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
         {
             for (int i = 0; i < _tabItems.Count; i++)
             {
                 yield return _tabItems[i];
 
-                if (_tabItems[i].Content is Control control)
+                if (_tabItems[i].Content is Visual control)
                 {
                     yield return control;
                 }

@@ -2,7 +2,7 @@
 using UnityEngine;
 using Verse;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 单选按钮控件
@@ -56,9 +56,12 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         /// <inheritdoc/>
-        protected override void OnClick()
+        protected internal override void OnClick()
         {
-            if (Status is ToggleStatus.Checked) { return; }
+            if (Status is ToggleStatus.Checked) 
+            { 
+                return; 
+            }
             else
             {
                 if (_group != null)
@@ -69,7 +72,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     }
                 }
                 Status = ToggleStatus.Checked;
-                base.OnClick();
+                PlayClickSound();
             }
         }
     }

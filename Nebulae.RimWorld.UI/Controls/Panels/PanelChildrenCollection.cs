@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
     /// <see cref="Panel"/> 的子控件的有序集合
     /// </summary>
     /// <remarks>此集合不允许重复控件。</remarks>
-    public class PanelChildrenCollection : IEnumerable<Control>
+    public class PanelChildrenCollection : IEnumerable<Visual>
     {
         //------------------------------------------------------
         //
@@ -19,7 +20,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         #region Private Fields
 
-        private List<Control> _children;
+        private List<Visual> _children;
         private readonly Panel _owner;
 
         #endregion
@@ -38,7 +39,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         public PanelChildrenCollection(Panel panel)
         {
             _owner = panel;
-            _children = new List<Control>();
+            _children = new List<Visual>();
         }
 
 
@@ -54,7 +55,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 将控件添加到集合的末尾
         /// </summary>
         /// <param name="control">要添加到集合的控件</param>
-        public void Add(Control control)
+        public void Add(Visual control)
         {
             if (control is null
                 || _children.Contains(control))
@@ -87,7 +88,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="control">要确认的控件</param>
         /// <returns>如果在集合中找到了 <paramref name="control"/>，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Contains(Control control)
+        public bool Contains(Visual control)
         {
             return _children.Contains(control);
         }
@@ -97,7 +98,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="match">判断条件</param>
         /// <returns>集合中满足指定条件的所有控件。</returns>
-        public List<Control> FindAll(Predicate<Control> match)
+        public List<Visual> FindAll(Predicate<Visual> match)
         {
             return _children.FindAll(match);
         }
@@ -108,7 +109,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <param name="control">要插入的控件</param>
         /// <param name="index">被挤开的控件</param>
         /// <returns>若插入了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Insert(Control control, Control index)
+        public bool Insert(Visual control, Visual index)
         {
             if (control is null || index is null)
             {
@@ -136,7 +137,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 获取循环访问集合的枚举器
         /// </summary>
         /// <returns>循环访问集合的枚举器。</returns>
-        public IEnumerator<Control> GetEnumerator()
+        public IEnumerator<Visual> GetEnumerator()
         {
             return _children.GetEnumerator();
         }
@@ -146,7 +147,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="controls">要置入的控件</param>
         /// <remarks>将移除所有原有控件。</remarks>
-        public void OverrideCollection(params Control[] controls)
+        public void OverrideCollection(params Visual[] controls)
         {
             Clear();
 
@@ -167,7 +168,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <param name="controls">要置入的控件</param>
         /// <returns>拥有该集合的控件。</returns>
         /// <remarks>将移除所有原有控件。</remarks>
-        public TOwner OverrideCollection<TOwner>(params Control[] controls) where TOwner : Panel
+        public TOwner OverrideCollection<TOwner>(params Visual[] controls) where TOwner : Panel
         {
             Clear();
 
@@ -188,7 +189,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="control">要删除的控件</param>
         /// <returns>若删除了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Remove(Control control)
+        public bool Remove(Visual control)
         {
             if (control is null)
             {
@@ -210,7 +211,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 将集合中的控件复制到新数组
         /// </summary>
         /// <returns>包含集合中的控件副本的数组。</returns>
-        public Control[] ToArray() => _children.ToArray();
+        public Visual[] ToArray() => _children.ToArray();
 
         #endregion
 

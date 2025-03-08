@@ -1,10 +1,11 @@
-﻿using RimWorld;
+﻿using Nebulae.RimWorld.UI.Utilities;
+using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
 using GameText = Verse.Text;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// <see cref="TabControl"/> 的选项卡项
@@ -27,7 +28,9 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Private Fields
 
         private TabControl _container;
-        private Control _content;
+        private Visual _content;
+
+        private string _header = string.Empty;
 
         private Rect _leftRect;
         private static readonly Rect _leftUVRect = new Rect(0f, 0f, 0.46875f, 1f);
@@ -76,7 +79,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 获取或设置选项卡内容
         /// </summary>
-        public Control Content
+        public Visual Content
         {
             get => _content;
             set
@@ -100,6 +103,15 @@ namespace Nebulae.RimWorld.UI.Controls
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 标题的文本
+        /// </summary>
+        public string Header
+        {
+            get => _header;
+            set => _header = value;
         }
 
         /// <summary>
@@ -143,7 +155,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
-            Rect renderRect = base.ArrangeCore(availableRect);
+            Rect renderRect = RenderSize.AlignToArea(availableRect,
+                HorizontalAlignment, VerticalAlignment);
 
             _leftRect = new Rect(renderRect.x, renderRect.y, 30f, renderRect.height);
 
@@ -195,14 +208,14 @@ namespace Nebulae.RimWorld.UI.Controls
             TextAnchor anchor = GameText.Anchor;
             GameText.Anchor = TextAnchor.MiddleCenter;
 
-            Widgets.Label(labelRect, Text);
+            Widgets.Label(labelRect, _header);
 
             GameText.Anchor = anchor;
             GUI.contentColor = contentColor;
         }
 
         /// <inheritdoc/>
-        protected override void OnClick()
+        protected internal override void OnClick()
         {
             if (_container is null)
             {

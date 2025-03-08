@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Data;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
@@ -22,7 +23,7 @@ namespace Nebulae.RimWorld.UI.Controls
     }
 
     /// <summary>
-    /// <see cref="Control"/> 的依赖属性的元数据
+    /// <see cref="Visual"/> 的依赖属性的元数据
     /// </summary>
     public class ControlPropertyMetadata : PropertyMetadata
     {

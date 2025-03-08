@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Utilities;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,16 +24,16 @@ namespace Nebulae.RimWorld.UI.Controls
         private bool _isEmpty = true;
 
         private bool _isArrangeValid = false;
-        private readonly SortedSet<Control> _arrangeQueue = new SortedSet<Control>(ControlComparer.Instance);
+        private readonly SortedSet<Visual> _arrangeQueue = new SortedSet<Visual>(VisualComparer.Instance);
 
         private bool _isMeasureValid = false;
-        private readonly SortedSet<Control> _measureQueue = new SortedSet<Control>(ControlComparer.Instance);
+        private readonly SortedSet<Visual> _measureQueue = new SortedSet<Visual>(VisualComparer.Instance);
 
         private bool _isSegmentValid = false;
-        private readonly SortedSet<Control> _segmentQueue = new SortedSet<Control>(ControlComparer.Instance);
+        private readonly SortedSet<Visual> _segmentQueue = new SortedSet<Visual>(VisualComparer.Instance);
 
         private readonly Window _owner;
-        private Control _root;
+        private Visual _root;
 
         private DebugContent _debugContent = DebugContent.Buttons;
 
@@ -159,7 +160,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 获取或设置根控件
         /// </summary>
-        public Control Root
+        public Visual Root
         {
             get => _root;
             set
@@ -347,7 +348,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 无效化控件排布
         /// </summary>
         /// <param name="control">排布被无效化的控件</param>
-        public void InvalidateArrange(Control control)
+        public void InvalidateArrange(Visual control)
         {
             if (_isDirty || _isEmpty)
             {
@@ -408,7 +409,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 无效化控件度量
         /// </summary>
         /// <param name="control">度量被无效化的控件</param>
-        public void InvalidateMeasure(Control control)
+        public void InvalidateMeasure(Visual control)
         {
             if (_isDirty || _isEmpty)
             {
@@ -465,7 +466,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 无效化控件分割
         /// </summary>
         /// <param name="control">分割被无效化的控件</param>
-        public void InvalidateSegment(Control control)
+        public void InvalidateSegment(Visual control)
         {
             if (_isDirty || _isEmpty)
             {
@@ -506,7 +507,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="control">要判断排布是否有效的控件</param>
         /// <returns>控件排布是否有效。</returns>
-        public bool IsArrangeValid(Control control)
+        public bool IsArrangeValid(Visual control)
         {
             if (_isDirty || _isEmpty)
             {
@@ -526,7 +527,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="control">要判断度量是否有效的控件</param>
         /// <returns>控件度量是否有效。</returns>
-        public bool IsMeasureValid(Control control)
+        public bool IsMeasureValid(Visual control)
         {
             if (_isDirty || _isEmpty)
             {
@@ -546,7 +547,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="control">要判断分割是否有效的控件</param>
         /// <returns>控件分割是否有效。</returns>
-        public bool IsSegmentValid(Control control)
+        public bool IsSegmentValid(Visual control)
         {
             if (_isDirty || _isEmpty)
             {
@@ -564,11 +565,11 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
-        private static bool CanInfectLayout(Control instigator, Control target)
+        private static bool CanInfectLayout(Visual instigator, Visual target)
         {
             if (target.IsChild)
             {
-                Control parent = target.Parent;
+                Visual parent = target.Parent;
 
                 if (ReferenceEquals(instigator, parent))
                 {
@@ -589,7 +590,7 @@ namespace Nebulae.RimWorld.UI.Controls
             }
         }
 
-        private static bool IsInfected(Control control, SortedSet<Control> layoutQueue)
+        private static bool IsInfected(Visual control, SortedSet<Visual> layoutQueue)
         {
             foreach (var item in layoutQueue)
             {
@@ -609,12 +610,12 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
-        private class ControlComparer : IComparer<Control>
+        private class VisualComparer : IComparer<Visual>
         {
-            public static readonly ControlComparer Instance = new ControlComparer();
+            public static readonly VisualComparer Instance = new VisualComparer();
 
 
-            public int Compare(Control x, Control y)
+            public int Compare(Visual x, Visual y)
             {
                 if (x.Rank < y.Rank)
                 {

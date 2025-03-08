@@ -6,7 +6,7 @@ using UnityEngine;
 using Verse;
 using Verse.Sound;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 滑块控件，用于选取数字
@@ -157,7 +157,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public Slider()
         {
-            IsHitTestVisible = true;
+            HitTestVisible = true;
         }
 
 

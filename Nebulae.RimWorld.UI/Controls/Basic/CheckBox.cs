@@ -2,7 +2,7 @@
 using Verse;
 using Verse.Sound;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 复选框控件
@@ -21,7 +21,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
 
         /// <inheritdoc/>
-        protected override void OnClick()
+        protected internal override void OnClick()
         {
             if (Status is ToggleStatus.Checked)
             {

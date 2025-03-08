@@ -3,7 +3,7 @@ using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.Utilities;
 using UnityEngine;
 
-namespace Nebulae.RimWorld.UI.Controls
+namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 可设置更多布局属性的控件的基类，定义了其共同特性
@@ -114,49 +114,45 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            float desiredWidth, desiredHeight;
+            float renderWidth, renderHeight;
 
             if (HorizontalAlignment is HorizontalAlignment.Stretch)
             {
-                desiredWidth = availableSize.Width.IsInfinity()
-                    ? Verse.UI.screenWidth
-                    : availableSize.Width;
+                renderWidth = availableSize.Width.FormatControlSize();
             }
             else
             {
-                float width = Width.ReplaceInfinityWith(Verse.UI.screenWidth);
+                float logicalWidth = Width;
 
-                desiredWidth = width > 1f
-                    ? Mathf.Min(width, availableSize.Width)
-                    : (availableSize.Width.ReplaceInfinityWith(Verse.UI.screenWidth) * width);
+                renderWidth = logicalWidth > 1f
+                    ? logicalWidth
+                    : availableSize.Width.FormatControlSize() * logicalWidth;
             }
 
             if (VerticalAlignment is VerticalAlignment.Stretch)
             {
-                desiredHeight = availableSize.Height.IsInfinity()
-                    ? Verse.UI.screenHeight
-                    : availableSize.Height;
+                renderHeight = availableSize.Height.FormatControlSize();
             }
             else
             {
-                float height = Height.ReplaceInfinityWith(Verse.UI.screenHeight);
+                float logicalHeight = Height;
 
-                desiredHeight = height > 1f
-                    ? Mathf.Min(height, availableSize.Height)
-                    : (availableSize.Height.ReplaceInfinityWith(Verse.UI.screenHeight) * height);
+                renderHeight = logicalHeight > 1f
+                    ? logicalHeight
+                    : availableSize.Height.FormatControlSize() * logicalHeight;
             }
 
-            return new Size(desiredWidth, desiredHeight);
+            return new Size(renderWidth, renderHeight);
         }
 
         #endregion
 
 
-        private static bool ValidateSize(object value)
+        internal static bool ValidateSize(object value)
         {
             if (value is float size)
             {
-                return !size.IsInfinity() && size >= 0f;
+                return size >= 0f && !float.IsInfinity(size) && !float.IsNaN(size);
             }
             else
             {
