@@ -1,6 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.Utilities;
 using UnityEngine;
 using Verse;
 
@@ -47,93 +46,6 @@ namespace Nebulae.RimWorld.UI.Utilities
             InitializeStyles();
         }
 
-        /// <summary>
-        /// 计算按照指定对齐方式将该尺寸的矩形放置到指定区域后的位置
-        /// </summary>
-        /// <param name="rectSize">要放置的矩形大小</param>
-        /// <param name="availableArea">放置的区域</param>
-        /// <param name="anchor">对齐方式</param>
-        /// <returns>矩形放置到指定区域后的位置。</returns>
-        public static Rect AlignToArea(
-            this Size rectSize,
-            Rect availableArea,
-            TextAnchor anchor)
-        {
-            int index = (int)anchor;
-
-            HorizontalAlignment horizontalAlignment;
-
-            if (index % 3 == 0)
-            {
-                horizontalAlignment = HorizontalAlignment.Left;
-            }
-            else if (index % 3 == 1)
-            {
-                horizontalAlignment = HorizontalAlignment.Center;
-            }
-            else
-            {
-                horizontalAlignment = HorizontalAlignment.Right;
-            }
-
-            VerticalAlignment verticalAlignment;
-
-            if (index < 3)
-            {
-                verticalAlignment = VerticalAlignment.Top;
-            }
-            else if (index < 6)
-            {
-                verticalAlignment = VerticalAlignment.Center;
-            }
-            else
-            {
-                verticalAlignment = VerticalAlignment.Bottom;
-            }
-
-            float x = availableArea.x;
-            float y = availableArea.y;
-            float width;
-            float height;
-
-            switch (horizontalAlignment)
-            {
-                case HorizontalAlignment.Center:
-                    x += (availableArea.width - rectSize.Width) * 0.5f;
-                    width = rectSize.Width;
-                    break;
-                case HorizontalAlignment.Right:
-                    x += availableArea.width - rectSize.Width;
-                    width = rectSize.Width;
-                    break;
-                case HorizontalAlignment.Left:
-                    width = rectSize.Width;
-                    break;
-                default:    // Stretch
-                    width = availableArea.width;
-                    break;
-            }
-
-            switch (verticalAlignment)
-            {
-                case VerticalAlignment.Center:
-                    y += (availableArea.height - rectSize.Height) * 0.5f;
-                    height = rectSize.Height;
-                    break;
-                case VerticalAlignment.Bottom:
-                    y += availableArea.height - rectSize.Height;
-                    height = rectSize.Height;
-                    break;
-                case VerticalAlignment.Top:
-                    height = rectSize.Height;
-                    break;
-                default:    // Stretch
-                    height = availableArea.height;
-                    break;
-            }
-
-            return new Rect(x, y, width, height);
-        }
 
         /// <summary>
         /// 计算按照指定对齐方式将该尺寸的矩形放置到指定区域后的位置
@@ -191,54 +103,6 @@ namespace Nebulae.RimWorld.UI.Utilities
             }
 
             return new Rect(x, y, width, height);
-        }
-
-        /// <summary>
-        /// 计算输入框尺寸
-        /// </summary>
-        /// <param name="text">输入框内的文字</param>
-        /// <param name="renderWidth">输入框绘制宽度</param>
-        /// <param name="fontSize">字体尺寸</param>
-        /// <param name="isReadOnly">输入框是否为只读状态</param>
-        /// <param name="wrapText">输入框文字是否自动换行</param>
-        /// <returns>输入框尺寸。</returns>
-        public static Size CalculateInputBoxSize(string text, float renderWidth, GameFont fontSize, bool isReadOnly, bool wrapText)
-        {
-            int index = (int)fontSize;
-
-            if (isReadOnly)
-            {
-                index += 3;
-            }
-
-            GUIStyle style = wrapText
-                ? _inputBoxStyles[index]
-                : _inputBoxStyles[index + 6];
-
-            return new Size(renderWidth, style.CalcHeight(new GUIContent(text), renderWidth));
-        }
-
-        /// <summary>
-        /// 计算文字排成一行需要的尺寸
-        /// </summary>
-        /// <param name="text">文字内容</param>
-        /// <param name="fontSize">字体尺寸</param>
-        /// <returns>文字排成一行需要的尺寸。</returns>
-        public static Size CalculateLineSize(this string text, GameFont fontSize)
-        {
-            return new Size(text.CalculateLength(fontSize), Text.LineHeightOf(fontSize));
-        }
-
-        /// <summary>
-        /// 计算文字的尺寸
-        /// </summary>
-        /// <param name="text">文字内容</param>
-        /// <param name="availableLength">文字要排成的指定长度</param>
-        /// <param name="fontSize">字体尺寸</param>
-        /// <returns>文字的尺寸。</returns>
-        public static Size CalculateSize(this string text, float availableLength, GameFont fontSize)
-        {
-            return new Size(availableLength, text.CalculateHeight(availableLength, fontSize));
         }
 
         /// <summary>

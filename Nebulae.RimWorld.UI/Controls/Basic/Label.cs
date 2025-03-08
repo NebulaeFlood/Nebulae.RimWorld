@@ -159,7 +159,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 HorizontalAlignment, VerticalAlignment);
 
             _buffer = Text.Truncate(RenderSize.Width);
-            _textRect = _buffer.CalculateLineSize(FontSize).AlignToArea(renderRect, _anchor);
+            _textRect = _buffer.AlignToArea(FontSize, renderRect, _anchor);
             _labelRect = new Rect(renderRect.x, _textRect.y, renderRect.width, _textRect.height);
 
             return renderRect;

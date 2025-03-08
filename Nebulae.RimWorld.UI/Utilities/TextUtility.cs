@@ -62,15 +62,107 @@ namespace Nebulae.RimWorld.UI.Utilities
 
 
         /// <summary>
-        /// 计算文本排成一行的长度
+        /// 计算按照指定对齐方式将文本放置到指定区域后的位置
+        /// </summary>
+        /// <param name="text">要放置的文本</param>
+        /// <param name="fontSize">字体大小</param>
+        /// <param name="availableArea">放置的区域</param>
+        /// <param name="anchor">对齐方式</param>
+        /// <returns>矩形放置到指定区域后的位置。</returns>
+        public static Rect AlignToArea(
+            this string text,
+            GameFont fontSize,
+            Rect availableArea,
+            TextAnchor anchor)
+        {
+            int index = (int)anchor;
+
+            HorizontalAlignment horizontalAlignment;
+
+            if (index % 3 == 0)
+            {
+                horizontalAlignment = HorizontalAlignment.Left;
+            }
+            else if (index % 3 == 1)
+            {
+                horizontalAlignment = HorizontalAlignment.Center;
+            }
+            else
+            {
+                horizontalAlignment = HorizontalAlignment.Right;
+            }
+
+            VerticalAlignment verticalAlignment;
+
+            if (index < 3)
+            {
+                verticalAlignment = VerticalAlignment.Top;
+            }
+            else if (index < 6)
+            {
+                verticalAlignment = VerticalAlignment.Center;
+            }
+            else
+            {
+                verticalAlignment = VerticalAlignment.Bottom;
+            }
+
+            Size textSize = text.CalculateLineSize(fontSize);
+
+            float x = availableArea.x;
+            float y = availableArea.y;
+            float width;
+            float height;
+
+            switch (horizontalAlignment)
+            {
+                case HorizontalAlignment.Center:
+                    x += (availableArea.width - textSize.Width) * 0.5f;
+                    width = textSize.Width;
+                    break;
+                case HorizontalAlignment.Right:
+                    x += availableArea.width - textSize.Width;
+                    width = textSize.Width;
+                    break;
+                case HorizontalAlignment.Left:
+                    width = textSize.Width;
+                    break;
+                default:    // Stretch
+                    width = availableArea.width;
+                    break;
+            }
+
+            switch (verticalAlignment)
+            {
+                case VerticalAlignment.Center:
+                    y += (availableArea.height - textSize.Height) * 0.5f;
+                    height = textSize.Height;
+                    break;
+                case VerticalAlignment.Bottom:
+                    y += availableArea.height - textSize.Height;
+                    height = textSize.Height;
+                    break;
+                case VerticalAlignment.Top:
+                    height = textSize.Height;
+                    break;
+                default:    // Stretch
+                    height = availableArea.height;
+                    break;
+            }
+
+            return new Rect(x, y, width, height);
+        }
+
+        /// <summary>
+        /// 计算文本排成一行的尺寸
         /// </summary>
         /// <param name="text">文本内容</param>
         /// <param name="fontSize">字体尺寸</param>
-        /// <returns>文本排成一行的长度</returns>
-        public static float CalculateLength(this string text, GameFont fontSize)
+        /// <returns>文本排成一行的尺寸。</returns>
+        public static Size CalculateLineSize(this string text, GameFont fontSize)
         {
             _contentCache.text = text.StripTags();
-            return Text.fontStyles[(int)fontSize].CalcSize(_contentCache).x;
+            return new Size(Text.fontStyles[(int)fontSize].CalcSize(_contentCache).x, fontSize.GetHeight());
         }
 
         /// <summary>
@@ -85,6 +177,23 @@ namespace Nebulae.RimWorld.UI.Utilities
             _contentCache.text = text.StripTags();
             return new Size(availableLength,
                 Text.fontStyles[(int)fontSize].CalcHeight(_contentCache, availableLength));
+        }
+
+        /// <summary>
+        /// 计算文本输入框在一定长度下排布后的高度
+        /// </summary>
+        /// <param name="text">文本内容</param>
+        /// <param name="availableLength">文本允许的最大长度</param>
+        /// <param name="fontSize">字体尺寸</param>
+        /// <param name="wrapText">输入框文字是否自动换行</param>
+        /// <returns>文本输入框的高度。</returns>
+        public static float CalculateTextBoxHeight(this string text, float availableLength, GameFont fontSize, bool wrapText)
+        {
+            GUIStyle style = wrapText
+                ? _inputBoxStyles[(int)fontSize]
+                : _inputBoxStyles[(int)fontSize + 6];
+
+            return style.CalcHeight(new GUIContent(text), availableLength);
         }
 
         /// <summary>
