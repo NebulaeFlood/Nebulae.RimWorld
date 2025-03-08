@@ -35,7 +35,7 @@ namespace Nebulae.RimWorld.UI
                 catch (Exception e)
                 {
                     "NebulaeFlood's Lib".Error(
-                        $"An exception occured when try finish quest from {action.Method.DeclaringType}.{action.Method.Name}. ---> {e}");
+                        $"An exception occured when try finish a initialization quest from {action.Method.DeclaringType}.{action.Method.Name}.\n---> {e}");
                 }
             }
 

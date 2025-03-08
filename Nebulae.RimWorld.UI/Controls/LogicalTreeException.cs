@@ -24,11 +24,11 @@ namespace Nebulae.RimWorld.UI.Controls
                 ? string.Empty
                 : " named: " + control.Name;
 
-            test += "raised an logical tree error: " + message;
+            test += "raised an logical tree error:" + message;
 
             if (hasInnerException)
             {
-                test += " --->";
+                test += "\n--->";
             }
 
             return test;
