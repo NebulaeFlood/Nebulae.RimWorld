@@ -247,15 +247,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             Color color = GUI.color;
             bool isDisabled = status.HasFlag(ButtonStatus.Disabled);
 
-            if (isDisabled)
-            {
-                GUI.color *= _compositionColor * Widgets.InactiveColor;
-                GUI.contentColor *= Widgets.InactiveColor;
-            }
-            else
-            {
-                GUI.color *= _compositionColor;
-            }
+            GUI.color *= isDisabled
+                ? _compositionColor * Widgets.InactiveColor
+                : _compositionColor;
 
             DrawBackground(status);
 

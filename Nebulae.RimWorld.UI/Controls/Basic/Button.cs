@@ -129,15 +129,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override void DrawButton(ButtonStatus status)
         {
-            if (status.HasFlag(ButtonStatus.Disabled))
-            {
-                GUI.color *= _compositionColor * Widgets.InactiveColor;
-                GUI.contentColor *= Widgets.InactiveColor;
-            }
-            else
-            {
-                GUI.color *= _compositionColor;
-            }
+            GUI.color *= status.HasFlag(ButtonStatus.Disabled)
+                ? _compositionColor * Widgets.InactiveColor
+                : GUI.color *= _compositionColor;
 
             Texture2D background;
 
