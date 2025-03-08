@@ -25,7 +25,9 @@ namespace Nebulae.RimWorld.UI.Automation
         {
             get
             {
-                var result = _stringBuilder.Append(_name).Append(_accesser(_target)?.ToString() ?? "Null").Append("\n").ToString();
+                var value = _accesser(_target);
+                var valStr = value?.ToString();
+                var result = _stringBuilder.Append(_name).Append(string.IsNullOrWhiteSpace(valStr) ? "Null" : valStr).Append("\n").ToString();
                 _stringBuilder.Clear();
                 return result;
             }
@@ -42,14 +44,14 @@ namespace Nebulae.RimWorld.UI.Automation
             _name = _stringBuilder.Append("<color=yellow>").Append(name).Append("</color>:\n").ToString();
             _priority = priority;
             _target = target;
-            
+
             _stringBuilder.Clear();
         }
 
 
         internal static int Compare(DebugInfo x, DebugInfo y)
         {
-            return x._priority<y._priority? -1 : 1;
+            return x._priority > y._priority ? 1 : -1;
         }
 
         internal static bool TryCreate(MemberInfo member, object target, out DebugInfo info)
