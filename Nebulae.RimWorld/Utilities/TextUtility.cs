@@ -1,4 +1,5 @@
-﻿using Verse;
+﻿using UnityEngine;
+using Verse;
 
 namespace Nebulae.RimWorld.Utilities
 {
@@ -7,6 +8,9 @@ namespace Nebulae.RimWorld.Utilities
     /// </summary>
     public static class TextUtility
     {
+        private static readonly GUIContent _contentCache = new GUIContent();
+
+
         /// <summary>
         /// 计算文本排成一行的长度
         /// </summary>
@@ -15,13 +19,8 @@ namespace Nebulae.RimWorld.Utilities
         /// <returns>文本排成一行的长度</returns>
         public static float CalculateLength(this string text, GameFont fontSize)
         {
-            GameFont currentFont = Text.Font;
-
-            Text.Font = fontSize;
-            float width = Text.CalcSize(text).x;
-            Text.Font = currentFont;
-
-            return width;
+            _contentCache.text = text.StripTags();
+            return Text.fontStyles[(int)fontSize].CalcSize(_contentCache).x;
         }
 
         /// <summary>
@@ -33,13 +32,8 @@ namespace Nebulae.RimWorld.Utilities
         /// <returns>文本排列后的高度</returns>
         public static float CalculateHeight(this string text, float availableLength, GameFont fontSize)
         {
-            GameFont currentFont = Text.Font;
-
-            Text.Font = fontSize;
-            float height = Text.CalcHeight(text, availableLength);
-            Text.Font = currentFont;
-
-            return height;
+            _contentCache.text = text.StripTags();
+            return Text.fontStyles[(int)fontSize].CalcHeight(_contentCache, availableLength);
         }
 
         /// <summary>
@@ -51,12 +45,10 @@ namespace Nebulae.RimWorld.Utilities
         /// <returns>文本的行数</returns>
         public static float CalculateLineCount(this string text, float availableLength, GameFont fontSize)
         {
-            GameFont currentFont = Text.Font;
+            _contentCache.text = text.StripTags();
 
-            Text.Font = fontSize;
             float fontHeight = Text.LineHeightOf(fontSize);
-            float height = Text.CalcHeight(text, availableLength);
-            Text.Font = currentFont;
+            float height = Text.fontStyles[(int)fontSize].CalcHeight(_contentCache, availableLength);
 
             return (height / fontHeight).Ceiling();
         }
