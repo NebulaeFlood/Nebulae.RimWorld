@@ -8,8 +8,7 @@ namespace Nebulae.RimWorld.UI.Automation
 {
     internal readonly struct DebugInfo
     {
-        internal static readonly Comparison<DebugInfo> Comparison = (x, y) =>
-            x._priority < y._priority ? -1 : 1;
+        internal static readonly Comparison<DebugInfo> Comparison = Compare;
 
 
         private static readonly Dictionary<string, Func<object, object>> _cachedMemberAccessers =
@@ -47,6 +46,11 @@ namespace Nebulae.RimWorld.UI.Automation
             _stringBuilder.Clear();
         }
 
+
+        internal static int Compare(DebugInfo x, DebugInfo y)
+        {
+            return x._priority<y._priority? -1 : 1;
+        }
 
         internal static bool TryCreate(MemberInfo member, object target, out DebugInfo info)
         {

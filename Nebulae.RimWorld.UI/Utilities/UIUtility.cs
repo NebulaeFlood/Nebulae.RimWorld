@@ -789,7 +789,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                     bounds.Width,
                     bounds.Height),
                 WindowLayer.Super,
-                () => DrawPreviewControl(control, bounds, opacity),
+                delegate { DrawPreviewControl(control, bounds, opacity); },
                 doBackground: false,
                 shadowAlpha: 0f);
         }

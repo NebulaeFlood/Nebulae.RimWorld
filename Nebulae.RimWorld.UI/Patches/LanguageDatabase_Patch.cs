@@ -19,7 +19,7 @@ namespace Nebulae.RimWorld.UI.Patches
 
         private static void SelectLanguageWithNotification()
         {
-            LongEventHandler.QueueLongEvent(() =>
+            LongEventHandler.QueueLongEvent(delegate
             {
                 PlayDataLoader.ClearAllPlayData();
                 PlayDataLoader.LoadAllPlayData();

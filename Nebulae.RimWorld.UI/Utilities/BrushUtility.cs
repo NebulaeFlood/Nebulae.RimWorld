@@ -13,7 +13,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// 灰色画刷
         /// </summary>
-        public static readonly Texture2D Grey = ColorLibrary.Green.ToBrush();
+        public static readonly Texture2D Grey = ColorLibrary.Grey.ToBrush();
 
         /// <summary>
         /// 透明画刷

@@ -55,7 +55,7 @@ namespace Nebulae.RimWorld.UI.Patches
 
         private static Action CreateDelegate(Mod mod)
         {
-            return () =>
+            return delegate
             {
                 Window settingWindow;
 
