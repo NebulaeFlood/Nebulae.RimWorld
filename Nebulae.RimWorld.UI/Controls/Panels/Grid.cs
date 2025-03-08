@@ -449,7 +449,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
                                 if (!cache.IsValid)
                                 {
-                                    cache = new SizeCache(children[j].Measure(availableSize));
+                                    cache = new SizeCache(children[j].Measure(new Size(float.PositiveInfinity)));
                                 }
 
                                 column.Size = Mathf.Max(column.Size, cache.Size.Width);
@@ -485,7 +485,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
                                 if (!cache.IsValid)
                                 {
-                                    cache = new SizeCache(children[j].Measure(availableSize));
+                                    cache = new SizeCache(children[j].Measure(
+                                        new Size(_columnDefinitions[GetColumn(children[j])].Size,
+                                            float.PositiveInfinity)));
                                 }
 
                                 row.Size = Mathf.Max(row.Size, cache.Size.Height);
