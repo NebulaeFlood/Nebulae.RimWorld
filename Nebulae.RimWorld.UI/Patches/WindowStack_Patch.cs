@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
@@ -135,7 +136,11 @@ namespace Nebulae.RimWorld.UI.Patches
                     && PressingControl.IsEnabled)
                 {
                     PressingControl.OnClick();
-                    PressingControl._click.Invoke(PressingControl, EventArgs.Empty);
+
+                    if (PressingControl is Control control)
+                    {
+                        control._click.Invoke(control, EventArgs.Empty);
+                    }
                 }
 
                 if (AnyDragging)

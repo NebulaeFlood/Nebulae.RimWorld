@@ -13,6 +13,32 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
     /// </summary>
     public abstract partial class Control : Visual
     {
+        //------------------------------------------------------
+        //
+        //  Events
+        //
+        //------------------------------------------------------
+
+        #region Events
+
+        #region Click
+
+        internal readonly WeakEvent<Control, EventArgs> _click = new WeakEvent<Control, EventArgs>();
+
+        /// <summary>
+        /// 单击按钮时发生的弱事件
+        /// </summary>
+        public event Action<Control, EventArgs> Click
+        {
+            add => _click.Add(value, value.Invoke);
+            remove => _click.Remove(value);
+        }
+
+        #endregion
+
+        #endregion
+
+
         /// <summary>
         /// 提示框文字
         /// </summary>
