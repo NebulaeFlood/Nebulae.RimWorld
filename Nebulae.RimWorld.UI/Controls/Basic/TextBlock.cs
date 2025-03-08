@@ -70,6 +70,14 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #endregion
 
 
+        static TextBlock()
+        {
+            HorizontalAlignmentProperty.OverrideMetadata(typeof(TextBlock),
+                new ControlPropertyMetadata(HorizontalAlignment.Left, ControlRelation.Measure));
+            VerticalAlignmentProperty.OverrideMetadata(typeof(TextBlock),
+                new ControlPropertyMetadata(VerticalAlignment.Top, ControlRelation.Measure));
+        }
+
         /// <summary>
         /// 初始化 <see cref="TextBlock"/> 的新实例
         /// </summary>

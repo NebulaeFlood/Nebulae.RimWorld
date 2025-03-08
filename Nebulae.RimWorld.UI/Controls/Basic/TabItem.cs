@@ -141,6 +141,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             ClickSound = SoundDefOf.RowTabSelect;
             CursorOverSound = SoundDefOf.Mouseover_Tab;
+            PlayCursorOverSound = true;
         }
 
 

@@ -1,4 +1,4 @@
-﻿using Nebulae.RimWorld.UI.Controls;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using UnityEngine;
 using Verse;
 
@@ -25,9 +25,11 @@ namespace Nebulae.RimWorld.UI.Windows
         {
             _associatedMod = associatedMod;
 
-            forcePause = true;
-            closeOnClickedOutside = true;
             absorbInputAroundWindow = true;
+            closeOnClickedOutside = true;
+            doCloseButton = true;
+            doCloseX = true;
+            forcePause = true;
         }
 
         /// <summary>

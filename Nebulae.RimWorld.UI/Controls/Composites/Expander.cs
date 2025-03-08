@@ -37,6 +37,19 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         public const float LabelLeftPaddingWhenEmpty = 6f;
 
 
+        #region Click
+
+        /// <summary>
+        /// 当标题被点击时发生的弱事件
+        /// </summary>
+        public event Action<Control, EventArgs> Click
+        {
+            add => _label.Click += value;
+            remove => _label.Click -= value;
+        }
+
+        #endregion
+
         #region Collapsed 
 
         private readonly WeakEvent<Expander, Visual> _collapsed = new WeakEvent<Expander, Visual>();
