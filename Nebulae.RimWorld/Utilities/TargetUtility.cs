@@ -212,7 +212,6 @@ namespace Nebulae.RimWorld.Utilities
             }
 
             _localTargetingSource.Initialize(
-                parameters,
                 customUIDrawer,
                 heighlighter,
                 attachedLabelGenerator,
@@ -283,7 +282,6 @@ namespace Nebulae.RimWorld.Utilities
             }
 
             _localTargetingSource.Initialize(
-                parameters,
                 customUIDrawer,
                 heighlighter,
                 attachedLabelGenerator,
@@ -400,7 +398,6 @@ namespace Nebulae.RimWorld.Utilities
             #region Priate Fields
 
             private Texture2D _mouseAttachedIcon;
-            private TargetingParameters _targetParams;
 
             private LocalTargettingUIDrawer _targetUIDrawer;
             private LocalTargetHeighlighter _targetHeighlighter;
@@ -436,7 +433,6 @@ namespace Nebulae.RimWorld.Utilities
             }
 
             internal void Initialize(
-                TargetingParameters parameters,
                 LocalTargettingUIDrawer targetUIDrawer,
                 LocalTargetHeighlighter heighlighter,
                 LocalTargetMouseAttachedLabelGenerator targetLabelGenerator,
@@ -444,7 +440,6 @@ namespace Nebulae.RimWorld.Utilities
                 Texture2D mouseAttachedIcon,
                 Action<LocalTargetInfo> onSelected)
             {
-                _targetParams = parameters;
                 _targetUIDrawer = targetUIDrawer;
                 _targetHeighlighter = heighlighter;
                 _targetLabelGenerator = targetLabelGenerator;
@@ -484,7 +479,6 @@ namespace Nebulae.RimWorld.Utilities
 
             internal void Reset()
             {
-                _targetParams = null;
                 _targetUIDrawer = null;
                 _targetHeighlighter = null;
                 _targetLabelGenerator = null;
