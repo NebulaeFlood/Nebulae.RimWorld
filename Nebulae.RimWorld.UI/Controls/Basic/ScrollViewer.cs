@@ -465,10 +465,31 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 _viewHeight = contentAvailableHeight;
                 _viewWidth = contentAvailableWidth;
 
-                _horizontalMaxOffset = Mathf.Max(0f, contentSize.Width - _viewWidth);
-                _horizontalOffset = _horizontalOffset.Clamp(0f, _horizontalMaxOffset);
-                _verticalMaxOffset = Mathf.Max(0f, contentSize.Height - _viewHeight);
-                _verticalOffset = _verticalOffset.Clamp(0f, _verticalMaxOffset);
+                if (_horizontalMaxOffset > 0f)
+                {
+                    float offsetPercent = _horizontalOffset / _horizontalMaxOffset;
+
+                    _horizontalMaxOffset = Mathf.Max(0f, contentSize.Width - _viewWidth);
+                    _horizontalOffset = (_horizontalMaxOffset * offsetPercent).Clamp(0f, _horizontalMaxOffset);
+                }
+                else
+                {
+                    _horizontalMaxOffset = Mathf.Max(0f, contentSize.Width - _viewWidth);
+                    _horizontalOffset = 0f;
+                }
+
+                if (_verticalMaxOffset > 0f)
+                {
+                    float offsetPercent = _verticalOffset / _verticalMaxOffset;
+
+                    _verticalMaxOffset = Mathf.Max(0f, contentSize.Height - _viewHeight);
+                    _verticalOffset = (_verticalMaxOffset * offsetPercent).Clamp(0f, _verticalMaxOffset);
+                }
+                else
+                {
+                    _verticalMaxOffset = Mathf.Max(0f, contentSize.Height - _viewHeight);
+                    _verticalOffset = 0f;
+                }
             }
 
             return renderSize;
