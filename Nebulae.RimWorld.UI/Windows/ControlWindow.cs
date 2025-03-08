@@ -195,13 +195,6 @@ namespace Nebulae.RimWorld.UI.Windows
         }
 
         /// <summary>
-        /// <see cref="Visual.Click"/> 事件处理器，用于关闭窗口
-        /// </summary>
-        /// <param name="control">被点击的控件</param>
-        /// <param name="args">事件数据</param>
-        public void CloseWindow(Visual control, EventArgs args) => Close();
-
-        /// <summary>
         /// 开始呈现窗口
         /// </summary>
         /// <param name="closeThenShow">是否关闭正在显示的窗口再打开</param>

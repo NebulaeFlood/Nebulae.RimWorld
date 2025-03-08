@@ -39,7 +39,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// UI 界面资源是否已完全加载
         /// </summary>
-        public static bool SourceInitialized { get; internal set; }
+        public static bool SourceInitialized;
 
 
         static UIUtility()
