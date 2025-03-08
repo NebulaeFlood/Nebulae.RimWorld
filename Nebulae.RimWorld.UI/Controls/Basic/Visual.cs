@@ -511,19 +511,19 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <remarks>需要保证调用过 <see cref="Measure(Size)"/>。</remarks>
         public Rect Arrange(Rect availableRect)
         {
-            if (!(Visibility is Visibility.Collapsed)
-                && availableRect.width > 0f
-                && availableRect.height > 0f)
+            if (Visibility is Visibility.Collapsed
+                || availableRect.width < 1f
+                || availableRect.height < 1f)
+            {
+                RenderRect = new Rect(availableRect.x, availableRect.y, 0f, 0f);
+                DesiredRect = RenderRect;
+            }
+            else
             {
                 Thickness margin = Margin;
                 Thickness padding = Padding;
                 RenderRect = ArrangeCore(availableRect - (margin + padding)).Rounded() + padding;
                 DesiredRect = RenderRect + margin;
-            }
-            else
-            {
-                RenderRect = new Rect(availableRect.x, availableRect.y, 0f, 0f);
-                DesiredRect = RenderRect;
             }
 
             _isArrangeValid = true;
@@ -683,17 +683,19 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <returns>控件需要占用的布局尺寸。</returns>
         public Size Measure(Size availableSize)
         {
-            if (!(Visibility is Visibility.Collapsed))
+            if (Visibility is Visibility.Collapsed
+                || availableSize.Width < 1f
+                || availableSize.Height < 1f)
+            {
+                RenderSize = Size.Empty;
+                DesiredSize = Size.Empty;
+            }
+            else
             {
                 Thickness margin = Margin;
                 Thickness padding = Padding;
                 RenderSize = MeasureCore(availableSize - (margin + padding)).Round() + padding;
                 DesiredSize = RenderSize + margin;
-            }
-            else
-            {
-                RenderSize = Size.Empty;
-                DesiredSize = Size.Empty;
             }
 
             _isMeasureValid = true;
@@ -708,17 +710,19 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <returns>该控件呈现内容的可见区域。</returns>
         public Rect Segment(Rect visiableRect)
         {
-            if (!(Visibility is Visibility.Collapsed))
+            if (Visibility is Visibility.Collapsed
+                || visiableRect.width < 1f
+                || visiableRect.height < 1f)
+            {
+                ContentRect = new Rect(visiableRect.x, visiableRect.y, 0f, 0f);
+                ControlRect = ContentRect;
+            }
+            else
             {
                 ContentRect = SegmentCore(RenderRect.IntersectWith(visiableRect));
                 ControlRect = _isHitTestVisible
                     ? AnalyseCore(ContentRect)
                     : new Rect(visiableRect.x, visiableRect.y, 0f, 0f);
-            }
-            else
-            {
-                ContentRect = new Rect(visiableRect.x, visiableRect.y, 0f, 0f);
-                ControlRect = ContentRect;
             }
 
             ContentSize = ContentRect;
