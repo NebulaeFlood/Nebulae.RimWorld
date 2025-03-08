@@ -13,6 +13,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public static readonly Thickness Empty = new Thickness(0f);
 
+        /// <summary>
+        /// 表示大于零的最小正 <see cref="Thickness"/>
+        /// </summary>
+        public static readonly Thickness Epsilon = new Thickness(float.Epsilon);
+
 
         //------------------------------------------------------
         //

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RimWorld;
+using System;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls
@@ -150,6 +151,55 @@ namespace Nebulae.RimWorld.UI.Controls
         public override int GetHashCode()
         {
             return Width.GetHashCode() ^ Height.GetHashCode();
+        }
+
+        /// <summary>
+        /// 规范化此 <see cref="Size"/>
+        /// </summary>
+        /// <returns>规范后的该 <see cref="Size"/>。</returns>
+        public Size Normalize()
+        {
+            return new Size(
+                Width > 0f ? Width : 0f,
+                Height > 0f ? Height : 0f);
+        }
+
+        /// <summary>
+        /// 解析此 <see cref="Size"/> 最终的实际尺寸
+        /// </summary>
+        /// <param name="availableSize">可用的尺寸</param>
+        /// <returns>规范后的该 <see cref="Size"/>。</returns>
+        public Size Resolve(Size availableSize)
+        {
+            float width, height;
+
+            if (Width < 0f)
+            {
+                width = 0f;
+            }
+            else if (Width > 1f)
+            {
+                width = Width;
+            }
+            else
+            {
+                width = Width * availableSize.Width;
+            }
+
+            if  (Height < 0f)
+            {
+                height = 0f;
+            }
+            else if (Height > 1f)
+            {
+                height = Height;
+            }
+            else
+            {
+                height = Height * availableSize.Height;
+            }
+
+            return new Size(width, height);
         }
 
         /// <summary>
