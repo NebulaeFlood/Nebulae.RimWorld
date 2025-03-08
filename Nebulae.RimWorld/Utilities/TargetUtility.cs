@@ -111,13 +111,7 @@ namespace Nebulae.RimWorld.Utilities
                 attachedLabelGenerator,
                 _globalTargetSource.IsTargetSelectable);
 
-            await Task.Run(() =>
-            {
-                while (Find.WorldTargeter.IsTargeting)
-                {
-                    Thread.Sleep(60);
-                }
-            });
+            await AwaitUtility.WaitForUnpauseAsync();
 
             if (!_globalTargetSelected)
             {
@@ -228,13 +222,7 @@ namespace Nebulae.RimWorld.Utilities
                 caster,
                 onGuiAction: _localTargetingSource.OnGUI);
 
-            await Task.Run(() =>
-            {
-                while (Find.Targeter.IsTargeting)
-                {
-                    Thread.Sleep(60);
-                }
-            });
+            await AwaitUtility.WaitForUnpauseAsync();
 
             if (!_localTargetSelected)
             {
