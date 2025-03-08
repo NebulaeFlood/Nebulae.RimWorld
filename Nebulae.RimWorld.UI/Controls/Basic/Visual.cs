@@ -307,7 +307,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 光标是否位于控件上方
         /// </summary>
         /// <remarks>对于 <see cref="IsHitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
-        [DebugInfoEntry(Priority = 5)]
+        [DebugInfoEntry(Priority = 4)]
         public bool IsCursorOver => _isHitTestVisible
             && ReferenceEquals(MouseUtility.HoveredControl, this);
 
@@ -325,7 +325,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 控件是否正在被拖动
         /// </summary>
         /// <remarks>对于 <see cref="IsHitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
-        [DebugInfoEntry(Priority = 5)]
+        [DebugInfoEntry(Priority = 4)]
         public bool IsDragging => _isDraggable && MouseUtility.AnyDragging
             && ReferenceEquals(MouseUtility.DraggingControl, this);
 
@@ -333,14 +333,14 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 正在拖动的控件是否正在该控件上方
         /// </summary>
         /// <remarks>对于 <see cref="IsHitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
-        [DebugInfoEntry(Priority = 5)]
+        [DebugInfoEntry(Priority = 4)]
         public bool IsDragOwer => _isHitTestVisible && MouseUtility.AnyDragging
             && ReferenceEquals(MouseUtility.HoveredControl, this);
 
         /// <summary>
         /// 是否在界面中启用该控件
         /// </summary>
-        [DebugInfoEntry(Priority = 4)]
+        [DebugInfoEntry(Priority = int.MinValue + 1)]
         public bool IsEnabled
         {
             get => _isEnabled;
@@ -394,7 +394,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 光标是否在控件上方按下
         /// </summary>
         /// <remarks>对于 <see cref="IsHitTestVisible"/> 为 <see langword="false"/> 的控件，该项永远为 <see langword="false"/>。</remarks>
-        [DebugInfoEntry(Priority = 5)]
+        [DebugInfoEntry(Priority = 4)]
         public bool IsPressing => _isHitTestVisible && MouseUtility.AnyPressing
             && ReferenceEquals(MouseUtility.PressingControl, this);
 

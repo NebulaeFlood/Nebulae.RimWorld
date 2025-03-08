@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 
 namespace Nebulae.RimWorld.UI.Automation
 {
@@ -13,6 +14,7 @@ namespace Nebulae.RimWorld.UI.Automation
 
         private static readonly Dictionary<string, Func<object, object>> _cachedMemberAccessers =
             new Dictionary<string, Func<object, object>>();
+        private static readonly StringBuilder _stringBuilder = new StringBuilder();
 
         private readonly Func<object, object> _accesser;
         private readonly string _name;
@@ -20,8 +22,15 @@ namespace Nebulae.RimWorld.UI.Automation
         private readonly object _target;
 
 
-        internal string Info =>
-            "<color=yellow>" + _name + "</color>:\n" + _accesser(_target)?.ToString() ?? "Null\n";
+        internal string Info
+        {
+            get
+            {
+                var result = _stringBuilder.Append(_name).Append(_accesser(_target)?.ToString() ?? "Null").Append("\n").ToString();
+                _stringBuilder.Clear();
+                return result;
+            }
+        }
 
 
         internal DebugInfo(
@@ -31,10 +40,11 @@ namespace Nebulae.RimWorld.UI.Automation
             object target)
         {
             _accesser = accesser;
-            _name = name;
-            _target = target;
-
+            _name = _stringBuilder.Append("<color=yellow>").Append(name).Append("</color>:\n").ToString();
             _priority = priority;
+            _target = target;
+            
+            _stringBuilder.Clear();
         }
 
 
