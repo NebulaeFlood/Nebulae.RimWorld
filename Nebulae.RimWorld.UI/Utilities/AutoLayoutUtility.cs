@@ -141,12 +141,12 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             if (virtualize)
             {
-                return new VirtualizingStackPanel { ChildMaxHeight = float.PositiveInfinity }
+                return new VirtualizingStackPanel()
                     .Set(controls);
             }
             else
             {
-                return new StackPanel { ChildMaxHeight = float.PositiveInfinity }
+                return new StackPanel()
                     .Set(controls);
             }
         }

@@ -362,7 +362,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
 
             if (children.Any())
             {
-                var contentPanel = new VirtualizingStackPanel { ChildMaxHeight = float.PositiveInfinity };
+                var contentPanel = new VirtualizingStackPanel();
 
                 foreach (var child in root.EnumerateLogicalChildren())
                 {
