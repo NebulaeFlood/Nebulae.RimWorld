@@ -258,7 +258,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         static NumberBox()
         {
             HeightProperty.OverrideMetadata(typeof(NumberBox),
-                new ControlPropertyMetadata(34f, ControlRelation.Measure));
+                new ControlPropertyMetadata(AutoLayoutUtility.StandardRowHeight, ControlRelation.Measure));
         }
 
         /// <summary>
@@ -350,7 +350,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             {
                 renderSize = new Size(renderSize.Width,
                     backgroundVerticalAlignment is VerticalAlignment.Center
-                        ? _innerSize.Height + (34f - (_textBoxExtension.Top + fontHeight + _textBoxExtension.Bottom))
+                        ? _innerSize.Height + (AutoLayoutUtility.StandardRowHeight - (_textBoxExtension.Top + fontHeight + _textBoxExtension.Bottom))
                         : _innerSize.Height);
             }
 

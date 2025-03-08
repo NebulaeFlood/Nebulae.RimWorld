@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Utilities;
+using System;
 
 namespace Nebulae.RimWorld.UI.Automation
 {
@@ -11,7 +12,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 控件的高度
         /// </summary>
-        public float Height = 34f;
+        public float Height = AutoLayoutUtility.StandardRowHeight;
 
         /// <summary>
         /// 初始化 <see cref="BooleanSettingEntryAttribute"/> 的新实例

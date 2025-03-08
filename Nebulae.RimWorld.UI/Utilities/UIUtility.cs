@@ -35,12 +35,6 @@ namespace Nebulae.RimWorld.UI.Utilities
         private static readonly GUIStyle[] _inputBoxStyles = new GUIStyle[12];
 
 
-        /// <summary>
-        /// UI 界面资源是否已完全加载
-        /// </summary>
-        public static bool SourceInitialized;
-
-
         static UIUtility()
         {
             InitializeStyles();

@@ -21,6 +21,12 @@ namespace Nebulae.RimWorld.UI.Utilities
     public static class AutoLayoutUtility
     {
         /// <summary>
+        /// 标准自动布局控件高度
+        /// </summary>
+        public const float StandardRowHeight = 34f;
+
+
+        /// <summary>
         /// 为 <see cref="bool"/> 类型的设置选项创建一个 <see cref="CheckBox"/>
         /// </summary>
         /// <typeparam name="T">保存设置数据的类型</typeparam>
@@ -35,7 +41,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             string entryName,
             string label,
             string tooltip,
-            float height = 34f)
+            float height = StandardRowHeight)
         {
             return CreateBooleanEntry(
                 settings,
@@ -62,7 +68,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             bool entryValue,
             string label,
             string tooltip,
-            float height = 34f)
+            float height = StandardRowHeight)
         {
             var checkBox = new CheckBox
             {
@@ -251,7 +257,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 entryName,
                 BindingMode.OneWay);
 
-            return new Grid().DefineColumns(Grid.Remain, 220f).DefineRows(24f, 34f)
+            return new Grid().DefineColumns(Grid.Remain, 220f).DefineRows(24f, StandardRowHeight)
                 .Set(
                         entryLabel, entryLabel,
                         slider, numberBox
@@ -317,12 +323,10 @@ namespace Nebulae.RimWorld.UI.Utilities
             GameFont fontSize = GameFont.Small,
             Regex inputValidator = null)
         {
-            var showTooltip = !string.IsNullOrEmpty(tooltip);
-
             var entryLabel = new Label
             {
                 Anchor = TextAnchor.MiddleLeft,
-                Height = 34f,
+                Height = StandardRowHeight,
                 Text = label,
                 Tooltip = tooltip,
                 VerticalAlignment = VerticalAlignment.Top
