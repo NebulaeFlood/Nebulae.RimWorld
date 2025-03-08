@@ -92,6 +92,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// 为预设的设置条目创建对应的控件
         /// </summary>
+        /// <typeparam name="T">保存设置数据的类型</typeparam>
         /// <param name="settings">预设了条目的设置类</param>
         /// <param name="virtualize">使用虚拟化面板</param>
         /// <returns>如果 <paramref name="virtualize"/> 为 <see langword="true"/>，返回类型为 <see cref="VirtualizingStackPanel"/> 的包含了设置控件的面板控件；反之则返回类型为 <see cref="StackPanel"/> 的面板。</returns>
