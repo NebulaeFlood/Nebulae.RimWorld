@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Verse;
@@ -9,7 +8,6 @@ namespace Nebulae.RimWorld.UI
     /// <summary>
     /// 用于向主线程发送任务
     /// </summary>
-    [HarmonyPatch(typeof(Root), nameof(Root.Update))]
     public static class Dispatcher
     {
         private static readonly ConcurrentQueue<Action> _queuedTasks = new ConcurrentQueue<Action>();
@@ -77,7 +75,7 @@ namespace Nebulae.RimWorld.UI
             return taskCompletionSource.Task;
         }
 
-        [HarmonyPostfix]
+
         internal static void Update()
         {
             while (!_queuedTasks.IsEmpty)
