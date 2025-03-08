@@ -19,6 +19,11 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// </summary>
         public static readonly Texture2D Transparent = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 1f, 1f, 0f));
 
+        /// <summary>
+        /// 窗口背景画刷
+        /// </summary>
+        public static readonly Texture2D WindowBackground = SolidColorMaterials.NewSolidColorTexture(Widgets.WindowBGFillColor);
+
 
         /// <summary>
         /// 将 <see cref="Color"/> 转化为纯色画刷
