@@ -182,6 +182,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
 
+
+        /// <inheritdoc/>
+        protected override Rect AnalyseCore(Rect contentRect)
+        {
+            return _innerRect.IntersectWith(contentRect);
+        }
+
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
@@ -261,12 +268,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             }
 
             return renderSize;
-        }
-
-        /// <inheritdoc/>
-        protected override Rect AnalyseCore(Rect contentRect)
-        {
-            return _innerRect.IntersectWith(contentRect);
         }
     }
 }

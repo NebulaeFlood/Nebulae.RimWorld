@@ -1,6 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
-using Nebulae.RimWorld.Utilities;
 using UnityEngine;
 using Verse;
 using GameText = Verse.Text;

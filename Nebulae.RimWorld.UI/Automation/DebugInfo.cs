@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nebulae.RimWorld.UI.Automation
 {
     internal readonly struct DebugInfo
     {
-        internal static readonly Comparison<DebugInfo> Comparison = (x, y) => 
+        internal static readonly Comparison<DebugInfo> Comparison = (x, y) =>
             x._priority < y._priority ? -1 : 1;
 
 
@@ -47,7 +44,7 @@ namespace Nebulae.RimWorld.UI.Automation
             {
                 string key = member.DeclaringType.FullName + "." + member.Name;
                 string name = string.IsNullOrEmpty(entry.Name)
-                    ? member.Name 
+                    ? member.Name
                     : entry.Name;
 
                 if (_cachedMemberAccessers.TryGetValue(key, out var accesser))

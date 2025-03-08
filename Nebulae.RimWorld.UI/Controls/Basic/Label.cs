@@ -1,8 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
-using Nebulae.RimWorld.Utilities;
 using RimWorld;
-using System;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -138,6 +136,22 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
+
+        /// <inheritdoc/>
+        protected override Rect AnalyseCore(Rect contentRect)
+        {
+            return contentRect.IntersectWith(_onlyTextHitTestVisible
+                ? _textRect
+                : _labelRect);
+        }
+
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
@@ -179,17 +193,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <inheritdoc/>
-        protected override Rect AnalyseCore(Rect contentRect)
-        {
-            return contentRect.IntersectWith(_onlyTextHitTestVisible
-                ? _textRect
-                : _labelRect);
-        }
-
-        /// <inheritdoc/>
         protected internal override void OnClick()
         {
             _clickSound?.PlayOneShotOnCamera();
         }
+
+        #endregion
     }
 }

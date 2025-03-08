@@ -58,9 +58,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected internal override void OnClick()
         {
-            if (Status is ToggleStatus.Checked) 
-            { 
-                return; 
+            if (Status is ToggleStatus.Checked)
+            {
+                return;
             }
             else
             {

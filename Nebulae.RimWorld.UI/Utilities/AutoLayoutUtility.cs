@@ -5,7 +5,6 @@ using Nebulae.RimWorld.UI.Controls.Panels;
 using Nebulae.RimWorld.UI.Converters;
 using Nebulae.RimWorld.UI.Data.Binding;
 using Nebulae.RimWorld.UI.Data.Utilities;
-using Nebulae.RimWorld.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -106,7 +105,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             {
                 var field = fields[i];
 
-                if (field.GetCustomAttribute<SettingEntryBaseAttribute>(false) is SettingEntryBaseAttribute entry)
+                if (field.GetCustomAttribute<SettingEntryBaseAttribute>() is SettingEntryBaseAttribute entry)
                 {
                     entries.Add(new SettingEntry(standardKey, entry, field, settings));
                 }
@@ -255,7 +254,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             return new Grid().DefineColumns(Grid.Remain, 220f).DefineRows(24f, 34f)
                 .Set(
                         entryLabel, entryLabel,
-                        slider,     numberBox
+                        slider, numberBox
                     );
         }
 

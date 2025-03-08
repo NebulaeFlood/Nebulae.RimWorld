@@ -170,6 +170,16 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
+        protected override Rect AnalyseCore(Rect contentRect)
+        {
+            return contentRect.IntersectWith(new Rect(
+                _sliderRect.x - 6f,
+                _sliderRect.y,
+                _sliderRect.width + 12f,
+                HandleSize));
+        }
+
+        /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
             Rect renderRect = RenderSize.AlignToArea(availableRect,
@@ -263,16 +273,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             }
 
             GUI.color = color;
-        }
-
-        /// <inheritdoc/>
-        protected override Rect AnalyseCore(Rect contentRect)
-        {
-            return contentRect.IntersectWith(new Rect(
-                _sliderRect.x - 6f,
-                _sliderRect.y,
-                _sliderRect.width + 12f,
-                HandleSize));
         }
 
         /// <inheritdoc/>

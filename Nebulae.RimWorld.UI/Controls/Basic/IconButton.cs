@@ -169,6 +169,19 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
+        protected override Rect AnalyseCore(Rect contentRect)
+        {
+            if (_iconHitOnly)
+            {
+                return _iconRenderRect;
+            }
+            else
+            {
+                return contentRect;
+            }
+        }
+
+        /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
             Rect renderRect = RenderSize.AlignToArea(availableRect,
@@ -265,19 +278,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 }
 
                 GUI.DrawTexture(_iconRenderRect, _icon, ScaleMode.ScaleToFit);
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override Rect AnalyseCore(Rect contentRect)
-        {
-            if (_iconHitOnly)
-            {
-                return _iconRenderRect;
-            }
-            else
-            {
-                return contentRect;
             }
         }
 

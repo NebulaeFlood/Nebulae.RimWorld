@@ -1,16 +1,13 @@
 ﻿using Nebulae.RimWorld.UI.Automation;
 using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Controls.Panels;
 using Nebulae.RimWorld.UI.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
-using TextBlock = Nebulae.RimWorld.UI.Controls.Basic.TextBlock;
 using Grid = Nebulae.RimWorld.UI.Controls.Panels.Grid;
-using Nebulae.RimWorld.UI.Controls.Panels;
+using TextBlock = Nebulae.RimWorld.UI.Controls.Basic.TextBlock;
 
 namespace Nebulae.RimWorld.UI.Controls.Composites
 {

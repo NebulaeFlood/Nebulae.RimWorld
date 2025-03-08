@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nebulae.RimWorld.UI.Automation
+﻿namespace Nebulae.RimWorld.UI.Automation
 {
     /// <summary>
     /// 标识设置条目的类型

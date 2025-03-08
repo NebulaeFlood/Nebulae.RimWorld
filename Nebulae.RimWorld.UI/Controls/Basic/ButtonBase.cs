@@ -1,6 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
-using RimWorld;
 using System;
 using Verse;
 using Verse.Sound;

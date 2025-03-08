@@ -1,5 +1,4 @@
-﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using UnityEngine;
+﻿using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic.Geomerties

@@ -1,10 +1,4 @@
-﻿using Nebulae.RimWorld.UI.Automation;
-using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Data;
-using Nebulae.RimWorld.UI.Utilities;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
@@ -49,7 +43,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             set
             {
                 TooltipContent = value;
-                ShouldShowTooltip = IsEnabled 
+                ShouldShowTooltip = IsEnabled
                     && (!string.IsNullOrEmpty(value.text)
                         || value.textGetter != null);
             }
