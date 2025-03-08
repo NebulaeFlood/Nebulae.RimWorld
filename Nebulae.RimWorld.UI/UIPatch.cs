@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Nebulae.RimWorld.WeakEventManagers;
+using System.Reflection;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -24,7 +25,6 @@ namespace Nebulae.RimWorld.UI
     /// <summary>
     /// 原版 UI 补丁
     /// </summary>
-    [StaticConstructorOnStartup]
     public static class UIPatch
     {
         internal const string UniqueId = "Nebulae.RimWorld.UI";
@@ -43,7 +43,7 @@ namespace Nebulae.RimWorld.UI
         static UIPatch()
         {
             HarmonyInstance = new Harmony(UniqueId);
-            HarmonyInstance.PatchAll();
+            HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
         }
     }
 

@@ -74,7 +74,7 @@ namespace Nebulae.RimWorld.UI
         {
             _settings = GetSettings<T>();
 
-            StartUpQuestManager.AddQuest(Initialize);
+            StartUp.AddQuest(Initialize);
             UIPatch.UIEvent.Manage(this);
         }
 

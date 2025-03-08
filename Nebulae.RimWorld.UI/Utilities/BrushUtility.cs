@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Threading.Tasks;
+using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Utilities
@@ -12,17 +13,17 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// 灰色画刷
         /// </summary>
-        public static readonly Texture2D Grey = SolidColorMaterials.NewSolidColorTexture(ColorLibrary.Grey);
+        public static readonly Texture2D Grey = ColorLibrary.Green.ToBrush();
 
         /// <summary>
         /// 透明画刷
         /// </summary>
-        public static readonly Texture2D Transparent = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 1f, 1f, 0f));
+        public static readonly Texture2D Transparent = new Color(1f, 1f, 1f, 0f).ToBrush();
 
         /// <summary>
         /// 窗口背景画刷
         /// </summary>
-        public static readonly Texture2D WindowBackground = SolidColorMaterials.NewSolidColorTexture(Widgets.WindowBGFillColor);
+        public static readonly Texture2D WindowBackground = Widgets.WindowBGFillColor.ToBrush();
 
 
         /// <summary>
@@ -32,7 +33,12 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <returns><paramref name="color"/> 对应颜色的纯色画刷。</returns>
         public static Texture2D ToBrush(this Color color)
         {
-            return SolidColorMaterials.NewSolidColorTexture(color);
+            Texture2D CreateBrush()
+            {
+                return SolidColorMaterials.NewSolidColorTexture(color);
+            }
+
+            return Dispatcher.InvokeAsync(CreateBrush).Result;
         }
     }
 }

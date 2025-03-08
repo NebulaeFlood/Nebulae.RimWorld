@@ -11,6 +11,7 @@ using TextBlock = Nebulae.RimWorld.UI.Controls.Basic.TextBlock;
 
 namespace Nebulae.RimWorld.UI.Controls.Composites
 {
+    [StaticConstructorOnStartup]
     internal class DebugPanel : Control
     {
         private static readonly Texture2D _background = new Color(0.2f, 0.2f, 0.2f).ToBrush();
