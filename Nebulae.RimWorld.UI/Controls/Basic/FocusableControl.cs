@@ -146,12 +146,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override void DrawCore()
+        protected sealed override void DrawCore()
         {
-            GUI.SetNextControlName(_focusIndex);
-            DrawControl();
-
             bool isFocusing = UpdateStatus();
+
+            GUI.SetNextControlName(_focusIndex);
+            DrawControl(isFocusing);
 
             if (_status.HasFlag(Status.LossingFocus))
             {
@@ -174,7 +174,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 绘制可焦聚的控件
         /// </summary>
-        protected abstract void DrawControl();
+        /// <param name="isFocused">控件是否已获取焦点</param>
+        protected abstract void DrawControl(bool isFocused);
 
         #endregion
 

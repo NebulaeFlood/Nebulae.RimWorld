@@ -21,12 +21,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         #region Private Fields
 
-        private bool _isReadOnly = false;
+        private bool _isReadOnly;
         private bool _wrapText = true;
 
-        private Thickness _backgroundExtension = Thickness.Empty;
+        private Thickness _textBoxExtension = Thickness.Empty;
 
         private Rect _innerRect;
+        private Size _innerSize = Size.Empty;
 
         #endregion
 
@@ -38,47 +39,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         //------------------------------------------------------
 
         #region Public Properties
-
-        /// <summary>
-        /// 输入框背景拓展量
-        /// </summary>
-        /// <remarks>只有 <see cref="Thickness.Top"/> 和 <see cref="Thickness.Bottom"/> 有效。</remarks>
-        public Thickness BackgroundExtension
-        {
-            get => _backgroundExtension;
-            set
-            {
-                value = value.Normalize();
-                value = new Thickness(0f, value.Top, 0f, value.Bottom);
-
-                if (_backgroundExtension != value)
-                {
-                    _innerRect.yMax -= _backgroundExtension.Bottom;
-                    _innerRect.yMin += _backgroundExtension.Top;
-                    _backgroundExtension = value;
-                    _innerRect.yMax += _backgroundExtension.Bottom;
-                    _innerRect.yMin -= _backgroundExtension.Top;
-                }
-            }
-        }
-
-        #region BackgroundVerticalAlignment
-        /// <summary>
-        /// 获取或设置
-        /// </summary>
-        public VerticalAlignment BackgroundVerticalAlignment
-        {
-            get { return (VerticalAlignment)GetValue(BackgroundVerticalAlignmentProperty); }
-            set { SetValue(BackgroundVerticalAlignmentProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="BackgroundVerticalAlignment"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty BackgroundVerticalAlignmentProperty =
-            DependencyProperty.Register(nameof(BackgroundVerticalAlignment), typeof(VerticalAlignment), typeof(TextBox),
-                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Arrange));
-        #endregion
 
         #region FontSize
         /// <summary>
@@ -149,6 +109,45 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #endregion
 
         /// <summary>
+        /// 文本输入框背景拓展量
+        /// </summary>
+        /// <remarks>只有 <see cref="Thickness.Top"/> 和 <see cref="Thickness.Bottom"/> 有效。</remarks>
+        public Thickness TextBoxExtension
+        {
+            get => _textBoxExtension;
+            set
+            {
+                value = value.Normalize();
+                value = new Thickness(0f, value.Top, 0f, value.Bottom);
+
+                if (_textBoxExtension != value)
+                {
+                    _textBoxExtension = value;
+
+                    InvalidateMeasure();
+                }
+            }
+        }
+
+        #region TextBoxVerticalAlignment
+        /// <summary>
+        /// 获取或设置文本输入框的垂直对齐方式
+        /// </summary>
+        public VerticalAlignment TextBoxVerticalAlignment
+        {
+            get { return (VerticalAlignment)GetValue(BackgroundVerticalAlignmentProperty); }
+            set { SetValue(BackgroundVerticalAlignmentProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="TextBoxVerticalAlignment"/> 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty BackgroundVerticalAlignmentProperty =
+            DependencyProperty.Register(nameof(TextBoxVerticalAlignment), typeof(VerticalAlignment), typeof(TextBox),
+                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Arrange));
+        #endregion
+
+        /// <summary>
         /// 是否自动换行
         /// </summary>
         public bool WrapText
@@ -195,33 +194,16 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             Rect renderRect = RenderSize.AlignToArea(availableRect,
                 HorizontalAlignment, VerticalAlignment);
 
-            if (_wrapText)
-            {
-                _innerRect = UIUtility.CalculateInputBoxSize(
-                    Text,
-                    renderRect.width,
-                    FontSize,
-                    _isReadOnly,
-                    _wrapText).AlignToArea(renderRect,
-                        HorizontalAlignment.Stretch, BackgroundVerticalAlignment);
-            }
-            else
-            {
-                _innerRect = new Size(renderRect.width, FontSize.GetHeight()).AlignToArea(renderRect,
-                    HorizontalAlignment.Stretch, BackgroundVerticalAlignment);
-            }
-
-            _innerRect.yMax += _backgroundExtension.Bottom;
-            _innerRect.xMin -= _backgroundExtension.Top;
+            _innerRect = _innerSize.AlignToArea(renderRect,
+                HorizontalAlignment.Stretch, TextBoxVerticalAlignment);
 
             return renderRect;
         }
 
 
         /// <inheritdoc/>
-        protected override void DrawControl()
+        protected override void DrawControl(bool isFocused)
         {
-            Color color = GUI.color;
             GameFont controlFont = FontSize;
             GameFont font = GameText.Font;
             GameText.Font = controlFont;
@@ -230,17 +212,17 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             if (isDisabled)
             {
-                GUI.color = color * Widgets.InactiveColor;
+                GUI.color *= Widgets.InactiveColor;
             }
 
             if (_isReadOnly || isDisabled)
             {
-                UIUtility.DrawInputBox(_innerRect, Text, controlFont, true, _wrapText);
+                Text.DrawTextBox(_innerRect, FontSize, false, _wrapText);
             }
             else
             {
                 string text = Text;
-                string buffer = UIUtility.DrawInputBox(_innerRect, text, controlFont, false, _wrapText);
+                string buffer = text.DrawTextBox(_innerRect, FontSize, isFocused || IsCursorOver || IsPressing, _wrapText);
 
                 if (text != buffer && (InputValidator is null || InputValidator.IsMatch(buffer)))
                 {
@@ -248,23 +230,36 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 }
             }
 
-            GUI.color = color;
             GameText.Font = font;
         }
 
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
+            var backgroundVerticalAlignment = TextBoxVerticalAlignment;
             Size renderSize = base.MeasureCore(availableSize);
 
-            if (_wrapText)
+            if (backgroundVerticalAlignment is VerticalAlignment.Stretch)
             {
-                return UIUtility.CalculateInputBoxSize(
-                    Text,
-                    renderSize.Width,
-                    FontSize,
-                    _isReadOnly,
-                    _wrapText);
+                _innerSize = renderSize;
+                return renderSize;
+            }
+
+            GameFont fontSize = FontSize;
+            float fontHeight = fontSize.GetHeight();
+
+            _innerSize = new Size(renderSize.Width,
+                (_wrapText
+                    ? Text.CalculateTextBoxHeight(renderSize.Width, FontSize, true)
+                    : fontHeight)
+                        + _textBoxExtension.Top + _textBoxExtension.Bottom);
+
+            if (_innerSize.Height > renderSize.Height)
+            {
+                renderSize = new Size(renderSize.Width,
+                    backgroundVerticalAlignment is VerticalAlignment.Center
+                        ? _innerSize.Height + (34f - (_textBoxExtension.Top + fontHeight + _textBoxExtension.Bottom))
+                        : _innerSize.Height);
             }
 
             return renderSize;
