@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.Utilities;
 using UnityEngine;
 using Verse;
@@ -112,9 +113,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            return new Size(
-                availableSize.Width,
-                Text.CalculateHeight(availableSize.Width, FontSize));
+            return Text.CalculateSize(availableSize.Width, FontSize);
         }
 
         #endregion
