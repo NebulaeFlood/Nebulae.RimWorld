@@ -229,12 +229,15 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                     _minimun,
                     _maximun) / _step) * _step;
 
-                if (buffer != value
-                    && Time.realtimeSinceStartup > _lastSoundPlayedTime + 0.075f)
+                if (buffer != value)
                 {
                     Value = value;
-                    _lastSoundPlayedTime = Time.realtimeSinceStartup;
-                    SoundDefOf.DragSlider.PlayOneShotOnCamera();
+
+                    if (Time.realtimeSinceStartup > _lastSoundPlayedTime + 0.075f)
+                    {
+                        _lastSoundPlayedTime = Time.realtimeSinceStartup;
+                        SoundDefOf.DragSlider.PlayOneShotOnCamera();
+                    }
                 }
             }
 
