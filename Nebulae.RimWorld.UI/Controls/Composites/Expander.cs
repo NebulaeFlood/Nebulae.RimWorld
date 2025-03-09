@@ -156,20 +156,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         private static void OnIsExpandedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var expander = (Expander)d;
-            bool isExpanded = (bool)e.NewValue;
-
-            if (isExpanded)
-            {
-                expander._expandButton.IsExpanded = true;
-                SoundDefOf.TabOpen.PlayOneShotOnCamera();
-                expander._expanded.Invoke(expander, expander._content);
-            }
-            else
-            {
-                expander._expandButton.IsExpanded = false;
-                SoundDefOf.TabClose.PlayOneShotOnCamera();
-                expander._collapsed.Invoke(expander, expander._content);
-            }
+            expander._expandButton.IsExpanded = (bool)e.NewValue;
         }
         #endregion
 

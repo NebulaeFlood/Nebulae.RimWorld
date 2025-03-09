@@ -1,8 +1,10 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Composites;
 using Nebulae.RimWorld.UI.Utilities;
+using RimWorld;
 using System;
 using UnityEngine;
 using Verse;
+using Verse.Sound;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
@@ -72,7 +74,18 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         protected internal override void OnClick()
         {
-            _parent.IsExpanded = !IsExpanded;
+            if (IsExpanded)
+            {
+                IsExpanded = false;
+                SoundDefOf.TabClose.PlayOneShotOnCamera();
+                _parent.IsExpanded = false;
+            }
+            else
+            {
+                IsExpanded = true;
+                SoundDefOf.TabOpen.PlayOneShotOnCamera();
+                _parent.IsExpanded = true;
+            }
         }
     }
 }
