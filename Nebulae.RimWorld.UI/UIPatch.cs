@@ -32,7 +32,7 @@ namespace Nebulae.RimWorld.UI
         /// <summary>
         /// 原版 UI Patch
         /// </summary>
-        internal static readonly Harmony HarmonyInstance;
+        public static readonly Harmony HarmonyInstance;
 
         /// <summary>
         /// 原版 UI 事件管理器
