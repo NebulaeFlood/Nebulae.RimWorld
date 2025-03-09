@@ -82,7 +82,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty ColumnProperty =
             DependencyProperty.RegisterAttached("Column", typeof(int), typeof(Grid),
-                new ControlPropertyMetadata(0, OnUnitInfoChanged, ControlRelation.Arrange),
+                new ControlPropertyMetadata(0, ControlRelation.Measure),
                 ValidatePositive);
         #endregion
 
@@ -112,7 +112,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty ColumnSpanProperty =
             DependencyProperty.RegisterAttached("ColumnSpan", typeof(int), typeof(Grid),
-                new ControlPropertyMetadata(0, OnUnitInfoChanged, ControlRelation.Arrange),
+                new ControlPropertyMetadata(0, ControlRelation.Measure),
                 ValidatePositive);
         #endregion
 
@@ -142,7 +142,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty RowProperty =
             DependencyProperty.RegisterAttached("Row", typeof(int), typeof(Grid),
-                new ControlPropertyMetadata(0, OnUnitInfoChanged, ControlRelation.Arrange),
+                new ControlPropertyMetadata(0, ControlRelation.Measure),
                 ValidatePositive);
         #endregion
 
@@ -172,7 +172,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty RowSpanProperty =
             DependencyProperty.RegisterAttached("RowSpan", typeof(int), typeof(Grid),
-                new ControlPropertyMetadata(0, OnUnitInfoChanged, ControlRelation.Arrange),
+                new ControlPropertyMetadata(0, ControlRelation.Measure),
                 ValidatePositive);
         #endregion
 
@@ -409,15 +409,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     GetRow(child),
                     GetColumnSpan(child),
                     GetRowSpan(child));
-            }
-        }
-
-        private static void OnUnitInfoChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is Visual control
-                && control.Parent is Grid grid)
-            {
-                grid._unitInfoChanged = true;
             }
         }
 
