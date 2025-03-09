@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Automation;
 using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Controls.Panels;
+using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ using TextBlock = Nebulae.RimWorld.UI.Controls.Basic.TextBlock;
 namespace Nebulae.RimWorld.UI.Controls.Composites
 {
     [StaticConstructorOnStartup]
-    internal class DebugPanel : Control
+    internal sealed class DebugPanel : Control
     {
         private static readonly Texture2D _background = new Color(0.2f, 0.2f, 0.2f).ToBrush();
         private static readonly Texture2D _borderBrush = new Color(0.6f, 0.6f, 0.6f).ToBrush();
@@ -35,12 +36,9 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         private bool _isEmpty = true;
         private Visual _currentNode;
 
-        private LayoutManager _sourceTree;
-
         private bool _initialized = false;
         private bool _sourceInLayoutTree;
 
-        private bool _sourceDrawButtons;
         private bool _sourceDrawContentRect;
         private bool _sourceDrawDesiredRect;
         private bool _sourceDrawControlRect;
@@ -109,6 +107,11 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             _cachedInfos.Clear();
             _cachedInfos.TrimExcess();
 
+            if (!_isEmpty)
+            {
+                _currentNode.DebugContent = DebugContent.Empty;
+            }
+
             _currentNode = null;
 
             _infoBox.Text = string.Empty;
@@ -122,7 +125,6 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             }
 
             _sourceInLayoutTree = false;
-            _sourceTree = null;
         }
 
         public void ResetInfo()
@@ -130,25 +132,21 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             _cachedInfos.Clear();
             _cachedInfos.TrimExcess();
 
+            if (!_isEmpty)
+            {
+                _currentNode.DebugContent = DebugContent.Empty;
+            }
+
             _currentNode = null;
 
             _isEmpty = true;
-        }
 
-        public void SelectNode(Visual node)
-        {
-            if (ReferenceEquals(node, _currentNode))
-            {
-                return;
-            }
+            _sourceDrawContentRect = false;
+            _sourceDrawDesiredRect = false;
+            _sourceDrawControlRect = false;
+            _sourceDrawRenderRect = false;
 
             _infoViewer.ScrollToTop();
-
-            _currentNode = node;
-            _isEmpty = node is null;
-
-            _cachedInfos.Clear();
-            _cachedInfos.TrimExcess();
         }
 
         public void SetSourceTree(Visual source)
@@ -161,20 +159,13 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
 
             _initialized = true;
 
-            if (source.LayoutManager is LayoutManager manager)
+            if (source.LayoutManager is null)
             {
-                _sourceInLayoutTree = true;
-                _sourceTree = manager;
-
-                _sourceDrawButtons = manager.DebugDrawButtons;
-                _sourceDrawContentRect = manager.DebugDrawContentRect;
-                _sourceDrawDesiredRect = manager.DebugDrawDesiredRect;
-                _sourceDrawControlRect = manager.DebugDrawControlRect;
-                _sourceDrawRenderRect = manager.DebugDrawRenderRect;
+                _sourceInLayoutTree = false;
             }
             else
             {
-                _sourceInLayoutTree = false;
+                _sourceInLayoutTree = true;
             }
 
             _treeViewer.Content = GenerateTree(source);
@@ -209,42 +200,36 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             {
                 _infoBox.Text = GenerateInfo();
 
-                Rect checkBoxRect = new Rect(RenderRect.x, RenderRect.y, RenderRect.width, 24f);
-
-                if (_sourceInLayoutTree)
+                if (!_isEmpty
+                    && _sourceInLayoutTree)
                 {
+                    Rect checkBoxRect = new Rect(RenderRect.x, RenderRect.y, RenderRect.width, 24f);
+
                     var anchor = Text.Anchor;
                     Text.Anchor = TextAnchor.MiddleLeft;
 
-                    DrawCheckBox(checkBoxRect, "Show Debug Buttons", ref _sourceDrawButtons);
-                    checkBoxRect.y += 24f;
                     DrawCheckBox(checkBoxRect, "Show Desired Rect", ref _sourceDrawDesiredRect);
-                    checkBoxRect.y += 24f;
+                    checkBoxRect.y += 30f;
                     DrawCheckBox(checkBoxRect, "Show Render Rect", ref _sourceDrawRenderRect);
-                    checkBoxRect.y += 24f;
+                    checkBoxRect.y += 30f;
                     DrawCheckBox(checkBoxRect, "Show Control Rect", ref _sourceDrawControlRect);
-                    checkBoxRect.y += 24f;
+                    checkBoxRect.y += 30f;
                     DrawCheckBox(checkBoxRect, "Show Content Rect", ref _sourceDrawContentRect);
 
                     Text.Anchor = anchor;
 
-                    _sourceTree.DebugDrawButtons = _sourceDrawButtons;
-                    _sourceTree.DebugDrawContentRect = _sourceDrawContentRect;
-                    _sourceTree.DebugDrawDesiredRect = _sourceDrawDesiredRect;
-                    _sourceTree.DebugDrawControlRect = _sourceDrawControlRect;
-                    _sourceTree.DebugDrawRenderRect = _sourceDrawRenderRect;
+                    _currentNode.DebugDrawContentRect = _sourceDrawContentRect;
+                    _currentNode.DebugDrawDesiredRect = _sourceDrawDesiredRect;
+                    _currentNode.DebugDrawControlRect = _sourceDrawControlRect;
+                    _currentNode.DebugDrawRenderRect = _sourceDrawRenderRect;
                 }
                 else
                 {
-                    DrawEntry(checkBoxRect, "Show Debug Buttons");
-                    checkBoxRect.y += 24f;
-                    DrawEntry(checkBoxRect, "Show Render Rect");
-                    checkBoxRect.y += 24f;
-                    DrawEntry(checkBoxRect, "Show Desired Rect");
-                    checkBoxRect.y += 24f;
-                    DrawEntry(checkBoxRect, "Show Control Rect");
-                    checkBoxRect.y += 24f;
-                    DrawEntry(checkBoxRect, "Show Content Rect");
+                    var anchor = Text.Anchor;
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    Widgets.Label(new Rect(RenderRect.x, RenderRect.y, RenderRect.width, 120f),
+                        "Click any expander's title to get info.");
+                    Text.Anchor = anchor;
                 }
 
                 _root.Draw();
@@ -253,7 +238,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             {
                 var anchor = Text.Anchor;
                 Text.Anchor = TextAnchor.MiddleCenter;
-                Widgets.Label(RenderRect, "Please select node to get info.");
+                Widgets.Label(RenderRect, "Please select logical tree to get info.");
                 Text.Anchor = anchor;
             }
         }
@@ -296,16 +281,6 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
                 disabled: false,
                 texChecked: Widgets.CheckboxOnTex,
                 texUnchecked: Widgets.CheckboxOffTex);
-        }
-
-        private static void DrawEntry(Rect renderRect, string text)
-        {
-            var anchor = Text.Anchor;
-            Text.Anchor = TextAnchor.MiddleLeft;
-            Widgets.Label(renderRect, text);
-            Text.Anchor = TextAnchor.MiddleRight;
-            Widgets.Label(renderRect, "Invalid");
-            Text.Anchor = anchor;
         }
 
         private string GenerateInfo()
@@ -373,6 +348,19 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             }
 
             return node;
+        }
+
+        private void SelectNode(Visual node)
+        {
+            if (ReferenceEquals(node, _currentNode))
+            {
+                return;
+            }
+
+            ResetInfo();
+
+            _currentNode = node;
+            _isEmpty = node is null;
         }
 
         #endregion

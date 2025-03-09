@@ -199,7 +199,15 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <param name="closeThenShow">是否关闭正在显示的窗口再打开</param>
         public void Show(bool closeThenShow = true)
         {
-            if (closeThenShow || !_isOpen)
+            if (closeThenShow)
+            {
+                Find.WindowStack.Add(this);
+            }
+            else if (_isOpen)
+            {
+                SetInitialSizeAndPosition();
+            }
+            else
             {
                 Find.WindowStack.Add(this);
             }
@@ -244,7 +252,7 @@ namespace Nebulae.RimWorld.UI.Windows
             _layoutManager.Draw(inRect);
 
             if (Prefs.DevMode
-                && _layoutManager.DebugDrawButtons)
+                && _layoutManager.DrawDebugButtons)
             {
                 _layoutManager.DrawWindowDebugButtons(_nonClientRect);
             }

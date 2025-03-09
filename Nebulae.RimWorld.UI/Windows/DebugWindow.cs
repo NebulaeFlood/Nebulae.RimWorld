@@ -31,7 +31,7 @@ namespace Nebulae.RimWorld.UI.Windows
             layer = WindowLayer.Super;
 
             InitialWidth = 300f;
-            LayoutManager.DebugContent = DebugContent.Empty;
+            LayoutManager.DrawDebugButtons = false;
         }
 
 
@@ -50,21 +50,14 @@ namespace Nebulae.RimWorld.UI.Windows
             _debugPanel.Reset();
         }
 
-        /// <inheritdoc/>
-        public override void PostOpen()
-        {
-            base.PostOpen();
-            _debugPanel.ResetInfo();
-        }
-
         /// <summary>
         /// 显示控件树信息
         /// </summary>
         /// <param name="root">根控件</param>
         public static void ShowWindow(Visual root)
         {
-            _debugPanel.SetSourceTree(root);
             _instance.Show();
+            _debugPanel.SetSourceTree(root);
         }
 
         #endregion

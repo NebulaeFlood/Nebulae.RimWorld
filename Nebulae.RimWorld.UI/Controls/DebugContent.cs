@@ -20,11 +20,6 @@ namespace Nebulae.RimWorld.UI.Controls
         Empty = 0b00000,
 
         /// <summary>
-        /// 绘制调试按钮
-        /// </summary>
-        Buttons = 0b00001,
-
-        /// <summary>
         /// 绘制 <see cref="Visual.ContentRect"/>
         /// </summary>
         ContentRect = 0b00010,

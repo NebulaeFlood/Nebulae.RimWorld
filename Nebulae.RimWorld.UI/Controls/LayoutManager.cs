@@ -35,7 +35,7 @@ namespace Nebulae.RimWorld.UI.Controls
         private readonly Window _owner;
         private Visual _root;
 
-        private DebugContent _debugContent = DebugContent.Buttons;
+        private bool _drawDebugButtons = true;
 
         #endregion
 
@@ -49,107 +49,12 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Public Properties
 
         /// <summary>
-        /// 要绘制的调试内容
-        /// </summary>
-        public DebugContent DebugContent
-        {
-            get => _debugContent;
-            set => _debugContent = value;
-        }
-
-        /// <summary>
         /// 是否绘制调试用按钮
         /// </summary>
-        public bool DebugDrawButtons
+        public bool DrawDebugButtons
         {
-            get => _debugContent.HasFlag(DebugContent.Buttons);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.Buttons;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.Buttons;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否绘制控件可见区域
-        /// </summary>
-        public bool DebugDrawContentRect
-        {
-            get => _debugContent.HasFlag(DebugContent.ContentRect);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.ContentRect;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.ContentRect;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否绘制可交互区域
-        /// </summary>
-        public bool DebugDrawControlRect
-        {
-            get => _debugContent.HasFlag(DebugContent.ControlRect);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.ControlRect;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.ControlRect;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否绘制控件布局区域
-        /// </summary>
-        public bool DebugDrawDesiredRect
-        {
-            get => _debugContent.HasFlag(DebugContent.DesiredRect);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.DesiredRect;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.DesiredRect;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否绘制控件绘制区域
-        /// </summary>
-        public bool DebugDrawRenderRect
-        {
-            get => _debugContent.HasFlag(DebugContent.RenderRect);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.RenderRect;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.RenderRect;
-                }
-            }
+            get => _drawDebugButtons;
+            set => _drawDebugButtons = value;
         }
 
         /// <summary>

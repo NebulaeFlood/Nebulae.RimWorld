@@ -146,6 +146,104 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         private Color _opacityColor = new Color(1f, 1f, 1f, 1f);
         private Window _owner;
 
+        private DebugContent _debugContent = DebugContent.Empty;
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Public Debug Properties
+        //
+        //------------------------------------------------------
+
+        #region Public Debug Properties
+
+        /// <summary>
+        /// 要绘制的调试内容
+        /// </summary>
+        public DebugContent DebugContent
+        {
+            get => _debugContent;
+            set => _debugContent = value;
+        }
+
+        /// <summary>
+        /// 是否绘制控件可见区域
+        /// </summary>
+        public bool DebugDrawContentRect
+        {
+            get => _debugContent.HasFlag(DebugContent.ContentRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.ContentRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.ContentRect;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否绘制可交互区域
+        /// </summary>
+        public bool DebugDrawControlRect
+        {
+            get => _debugContent.HasFlag(DebugContent.ControlRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.ControlRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.ControlRect;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否绘制控件布局区域
+        /// </summary>
+        public bool DebugDrawDesiredRect
+        {
+            get => _debugContent.HasFlag(DebugContent.DesiredRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.DesiredRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.DesiredRect;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否绘制控件绘制区域
+        /// </summary>
+        public bool DebugDrawRenderRect
+        {
+            get => _debugContent.HasFlag(DebugContent.RenderRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.RenderRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.RenderRect;
+                }
+            }
+        }
+
         #endregion
 
 
@@ -252,7 +350,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         //------------------------------------------------------
         //
-        //  Public Methods
+        //  Public Properties
         //
         //------------------------------------------------------
 
@@ -532,30 +630,29 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 绘制调试内容
         /// </summary>
-        /// <param name="content">要绘制的调试内容</param>
-        public void DebugDraw(DebugContent content)
+        public void DebugDraw()
         {
-            if (content is DebugContent.Empty)
+            if (_debugContent is DebugContent.Empty)
             {
                 return;
             }
 
-            if (content.HasFlag(DebugContent.RenderRect) && RenderSize != 0f)
+            if (_debugContent.HasFlag(DebugContent.RenderRect) && RenderSize != 0f)
             {
                 UIUtility.DrawBorder(RenderRect, UIUtility.RederRectBorderBrush);
             }
 
-            if (content.HasFlag(DebugContent.ContentRect) && ContentSize != 0f)
+            if (_debugContent.HasFlag(DebugContent.ContentRect) && ContentSize != 0f)
             {
                 UIUtility.DrawBorder(ContentRect, UIUtility.ContentRectBorderBrush);
             }
 
-            if (content.HasFlag(DebugContent.DesiredRect) && DesiredSize != 0f)
+            if (_debugContent.HasFlag(DebugContent.DesiredRect) && DesiredSize != 0f)
             {
                 UIUtility.DrawBorder(DesiredRect, UIUtility.DesiredRectBorderBrush);
             }
 
-            if (content.HasFlag(DebugContent.ControlRect) && ControlSize != 0f)
+            if (_debugContent.HasFlag(DebugContent.ControlRect) && ControlSize != 0f)
             {
                 UIUtility.DrawBorder(ControlRect, UIUtility.ControlRectBorderBrush);
                 DrawInnerControlRect();
@@ -602,7 +699,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
                 if (Prefs.DevMode && !_isIndependent)
                 {
-                    DebugDraw(_layoutManager.DebugContent);
+                    DebugDraw();
                 }
             }
         }
