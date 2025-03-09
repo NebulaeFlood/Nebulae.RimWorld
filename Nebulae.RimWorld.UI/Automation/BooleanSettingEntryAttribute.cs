@@ -6,7 +6,7 @@ namespace Nebulae.RimWorld.UI.Automation
     /// <summary>
     /// 标记成员为 <see cref="bool"/> 类型的设置条目
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class BooleanSettingEntryAttribute : SettingEntryBaseAttribute
     {
         /// <summary>

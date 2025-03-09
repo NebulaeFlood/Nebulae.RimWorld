@@ -7,7 +7,7 @@ namespace Nebulae.RimWorld.UI.Automation
     /// <summary>
     /// 标记成员为 <see cref="string"/> 类型的设置条目
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class TextSettingEntryAttribute : SettingEntryBaseAttribute
     {
         /// <summary>
