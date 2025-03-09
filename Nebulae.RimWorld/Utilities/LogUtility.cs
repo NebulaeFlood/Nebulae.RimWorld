@@ -18,9 +18,10 @@ namespace Nebulae.RimWorld.Utilities
         /// </summary>
         /// <param name="logLabel">主语</param>
         /// <param name="message">错误内容</param>
-        public static void Error(this string logLabel, string message)
+        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Error(this string logLabel, string message, string color = "3F48CCFF")
         {
-            Log.Error($"[{logLabel}] {message}");
+            Log.Error($"<color=#{color}>[{logLabel}]</color> {message}");
         }
 
         /// <summary>
@@ -50,9 +51,10 @@ namespace Nebulae.RimWorld.Utilities
         /// </summary>
         /// <param name="logLabel">主语</param>
         /// <param name="message">警告内容</param>
-        public static void Warning(this string logLabel, string message)
+        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Warning(this string logLabel, string message, string color = "3F48CCFF")
         {
-            Log.Warning($"[{logLabel}] {message}");
+            Log.Warning($"<color=#{color}>[{logLabel}]</color> {message}");
         }
     }
 }
