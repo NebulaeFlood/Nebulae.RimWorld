@@ -2,7 +2,6 @@
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.UI.Windows;
 using Nebulae.RimWorld.WeakEventManagers;
-using System.Reflection;
 using UnityEngine;
 using Verse;
 

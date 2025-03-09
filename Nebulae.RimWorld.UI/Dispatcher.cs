@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Verse;
+using UnityData = Verse.UnityData;
 
 namespace Nebulae.RimWorld.UI
 {
@@ -74,7 +74,6 @@ namespace Nebulae.RimWorld.UI
 
             return taskCompletionSource.Task;
         }
-
 
         internal static void Update()
         {

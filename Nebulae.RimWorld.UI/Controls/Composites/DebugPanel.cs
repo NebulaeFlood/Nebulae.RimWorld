@@ -1,7 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Automation;
 using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Controls.Panels;
-using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System.Collections.Generic;
 using System.Linq;

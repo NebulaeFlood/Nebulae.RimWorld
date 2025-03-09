@@ -1,12 +1,10 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Data;
 using Nebulae.RimWorld.UI.Utilities;
-using RimWorld;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
-using Verse.Sound;
 
 namespace Nebulae.RimWorld.UI.Controls.Composites
 {

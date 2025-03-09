@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nebulae.RimWorld.UI.Data.Utilities
 {
@@ -110,7 +105,7 @@ namespace Nebulae.RimWorld.UI.Data.Utilities
             object obj,
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
         {
-            var members = type.GetMember(name, MemberTypes.Field | MemberTypes.Property ,flags);
+            var members = type.GetMember(name, MemberTypes.Field | MemberTypes.Property, flags);
 
             for (int i = 0; i < members.Length; i++)
             {

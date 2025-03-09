@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Reflection;
 
 namespace Nebulae.RimWorld.UI.Data.Utilities
