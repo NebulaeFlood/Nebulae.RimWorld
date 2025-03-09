@@ -218,7 +218,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             var entryLabel = new Label
             {
-                Anchor = TextAnchor.MiddleLeft,
+                Anchor = TextAnchor.LowerLeft,
                 Text = label,
                 Tooltip = tooltip
             };
