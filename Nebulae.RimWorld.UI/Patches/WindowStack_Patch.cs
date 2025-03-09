@@ -63,7 +63,7 @@ namespace Nebulae.RimWorld.UI.Patches
 
             if (!ReferenceEquals(CurrentHoveredControl, HoveredControl))
             {
-                if (AnyHovered)
+                if (IsHitAvailable)
                 {
                     HoveredControl.OnCursorLeave();
 
@@ -77,7 +77,7 @@ namespace Nebulae.RimWorld.UI.Patches
                 HoveredControl = CurrentHoveredControl;
                 IsHitAvailable = AnyHovered && HoveredControl.IsEnabled;
 
-                if (AnyHovered)
+                if (IsHitAvailable)
                 {
                     HoveredControl.OnCursorEnter();
 
