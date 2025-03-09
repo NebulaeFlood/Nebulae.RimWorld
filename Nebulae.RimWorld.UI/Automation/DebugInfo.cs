@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -11,21 +12,21 @@ namespace Nebulae.RimWorld.UI.Automation
         internal static readonly Comparison<DebugInfo> Comparison = Compare;
 
 
-        private static readonly Dictionary<string, Func<object, object>> _cachedMemberAccessers =
+        private static readonly Dictionary<string, Func<object, object>> _cachedMemberAccessors =
             new Dictionary<string, Func<object, object>>();
         private static readonly StringBuilder _stringBuilder = new StringBuilder();
 
         private readonly Func<object, object> _accesser;
         private readonly string _name;
         private readonly int _priority;
-        private readonly object _target;
 
+        internal readonly Visual Target;
 
         internal string Info
         {
             get
             {
-                var value = _accesser(_target);
+                var value = _accesser(Target);
                 var valStr = value?.ToString();
                 var result = _stringBuilder.Append(_name).Append(string.IsNullOrWhiteSpace(valStr) ? "Null" : valStr).Append("\n").ToString();
                 _stringBuilder.Clear();
@@ -38,12 +39,12 @@ namespace Nebulae.RimWorld.UI.Automation
             Func<object, object> accesser,
             string name,
             int priority,
-            object target)
+            Visual target)
         {
             _accesser = accesser;
             _name = _stringBuilder.Append("<color=yellow>").Append(name).Append("</color>:\n").ToString();
             _priority = priority;
-            _target = target;
+            Target = target;
 
             _stringBuilder.Clear();
         }
@@ -54,7 +55,7 @@ namespace Nebulae.RimWorld.UI.Automation
             return x._priority > y._priority ? 1 : -1;
         }
 
-        internal static bool TryCreate(MemberInfo member, object target, out DebugInfo info)
+        internal static bool TryCreate(MemberInfo member, Visual target, out DebugInfo info)
         {
             if (member.GetCustomAttribute<DebugInfoEntryAttribute>() is DebugInfoEntryAttribute entry)
             {
@@ -63,7 +64,7 @@ namespace Nebulae.RimWorld.UI.Automation
                     ? member.Name
                     : entry.Name;
 
-                if (_cachedMemberAccessers.TryGetValue(key, out var accesser))
+                if (_cachedMemberAccessors.TryGetValue(key, out var accesser))
                 {
                     info = new DebugInfo(accesser, name, entry.Priority, target);
                     return true;
@@ -81,7 +82,7 @@ namespace Nebulae.RimWorld.UI.Automation
                         targetExp).Compile();
                     info = new DebugInfo(accesser, name, entry.Priority, target);
 
-                    _cachedMemberAccessers[key] = accesser;
+                    _cachedMemberAccessors[key] = accesser;
 
                     return true;
                 }
@@ -99,7 +100,7 @@ namespace Nebulae.RimWorld.UI.Automation
                                 targetExp).Compile();
                         info = new DebugInfo(accesser, name, entry.Priority, target);
 
-                        _cachedMemberAccessers[key] = accesser;
+                        _cachedMemberAccessors[key] = accesser;
 
                         return true;
                     }
