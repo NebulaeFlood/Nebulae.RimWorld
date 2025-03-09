@@ -2,6 +2,7 @@
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.UI.Windows;
 using Nebulae.RimWorld.WeakEventManagers;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -41,9 +42,14 @@ namespace Nebulae.RimWorld.UI
     public abstract class NebulaeMod<T> : Mod, INebulaeMod, IUIEventListener
         where T : ModSettings, new()
     {
+        private static bool _initialized;
         private static T _settings;
         private static ModSettingWindow _settingWindow;
 
+        /// <summary>
+        /// Mod 设置窗口是否已经初始化
+        /// </summary>
+        public static bool Initialized => _initialized;
 
         /// <summary>
         /// 显示在 Mod 选项的标签名称
@@ -74,7 +80,16 @@ namespace Nebulae.RimWorld.UI
         {
             _settings = GetSettings<T>();
 
-            StartUp.AddQuest(Initialize);
+            void Initialize()
+            {
+                _settingWindow = CreateSettingWindow();
+                _settingWindow.Content = CreateContent();
+                _initialized = true;
+
+                OnInitialized();
+            }
+
+            StartUp.AddQuest(Initialize, "Setting Window Init");
             UIPatch.UIEvent.Manage(this);
         }
 
@@ -101,18 +116,16 @@ namespace Nebulae.RimWorld.UI
         {
             if (type is UIEventType.LanguageChanged)
             {
-                Initialize();
+                ResetSettingWindow();
             }
         }
 
         /// <summary>
         /// 初始化设置窗口
         /// </summary>
-        public void Initialize()
+        public void ResetSettingWindow()
         {
-            OnInitializing();
-
-            _settingWindow?.Unbind();
+            _settingWindow.Unbind();
             _settingWindow = CreateSettingWindow();
             _settingWindow.Content = CreateContent();
         }
@@ -155,9 +168,9 @@ namespace Nebulae.RimWorld.UI
         protected virtual ModSettingWindow CreateSettingWindow() => new ModSettingWindow(this);
 
         /// <summary>
-        /// 创建 Mod 设置窗口前执行的方法
+        /// Mod 设置窗口创建后执行的方法
         /// </summary>
-        protected virtual void OnInitializing()
+        protected virtual void OnInitialized()
         {
         }
 
