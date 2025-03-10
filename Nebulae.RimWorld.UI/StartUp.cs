@@ -2,6 +2,7 @@
 using Nebulae.RimWorld.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Nebulae.RimWorld.UI
@@ -45,11 +46,32 @@ namespace Nebulae.RimWorld.UI
         }
 
 
-        internal static void FinishQuestsAsync()
+        internal static void FinishQuests()
         {
-            _startUpQuests.ForEach(x => x.Start());
+            var mre = new ManualResetEvent(false);
 
-            Task.WhenAll(_startUpQuests.ToArray());
+            async void FinishQuestsAsync()
+            {
+                try
+                {
+                    _startUpQuests.ForEach(x =>
+                    {
+                        x.ConfigureAwait(false);
+                        x.Start();
+                    });
+
+                    await Task.WhenAll(_startUpQuests.ToArray()).ConfigureAwait(false);
+                }
+                finally
+                {
+                    mre.Set();
+                }
+            }
+
+            Task.Run(FinishQuestsAsync);
+
+            mre.WaitOne();
+            mre.Dispose();
 
             _startUpQuests.Clear();
             _startUpQuests = null;

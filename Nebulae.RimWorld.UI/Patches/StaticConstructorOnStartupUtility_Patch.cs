@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Patches
         [HarmonyPostfix]
         internal static void Postfix()
         {
-            StartUp.FinishQuestsAsync();
+            StartUp.FinishQuests();
         }
     }
 }

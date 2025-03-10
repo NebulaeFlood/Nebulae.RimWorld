@@ -44,8 +44,7 @@ namespace Nebulae.RimWorld.UI
         {
             HarmonyInstance = new Harmony(UniqueId);
             HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
-
-            HarmonyInstance.Patch(AccessTools.Method(typeof(Root), nameof(Root.Update)),
+            HarmonyInstance.Patch(AccessTools.Method(typeof(Root), nameof(Root.OnGUI)),
                 postfix: new HarmonyMethod(AccessTools.Method(typeof(Dispatcher), nameof(Dispatcher.Update))));
         }
     }
