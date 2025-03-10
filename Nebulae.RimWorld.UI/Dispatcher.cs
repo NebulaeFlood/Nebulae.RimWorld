@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Windows;
+using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityData = Verse.UnityData;
 
@@ -14,9 +17,98 @@ namespace Nebulae.RimWorld.UI
 
 
         /// <summary>
-        /// 在主线程完成任务
+        /// 在主线程执行指定的任务
         /// </summary>
-        /// <param name="task">要完成的任务</param>
+        /// <param name="task">要执行的任务</param>
+        public static void Invoke(Action task)
+        {
+            if (UnityData.IsInMainThread)
+            {
+                task.Invoke();
+                return;
+            }
+
+            Exception exception = null;
+            var mre = new ManualResetEvent(false);
+
+            void WrappedAction()
+            {
+                try
+                {
+                    task.Invoke();
+                }
+                catch (Exception e)
+                {
+                    exception = e;
+                }
+                finally
+                {
+                    mre.Set();
+                }
+            }
+
+            _queuedTasks.Enqueue(WrappedAction);
+
+            mre.WaitOne();
+            mre.Dispose();
+
+            if (exception != null)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// 在主线程执行指定的任务
+        /// </summary>
+        /// <typeparam name="T">任务返回的结果类型</typeparam>
+        /// <param name="task">要执行的任务</param>
+        /// <returns>任务的结果。</returns>
+        public static T Invoke<T>(Func<T> task)
+        {
+            if (UnityData.IsInMainThread)
+            {
+                return task.Invoke();
+            }
+
+            Exception exception = null;
+            var mre = new ManualResetEvent(false);
+            T result = default;
+
+            void WrappedAction()
+            {
+                try
+                {
+                    result = task.Invoke();
+                }
+                catch (Exception e)
+                {
+                    exception = e;
+                }
+                finally
+                {
+                    mre.Set();
+                }
+            }
+
+            _queuedTasks.Enqueue(WrappedAction);
+
+            mre.WaitOne();
+            mre.Dispose();
+
+            if (exception != null)
+            {
+                throw exception;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 在主线程执行指定的任务
+        /// </summary>
+        /// <param name="task">要执行的任务</param>
+        /// <returns>表示异步操作的 <see cref="Task"/> 对象。</returns>
         public static Task InvokeAsync(Action task)
         {
             if (UnityData.IsInMainThread)
@@ -46,9 +138,11 @@ namespace Nebulae.RimWorld.UI
         }
 
         /// <summary>
-        /// 在主线程完成任务
+        /// 在主线程执行指定的任务并返回结果
         /// </summary>
-        /// <param name="task">要完成的任务</param>
+        /// <typeparam name="T">任务返回的结果类型</typeparam>
+        /// <param name="task">要执行的任务</param>
+        /// <returns>表示异步操作的 <see cref="Task"/> 对象，包含任务的结果。</returns>
         public static Task<T> InvokeAsync<T>(Func<T> task)
         {
             if (UnityData.IsInMainThread)
@@ -75,14 +169,17 @@ namespace Nebulae.RimWorld.UI
             return taskCompletionSource.Task;
         }
 
+
         internal static void Update()
         {
-            while (!_queuedTasks.IsEmpty)
+            if (_queuedTasks.IsEmpty)
             {
-                if (_queuedTasks.TryDequeue(out var task))
-                {
-                    task.Invoke();
-                }
+                return;
+            }
+
+            while (_queuedTasks.TryDequeue(out var task))
+            {
+                task.Invoke();
             }
         }
     }
