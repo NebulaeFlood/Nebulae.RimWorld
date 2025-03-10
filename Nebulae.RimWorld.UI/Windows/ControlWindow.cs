@@ -51,12 +51,13 @@ namespace Nebulae.RimWorld.UI.Windows
 
         private Thickness _padding = 18f;
 
-        private bool _isOpen = false;
-
         private float _initialHeight = DefaultWindowHeight;
         private float _initialWidth = DefaultWindowWidth;
 
         #endregion
+
+
+        internal bool isOpen;
 
 
         //------------------------------------------------------
@@ -111,7 +112,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <summary>
         /// 窗口是否正在呈现
         /// </summary>
-        public new bool IsOpen => _isOpen;
+        public new bool IsOpen => isOpen;
 
         /// <summary>
         /// 窗口的初始宽度
@@ -187,7 +188,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <param name="doCloseSound">是否播放关闭窗口的音效</param>
         public override void Close(bool doCloseSound = true)
         {
-            if (_isOpen)
+            if (isOpen)
             {
                 Find.WindowStack.TryRemove(this, doCloseSound);
             }
@@ -203,7 +204,7 @@ namespace Nebulae.RimWorld.UI.Windows
             {
                 Find.WindowStack.Add(this);
             }
-            else if (_isOpen)
+            else if (isOpen)
             {
                 SetInitialSizeAndPosition();
             }
@@ -270,7 +271,7 @@ namespace Nebulae.RimWorld.UI.Windows
         public override void PostClose()
         {
             base.PostClose();
-            _isOpen = false;
+            isOpen = false;
         }
 
         /// <summary>
@@ -279,7 +280,7 @@ namespace Nebulae.RimWorld.UI.Windows
         public override void PostOpen()
         {
             base.PostOpen();
-            _isOpen = true;
+            isOpen = true;
         }
 
         #endregion
