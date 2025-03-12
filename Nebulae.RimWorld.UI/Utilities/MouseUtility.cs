@@ -181,6 +181,7 @@ namespace Nebulae.RimWorld.UI.Utilities
 
                 if (AnyPressing
                     && ReferenceEquals(HoveredControl, PressingControl)
+                    && (!AnyDragging || !ReferenceEquals(HoveredControl, DraggingControl))
                     && PressingControl.IsEnabled)
                 {
                     PressingControl.OnClick();

@@ -25,7 +25,6 @@ namespace Nebulae.RimWorld.UI.Patches
             CurrentEventType = CurrentEvent.type;
             Windows = ___windows;
 
-            GameStateEventUtility.CheckState(Current.ProgramState);
             MouseUtility.CheckState(Windows);
             KeyboardEventUtility.CheckEvent(CurrentEvent, CurrentEventType);
         }

@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Windows
     /// <summary>
     /// 用于显示控件信息的窗口
     /// </summary>
-    public sealed class DebugWindow : ControlWindow
+    internal sealed class DebugWindow : ControlWindow
     {
         private static readonly DebugWindow _instance;
         private static readonly DebugPanel _debugPanel;
@@ -43,7 +43,6 @@ namespace Nebulae.RimWorld.UI.Windows
 
         #region Public Method
 
-        /// <inheritdoc/>
         public override void PostClose()
         {
             base.PostClose();

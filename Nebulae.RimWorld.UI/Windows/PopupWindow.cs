@@ -14,6 +14,8 @@ namespace Nebulae.RimWorld.UI.Windows
     /// <remarks>要显示弹窗，使用 <see cref="Popup"/> 而不是 <see cref="ControlWindow.Show(bool)"/>。</remarks>
     public class PopupWindow : ControlWindow
     {
+        internal bool Popped;
+
         /// <summary>
         /// 保持窗口在这一刻打开
         /// </summary>
@@ -38,12 +40,13 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <remarks>使用 <see cref="ControlWindow.Show(bool)"/> 将会以默认行为打开窗口。</remarks>
         public void Popup()
         {
-            if (isOpen)
+            if (Popped)
             {
                 StayOpen = true;
             }
             else
             {
+                Popped = true;
                 PopupWindowUtility.Manage(this);
                 Find.WindowStack.Add(this);
             }

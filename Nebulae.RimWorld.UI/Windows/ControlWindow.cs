@@ -57,9 +57,6 @@ namespace Nebulae.RimWorld.UI.Windows
         #endregion
 
 
-        internal bool isOpen;
-
-
         //------------------------------------------------------
         //
         //  Public Properties
@@ -108,11 +105,6 @@ namespace Nebulae.RimWorld.UI.Windows
         /// 窗口控件布局管理器
         /// </summary>
         public LayoutManager LayoutManager => _layoutManager;
-
-        /// <summary>
-        /// 窗口是否正在呈现
-        /// </summary>
-        public new bool IsOpen => isOpen;
 
         /// <summary>
         /// 窗口的初始宽度
@@ -186,12 +178,9 @@ namespace Nebulae.RimWorld.UI.Windows
         /// 关闭窗口
         /// </summary>
         /// <param name="doCloseSound">是否播放关闭窗口的音效</param>
-        public override void Close(bool doCloseSound = true)
+        public override sealed void Close(bool doCloseSound = true)
         {
-            if (isOpen)
-            {
-                Find.WindowStack.TryRemove(this, doCloseSound);
-            }
+            Find.WindowStack.TryRemove(this, doCloseSound);
         }
 
         /// <summary>
@@ -200,17 +189,13 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <param name="closeThenShow">是否关闭正在显示的窗口再打开</param>
         public void Show(bool closeThenShow = true)
         {
-            if (closeThenShow)
+            if (closeThenShow || !Find.WindowStack.IsOpen(this))
             {
                 Find.WindowStack.Add(this);
-            }
-            else if (isOpen)
-            {
-                SetInitialSizeAndPosition();
             }
             else
             {
-                Find.WindowStack.Add(this);
+                SetInitialSizeAndPosition();
             }
         }
 
@@ -263,24 +248,6 @@ namespace Nebulae.RimWorld.UI.Windows
         public virtual void HandleUIEvent(UIEventType type)
         {
             _layoutManager.InvalidateLayout();
-        }
-
-        /// <summary>
-        /// 当窗口关闭时引发的操作
-        /// </summary>
-        public override void PostClose()
-        {
-            base.PostClose();
-            isOpen = false;
-        }
-
-        /// <summary>
-        /// 当窗口打开时执行的操作
-        /// </summary>
-        public override void PostOpen()
-        {
-            base.PostOpen();
-            isOpen = true;
         }
 
         #endregion

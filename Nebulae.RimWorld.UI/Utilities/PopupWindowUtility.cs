@@ -9,7 +9,7 @@ using Verse;
 namespace Nebulae.RimWorld.UI.Utilities
 {
     /// <summary>
-    /// <see cref="ImmediateWindow"/> 帮助类
+    /// <see cref="PopupWindow"/> 帮助类
     /// </summary>
     /// <remarks>帮助 <see cref="PopupWindow"/> 获取类似 <see cref="ImmediateWindow"/> 的特性。</remarks>
     internal static class PopupWindowUtility
@@ -23,6 +23,11 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="window">要管理的窗口</param>
         internal static void Manage(PopupWindow window)
         {
+            window.absorbInputAroundWindow = false;
+            window.closeOnAccept = false;
+            window.closeOnCancel = false;
+            window.focusWhenOpened = false;
+
             _windows.Add(window);
         }
 
@@ -38,12 +43,22 @@ namespace Nebulae.RimWorld.UI.Utilities
                     if (windowStack[i] is PopupWindow window
                         && !window.StayOpen)
                     {
-                        windowStack.RemoveAt(i);
-                        _windows.Remove(window);
-
-                        if (--count < 1)
+                        if (window.StayOpen)
                         {
-                            return;
+                            window.StayOpen = false;
+                        }
+                        else
+                        {
+                            window.PreClose();
+                            windowStack.RemoveAt(i);
+                            window.PostClose();
+
+                            window.Popped = false;
+
+                            if (--count < 1)
+                            {
+                                return;
+                            }
                         }
                     }
                 }
