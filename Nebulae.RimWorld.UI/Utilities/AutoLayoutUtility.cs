@@ -15,7 +15,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
-using static RimWorld.TransferableUIUtility;
 using Grid = Nebulae.RimWorld.UI.Controls.Panels.Grid;
 
 namespace Nebulae.RimWorld.UI.Utilities

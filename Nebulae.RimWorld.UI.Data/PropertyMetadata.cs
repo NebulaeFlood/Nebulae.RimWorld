@@ -227,8 +227,6 @@ namespace Nebulae.RimWorld.UI.Data
 
         #region Internal Methods
 
-
-
         /// <summary>
         /// 通知属性更改
         /// </summary>

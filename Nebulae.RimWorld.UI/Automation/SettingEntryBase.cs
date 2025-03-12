@@ -20,7 +20,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// </summary>
         /// <remarks>将对依赖属性使用 <see cref="BindingMode.TwoWay"/> 模式的绑定关系。</remarks>
         public bool IsDependencyProperty;
-        
+
         /// <summary>
         /// 条目名称
         /// </summary>

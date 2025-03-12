@@ -1,7 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding;
 using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 
 namespace Nebulae.RimWorld.UI.Data
 {

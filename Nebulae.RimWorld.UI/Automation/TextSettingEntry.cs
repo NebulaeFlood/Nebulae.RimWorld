@@ -1,6 +1,4 @@
-﻿using Nebulae.RimWorld.UI.Data;
-using System;
-using System.Text.RegularExpressions;
+﻿using System;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Automation

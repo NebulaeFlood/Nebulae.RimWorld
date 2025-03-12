@@ -1,12 +1,8 @@
 ﻿using HarmonyLib;
-using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Utilities;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Verse;
-using Verse.Sound;
 
 namespace Nebulae.RimWorld.UI.Patches
 {
