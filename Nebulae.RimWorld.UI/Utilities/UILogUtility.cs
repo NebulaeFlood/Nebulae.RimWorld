@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using HarmonyLib;
+using System;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace Nebulae.RimWorld.UI.Utilities
@@ -8,9 +10,9 @@ namespace Nebulae.RimWorld.UI.Utilities
         private static readonly ConcurrentDictionary<Assembly, string> _assemblyTitleCache = new ConcurrentDictionary<Assembly, string>();
 
 
-        internal static string GetAssemblyTitle(object obj)
+        internal static string GetAssemblyTitle(Type type)
         {
-            Assembly assembly = Assembly.GetAssembly(obj.GetType());
+            Assembly assembly = Assembly.GetAssembly(type);
             return _assemblyTitleCache.GetOrAdd(assembly, x =>
                 x.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Unknown Assembly");
         }

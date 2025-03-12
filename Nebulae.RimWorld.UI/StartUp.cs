@@ -1,9 +1,16 @@
-﻿using Nebulae.RimWorld.UI.Utilities;
+﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Converters;
+using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Data.Binding;
+using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Verse;
 
 namespace Nebulae.RimWorld.UI
 {
@@ -29,9 +36,9 @@ namespace Nebulae.RimWorld.UI
         /// 添加要在资源加载完毕时执行的初始化任务
         /// </summary>
         /// <param name="action">初始化方法</param>
-        /// <param name="name">任务名</param>
-        /// <param name="callBack">回调函数</param>
-        public static void AddQuest(Action action, string name = null, Action callBack = null)
+        /// <param name="owner">拥有任务的类型</param>
+        /// <param name="questName">任务名</param>
+        public static void AddQuest(Action action, Type owner, string questName = null)
         {
             if (_startUpQuests is null)
             {
@@ -43,21 +50,41 @@ namespace Nebulae.RimWorld.UI
                 try
                 {
                     action.Invoke();
-                    callBack?.Invoke();
-                    LogQuestFinished(action, name);
+                    LogQuestFinished(owner, questName, action.Method);
                 }
                 catch (Exception e)
                 {
-                    LogQuestFailed(action, name, e);
+                    LogQuestFailed(owner, questName, e);
                 }
             }
 
             _startUpQuests.Add(new Task(WrappedAction));
         }
 
+        /// <summary>
+        /// 添加要在资源加载完毕时执行的初始化任务
+        /// </summary>
+        /// <param name="action">初始化方法</param>
+        /// <param name="owner">拥有任务的对象</param>
+        /// <param name="questName">任务名</param>
+        public static void AddQuest(Action action, object owner, string questName = null)
+        {
+            if (owner is null)
+            {
+                throw new ArgumentNullException("owner");
+            }
+
+            AddQuest(action, owner.GetType(), questName);
+        }
+
 
         internal static void FinishQuests()
         {
+            foreach (var item in typeof(DependencyObject).AllLeafSubclasses())
+            {
+                RuntimeHelpers.RunClassConstructor(item.TypeHandle);
+            }
+
             var mre = new ManualResetEvent(false);
 
             async void FinishQuestsAsync()
@@ -99,20 +126,16 @@ namespace Nebulae.RimWorld.UI
             return $"A start up quest {questPart} {status}\n---> {additionalInfo}";
         }
 
-        private static void LogQuestFailed(Delegate action, string questName, Exception e)
+        private static void LogQuestFailed(Type owner, string questName, Exception e)
         {
-            string title = UILogUtility.GetAssemblyTitle(action.Target);
-            string message = BuildLogMessage(isFailed: true, title, questName, additionalInfo: e.ToString());
+            string message = BuildLogMessage(isFailed: true, UILogUtility.GetAssemblyTitle(owner), questName, additionalInfo: e.ToString());
             "NebulaeFlood's Lib".Error(message);
         }
 
-        private static void LogQuestFinished(Delegate action, string questName)
+        private static void LogQuestFinished(Type owner, string questName, MethodInfo method)
         {
-            var method = action.Method;
-
-            string title = UILogUtility.GetAssemblyTitle(action.Target);
             string additionalInfo = $"{method.DeclaringType}.{method.Name}.";
-            string message = BuildLogMessage(isFailed: false, title, questName, additionalInfo);
+            string message = BuildLogMessage(isFailed: false, UILogUtility.GetAssemblyTitle(owner), questName, additionalInfo);
             "NebulaeFlood's Lib".Message(message);
         }
     }

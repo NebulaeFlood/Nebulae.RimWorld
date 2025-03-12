@@ -2,6 +2,7 @@
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.UI.Windows;
 using Nebulae.RimWorld.WeakEventManagers;
+using System;
 using UnityEngine;
 using Verse;
 
@@ -41,14 +42,18 @@ namespace Nebulae.RimWorld.UI
     public abstract class NebulaeMod<T> : Mod, INebulaeMod, IUIEventListener
         where T : ModSettings, new()
     {
-        private static bool _initialized;
         private static T _settings;
         private static ModSettingWindow _settingWindow;
+        private static Type _type;
 
-        /// <summary>
-        /// Mod 设置窗口是否已经初始化
-        /// </summary>
-        public static bool Initialized => _initialized;
+
+        //------------------------------------------------------
+        //
+        //  Public Properties
+        //
+        //------------------------------------------------------
+
+        #region Public Properties
 
         /// <summary>
         /// 显示在 Mod 选项的标签名称
@@ -70,6 +75,13 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         public static ModSettingWindow SettingWindow => _settingWindow;
 
+        /// <summary>
+        /// Mod 的类型
+        /// </summary>
+        public static Type Type => _type;
+
+        #endregion
+
 
         /// <summary>
         /// 为 <see cref="NebulaeMod{T}"/> 及其派生类实现基本初始化
@@ -78,17 +90,17 @@ namespace Nebulae.RimWorld.UI
         protected NebulaeMod(ModContentPack content) : base(content)
         {
             _settings = GetSettings<T>();
+            _type = GetType();
 
             void Initialize()
             {
                 _settingWindow = CreateSettingWindow();
                 _settingWindow.Content = CreateContent();
-                _initialized = true;
 
                 OnInitialized();
             }
 
-            StartUp.AddQuest(Initialize, "Setting Window Init");
+            StartUp.AddQuest(Initialize, _type, "Setting Window Init");
             UIPatch.UIEvent.Manage(this);
         }
 
@@ -139,7 +151,12 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         public sealed override void WriteSettings()
         {
-            base.WriteSettings();
+            if (_settings is null)
+            {
+                return;
+            }
+
+            _settings.Write();
             SettingsEvent.Invoke(this, _settings);
         }
 
