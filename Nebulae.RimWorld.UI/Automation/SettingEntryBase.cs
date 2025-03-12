@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Data.Binding;
+using System;
 using System.Reflection;
 
 namespace Nebulae.RimWorld.UI.Automation
@@ -15,9 +16,20 @@ namespace Nebulae.RimWorld.UI.Automation
         public readonly SettingEntryType EntryType;
 
         /// <summary>
+        /// 条目绑定的是否为依赖属性
+        /// </summary>
+        /// <remarks>将对依赖属性使用 <see cref="BindingMode.TwoWay"/> 模式的绑定关系。</remarks>
+        public bool IsDependencyProperty;
+        
+        /// <summary>
         /// 条目名称
         /// </summary>
-        public string Name = string.Empty;
+        public string Label = string.Empty;
+
+        /// <summary>
+        /// 条目次序
+        /// </summary>
+        public int Order = 0;
 
         /// <summary>
         /// 条目是否拥有提示框
@@ -38,11 +50,11 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 获取条目的标签文字
         /// </summary>
-        /// <param name="field">条目关联的字段的信息</param>
+        /// <param name="member">条目关联的字段的信息</param>
         /// <returns>条目将显示的标签文字。</returns>
-        public string GetLabel(FieldInfo field)
+        public string GetLabel(MemberInfo member)
         {
-            return string.IsNullOrEmpty(Name) ? field.Name : Name;
+            return string.IsNullOrEmpty(Label) ? member.Name : Label;
         }
     }
 }

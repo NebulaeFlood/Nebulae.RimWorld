@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Data;
+using System;
 using System.Text.RegularExpressions;
 using Verse;
 
@@ -19,11 +20,6 @@ namespace Nebulae.RimWorld.UI.Automation
         /// 字体尺寸
         /// </summary>
         public GameFont FontSize = GameFont.Small;
-
-        /// <summary>
-        /// 输入字符的正则表达式
-        /// </summary>
-        public Regex InputValidator;
 
         /// <summary>
         /// 输入框是否为只读状态

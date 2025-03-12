@@ -38,9 +38,11 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             {
                 _content.Unbind();
                 _content.SetParent(null);
-                control.SetParentSilently(this);
 
                 _content = control;
+                _content.SetParent(this);
+
+                InvalidateMeasure();
             }
             else
             {

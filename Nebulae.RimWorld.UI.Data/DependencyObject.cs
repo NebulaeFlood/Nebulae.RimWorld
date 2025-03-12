@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding;
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace Nebulae.RimWorld.UI.Data
 {
@@ -124,10 +125,8 @@ namespace Nebulae.RimWorld.UI.Data
                 return;
             }
 
-            if (!property.ValidateValue(value))
-            {
-                value = CoerceValue(property, value);
-            }
+            value = ResolveValue(property, value);
+
             SetValueCommon(property, value, ForceValueStatus.Common);
         }
 
@@ -149,10 +148,8 @@ namespace Nebulae.RimWorld.UI.Data
                 return;
             }
 
-            if (!property.ValidateValue(value))
-            {
-                value = CoerceValue(property, value);
-            }
+            value = ResolveValue(property, value);
+
             SetValueCommon(property, value, ForceValueStatus.Temporary);
         }
 
@@ -168,6 +165,7 @@ namespace Nebulae.RimWorld.UI.Data
         }
 
 
+        // 为绑定关系准备的保持有效值状态的设置值的方法
         internal void SetValueIntelligently(DependencyProperty property, object newValue)
         {
             if (property is null)
@@ -180,10 +178,7 @@ namespace Nebulae.RimWorld.UI.Data
                 return;
             }
 
-            if (!property.ValidateValue(newValue))
-            {
-                newValue = CoerceValue(property, newValue);
-            }
+            newValue = ResolveValue(property, newValue);
 
             DependencyPropertyChangedEventArgs args;
             PropertyMetadata metadata;
@@ -200,17 +195,7 @@ namespace Nebulae.RimWorld.UI.Data
                     return;
                 }
 
-                _effectiveValues[property] = newEntry;
-
                 metadata = property.GetMetadata(DependencyType);
-                args = new DependencyPropertyChangedEventArgs(
-                    property,
-                    metadata,
-                    newEntry);
-
-                metadata.PropertyChangedCallback?.Invoke(this, args);
-                OnPropertyChanged(args);
-                _dependencyPropertyChanged.Invoke(this, args);
             }
             else
             {
@@ -242,84 +227,6 @@ namespace Nebulae.RimWorld.UI.Data
         //------------------------------------------------------
 
         #region Private Methods
-
-        private object CoerceValue(DependencyProperty property, object value)
-        {
-            PropertyMetadata metadata = property.GetMetadata(DependencyType);
-
-            object coercedValue = metadata.CoerceValueCallback?.Invoke(this, value) ?? value;
-
-            if (!property.ValidateValue(coercedValue))
-            {
-                property.ThrowInvalidCoercedValueException(coercedValue);
-            }
-
-            return coercedValue;
-        }
-
-        private object GetValueCommon(DependencyProperty property)
-        {
-            if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry valueEntry))
-            {
-                return valueEntry.IsTemporary
-                    ? valueEntry.TemporaryValue
-                    : valueEntry.Value;
-            }
-
-            return property.GetMetadata(DependencyType).DefaultValue;
-        }
-
-        private void SetValueCommon(DependencyProperty property, object newValue, ForceValueStatus valueStatus)
-        {
-            DependencyPropertyChangedEventArgs args;
-            PropertyMetadata metadata;
-            EffectiveValueEntry newEntry;
-
-            if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
-            {
-                if (CompareAndUpdate(
-                        oldEntry,
-                        newValue,
-                        valueStatus,
-                        out newEntry))
-                {
-                    return;
-                }
-
-                metadata = property.GetMetadata(DependencyType);
-            }
-            else
-            {
-                metadata = property.GetMetadata(DependencyType);
-
-                if (CompareAndUpdate(
-                        metadata.DefaultValue,
-                        newValue,
-                        valueStatus,
-                        out newEntry))
-                {
-                    return;
-                }
-            }
-
-            args = new DependencyPropertyChangedEventArgs(
-                property,
-                metadata,
-                newEntry);
-
-            SetValueStraightly(args);
-        }
-
-        private void SetValueStraightly(DependencyPropertyChangedEventArgs args)
-        {
-            _effectiveValues[args.Property] = args.NewEntry;
-
-            args.Metadata.PropertyChangedCallback?.Invoke(this, args);
-
-            OnPropertyChanged(args);
-
-            _dependencyPropertyChanged.Invoke(this, args);
-        }
 
         private static bool CompareAndUpdate(EffectiveValueEntry entry, object newValue, ForceValueStatus forceStatus, out EffectiveValueEntry newEntry)
         {
@@ -385,6 +292,95 @@ namespace Nebulae.RimWorld.UI.Data
             }
 
             return oldValue?.Equals(newValue) ?? newValue is null;
+        }
+
+        private object GetValueCommon(DependencyProperty property)
+        {
+            if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry valueEntry))
+            {
+                return valueEntry.IsTemporary
+                    ? valueEntry.TemporaryValue
+                    : valueEntry.Value;
+            }
+
+            return property.GetMetadata(DependencyType).DefaultValue;
+        }
+
+        private object ResolveValue(DependencyProperty property, object value)
+        {
+            if (!property.ValidateValue(value, out var e))
+            {
+                throw e;
+            }
+
+            PropertyMetadata metadata = property.GetMetadata(DependencyType);
+
+            if (metadata.CoerceValueCallback is null)
+            {
+                return value;
+            }
+
+            object coercedValue = metadata.CoerceValueCallback.Invoke(this, value);
+
+            if (coercedValue != value
+                && !property.ValidateValue(coercedValue, out e))
+            {
+                throw new InvalidOperationException($"Coerced value \"{coercedValue}\" is not valid for {property.OwnerType}.{property.Name}.", e);
+            }
+
+            return coercedValue;
+        }
+
+        private void SetValueCommon(DependencyProperty property, object newValue, ForceValueStatus valueStatus)
+        {
+            DependencyPropertyChangedEventArgs args;
+            PropertyMetadata metadata;
+            EffectiveValueEntry newEntry;
+
+            if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
+            {
+                if (CompareAndUpdate(
+                        oldEntry,
+                        newValue,
+                        valueStatus,
+                        out newEntry))
+                {
+                    return;
+                }
+
+                metadata = property.GetMetadata(DependencyType);
+            }
+            else
+            {
+                metadata = property.GetMetadata(DependencyType);
+
+                if (CompareAndUpdate(
+                        metadata.DefaultValue,
+                        newValue,
+                        valueStatus,
+                        out newEntry))
+                {
+                    return;
+                }
+            }
+
+            args = new DependencyPropertyChangedEventArgs(
+                property,
+                metadata,
+                newEntry);
+
+            SetValueStraightly(args);
+        }
+
+        private void SetValueStraightly(DependencyPropertyChangedEventArgs args)
+        {
+            _effectiveValues[args.Property] = args.NewEntry;
+
+            args.Metadata.PropertyChangedCallback?.Invoke(this, args);
+
+            OnPropertyChanged(args);
+
+            _dependencyPropertyChanged.Invoke(this, args);
         }
 
         #endregion

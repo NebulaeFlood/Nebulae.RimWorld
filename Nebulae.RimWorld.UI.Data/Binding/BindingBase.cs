@@ -12,10 +12,6 @@ namespace Nebulae.RimWorld.UI.Data.Binding
     /// </summary>
     public abstract class BindingBase : IEquatable<BindingBase>
     {
-        private static readonly Dictionary<ConverterKey, IValueConverter> _createdConverters =
-            new Dictionary<ConverterKey, IValueConverter>();
-
-
         //------------------------------------------------------
         //
         //  Private Fields
@@ -194,7 +190,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
             Mode = mode;
             Converter = converter
-                ?? CreateDefaultConverter(SourceMember.MemberType, TargetMember.MemberType);
+                ?? BindingManager.CreateDefaultConverter(SourceMember.MemberType, TargetMember.MemberType);
             ShouldConvert = !(Converter is null);
 
             StartBinding(source, target);
@@ -316,39 +312,6 @@ namespace Nebulae.RimWorld.UI.Data.Binding
         #endregion
 
 
-        //------------------------------------------------------
-        //
-        //  Private Methods
-        //
-        //------------------------------------------------------
-
-        #region Private Methods
-
-        private static IValueConverter CreateDefaultConverter(Type sourceType, Type targetType)
-        {
-            if (sourceType == targetType)
-            {
-                return null;
-            }
-
-            ConverterKey key = new ConverterKey(sourceType, targetType);
-            if (!_createdConverters.TryGetValue(key, out IValueConverter converter))
-            {
-                if (SystemConvertUtility.CanConvert(sourceType, targetType))
-                {
-                    converter = new SystemConverter(sourceType, targetType);
-                }
-                else
-                {
-                    throw new InvalidCastException($"Default binding converter can not cast type: {sourceType} to type: {targetType}.");
-                }
-
-                _createdConverters.Add(key, converter);
-            }
-
-            return converter;
-        }
-
         private void StartBinding(object source, object target)
         {
             if (source is DependencyObject dependencySource)
@@ -370,41 +333,6 @@ namespace Nebulae.RimWorld.UI.Data.Binding
                 {
                     notifiableTarget.PropertyChanged += OnNotifiableTargetChanged;
                 }
-            }
-        }
-
-        #endregion
-
-
-        private readonly struct ConverterKey : IEquatable<ConverterKey>
-        {
-            private readonly int _hashCode;
-            private readonly Type _sourceType;
-            private readonly Type _targetType;
-
-            internal ConverterKey(Type sourceType, Type targetType)
-            {
-                _hashCode = sourceType.GetHashCode() ^ targetType.GetHashCode();
-                _sourceType = sourceType;
-                _targetType = targetType;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is ConverterKey other
-                    && _sourceType == other._sourceType
-                    && _targetType == other._targetType;
-            }
-
-            public bool Equals(ConverterKey other)
-            {
-                return _sourceType == other._sourceType
-                    && _targetType == other._targetType;
-            }
-
-            public override int GetHashCode()
-            {
-                return _hashCode;
             }
         }
     }

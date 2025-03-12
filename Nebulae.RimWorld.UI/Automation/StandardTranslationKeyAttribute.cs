@@ -9,6 +9,11 @@ namespace Nebulae.RimWorld.UI.Automation
     public class StandardTranslationKeyAttribute : Attribute
     {
         /// <summary>
+        /// 使用自定义顺序
+        /// </summary>
+        public readonly bool CustomOrder;
+
+        /// <summary>
         /// 统一的翻译键
         /// </summary>
         public readonly string Key;

@@ -1,14 +1,18 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Nebulae.RimWorld.UI.Data
 {
+    /// <summary>
+    /// 用于寻找依赖属性值的依赖对象类标识
+    /// </summary>
     internal class DependencyObjectType : IComparable<DependencyObjectType>
     {
         internal static readonly IComparer<DependencyObjectType> Comparer = new DependencyObjectTypeComparer();
+        internal static readonly Type RootType = typeof(DependencyObject);
 
         private static readonly Dictionary<Type, DependencyObjectType> _globalTypes = new Dictionary<Type, DependencyObjectType>();
-        private static readonly Type _rootType = typeof(DependencyObject);
         private static int _globalCount = 0;
 
 
@@ -70,12 +74,14 @@ namespace Nebulae.RimWorld.UI.Data
             {
                 dType = new DependencyObjectType(type);
 
-                if (type != _rootType)
+                if (type != RootType)
                 {
                     dType._baseType = FromType(type.BaseType);
                 }
+
                 _globalTypes[type] = dType;
             }
+
             return dType;
         }
 

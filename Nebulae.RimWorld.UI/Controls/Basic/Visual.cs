@@ -341,7 +341,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty VisibilityProperty =
             DependencyProperty.Register(nameof(Visibility), typeof(Visibility), typeof(Visual),
-                new PropertyMetadata(Visibility.Visible));
+                new ControlPropertyMetadata(Visibility.Visible, ControlRelation.Measure));
 
         #endregion
 

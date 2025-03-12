@@ -104,6 +104,15 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
+        /// 对集合中的每个控件执行指定操作
+        /// </summary>
+        /// <param name="action">要执行的操作</param>
+        public void ForEach(Action<Visual> action)
+        {
+            _children.ForEach(action);
+        }
+
+        /// <summary>
         /// 将控件插入到集合中的指定控件之前
         /// </summary>
         /// <param name="control">要插入的控件</param>

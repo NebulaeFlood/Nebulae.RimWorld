@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Data.Binding.Converters;
+using Nebulae.RimWorld.UI.Data.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace Nebulae.RimWorld.UI.Data.Binding
     public static class BindingManager
     {
         internal static readonly HashSet<BindingBase> GlobalBindings = new HashSet<BindingBase>();
+        internal static readonly Dictionary<ConverterKey, IValueConverter> CreatedConverters = new Dictionary<ConverterKey, IValueConverter>();
 
 
         #region Bind Normal Members
@@ -286,6 +288,68 @@ namespace Nebulae.RimWorld.UI.Data.Binding
 
         #endregion
 
+
+        /// <summary>
+        /// 添加默认值转换器
+        /// </summary>
+        /// <param name="converter">值转换器</param>
+        /// <param name="sourceType">转换的源类型</param>
+        /// <param name="targetType">转换的目标类型</param>
+        /// <remarks>若已存在在 <paramref name="sourceType"/> 和 <paramref name="targetType"/> 之间的值转换器，将无法添加 <paramref name="converter"/>。</remarks>
+        public static void AddDefaultConverter(IValueConverter converter, Type sourceType, Type targetType)
+        {
+            ConverterKey key = new ConverterKey(sourceType, targetType);
+
+            if (!CreatedConverters.TryGetValue(key, out _))
+            {
+                CreatedConverters.Add(key, converter);
+            }
+        }
+
+        /// <summary>
+        /// 创建默认值转换器
+        /// </summary>
+        /// <param name="sourceType">源类型</param>
+        /// <param name="targetType">目标类型</param>
+        /// <returns>默认的值转换器。</returns>
+        /// <exception cref="InvalidOperationException">当不存在能使 <paramref name="sourceType"/> 和 <paramref name="targetType"/> 互相转化的默认转换器时发生。</exception>
+        public static IValueConverter CreateDefaultConverter(Type sourceType, Type targetType)
+        {
+            if (sourceType == targetType)
+            {
+                return null;
+            }
+
+            ConverterKey key = new ConverterKey(sourceType, targetType);
+
+            if (!CreatedConverters.TryGetValue(key, out IValueConverter converter))
+            {
+                if (SystemConvertUtility.CanConvert(sourceType, targetType))
+                {
+                    converter = new SystemConverter(sourceType, targetType);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Default binding converter cannot cast type: {sourceType} between type: {targetType}.");
+                }
+
+                CreatedConverters.Add(key, converter);
+            }
+
+            return converter;
+        }
+
+        /// <summary>
+        /// 替换默认值转换器
+        /// </summary>
+        /// <param name="converter">值转换器</param>
+        /// <param name="sourceType">转换的源类型</param>
+        /// <param name="targetType">转换的目标类型</param>
+        public static void ReplaceDefaultConverter(IValueConverter converter, Type sourceType, Type targetType)
+        {
+            ConverterKey key = new ConverterKey(sourceType, targetType);
+            CreatedConverters[key] = converter;
+        }
 
         /// <summary>
         /// 取消所有与指定对象关联的绑定关系

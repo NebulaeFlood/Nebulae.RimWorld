@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace Nebulae.RimWorld.UI.Data
 {
@@ -13,7 +14,7 @@ namespace Nebulae.RimWorld.UI.Data
     public delegate bool ValidateValueCallback(object value);
 
     /// <summary>
-    /// 依赖属性
+    /// 依赖属性的标识
     /// </summary>
     public class DependencyProperty : IEquatable<DependencyProperty>
     {
@@ -36,7 +37,7 @@ namespace Nebulae.RimWorld.UI.Data
         /// <summary>
         /// 已注册的依赖属性
         /// </summary>
-        private static readonly HashSet<DependencyProperty> _registeredProperties = new HashSet<DependencyProperty>();
+        private static readonly Dictionary<Key, DependencyProperty> _registeredProperties = new Dictionary<Key, DependencyProperty>();
 
         #endregion
 
@@ -74,10 +75,9 @@ namespace Nebulae.RimWorld.UI.Data
         /// </summary>
         private readonly ValidateValueCallback _validateValueCallback;
 
-        private readonly int _hashCode;
         private readonly bool _isAttached;
-        private readonly string _name;
-        private readonly Type _ownerType;
+
+        private readonly Key _globalKey;
         private readonly Type _valueType;
 
         private bool _isMetadataOverridden;
@@ -97,12 +97,12 @@ namespace Nebulae.RimWorld.UI.Data
         /// <summary>
         /// 依赖属性名称
         /// </summary>
-        public string Name => _name;
+        public string Name => _globalKey.Name;
 
         /// <summary>
         /// 拥有依赖属性的对象的类型
         /// </summary>
-        public Type OwnerType => _ownerType;
+        public Type OwnerType => _globalKey.OwnerType;
 
         /// <summary>
         /// 依赖属性的值的类型
@@ -115,31 +115,26 @@ namespace Nebulae.RimWorld.UI.Data
         /// <summary>
         /// 初始化 <see cref="DependencyProperty"/> 的新实例
         /// </summary>
-        /// <param name="name">依赖属性名称</param>
+        /// <param name="globalKey">依赖属性的全局键</param>
         /// <param name="valueType">依赖属性的值的类型</param>
-        /// <param name="ownerType">拥有依赖属性的对象的类型</param>
         /// <param name="defaultMetadata">依赖属性的默认元数据</param>
         /// <param name="validateValueCallback">属性验证回调函数</param>
         /// <param name="isAttached">指示该依赖属性是否为附加属性</param>
         private DependencyProperty(
-            string name,
+            Key globalKey,
             Type valueType,
-            Type ownerType,
             PropertyMetadata defaultMetadata,
             ValidateValueCallback validateValueCallback,
             bool isAttached = false)
         {
-            _isAttached = isAttached;
+            _globalKey = globalKey;
 
+            _isAttached = isAttached;
             _isMetadataOverridden = false;
 
-            _name = name;
             _valueType = valueType;
-            _ownerType = ownerType;
             _defaultMetadata = defaultMetadata;
             _validateValueCallback = validateValueCallback;
-
-            _hashCode = ownerType.GetHashCode() ^ name.GetHashCode();
         }
 
 
@@ -150,6 +145,33 @@ namespace Nebulae.RimWorld.UI.Data
         //------------------------------------------------------
 
         #region Public Static Methods
+
+        /// <summary>
+        /// 搜索依赖属性
+        /// </summary>
+        /// <param name="ownerType">拥有依赖属性的类型</param>
+        /// <param name="name">依赖属性的名称，即 <see cref="Name"/>。</param>
+        /// <returns>对应的依赖属性标识。</returns>
+        /// <exception cref="MissingMemberException">当无法在 <paramref name="ownerType"/> 中找到名为 <paramref name="name"/> 的依赖属性时发生。</exception>
+        public static DependencyProperty Search(Type ownerType, string name)
+        {
+            if (_registeredProperties.TryGetValue(new Key(name, ownerType), out var property))
+            {
+                return property;
+            }
+            else
+            {
+                ownerType = ownerType.BaseType;
+
+                if (DependencyObjectType.RootType.IsAssignableFrom(ownerType))
+                {
+                    return Search(ownerType, name);
+                }
+            }
+
+            throw new MissingMemberException($"Cannot find Dependency Property with name: {name} in {ownerType}.");
+        }
+
 
         /// <summary>
         /// 注册依赖属性
@@ -211,10 +233,9 @@ namespace Nebulae.RimWorld.UI.Data
         /// <returns>如果相等，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public override bool Equals(object obj)
         {
-            return obj is DependencyProperty dependencyProperty
-                && (ReferenceEquals(this, dependencyProperty)
-                    || (_ownerType == dependencyProperty._ownerType
-                        && _name == dependencyProperty._name));
+            return ReferenceEquals(this, obj)
+                || (obj is DependencyProperty other
+                    && _globalKey.Equals(other._globalKey));
         }
 
         /// <summary>
@@ -225,15 +246,14 @@ namespace Nebulae.RimWorld.UI.Data
         public bool Equals(DependencyProperty other)
         {
             return ReferenceEquals(this, other)
-                || (_ownerType == other._ownerType
-                    && _name == other._name);
+                || _globalKey.Equals(other._globalKey);
         }
 
         /// <summary>
         /// 获取依赖属性的哈希码
         /// </summary>
         /// <returns>依赖属性的哈希码</returns>
-        public override int GetHashCode() => _hashCode;
+        public override int GetHashCode() => _globalKey.HashCode;
 
         /// <summary>
         /// 获取依赖属性的元数据
@@ -270,17 +290,17 @@ namespace Nebulae.RimWorld.UI.Data
 
             if (_isAttached)
             {
-                throw new InvalidOperationException($"Unable to override the _metadata of the attached property {_ownerType}.{_name}.");
+                throw new InvalidOperationException($"Unable to override the _metadata of the attached property {_globalKey.OwnerType}.{_globalKey.Name}.");
             }
 
-            if (!ValidateValue(metadata.DefaultValue))
+            if (!ValidateValue(metadata.DefaultValue, out var e))
             {
-                ThrowInvalidValueException(metadata);
+                throw e;
             }
 
-            if (!_ownerType.IsAssignableFrom(ownerType))
+            if (!_globalKey.OwnerType.IsAssignableFrom(ownerType))
             {
-                throw new InvalidOperationException($"The type {ownerType} must inherit {_ownerType} to override the _metadata of {_ownerType}.{_name}.");
+                throw new InvalidOperationException($"The type {ownerType} must inherit {_globalKey.OwnerType} to override the _metadata of {_globalKey.OwnerType}.{_globalKey.Name}.");
             }
 
             DependencyObjectType dType = DependencyObjectType.FromType(ownerType);
@@ -311,33 +331,17 @@ namespace Nebulae.RimWorld.UI.Data
         /// 返回依赖属性的名称
         /// </summary>
         /// <returns>依赖属性的名称。</returns>
-        public override string ToString() => _name;
+        public override string ToString() => _globalKey.Name;
 
         /// <summary>
         /// 验证要设置给依赖属性的值
         /// </summary>
         /// <param name="value">要验证的值</param>
+        /// <param name="exception">验证失败时的错误信息</param>
         /// <returns>如果验证成功，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool ValidateValue(object value)
+        public bool ValidateValue(object value, out Exception exception)
         {
-            if (value is null)
-            {
-                if (_valueType.IsValueType
-                    && !(_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == _nullableValueType))
-                {
-                    return false;
-                }
-            }
-            else if (!_valueType.IsInstanceOfType(value) && !(value is IConvertible))
-            {
-                return false;
-            }
-            else if (_validateValueCallback != null
-                && !_validateValueCallback(value))
-            {
-                return false;
-            }
-            return true;
+            return ValidateValue(value, _valueType, _globalKey, _validateValueCallback, out exception);
         }
 
         #endregion
@@ -379,25 +383,27 @@ namespace Nebulae.RimWorld.UI.Data
                 defaultMetadata = new PropertyMetadata(null);
             }
 
-            DependencyProperty property = new DependencyProperty(
-                name,
-                valueType,
-                ownerType,
-                defaultMetadata,
-                validateValueCallback,
-                isAttached);
+            Key key = new Key(name, ownerType);
 
-            if (!property.ValidateValue(defaultMetadata.DefaultValue))
-            {
-                property.ThrowInvalidValueException(defaultMetadata.DefaultValue);
-            }
-
-            if (!_registeredProperties.Add(property))
+            if (_registeredProperties.ContainsKey(key))
             {
                 throw new InvalidOperationException($"The property {ownerType}.{name} has been registered.");
             }
 
+            if (!ValidateValue(defaultMetadata.DefaultValue, valueType, key, validateValueCallback, out var e))
+            {
+                throw e;
+            }
+
+            DependencyProperty property = new DependencyProperty(
+                key,
+                valueType,
+                defaultMetadata,
+                validateValueCallback,
+                isAttached);
             defaultMetadata.Property = property;
+
+            _registeredProperties.Add(key, property);
             return property;
         }
 
@@ -409,7 +415,7 @@ namespace Nebulae.RimWorld.UI.Data
         internal PropertyMetadata GetMetadata(DependencyObjectType ownerType)
         {
             if (!_isMetadataOverridden
-                || _ownerType == ownerType.OriginalType
+                || _globalKey.OwnerType == ownerType.OriginalType
                 || _isAttached)
             {
                 return _defaultMetadata;
@@ -444,57 +450,46 @@ namespace Nebulae.RimWorld.UI.Data
             return _defaultMetadata;
         }
 
-        internal void ThrowInvalidCoercedValueException(object value)
-        {
-            if (value is null)
-            {
-                if (_valueType.IsValueType
-                    && !(_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == _nullableValueType))
-                {
-                    throw new InvalidOperationException($"The coreced value is null, but {_ownerType}.{_name} can not be null.");
-                }
-            }
-            else if (value.IsUnsetValue())
-            {
-                throw new InvalidOperationException($"The coreced value \"DependencyProperty.UnsetValue\" is invalid for any properties.");
-            }
-            else if (!_valueType.IsInstanceOfType(value) && !(value is IConvertible))
-            {
-                throw new InvalidCastException($"Can not convert the coreced value \"{value}\" to {_valueType} for {_ownerType}.{_name}.");
-            }
-            else if (_validateValueCallback != null
-                && !_validateValueCallback(value))
-            {
-                throw new ArgumentException($"The coreced value \"{value}\" is not valid for {_ownerType}.{_name}.");
-            }
-        }
-
-        internal void ThrowInvalidValueException(object value)
-        {
-            if (value is null)
-            {
-                if (_valueType.IsValueType
-                    && !(_valueType.IsGenericType && _valueType.GetGenericTypeDefinition() == _nullableValueType))
-                {
-                    throw new InvalidOperationException($"{_ownerType}.{_name} can not set to be null.");
-                }
-            }
-            else if (value.IsUnsetValue())
-            {
-                throw new InvalidOperationException($"The value \"DependencyProperty.UnsetValue\" is invalid for any properties.");
-            }
-            else if (!_valueType.IsInstanceOfType(value) && !(value is IConvertible))
-            {
-                throw new InvalidCastException($"Can not convert \"{value}\" to {_valueType} for {_ownerType}.{_name}.");
-            }
-            else if (_validateValueCallback != null
-                && !_validateValueCallback(value))
-            {
-                throw new ArgumentException($"The value \"{value}\" is not valid for {_ownerType}.{_name}.");
-            }
-        }
-
         #endregion
+
+        private static bool ValidateValue(
+            object value,
+            Type valueType,
+            Key globalKey,
+            ValidateValueCallback validate, out Exception exception)
+        {
+            Type ownerType = globalKey.OwnerType;
+            string name = globalKey.Name;
+
+            if (value is null)
+            {
+                if (valueType.IsValueType
+                    && !(valueType.IsGenericType && valueType.GetGenericTypeDefinition() == _nullableValueType))
+                {
+                    exception = new InvalidOperationException($"{ownerType}.{name} can not set to be null.");
+                    return false;
+                }
+            }
+            else if (value.IsUnsetValue())
+            {
+                exception = new InvalidOperationException($"The value \"DependencyProperty.UnsetValue\" is invalid for any properties.");
+                return false;
+            }
+            else if (!valueType.IsInstanceOfType(value) && !(value is IConvertible))
+            {
+                exception = new InvalidCastException($"Can not convert \"{value}\" to {valueType} for {ownerType}.{name}.");
+                return false;
+            }
+            else if (validate != null
+                && !validate(value))
+            {
+                exception = new ArgumentException($"The value \"{value}\" is not valid for {ownerType}.{name}.");
+                return false;
+            }
+
+            exception = null;
+            return true;
+        }
 
 
         [DebuggerDisplay("{_value, nq}")]
@@ -512,6 +507,40 @@ namespace Nebulae.RimWorld.UI.Data
 
             [DebuggerBrowsable(DebuggerBrowsableState.Never)]
             private readonly string _value;
+        }
+
+        private readonly struct Key : IEquatable<Key>
+        {
+            public readonly int HashCode;
+            public readonly string Name;
+            public readonly Type OwnerType;
+
+
+            public Key(string name, Type ownerType)
+            {
+                HashCode = ownerType.GetHashCode() ^ name.GetHashCode();
+                Name = name;
+                OwnerType = ownerType;
+            }
+
+
+            public override bool Equals(object obj)
+            {
+                return obj is Key other
+                    && Name == other.Name
+                    && OwnerType == other.OwnerType;
+            }
+
+            public bool Equals(Key other)
+            {
+                return Name == other.Name
+                    && OwnerType == other.OwnerType;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode;
+            }
         }
     }
 }

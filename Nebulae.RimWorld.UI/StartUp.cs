@@ -15,6 +15,16 @@ namespace Nebulae.RimWorld.UI
         private static List<Task> _startUpQuests = new List<Task>();
 
 
+        static StartUp()
+        {
+            AddQuest(() =>
+            {
+                BindingManager.AddDefaultConverter(ToggleStatusConverter.Instance, typeof(ToggleStatus), typeof(bool));
+                BindingManager.AddDefaultConverter(VisibilityConverter.Instance, typeof(ToggleStatus), typeof(Visibility));
+            }, typeof(StartUp), "Init Value Converters");
+        }
+
+
         /// <summary>
         /// 添加要在资源加载完毕时执行的初始化任务
         /// </summary>

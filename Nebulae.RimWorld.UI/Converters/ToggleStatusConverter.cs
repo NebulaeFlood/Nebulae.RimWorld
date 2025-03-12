@@ -7,7 +7,7 @@ namespace Nebulae.RimWorld.UI.Converters
     /// <summary>
     /// <see cref="ToggleStatus"/> 和 <see cref="bool"/> 之间的转换器
     /// </summary>
-    public class ToggleStatusConverter : IValueConverter
+    public sealed class ToggleStatusConverter : IValueConverter
     {
         /// <summary>
         /// 该转换器的实例
