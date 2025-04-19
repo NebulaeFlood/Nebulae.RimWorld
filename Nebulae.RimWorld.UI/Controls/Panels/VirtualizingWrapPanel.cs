@@ -270,7 +270,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         ? childMaxHeight
                         : childMaxHeight * availableSize.Height;
 
-                childrenColumnCount = (int)(availableSize.Width / childMaxWidth);
+                childrenColumnCount = (int)Mathf.Max(1f, availableSize.Width / childMaxWidth);
                 childrenRowCount = filteredChildren.Length / childrenColumnCount;
 
                 if (filteredChildren.Length % childrenColumnCount > 0)
@@ -289,7 +289,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     ? Mathf.Min(childMaxHeight, availableSize.Height)
                     : childMaxHeight * availableSize.Height;
 
-                childrenRowCount = (int)(availableSize.Height / childMaxHeight);
+                childrenRowCount = (int)Mathf.Max(1f, availableSize.Height / childMaxHeight);
                 childrenColumnCount = filteredChildren.Length / childrenRowCount;
 
                 if (filteredChildren.Length % childrenRowCount > 0)
