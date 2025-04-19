@@ -289,8 +289,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty OpacityProperty =
             DependencyProperty.Register(nameof(Opacity), typeof(float), typeof(Visual),
-                new PropertyMetadata(1f, OnOpacityChanged),
-                ValidateOpacity);
+                new PropertyMetadata(1f, CoerceOpacity, OnOpacityChanged));
 
         private static void OnOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -300,9 +299,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             control._opacityColor = new Color(1f, 1f, 1f, opacity);
         }
 
-        private static bool ValidateOpacity(object value)
+        private static object CoerceOpacity(DependencyObject d, object baseValue)
         {
-            return (float)value >= 0f;
+            return Mathf.Clamp((float)baseValue, 0f, 1f);
         }
         #endregion
 
@@ -697,7 +696,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                     TooltipHandler.TipRegion(ContentRect, TooltipContent);
                 }
 
-                if (Prefs.DevMode && !_isIndependent)
+                if (Prefs.DevMode)
                 {
                     DebugDraw();
                 }
