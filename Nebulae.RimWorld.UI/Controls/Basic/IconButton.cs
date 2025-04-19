@@ -302,7 +302,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             }
             else
             {
-                _textRenderSize = text.CalculateLineSize(FontSize);
+                _textRenderSize = text.CalculateLineSize(FontSize, TextAnchor.MiddleCenter);
                 _status |= ContentStatus.TextSetted;
             }
 
