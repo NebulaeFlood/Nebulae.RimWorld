@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using System;
+using System.Text;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
@@ -18,20 +19,24 @@ namespace Nebulae.RimWorld.UI.Controls
 
         private static string CreateMessageText(Visual control, string message, bool hasInnerException = false)
         {
-            string test = "An control";
+            var sb = new StringBuilder("A control ");
 
-            test += string.IsNullOrEmpty(control.Name)
-                ? string.Empty
-                : " named: " + control.Name;
+            if (!string.IsNullOrEmpty(control.Name))
+            {
+                sb.Append("named: ")
+                    .Append(control.Name)
+                    .Append(' ');
+            }
 
-            test += "raised an logical tree error:" + message;
+            sb.Append("raised a logical tree error: ")
+              .Append(message);
 
             if (hasInnerException)
             {
-                test += "\n--->";
+                sb.Append("\n--->");
             }
 
-            return test;
+            return sb.ToString();
         }
     }
 }
