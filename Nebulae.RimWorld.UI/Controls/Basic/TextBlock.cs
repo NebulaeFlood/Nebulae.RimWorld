@@ -46,7 +46,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
             DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(TextBlock),
-                new ControlPropertyMetadata(GameFont.Small, ControlRelation.Measure));
+                new ControlPropertyMetadata(GameFont.Small, TextUtility.CoerceFontSize, ControlRelation.Measure));
         #endregion
 
         #region Text
@@ -74,6 +74,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             HorizontalAlignmentProperty.OverrideMetadata(typeof(TextBlock),
                 new ControlPropertyMetadata(HorizontalAlignment.Left, ControlRelation.Measure));
+
             VerticalAlignmentProperty.OverrideMetadata(typeof(TextBlock),
                 new ControlPropertyMetadata(VerticalAlignment.Top, ControlRelation.Measure));
         }
@@ -112,7 +113,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            return Text.CalculateSize(availableSize.Width, FontSize);
+            return Text.CalculateSize(availableSize.Width, FontSize, _anchor);
         }
 
         #endregion

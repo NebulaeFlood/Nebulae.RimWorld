@@ -54,7 +54,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
             DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(TextBox),
-                new ControlPropertyMetadata(GameFont.Small, ControlRelation.Arrange));
+                new ControlPropertyMetadata(GameFont.Small, TextUtility.CoerceFontSize, ControlRelation.Arrange));
         #endregion
 
         #region InputValidator
@@ -257,7 +257,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             {
                 renderSize = new Size(renderSize.Width,
                     backgroundVerticalAlignment is VerticalAlignment.Center
-                        ? _innerSize.Height + (AutoLayoutUtility.StandardRowHeight - (_textBoxExtension.Top + fontHeight + _textBoxExtension.Bottom))
+                        ? _innerSize.Height + Mathf.Max(0f, AutoLayoutUtility.StandardRowHeight - (_textBoxExtension.Top + fontHeight + _textBoxExtension.Bottom))
                         : _innerSize.Height);
             }
 

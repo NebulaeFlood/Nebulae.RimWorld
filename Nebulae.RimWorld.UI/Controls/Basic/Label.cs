@@ -87,7 +87,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
             DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(Label),
-                new ControlPropertyMetadata(GameFont.Small, ControlRelation.Arrange));
+                new ControlPropertyMetadata(GameFont.Small, TextUtility.CoerceFontSize, ControlRelation.Arrange));
         #endregion
 
         /// <summary>

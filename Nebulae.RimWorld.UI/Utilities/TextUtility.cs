@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Data;
 using UnityEngine;
 using Verse;
 
@@ -7,6 +8,7 @@ namespace Nebulae.RimWorld.UI.Utilities
     /// <summary>
     /// 文本帮助类
     /// </summary>
+    [StaticConstructorOnStartup]
     public static class TextUtility
     {
         private static readonly GUIContent _contentCache = new GUIContent();
@@ -107,7 +109,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 verticalAlignment = VerticalAlignment.Bottom;
             }
 
-            Size textSize = text.CalculateLineSize(fontSize);
+            Size textSize = text.CalculateLineSize(fontSize, TextAnchor.MiddleCenter);
 
             float x = availableArea.x;
             float y = availableArea.y;
@@ -154,29 +156,68 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
-        /// 计算文本排成一行的尺寸
-        /// </summary>
-        /// <param name="text">文本内容</param>
-        /// <param name="fontSize">字体尺寸</param>
-        /// <returns>文本排成一行的尺寸。</returns>
-        public static Size CalculateLineSize(this string text, GameFont fontSize)
-        {
-            _contentCache.text = text.StripTags();
-            return new Size(Text.fontStyles[(int)fontSize].CalcSize(_contentCache).x, fontSize.GetHeight());
-        }
-
-        /// <summary>
         /// 计算文本在一定长度下排布后的高度
         /// </summary>
         /// <param name="text">文本内容</param>
         /// <param name="availableLength">文本允许的最大长度</param>
         /// <param name="fontSize">字体尺寸</param>
+        /// <param name="anchor">文本锚点</param>
         /// <returns>文本排列后的高度</returns>
-        public static Size CalculateSize(this string text, float availableLength, GameFont fontSize)
+        public static float CalculateHeight(this string text, float availableLength, GameFont fontSize, TextAnchor anchor)
         {
+            fontSize = CoerceFontSize(fontSize);
+
             _contentCache.text = text.StripTags();
-            return new Size(availableLength,
-                Text.fontStyles[(int)fontSize].CalcHeight(_contentCache, availableLength));
+
+            var fontStyle = Text.fontStyles[(int)fontSize];
+
+            fontStyle.alignment = anchor;
+            fontStyle.wordWrap = true;
+
+            return fontStyle.CalcHeight(_contentCache, availableLength);
+        }
+
+        /// <summary>
+        /// 计算文本排成一行的尺寸
+        /// </summary>
+        /// <param name="text">文本内容</param>
+        /// <param name="fontSize">字体尺寸</param>
+        /// <param name="anchor">文本锚点</param>
+        /// <returns>文本排成一行的尺寸。</returns>
+        public static Size CalculateLineSize(this string text, GameFont fontSize, TextAnchor anchor)
+        {
+            fontSize = CoerceFontSize(fontSize);
+
+            _contentCache.text = text.StripTags();
+
+            var fontStyle = Text.fontStyles[(int)fontSize];
+
+            fontStyle.alignment = anchor;
+            fontStyle.wordWrap = false;
+
+            return new Size(fontStyle.CalcSize(_contentCache).x, fontSize.GetHeight());
+        }
+
+        /// <summary>
+        /// 计算文本在一定长度下排布后的尺寸
+        /// </summary>
+        /// <param name="text">文本内容</param>
+        /// <param name="availableLength">文本允许的最大长度</param>
+        /// <param name="fontSize">字体尺寸</param>
+        /// <param name="anchor">文本锚点</param>
+        /// <returns>文本排列后的高度</returns>
+        public static Size CalculateSize(this string text, float availableLength, GameFont fontSize, TextAnchor anchor)
+        {
+            fontSize = CoerceFontSize(fontSize);
+
+            _contentCache.text = text.StripTags();
+
+            var fontStyle = Text.fontStyles[(int)fontSize];
+
+            fontStyle.alignment = anchor;
+            fontStyle.wordWrap = true;
+
+            return new Size(availableLength, fontStyle.CalcHeight(_contentCache, availableLength));
         }
 
         /// <summary>
@@ -189,11 +230,15 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <returns>文本输入框的高度。</returns>
         public static float CalculateTextBoxHeight(this string text, float availableLength, GameFont fontSize, bool wrapText)
         {
+            fontSize = CoerceFontSize(fontSize);
+
             GUIStyle style = wrapText
                 ? _inputBoxStyles[(int)fontSize]
                 : _inputBoxStyles[(int)fontSize + 6];
 
-            return style.CalcHeight(new GUIContent(text), availableLength);
+            _contentCache.text = text;
+
+            return style.CalcHeight(_contentCache, availableLength);
         }
 
         /// <summary>
@@ -206,11 +251,30 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <returns>文本输入框的尺寸。</returns>
         public static Size CalculateTextBoxSize(this string text, float availableLength, GameFont fontSize, bool wrapText)
         {
+            fontSize = CoerceFontSize(fontSize);
+
             GUIStyle style = wrapText
                 ? _inputBoxStyles[(int)fontSize]
                 : _inputBoxStyles[(int)fontSize + 6];
 
-            return new Size(availableLength, style.CalcHeight(new GUIContent(text), availableLength));
+            _contentCache.text = text;
+
+            return new Size(availableLength, style.CalcHeight(_contentCache, availableLength));
+        }
+
+        /// <summary>
+        /// 强制转换字体大小
+        /// </summary>
+        /// <param name="font">字体大小</param>
+        /// <returns>转换后的字体大小。</returns>
+        public static GameFont CoerceFontSize(this GameFont font)
+        {
+            if (font is GameFont.Tiny && !Text.TinyFontSupported)
+            {
+                return GameFont.Small;
+            }
+
+            return font;
         }
 
         /// <summary>
@@ -255,5 +319,16 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="fontSize">要获取高度的字体</param>
         /// <returns>字体的高度</returns>
         public static float GetHeight(this GameFont fontSize) => Text.LineHeightOf(fontSize);
+
+
+        internal static object CoerceFontSize(DependencyObject dp, object baseValue)
+        {
+            if (baseValue is GameFont.Tiny && !Text.TinyFontSupported)
+            {
+                return GameFont.Small;
+            }
+
+            return baseValue;
+        }
     }
 }
