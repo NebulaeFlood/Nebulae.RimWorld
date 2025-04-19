@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Patches;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
@@ -35,9 +36,17 @@ namespace Nebulae.RimWorld.UI.Controls
         private readonly Window _owner;
         private Visual _root;
 
+        private LayoutInfo _layoutInfo;
+
         private bool _drawDebugButtons = true;
 
         #endregion
+
+
+        /// <summary>
+        /// 布局管理器是否独立于窗口
+        /// </summary>
+        public readonly bool IsIndependent;
 
 
         //------------------------------------------------------
@@ -113,6 +122,15 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 初始化 <see cref="LayoutManager"/> 的新实例
         /// </summary>
+        public LayoutManager()
+        {
+            IsIndependent = true;
+        }
+
+        /// <summary>
+        /// 初始化 <see cref="LayoutManager"/> 的新实例
+        /// </summary>
+        /// <param name="owner">拥有管理器的窗口</param>
         public LayoutManager(Window owner)
         {
             if (owner is null)
@@ -121,6 +139,8 @@ namespace Nebulae.RimWorld.UI.Controls
             }
 
             _owner = owner;
+
+            IsIndependent = false;
         }
 
 
@@ -135,19 +155,24 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 绘制控件
         /// </summary>
-        /// <param name="clientRect">窗口的客户区</param>
-        public void Draw(Rect clientRect)
+        /// <param name="layoutInfo">允许绘制的区域</param>
+        public void Draw(LayoutInfo layoutInfo)
         {
             if (_isEmpty)
             {
                 return;
             }
 
-            if (_isDirty)
+            Rect availableRect = layoutInfo;
+            Size availableSize = layoutInfo;
+
+            if (_isDirty || _layoutInfo.IsMeasureDirty(layoutInfo))
             {
-                _root.Measure(clientRect);
-                _root.Arrange(clientRect);
-                _root.Segment(clientRect);
+                _layoutInfo = layoutInfo;
+
+                _root.Measure(availableSize);
+                _root.Arrange(availableRect);
+                _root.Segment(availableRect);
 
                 _isDirty = false;
 
@@ -158,66 +183,78 @@ namespace Nebulae.RimWorld.UI.Controls
                 _arrangeQueue.Clear();
                 _measureQueue.Clear();
                 _segmentQueue.Clear();
-
-                _root.Draw();
-                return;
             }
-
-            if (!_isMeasureValid)
+            else if (_layoutInfo.IsArrangeDirty(layoutInfo))
             {
-                foreach (var control in _measureQueue)
-                {
-                    // Means that the control is a scroll viewer.
-                    if (control.IsChild)
-                    {
-                        control.Measure(control.DesiredSize);
-                    }
-                    else
-                    {
-                        control.Measure(clientRect);
-                    }
-                }
+                _layoutInfo = layoutInfo;
 
-                _measureQueue.Clear();
-                _isMeasureValid = true;
-            }
+                _root.Arrange(availableRect);
+                _root.Segment(availableRect);
 
-            if (!_isArrangeValid)
-            {
-                foreach (var control in _arrangeQueue)
-                {
-                    // Means that the control is a scroll viewer.
-                    if (control.IsChild)
-                    {
-                        control.Arrange(control.DesiredRect);
-                    }
-                    else
-                    {
-                        control.Arrange(clientRect);
-                    }
-                }
+                _isArrangeValid = true;
+                _isSegmentValid = true;
 
                 _arrangeQueue.Clear();
-                _isArrangeValid = true;
+                _segmentQueue.Clear();
             }
-
-            if (!_isSegmentValid)
+            else
             {
-                foreach (var control in _segmentQueue)
+                if (!_isMeasureValid)
                 {
-                    // Means that the control is a scroll viewer.
-                    if (control.IsChild)
+                    foreach (var control in _measureQueue)
                     {
-                        control.Segment(control.ContentRect);
+                        // Means that the control is a scroll viewer.
+                        if (control.IsChild)
+                        {
+                            control.Measure(control.DesiredSize);
+                        }
+                        else
+                        {
+                            control.Measure(availableSize);
+                        }
                     }
-                    else
-                    {
-                        control.Segment(clientRect);
-                    }
+
+                    _measureQueue.Clear();
+                    _isMeasureValid = true;
                 }
 
-                _segmentQueue.Clear();
-                _isSegmentValid = true;
+                if (!_isArrangeValid)
+                {
+                    foreach (var control in _arrangeQueue)
+                    {
+                        // Means that the control is a scroll viewer.
+                        if (control.IsChild)
+                        {
+                            control.Arrange(control.DesiredRect);
+                        }
+                        else
+                        {
+                            control.Arrange(availableRect);
+                        }
+                    }
+
+                    _arrangeQueue.Clear();
+                    _isArrangeValid = true;
+                }
+
+                if (!_isSegmentValid)
+                {
+                    foreach (var control in _segmentQueue)
+                    {
+                        // Means that the control is a scroll viewer.
+                        if (control.IsChild)
+                        {
+                            control.Segment(control.ContentRect);
+                        }
+                        else
+                        {
+                            control.Segment(availableRect);
+                        }
+                    }
+
+                    _segmentQueue.Clear();
+                    _isSegmentValid = true;
+                }
             }
 
             _root.Draw();
