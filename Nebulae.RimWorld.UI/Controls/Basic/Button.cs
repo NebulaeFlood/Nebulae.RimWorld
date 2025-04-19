@@ -14,7 +14,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 默认的光标位于按钮上方时的按钮背景
         /// </summary>
-        public static readonly Texture2D DefaultMouseOverBackground = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGMouseover");
+        public static readonly Texture2D DefaultCursorOverBackground = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGMouseover");
         /// <summary>
         /// 默认的一般状态下的按钮背景
         /// </summary>
@@ -41,7 +41,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private bool _isTextureAtlas = true;
 
-        private Texture2D _hoveredBackground = DefaultMouseOverBackground;
+        private Texture2D _hoveredBackground = DefaultCursorOverBackground;
         private Texture2D _normalBackground = DefaultNormalBackground;
         private Texture2D _pressedBackground = DefaultPressedBackground;
 
