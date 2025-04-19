@@ -104,6 +104,59 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
+        /// 获取集合中指定控件的后一个控件
+        /// </summary>
+        /// <param name="control">作为索引的控件</param>
+        /// <returns>指定控件的后一个控件。</returns>
+        public Visual FindNext(Visual control)
+        {
+            if (_children.Count < 1)
+            {
+                return null;
+            }
+
+            int i = _children.IndexOf(control);
+            int last = _children.Count - 1;
+
+            if (i < 0)
+            {
+                return _children[last];
+            }
+            else if (i < last)
+            {
+                return _children[i + 1];
+            }
+            else
+            {
+                return _children[last];
+            }
+        }
+
+        /// <summary>
+        /// 获取集合中指定控件的前一个控件
+        /// </summary>
+        /// <param name="control">作为索引的控件</param>
+        /// <returns>指定控件的前一个控件。</returns>
+        public Visual FindPrevious(Visual control)
+        {
+            if (_children.Count < 1)
+            {
+                return null;
+            }
+
+            int i = _children.IndexOf(control);
+
+            if (i <= 0)
+            {
+                return _children[0];
+            }
+            else
+            {
+                return _children[i - 1];
+            }
+        }
+
+        /// <summary>
         /// 对集合中的每个控件执行指定操作
         /// </summary>
         /// <param name="action">要执行的操作</param>
@@ -116,7 +169,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 将控件插入到集合中的指定控件之前
         /// </summary>
         /// <param name="control">要插入的控件</param>
-        /// <param name="index">被挤开的控件</param>
+        /// <param name="index">作为索引的控件</param>
         /// <returns>若插入了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Insert(Visual control, Visual index)
         {
