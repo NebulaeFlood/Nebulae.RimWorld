@@ -14,6 +14,16 @@ namespace Nebulae.RimWorld.UI.Utilities
     public static class MouseUtility
     {
         /// <summary>
+        /// 当前是否有控件被拖动
+        /// </summary>
+        public static bool AnyDragging;
+
+        /// <summary>
+        /// 当前是否有控件位于光标下方
+        /// </summary>
+        public static bool AnyHovered;
+
+        /// <summary>
         /// 当前是否有控件被按下
         /// </summary>
         public static bool AnyPressing;
@@ -54,9 +64,6 @@ namespace Nebulae.RimWorld.UI.Utilities
         internal static Visual PressingControl;
 
         internal static Window PressingWindow;
-
-        internal static bool AnyDragging;
-        internal static bool AnyHovered;
 
         internal static bool IsDraggable;
         internal static bool IsHitAvailable;
@@ -153,12 +160,13 @@ namespace Nebulae.RimWorld.UI.Utilities
                         LeftButtonDown = false;
                         HoveredControl.OnMouseButtonDown(MouseButton.LeftMouse);
 
+                        AnyPressing = true;
+                        IsDraggable = HoveredControl.IsDraggable;
+                        PressingControl = HoveredControl;
+                        PressStartPos = CursorPosition;
+
                         if (HoveredWindow != null)
                         {
-                            AnyPressing = true;
-                            IsDraggable = HoveredControl.IsDraggable;
-                            PressingControl = HoveredControl;
-                            PressStartPos = CursorPosition;
                             PressingWindow = HoveredWindow;
                             PressingWindowDraggable = HoveredWindow.draggable;
                             PressingWindow.draggable = false;
