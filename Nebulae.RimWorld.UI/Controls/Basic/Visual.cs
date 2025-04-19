@@ -854,6 +854,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             foreach (var child in LogicalChildren)
             {
                 child.LayoutManager = _layoutManager;
+
+                if (child.Parent is null)
+                {
+                    throw new LogicalTreeException(this, $"The control: {child} is not a child of control: {this}, but it appeared in {Type}.LogicalChildren, check whether {Type}.EnumerateLogicalChildren method has set correctly.");
+                }
+
                 child.Rank = child.Parent.Rank + 1;
             }
         }
