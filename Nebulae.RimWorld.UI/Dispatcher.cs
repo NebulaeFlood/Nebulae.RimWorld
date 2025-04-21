@@ -27,28 +27,28 @@ namespace Nebulae.RimWorld.UI
             }
 
             Exception exception = null;
-            var mre = new ManualResetEvent(false);
 
-            void WrappedAction()
+            using (var mre = new ManualResetEvent(false))
             {
-                try
+                void WrappedAction()
                 {
-                    task.Invoke();
+                    try
+                    {
+                        task.Invoke();
+                    }
+                    catch (Exception e)
+                    {
+                        exception = new TaskCanceledException($"Failed to finish a dispatcher task.", e);
+                    }
+                    finally
+                    {
+                        mre.Set();
+                    }
                 }
-                catch (Exception e)
-                {
-                    exception = e;
-                }
-                finally
-                {
-                    mre.Set();
-                }
+
+                _queuedTasks.Enqueue(WrappedAction);
+                mre.WaitOne();
             }
-
-            _queuedTasks.Enqueue(WrappedAction);
-
-            mre.WaitOne();
-            mre.Dispose();
 
             if (exception != null)
             {
@@ -70,29 +70,29 @@ namespace Nebulae.RimWorld.UI
             }
 
             Exception exception = null;
-            var mre = new ManualResetEvent(false);
             T result = default;
 
-            void WrappedAction()
+            using (var mre = new ManualResetEvent(false))
             {
-                try
+                void WrappedAction()
                 {
-                    result = task.Invoke();
+                    try
+                    {
+                        result = task.Invoke();
+                    }
+                    catch (Exception e)
+                    {
+                        exception = new TaskCanceledException($"Failed to finish a dispatcher task.", e);
+                    }
+                    finally
+                    {
+                        mre.Set();
+                    }
                 }
-                catch (Exception e)
-                {
-                    exception = e;
-                }
-                finally
-                {
-                    mre.Set();
-                }
+
+                _queuedTasks.Enqueue(WrappedAction);
+                mre.WaitOne();
             }
-
-            _queuedTasks.Enqueue(WrappedAction);
-
-            mre.WaitOne();
-            mre.Dispose();
 
             if (exception != null)
             {
