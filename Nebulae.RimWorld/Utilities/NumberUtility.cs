@@ -82,37 +82,37 @@ namespace Nebulae.RimWorld.Utilities
         }
 
         /// <summary>
-        /// 将字符串转化为浮点数
+        /// 将浮点数舍入到指定小数位数
         /// </summary>
-        /// <param name="str">要转换的字符串</param>
-        /// <param name="defaultValue">转换失败时返回的默认值</param>
-        /// <returns>转换后的数字</returns>
-        public static float Prase(this string str, float defaultValue)
+        /// <param name="value">要舍入的浮点数</param>
+        /// <param name="decimals">要保留的小数位数</param>
+        /// <returns>舍入到指定小数位数的浮点数。</returns>
+        public static float Round(this float value, int decimals)
         {
-            if (!float.TryParse(str, out float value))
+            if (decimals <= 0)
             {
-                if (string.IsNullOrEmpty(str))
-                {
-                    value = 0f;
-                }
-                else
-                {
-                    value = defaultValue;
-                }
+                return (float)Math.Round(value);
+            }
+            else if (decimals > 7)
+            {
+                decimals = 7;
             }
 
-            return value;
+            var multiplier = Multipliers[decimals];
+            return (float)Math.Round(value * multiplier) / multiplier;
         }
 
-        /// <summary>
-        /// 将无穷替换为指定值
-        /// </summary>
-        /// <param name="value">可能被替换的数</param>
-        /// <param name="specificValue">替换无穷的数</param>
-        /// <returns>如果 <paramref name="value"/> 为无穷，返回 <paramref name="specificValue"/>；反之则返回 <paramref name="value"/>。</returns>
-        public static float ReplaceInfinityWith(this float value, float specificValue)
+
+        private static readonly float[] Multipliers =
         {
-            return float.IsInfinity(value) ? specificValue : value;
-        }
+            1f,
+            10f,
+            100f,
+            1000f,
+            10000f,
+            100000f,
+            1000000f,
+            10000000f,
+        };
     }
 }
