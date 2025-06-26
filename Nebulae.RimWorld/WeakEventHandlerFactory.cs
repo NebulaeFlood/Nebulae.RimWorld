@@ -58,7 +58,7 @@ namespace Nebulae.RimWorld
 
             if (methodParamaters.Length != 2 || methodParamaters[0].ParameterType != senderType || methodParamaters[1].ParameterType != argsType)
             {
-                throw new ArgumentException($"Conversion requires a method with exactly two parameters ({senderType} senderType, {argsType} argsType). " +
+                throw new ArgumentException($"Conversion requires a method with exactly two parameters ({senderType} sender, {argsType} args). " +
                     $"The provided method is ({ConvertParamaters(methodParamaters)}).");
             }
         }
@@ -234,7 +234,7 @@ namespace Nebulae.RimWorld
             }
             else
             {
-                throw new ArgumentException($"Original handler's target's type is {handler.Target.GetType()}, it must match with type:{typeof(T)}.", nameof(handler));
+                throw new ArgumentException($"Original method's target's type is {handler.Target.GetType()}, it must match with type:{typeof(T)}.", nameof(handler));
             }
         }
 
@@ -267,7 +267,7 @@ namespace Nebulae.RimWorld
             }
             else
             {
-                throw new ArgumentException($"Original handler's target's type is {handler.Target.GetType()}, it must match with type:{typeof(T)}.", nameof(handler));
+                throw new ArgumentException($"Original method's target's type is {handler.Target.GetType()}, it must match with type:{typeof(T)}.", nameof(handler));
             }
         }
 

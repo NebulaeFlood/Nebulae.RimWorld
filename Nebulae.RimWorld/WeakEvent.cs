@@ -4,10 +4,11 @@ using System.Collections.Generic;
 namespace Nebulae.RimWorld
 {
     /// <summary>
-    /// 表示一个弱事件
+    /// 弱事件
     /// </summary>
     /// <typeparam name="TSender">处理器的 sender 参数类型</typeparam>
     /// <typeparam name="TArgs">事件数据的类型</typeparam>
+    /// <remarks>保存订阅者的弱引用，使订阅者在订阅此事件时可被释放。</remarks>
     public sealed class WeakEvent<TSender, TArgs> where TArgs : EventArgs
     {
         /// <summary>
@@ -29,6 +30,20 @@ namespace Nebulae.RimWorld
         //------------------------------------------------------
 
         #region Public Methods
+
+        /// <summary>
+        /// 添加事件处理程序
+        /// </summary>
+        /// <param name="handler">要添加的处理程序</param>
+        public void AddHandler(Delegate handler)
+        {
+            if (handler is null)
+            {
+                return;
+            }
+
+            _handlers.AddLast(WeakEventHandlerFactory.Convert<TSender, TArgs>(handler));
+        }
 
         /// <summary>
         /// 添加事件处理程序
