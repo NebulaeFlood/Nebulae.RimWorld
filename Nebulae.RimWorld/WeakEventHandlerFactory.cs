@@ -100,6 +100,11 @@ namespace Nebulae.RimWorld
 
         private static IWeakEventHandler<TSender, TArgs> Create<TSender, TArgs>(object owner, MethodInfo method) where TArgs : EventArgs
         {
+            if (owner is null)
+            {
+                return new StaticEventHandler<TSender, TArgs>(method);
+            }
+
             var key = new Key(method.DeclaringType, typeof(TSender), typeof(TArgs));
 
             if (WeakEventHandlerCreators.TryGetValue(key, out var creator))
@@ -190,87 +195,5 @@ namespace Nebulae.RimWorld
 
             private readonly int _hashCode;
         }
-    }
-
-
-    /// <summary>
-    /// 将委托转化为 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 的工厂类
-    /// </summary>
-    /// <typeparam name="T">拥有源事件处理器的类型</typeparam>
-    public static class WeakEventHandlerFactory<T> where T : class
-    {
-        //------------------------------------------------------
-        //
-        //  Public Static Methods
-        //
-        //------------------------------------------------------
-
-        #region Public Static Methods
-
-        /// <summary>
-        /// 将指定的事件处理程序转换为弱事件处理程序
-        /// </summary>
-        /// <typeparam name="TSender">处理器的 senderType 参数类型</typeparam>
-        /// <typeparam name="TArgs">处理器的 argsType 参数类型</typeparam>
-        /// <param name="handler">要转换的事件处理器</param>
-        /// <returns>由 <paramref name="handler"/> 转换成的弱事件处理器。</returns>
-        /// <remarks>事件处理器的参数必须设置为 (<typeparamref name="TSender"/> senderType, <typeparamref name="TArgs"/> argsType)。</remarks>
-        public static WeakEventHandler<T, TSender, TArgs> Convert<TSender, TArgs>(Action<TSender, TArgs> handler) where TArgs : EventArgs
-        {
-            if (handler is null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            var method = handler.Method;
-
-            if (method.IsStatic)
-            {
-                return WeakEventHandler<T, TSender, TArgs>.Create(null, method);
-            }
-            else if (handler.Target is T owner)
-            {
-                return WeakEventHandler<T, TSender, TArgs>.Create(owner, method);
-            }
-            else
-            {
-                throw new ArgumentException($"Original method's target's type is {handler.Target.GetType()}, it must match with type:{typeof(T)}.", nameof(handler));
-            }
-        }
-
-        /// <summary>
-        /// 将指定的事件处理程序转换为弱事件处理程序
-        /// </summary>
-        /// <typeparam name="TSender">处理器的 senderType 参数类型</typeparam>
-        /// <typeparam name="TArgs">处理器的 argsType 参数类型</typeparam>
-        /// <param name="handler">要转换的事件处理器</param>
-        /// <returns>由 <paramref name="handler"/> 转换成的弱事件处理器。</returns>
-        /// <remarks>事件处理器的参数必须设置为 (<typeparamref name="TSender"/> senderType, <typeparamref name="TArgs"/> argsType)。</remarks>
-        public static WeakEventHandler<T, TSender, TArgs> Convert<TSender, TArgs>(Delegate handler) where TArgs : EventArgs
-        {
-            if (handler is null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            var method = handler.Method;
-
-            WeakEventHandlerFactory.VerifyParameters(method, typeof(TSender), typeof(TArgs));
-
-            if (method.IsStatic)
-            {
-                return WeakEventHandler<T, TSender, TArgs>.Create(null, method);
-            }
-            else if (handler.Target is T owner)
-            {
-                return WeakEventHandler<T, TSender, TArgs>.Create(owner, method);
-            }
-            else
-            {
-                throw new ArgumentException($"Original method's target's type is {handler.Target.GetType()}, it must match with type:{typeof(T)}.", nameof(handler));
-            }
-        }
-
-        #endregion
     }
 }

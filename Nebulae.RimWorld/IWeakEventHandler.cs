@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Nebulae.RimWorld
 {
@@ -7,7 +8,7 @@ namespace Nebulae.RimWorld
     /// </summary>
     /// <typeparam name="TSender">处理器的 sender 参数类型</typeparam>
     /// <typeparam name="TArgs">处理器的 args 参数类型</typeparam>
-    public interface IWeakEventHandler<TSender, TArgs> : IEquatable<Delegate> where TArgs : EventArgs
+    public interface IWeakEventHandler<TSender, TArgs> : IEquatable<Delegate>, IEquatable<MethodInfo> where TArgs : EventArgs
     {
         /// <summary>
         /// 获取一个值，该值指示当前事件处理程序是否应该被回收

@@ -15,15 +15,14 @@ namespace Nebulae.RimWorld
         where TArgs : EventArgs
     {
         /// <inheritdoc/>
-        public bool IsAlive => _isStatic || _owner.TryGetTarget(out _);
+        public bool IsAlive => _owner.TryGetTarget(out _);
 
 
         private WeakEventHandler(TOwner owner, Action<TOwner, TSender, TArgs> invocation, MethodInfo method)
         {
             _invocation = invocation;
-            _isStatic = owner is null;
             _method = method;
-            _owner = _isStatic ? null : new WeakReference<TOwner>(owner);
+            _owner = new WeakReference<TOwner>(owner);
         }
 
 
@@ -52,6 +51,11 @@ namespace Nebulae.RimWorld
                 return Equals(@delegate);
             }
 
+            if (obj is MethodInfo method)
+            {
+                return Equals(method);
+            }
+
             if (obj is WeakEventHandler<TOwner, TSender, TArgs> other)
             {
                 return Equals(other);
@@ -74,27 +78,20 @@ namespace Nebulae.RimWorld
 
             var otherMethod = other.Method;
 
-            if (_isStatic != otherMethod.IsStatic)
-            {
-                return false;
-            }
+            return !otherMethod.IsStatic
+                && otherMethod.Equals(_method) 
+                && _owner.TryGetTarget(out var owner) 
+                && ReferenceEquals(owner, other.Target);
+        }
 
-            if (!otherMethod.Equals(_method))
-            {
-                return false;
-            }
-
-            if (_isStatic)
-            {
-                return true;
-            }
-
-            if (!_owner.TryGetTarget(out var owner))
-            {
-                return false;
-            }
-
-            return ReferenceEquals(owner, other.Target);
+        /// <summary>
+        /// 判断当前 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 是否与指定的 <see cref="MethodInfo"/> 等效
+        /// </summary>
+        /// <param name="other">要判断的 <see cref="MethodInfo"/></param>
+        /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool Equals(MethodInfo other)
+        {
+            return !(other is null) && !other.IsStatic && _method.Equals(other);
         }
 
         /// <summary>
@@ -109,25 +106,14 @@ namespace Nebulae.RimWorld
                 return false;
             }
 
-            if (_isStatic != other._isStatic)
-            {
-                return false;
-            }
-
             if (!ReferenceEquals(_invocation, other._invocation))
             {
                 return false;
             }
 
-            if (_isStatic)
-            {
-                return true;
-            }
-
-            _owner.TryGetTarget(out var owner);
-            other._owner.TryGetTarget(out var otherOwner);
-
-            return ReferenceEquals(owner, otherOwner);
+            return _owner.TryGetTarget(out var owner)
+                && other._owner.TryGetTarget(out var otherOwner)
+                && ReferenceEquals(owner, otherOwner);
         }
 
         /// <summary>
@@ -136,21 +122,15 @@ namespace Nebulae.RimWorld
         /// <returns>当前 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 的哈希代码。</returns>
         public override int GetHashCode()
         {
-            return _isStatic
-                ? _invocation.GetHashCode()
-                : (_owner.TryGetTarget(out var owner)
-                    ? owner.GetHashCode() ^ _method.GetHashCode()
-                    : _method.GetHashCode());
+            return _owner.TryGetTarget(out var owner) 
+                ? owner.GetHashCode() ^ _method.GetHashCode() 
+                : _method.GetHashCode();
         }
 
         /// <inheritdoc/>
         public void Invoke(TSender sender, TArgs args)
         {
-            if (_isStatic)
-            {
-                _invocation(null, sender, args);
-            }
-            else if (_owner.TryGetTarget(out var owner))
+            if (_owner.TryGetTarget(out var owner))
             {
                 _invocation(owner, sender, args);
             }
@@ -172,7 +152,6 @@ namespace Nebulae.RimWorld
             return new WeakEventHandler<TOwner, TSender, TArgs>(owner, invocation, method);
         }
 
-
         private static readonly Dictionary<MethodInfo, Action<TOwner, TSender, TArgs>> InvocationCache = new Dictionary<MethodInfo, Action<TOwner, TSender, TArgs>>();
 
 
@@ -187,7 +166,6 @@ namespace Nebulae.RimWorld
         private readonly Action<TOwner, TSender, TArgs> _invocation;
         private readonly WeakReference<TOwner> _owner;
 
-        private readonly bool _isStatic;
         private readonly MethodInfo _method;
 
         #endregion
