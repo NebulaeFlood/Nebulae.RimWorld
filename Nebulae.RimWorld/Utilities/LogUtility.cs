@@ -14,6 +14,13 @@ namespace Nebulae.RimWorld.Utilities
         public static void Dump(this object obj) => Log.Message(obj);
 
         /// <summary>
+        /// 将 <paramref name="obj"/> 提交为日志
+        /// </summary>
+        /// <param name="obj">要提交为日志的对象</param>
+        /// <param name="title">日志的标题</param>
+        public static void Dump(this object obj, string title) => Log.Message($"[{title}] {obj}");
+
+        /// <summary>
         /// 以 <paramref name="logLabel"/> 为主语，提交错误
         /// </summary>
         /// <param name="logLabel">主语</param>
