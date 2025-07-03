@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
 {

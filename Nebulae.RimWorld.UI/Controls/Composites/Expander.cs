@@ -4,11 +4,7 @@ using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Core.Events;
 using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -41,7 +37,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         public event RoutedEventHandler Click
         {
             add { _labelButton.AddHandler(ButtonBase.ClickEvent, value); }
-            remove { _labelButton.RemoveHandler(ButtonBase.ClickEvent, value);}
+            remove { _labelButton.RemoveHandler(ButtonBase.ClickEvent, value); }
         }
         #endregion
 
@@ -332,7 +328,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         {
             _expandButton.Draw();
             _labelButton.Draw();
-            
+
             if (!_isEmpty)
             {
                 _content.Draw();

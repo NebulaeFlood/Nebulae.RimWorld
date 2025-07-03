@@ -2,12 +2,6 @@
 using Nebulae.RimWorld.UI.Core.Events;
 using RimWorld;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using Verse;
 using static Nebulae.RimWorld.UI.Controls.Resources.RadioButtonResources;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
@@ -44,7 +38,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             ClickSoundProperty.OverrideMetadata(typeof(RadioButton),
                 new PropertyMetadata(SoundDefOf.Tick_Tiny));
-            StateProperty.OverrideMetadata(typeof(RadioButton), 
+            StateProperty.OverrideMetadata(typeof(RadioButton),
                 new PropertyMetadata(ToggleState.Indeterminate, OnStateChanged));
         }
 

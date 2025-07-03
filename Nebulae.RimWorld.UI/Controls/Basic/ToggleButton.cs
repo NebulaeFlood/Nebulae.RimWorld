@@ -1,12 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Core.Data;
-using Nebulae.RimWorld.UI.Core.Events;
 using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 

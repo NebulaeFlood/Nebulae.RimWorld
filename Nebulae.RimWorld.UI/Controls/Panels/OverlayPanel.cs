@@ -1,9 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
@@ -105,7 +101,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         {
             for (int i = children.Length - 1; i >= 0; i--)
             {
-                children[i].Arrange(availableRect);   
+                children[i].Arrange(availableRect);
             }
 
             return availableRect;

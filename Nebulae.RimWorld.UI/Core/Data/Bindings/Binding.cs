@@ -5,10 +5,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using Verse;
 
 namespace Nebulae.RimWorld.UI.Core.Data.Bindings
 {
@@ -574,7 +570,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Bindings
                 ? Converter.Convert(_sourceValueCache, _target.Type, CurrentCulture)
                 : _sourceValueCache;
 
-            if (ReferenceEquals(convertedValue, DependencyProperty.UnsetValue) 
+            if (ReferenceEquals(convertedValue, DependencyProperty.UnsetValue)
                 || (_targetValueCache?.Equals(convertedValue) ?? convertedValue is null))
             {
                 return;

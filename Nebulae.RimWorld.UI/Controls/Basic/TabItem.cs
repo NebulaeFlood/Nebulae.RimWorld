@@ -2,11 +2,6 @@
 using Nebulae.RimWorld.UI.Core.Events;
 using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -156,7 +151,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             if (sender is TabItem tabItem && !tabItem._isSelected)
             {
                 SoundDefOf.RowTabSelect.PlayOneShotOnCamera();
-                
+
                 if (tabItem.Parent is TabControl tabControl)
                 {
                     tabControl.Select(tabItem);

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nebulae.RimWorld.UI.Core.Events
+﻿namespace Nebulae.RimWorld.UI.Core.Events
 {
     /// <summary>
     /// 指示 <see cref="RoutedEvent"/> 的路由策略

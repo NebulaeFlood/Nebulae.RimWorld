@@ -2,15 +2,8 @@
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Verse;
-using GameText = Verse.Text;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
@@ -136,8 +129,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             var text = Text;
 
-            _cache = string.IsNullOrWhiteSpace(text) 
-                ? string.Empty 
+            _cache = string.IsNullOrWhiteSpace(text)
+                ? string.Empty
                 : text.Truncate(RenderSize.Width - 10f, GameFont.Small);
 
             return availableRect;

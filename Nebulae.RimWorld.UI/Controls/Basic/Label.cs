@@ -1,14 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
-using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
-using GameText = Verse.Text;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
@@ -119,8 +112,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             var fontSize = FontSize;
             var text = Text;
 
-            _cache = string.IsNullOrEmpty(text) 
-                ? string.Empty 
+            _cache = string.IsNullOrEmpty(text)
+                ? string.Empty
                 : text.Truncate(availableSize.Width, fontSize);
 
             return new Size(availableSize.Width, fontSize.GetHeight());

@@ -1,15 +1,11 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Core;
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using Verse.Noise;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
 {
@@ -20,7 +16,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
     public abstract class Panel : FrameworkControl
     {
         /// <inheritdoc/>
-        public override IEnumerable<Control> LogicalChildren => _children; 
+        public override IEnumerable<Control> LogicalChildren => _children;
 
 
         #region Filter

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nebulae.RimWorld.UI.Core.Data
+﻿namespace Nebulae.RimWorld.UI.Core.Data
 {
     /// <summary>
     /// 依赖属性的值更改后的事件数据

@@ -1,12 +1,6 @@
-﻿using Nebulae.RimWorld.UI.Controls.Resources;
-using Nebulae.RimWorld.UI.Core.Data;
+﻿using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
-using System.Collections.Generic;
-
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
@@ -101,9 +95,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         static IconButton()
         {
-            WidthProperty.OverrideMetadata(typeof(IconButton), 
+            WidthProperty.OverrideMetadata(typeof(IconButton),
                 new ControlPropertyMetadata(24f, ControlRelation.Measure));
-            HeightProperty.OverrideMetadata(typeof(IconButton), 
+            HeightProperty.OverrideMetadata(typeof(IconButton),
                 new ControlPropertyMetadata(24f, ControlRelation.Measure));
         }
 

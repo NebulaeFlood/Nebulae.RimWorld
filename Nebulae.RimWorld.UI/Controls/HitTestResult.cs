@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nebulae.RimWorld.UI.Controls.Basic;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Utilities;
+using System.Diagnostics;
 using UnityEngine;
-using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls
 {

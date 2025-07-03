@@ -79,8 +79,8 @@ namespace Nebulae.RimWorld
             var otherMethod = other.Method;
 
             return !otherMethod.IsStatic
-                && otherMethod.Equals(_method) 
-                && _owner.TryGetTarget(out var owner) 
+                && otherMethod.Equals(_method)
+                && _owner.TryGetTarget(out var owner)
                 && ReferenceEquals(owner, other.Target);
         }
 
@@ -122,8 +122,8 @@ namespace Nebulae.RimWorld
         /// <returns>当前 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 的哈希代码。</returns>
         public override int GetHashCode()
         {
-            return _owner.TryGetTarget(out var owner) 
-                ? owner.GetHashCode() ^ _method.GetHashCode() 
+            return _owner.TryGetTarget(out var owner)
+                ? owner.GetHashCode() ^ _method.GetHashCode()
                 : _method.GetHashCode();
         }
 

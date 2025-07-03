@@ -1,12 +1,10 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Core.Data;
-using Nebulae.RimWorld.UI.Core.Data.Bindings;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Nebulae.RimWorld.UI.Controls.Composites
 {

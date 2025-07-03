@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nebulae.RimWorld.UI.Core.Data
+﻿namespace Nebulae.RimWorld.UI.Core.Data
 {
     /// <summary>
     /// 表示设置给依赖属性的值需要转换类型时调用的方法

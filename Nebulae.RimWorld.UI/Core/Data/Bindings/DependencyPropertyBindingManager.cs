@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nebulae.RimWorld.UI.Core.Data.Bindings
+﻿namespace Nebulae.RimWorld.UI.Core.Data.Bindings
 {
     internal sealed class DependencyPropertyBindings : LinkedListThin<Binding>
     {
