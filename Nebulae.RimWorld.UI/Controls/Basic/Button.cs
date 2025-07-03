@@ -1,5 +1,14 @@
-﻿using RimWorld;
+﻿using Nebulae.RimWorld.UI.Controls.Resources;
+using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Utilities;
+using RimWorld;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Verse;
 using GameText = Verse.Text;
 
@@ -8,109 +17,98 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
     /// <summary>
     /// 按钮控件
     /// </summary>
-    [StaticConstructorOnStartup]
-    public class Button : ButtonBase
+    public sealed class Button : ButtonBase
     {
-        /// <summary>
-        /// 默认的光标位于按钮上方时的按钮背景
-        /// </summary>
-        public static readonly Texture2D DefaultCursorOverBackground = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGMouseover");
-        /// <summary>
-        /// 默认的一般状态下的按钮背景
-        /// </summary>
-        public static readonly Texture2D DefaultNormalBackground = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBG");
-        /// <summary>
-        /// 默认的按钮被按下时的按钮背景
-        /// </summary>
-        public static readonly Texture2D DefaultPressedBackground = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGClick");
-        /// <summary>
-        /// 破坏性按钮的默认混合色
-        /// </summary>
-        public static readonly Color DistructiveButtonComposition = new Color(1f, 0.3f, 0.35f);
-
-
         //------------------------------------------------------
         //
-        //  Private Fields
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Private Fields
+        #region Dependency Properties
 
-        private string _text = string.Empty;
+        #region Composition
+        /// <summary>
+        /// 获取或设置 <see cref="Button"/> 的混合色
+        /// </summary>
+        public Color Composition
+        {
+            get { return (Color)GetValue(CompositionProperty); }
+            set { SetValue(CompositionProperty, value); }
+        }
 
-        private bool _isTextureAtlas = true;
+        /// <summary>
+        /// 标识 <see cref="Composition"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty CompositionProperty =
+            DependencyProperty.Register(nameof(Composition), typeof(Color), typeof(Button),
+                new PropertyMetadata(new Color(1f, 1f, 1f, 1f), OnCompositionChanged));
 
-        private Texture2D _hoveredBackground = DefaultCursorOverBackground;
-        private Texture2D _normalBackground = DefaultNormalBackground;
-        private Texture2D _pressedBackground = DefaultPressedBackground;
+        private static void OnCompositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var button = (Button)d;
 
-        private Color _compositionColor = Color.white;
+            button._composition = button.Distructive
+                ? ((Color)e.NewValue) * ButtonResources.DistructiveComposition
+                : ((Color)e.NewValue);
 
+            if (button.ControlStates.HasState(ControlState.Disabled))
+            {
+                button._composition *= Widgets.InactiveColor;
+            }
+        }
         #endregion
 
-
-        //------------------------------------------------------
-        //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
-        #region Public Properties
-
+        #region Distructive
         /// <summary>
-        /// 按钮激活时，按钮材质的混合色
+        /// 获取或设置一个值，该值指示 <see cref="Button"/> 的功能是否具有破坏性
         /// </summary>
-        public Color CompositionColor
+        /// <remarks>将会影响按钮的混合色</remarks>
+        public bool Distructive
         {
-            get => _compositionColor;
-            set => _compositionColor = value;
+            get { return (bool)GetValue(DistructiveProperty); }
+            set { SetValue(DistructiveProperty, value); }
         }
 
         /// <summary>
-        /// 按钮材质是否为纹理图集（图像精灵）
+        /// 标识 <see cref="Distructive"/> 依赖属性
         /// </summary>
-        public bool IsTextureAtlas
-        {
-            get => _isTextureAtlas;
-            set => _isTextureAtlas = value;
-        }
+        public static readonly DependencyProperty DistructiveProperty =
+            DependencyProperty.Register(nameof(Distructive), typeof(bool), typeof(Button),
+                new PropertyMetadata(false, OnDistructiveChanged));
 
-        /// <summary>
-        /// 光标位于按钮上方时的按钮背景
-        /// </summary>
-        public Texture2D MouseOverBackground
+        private static void OnDistructiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get => _hoveredBackground;
-            set => _hoveredBackground = value;
-        }
+            var button = (Button)d;
 
-        /// <summary>
-        /// 一般状态下的按钮背景
-        /// </summary>
-        public Texture2D NormalBackground
-        {
-            get => _normalBackground;
-            set => _normalBackground = value;
-        }
+            button._composition = (bool)e.NewValue
+                ? button.Composition * ButtonResources.DistructiveComposition
+                : button.Composition;
 
-        /// <summary>
-        /// 按钮被按下时的按钮背景
-        /// </summary>
-        public Texture2D PressedBackground
-        {
-            get => _pressedBackground;
-            set => _pressedBackground = value;
+            if (button.ControlStates.HasState(ControlState.Disabled))
+            {
+                button._composition *= Widgets.InactiveColor;
+            }
         }
+        #endregion
 
+        #region Text
         /// <summary>
-        /// 按钮的文本
+        /// 获取或设置 <see cref="Button"/> 的文本
         /// </summary>
         public string Text
         {
-            get => _text;
-            set => _text = value ?? string.Empty;
+            get { return (string)GetValue(TextProperty); }
+            set { SetValue(TextProperty, value); }
         }
+
+        /// <summary>
+        /// 标识 <see cref="Text"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty TextProperty =
+            DependencyProperty.Register(nameof(Text), typeof(string), typeof(Button),
+                new ControlPropertyMetadata(string.Empty, ControlRelation.Arrange));
+        #endregion
 
         #endregion
 
@@ -121,54 +119,83 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         public Button()
         {
             ClickSound = SoundDefOf.Click;
-            CursorOverSound = SoundDefOf.Mouseover_Standard;
-            PlayCursorOverSound = true;
+            CursorEnterSound = SoundDefOf.Mouseover_Standard;
         }
 
+
+        //------------------------------------------------------
+        //
+        //  Protected Methods
+        //
+        //------------------------------------------------------
+
+        #region Protected Methods
+
+        /// inheritdoc/>
+        protected override Rect ArrangeOverride(Rect availableRect)
+        {
+            var text = Text;
+
+            _cache = string.IsNullOrWhiteSpace(text) 
+                ? string.Empty 
+                : text.Truncate(RenderSize.Width - 10f, GameFont.Small);
+
+            return availableRect;
+        }
+
+        /// inheritdoc/>
+        protected override void DrawCore(ControlState states)
+        {
+            GUI.color *= _composition;
+
+            Widgets.DrawAtlas(RenderRect, _background);
+            _cache.DrawLabel(RenderRect);
+        }
 
         /// <inheritdoc/>
-        protected override void DrawButton(ButtonStatus status)
+        protected override void OnStatesChanged(ControlState states)
         {
-            GUI.color *= status.HasFlag(ButtonStatus.Disabled)
-                ? _compositionColor * Widgets.InactiveColor
-                : GUI.color *= _compositionColor;
+            _composition = Composition;
 
-            Texture2D background;
-
-            if (status is ButtonStatus.Pressed)
+            if (Distructive)
             {
-                background = _pressedBackground;
-            }
-            else if (status is ButtonStatus.Hovered)
-            {
-                background = _hoveredBackground;
-            }
-            else
-            {
-                background = _normalBackground;
+                _composition *= ButtonResources.DistructiveComposition;
             }
 
-            if (_isTextureAtlas)
+            if (states.HasState(ControlState.Disabled))
             {
-                Widgets.DrawAtlas(RenderRect, background);
+                _composition *= Widgets.InactiveColor;
+            }
+            else if (states.HasState(ControlState.Pressing))
+            {
+                _background = ButtonResources.PressedBackground;
+            }
+            else if (states.HasState(ControlState.CursorDirectlyOver))
+            {
+                _background = ButtonResources.CursorOverBackground;
             }
             else
             {
-                GUI.DrawTexture(RenderRect, background);
-            }
-
-            if (!string.IsNullOrEmpty(_text))
-            {
-                TextAnchor anchor = GameText.Anchor;
-                GameFont font = GameText.Font;
-                GameText.Anchor = TextAnchor.MiddleCenter;
-                GameText.Font = FontSize;
-
-                Widgets.Label(RenderRect, _text);
-
-                GameText.Font = font;
-                GameText.Anchor = anchor;
+                _background = ButtonResources.NormalBackground;
             }
         }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private Texture2D _background = ButtonResources.NormalBackground;
+        private Color _composition = new Color(1f, 1f, 1f, 1f);
+
+        private string _cache = string.Empty;
+
+        #endregion
     }
 }

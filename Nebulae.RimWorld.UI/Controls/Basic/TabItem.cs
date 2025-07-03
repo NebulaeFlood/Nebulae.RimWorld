@@ -1,54 +1,23 @@
-﻿using Nebulae.RimWorld.UI.Utilities;
+﻿using Nebulae.RimWorld.UI.Controls.Resources;
+using Nebulae.RimWorld.UI.Core.Events;
+using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
-using GameText = Verse.Text;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
-    /// <see cref="TabControl"/> 的选项卡项
+    /// <see cref="TabControl"/> 的可选项
     /// </summary>
-    [StaticConstructorOnStartup]
-    public class TabItem : ButtonBase
+    public sealed class TabItem : ContentControl
     {
-        /// <summary>
-        /// 选项卡图集
-        /// </summary>
-        public static readonly Texture2D TabAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/TabAtlas");
-
-
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private TabControl _container;
-        private Visual _content;
-
-        private string _header = string.Empty;
-
-        private Rect _leftRect;
-        private static readonly Rect _leftUVRect = new Rect(0f, 0f, 0.46875f, 1f);
-
-        private Rect _midRect;
-        private Rect _midUVRect;
-
-        private Rect _rightRect;
-        private static readonly Rect _rightUVRect = new Rect(0.53125f, 0f, 0.46875f, 1f);
-
-        private Rect _bottomRect;
-        private static readonly Rect _bottomUVRect = new Rect(0.5f, 0.01f, 0.01f, 0.01f);
-
-        private bool _selected = false;
-
-        #endregion
-
-
         //------------------------------------------------------
         //
         //  Public Properties
@@ -58,91 +27,41 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Public Properties
 
         /// <summary>
-        /// 获取选项卡所属的容器
-        /// </summary>
-        public TabControl Container
-        {
-            get => _container;
-            internal set
-            {
-                if (!ReferenceEquals(_container, value))
-                {
-                    _selected = false;
-
-                    _container = value;
-                    SetParent(value);
-                    _content?.SetParent(value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 获取或设置选项卡内容
-        /// </summary>
-        public Visual Content
-        {
-            get => _content;
-            set
-            {
-                if (!ReferenceEquals(_content, value))
-                {
-                    _content?.SetParent(null);
-                    _content = value;
-
-                    if (_content is null)
-                    {
-                        return;
-                    }
-
-                    _content.SetParent(_container);
-                    _content.InvalidateMeasure();
-
-                    if (_selected)
-                    {
-                        _container?.Select(this);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 标题的文本
+        /// 获取或设置 <see cref="TabItem"/> 的标题
         /// </summary>
         public string Header
         {
             get => _header;
-            set => _header = value;
+            set
+            {
+                if (_header != value)
+                {
+                    _header = value ?? string.Empty;
+                }
+            }
         }
 
         /// <summary>
-        /// 选项卡是否被选中
+        /// 获取一个值，该值表示 <see cref="TabItem"/> 是否已被选中
         /// </summary>
-        public bool Selected
+        public bool IsSelected
         {
-            get => _selected;
-            internal set
-            {
-                if (_selected != value)
-                {
-                    _selected = value;
-
-                    PlayCursorOverSound = !_selected;
-                }
-            }
+            get => _isSelected;
+            internal set => _isSelected = value;
         }
 
         #endregion
 
 
+        static TabItem()
+        {
+            ButtonBase.ClickEvent.RegisterClassHandler(typeof(TabItem), new RoutedEventHandler(OnClick));
+        }
+
         /// <summary>
         /// 初始化 <see cref="TabItem"/> 的新实例
         /// </summary>
-        public TabItem()
-        {
-            ClickSound = SoundDefOf.RowTabSelect;
-            CursorOverSound = SoundDefOf.Mouseover_Tab;
-            PlayCursorOverSound = true;
-        }
+        public TabItem() { }
 
 
         //------------------------------------------------------
@@ -154,41 +73,48 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect ArrangeCore(Rect availableRect)
+        protected override Rect ArrangeOverride(Rect availableRect)
         {
-            Rect renderRect = RenderSize.AlignToArea(availableRect,
-                HorizontalAlignment, VerticalAlignment);
+            _leftRect = new Rect(availableRect.x, availableRect.y, 30f, RenderSize.Height);
 
-            _leftRect = new Rect(renderRect.x, renderRect.y, 30f, renderRect.height);
+            _rightRect = new Rect(availableRect.xMax - 30f, availableRect.y, 30f, RenderSize.Height);
 
-            _rightRect = new Rect(renderRect.xMax - 30f, renderRect.y, 30f, renderRect.height);
+            _midRect = new Rect(availableRect.x + 29f, availableRect.y, RenderSize.Width - 58f, RenderSize.Height);
+            _midUVRect = new Rect(30f, 0f, 4f, TabItemResources.HeaderAtlas.height)
+                .ToUVRect(new Vector2(TabItemResources.HeaderAtlas.width, TabItemResources.HeaderAtlas.height));
 
-            _midRect = new Rect(renderRect.x + 29f, renderRect.y, renderRect.width - 58f, renderRect.height);
-            _midUVRect = new Rect(30f, 0f, 4f, TabAtlas.height).ToUVRect(new Vector2(TabAtlas.width, TabAtlas.height));
+            _bottomRect = new Rect(availableRect.x, availableRect.yMax - 1f, RenderSize.Width, 1f);
 
-            _bottomRect = new Rect(renderRect.x, renderRect.yMax - 1f, renderRect.width, 1f);
-
-            return renderRect;
+            return availableRect;
         }
 
         /// <inheritdoc/>
-        protected override void DrawButton(ButtonStatus status)
+        protected override Size MeasureOverride(Size availableSize) => availableSize;
+
+        /// <inheritdoc/>
+        protected override SegmentResult SegmentCore(Rect visiableRect) => visiableRect.IntersectWith(RenderRect);
+
+        /// <inheritdoc/>
+        protected override HitTestResult HitTestCore(Vector2 hitPoint) => HitTestResult.HitTest(this, hitPoint);
+
+        /// <inheritdoc/>
+        protected override void DrawCore(ControlState states)
         {
             Rect labelRect;
 
-            if (status.HasFlag(ButtonStatus.Disabled))
+            if (states.HasState(ControlState.Disabled))
             {
                 labelRect = RenderRect;
                 GUI.contentColor *= Widgets.InactiveColor;
             }
-            else if (_selected || status is ButtonStatus.Pressed)
+            else if (_isSelected || states.HasState(ControlState.Pressing))
             {
                 labelRect = RenderRect;
                 GUI.contentColor *= Color.yellow;
             }
-            else if (status.HasFlag(ButtonStatus.Hovered))
+            else if (states.HasState(ControlState.CursorDirectlyOver))
             {
-                labelRect = new Rect(RenderRect.x + 1f, RenderRect.y, RenderRect.width, RenderRect.height);
+                labelRect = new Rect(RenderRect.x + 1f, RenderRect.y, RenderSize.Width, RenderSize.Height);
                 GUI.contentColor *= Color.yellow;
             }
             else
@@ -196,38 +122,77 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 labelRect = RenderRect;
             }
 
-            Widgets.DrawTexturePart(_leftRect, _leftUVRect, TabAtlas);
-            Widgets.DrawTexturePart(_midRect, _midUVRect, TabAtlas);
-            Widgets.DrawTexturePart(_rightRect, _rightUVRect, TabAtlas);
+            Widgets.DrawTexturePart(_leftRect, LeftUVRect, TabItemResources.HeaderAtlas);
+            Widgets.DrawTexturePart(_midRect, _midUVRect, TabItemResources.HeaderAtlas);
+            Widgets.DrawTexturePart(_rightRect, RightUVRect, TabItemResources.HeaderAtlas);
 
-            if (!_selected)
+            if (!_isSelected)
             {
-                Widgets.DrawTexturePart(_bottomRect, _bottomUVRect, TabAtlas);
+                Widgets.DrawTexturePart(_bottomRect, BottomUVRect, TabItemResources.HeaderAtlas);
             }
 
-            TextAnchor anchor = GameText.Anchor;
-            GameText.Anchor = TextAnchor.MiddleCenter;
+            TextAnchor anchor = Text.Anchor;
+            Text.Anchor = TextAnchor.MiddleCenter;
 
             Widgets.Label(labelRect, _header);
 
-            GameText.Anchor = anchor;
+            Text.Anchor = anchor;
         }
 
         /// <inheritdoc/>
-        protected internal override void OnClick()
+        protected override void OnMouseEnter(RoutedEventArgs e)
         {
-            if (_container is null)
+            if (!_isSelected)
             {
-                return;
-            }
-
-            if (!_selected)
-            {
-                _container.Select(this);
-
-                ClickSound?.PlayOneShotOnCamera();
+                SoundDefOf.Mouseover_Tab.PlayOneShotOnCamera();
             }
         }
+
+        #endregion
+
+
+        private static void OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is TabItem tabItem && !tabItem._isSelected)
+            {
+                SoundDefOf.RowTabSelect.PlayOneShotOnCamera();
+                
+                if (tabItem.Parent is TabControl tabControl)
+                {
+                    tabControl.Select(tabItem);
+                }
+
+                e.Handled = true;
+            }
+        }
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private static readonly Rect LeftUVRect = new Rect(0f, 0f, 0.46875f, 1f);
+        private static readonly Rect RightUVRect = new Rect(0.53125f, 0f, 0.46875f, 1f);
+        private static readonly Rect BottomUVRect = new Rect(0.5f, 0.01f, 0.01f, 0.01f);
+
+        // Cache
+
+        private Rect _leftRect;
+
+        private Rect _midRect;
+        private Rect _midUVRect;
+
+        private Rect _rightRect;
+
+        private Rect _bottomRect;
+
+
+        private string _header = string.Empty;
+        private bool _isSelected;
 
         #endregion
     }

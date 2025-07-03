@@ -59,7 +59,7 @@ namespace Nebulae.RimWorld.UI.Patches
             {
                 Window settingWindow;
 
-                if (mod is INebulaeMod nebulaeMod)
+                if (mod is NebulaeModBase nebulaeMod)
                 {
                     settingWindow = nebulaeMod.GetSettingWindow();
                 }

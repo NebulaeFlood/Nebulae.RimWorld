@@ -1,45 +1,54 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
-    /// 可设置更多布局属性的控件的基类，定义了其共同特性
+    /// 可控制布局属性的控件
     /// </summary>
+    [DebuggerStepThrough]
     public abstract class FrameworkControl : Control
     {
         //------------------------------------------------------
         //
-        //  Pubicl Properties
+        //  Public Fields
         //
         //------------------------------------------------------
 
-        #region Pubicl Properties
-
-        #region Height
-        /// <summary>
-        /// 获取或设置控件高度
-        /// </summary>
-        /// <remarks>当值小于等于 1 时代表占用可用空间的高度的百分比。</remarks>
-        public float Height
-        {
-            get { return (float)GetValue(HeightProperty); }
-            set { SetValue(HeightProperty, value); }
-        }
+        #region Public Fields
 
         /// <summary>
-        /// 标识 <see cref="Height"/> 依赖属性。
+        /// 控件将要绘制的区域
         /// </summary>
-        public static readonly DependencyProperty HeightProperty =
-            DependencyProperty.Register(nameof(Height), typeof(float), typeof(FrameworkControl),
-                new ControlPropertyMetadata(1f, ControlRelation.Measure),
-                ValidateSize);
+        public Rect RenderRect;
+
+        /// <summary>
+        /// 控件将要绘制的尺寸
+        /// </summary>
+        public Size RenderSize = Size.Empty;
+
         #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Dependecy Properties
+        //
+        //------------------------------------------------------
+
+        #region Dependecy Properties
 
         #region HorizontalAlignment
         /// <summary>
-        /// 获取或设置控件水平对齐方式
+        /// 获取或设置 <see cref="FrameworkControl"/> 的水平对齐方式
         /// </summary>
         public HorizontalAlignment HorizontalAlignment
         {
@@ -48,16 +57,28 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="HorizontalAlignment"/> 依赖属性。
+        /// 标识 <see cref="HorizontalAlignment"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty HorizontalAlignmentProperty =
             DependencyProperty.Register(nameof(HorizontalAlignment), typeof(HorizontalAlignment), typeof(FrameworkControl),
-                new ControlPropertyMetadata(HorizontalAlignment.Center, ControlRelation.Measure));
+                new PropertyMetadata(HorizontalAlignment.Center, OnHorizontalAlignmentChanged));
+
+        private static void OnHorizontalAlignmentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is HorizontalAlignment.Stretch || e.NewValue is HorizontalAlignment.Stretch)
+            {
+                ((Control)d).InvalidateMeasure();
+            }
+            else
+            {
+                ((Control)d).InvalidateArrange();
+            }
+        }
         #endregion
 
         #region VerticalAlignment
         /// <summary>
-        /// 获取或设置控件垂直对齐方式
+        /// 获取或设置 <see cref="FrameworkControl"/> 的垂直对齐方式
         /// </summary>
         public VerticalAlignment VerticalAlignment
         {
@@ -66,17 +87,66 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="VerticalAlignment"/> 依赖属性。
+        /// 标识 <see cref="VerticalAlignment"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty VerticalAlignmentProperty =
             DependencyProperty.Register(nameof(VerticalAlignment), typeof(VerticalAlignment), typeof(FrameworkControl),
-                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Measure));
+                new PropertyMetadata(VerticalAlignment.Center, OnVerticalAlignmentChanged));
+
+        private static void OnVerticalAlignmentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is VerticalAlignment.Stretch || e.NewValue is VerticalAlignment.Stretch)
+            {
+                ((Control)d).InvalidateMeasure();
+            }
+            else
+            {
+                ((Control)d).InvalidateArrange();
+            }
+        }
+        #endregion
+
+        #region Margin
+        /// <summary>
+        /// 获取或设置 <see cref="FrameworkControl"/> 的外边距
+        /// </summary>
+        public Thickness Margin
+        {
+            get { return (Thickness)GetValue(MarginProperty); }
+            set { SetValue(MarginProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Margin"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty MarginProperty =
+            DependencyProperty.Register(nameof(Margin), typeof(Thickness), typeof(FrameworkControl),
+                new ControlPropertyMetadata(Thickness.Empty, CoerceThickness, ControlRelation.Measure));
+        #endregion
+
+        #region Padding
+        /// <summary>
+        /// 获取或设置 <see cref="FrameworkControl"/> 的内边距
+        /// </summary>
+        public Thickness Padding
+        {
+            get { return (Thickness)GetValue(PaddingProperty); }
+            set { SetValue(PaddingProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Padding"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty PaddingProperty =
+            DependencyProperty.Register(nameof(Padding), typeof(Thickness), typeof(FrameworkControl),
+                new ControlPropertyMetadata(Thickness.Empty, CoerceThickness, ControlRelation.Measure));
         #endregion
 
         #region Width
         /// <summary>
-        /// 获取或设置
+        /// 获取或设置 <see cref="FrameworkControl"/> 的宽度
         /// </summary>
+        /// <remarks>当值为小于等于 1 的正数时，则表示所占可用空间的百分比。</remarks>
         public float Width
         {
             get { return (float)GetValue(WidthProperty); }
@@ -84,12 +154,30 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="Width"/> 依赖属性。
+        /// 标识 <see cref="Width"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty WidthProperty =
             DependencyProperty.Register(nameof(Width), typeof(float), typeof(FrameworkControl),
-                new ControlPropertyMetadata(1f, ControlRelation.Measure),
-                ValidateSize);
+                new ControlPropertyMetadata(1f, CoerceSize, ControlRelation.Measure));
+        #endregion
+
+        #region Height
+        /// <summary>
+        /// 获取或设置 <see cref="FrameworkControl"/> 的高度
+        /// </summary>
+        /// <remarks>当值为小于等于 1 的正数时，则表示所占可用空间的百分比。</remarks>
+        public float Height
+        {
+            get { return (float)GetValue(HeightProperty); }
+            set { SetValue(HeightProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Height"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty HeightProperty =
+            DependencyProperty.Register(nameof(Height), typeof(float), typeof(FrameworkControl),
+                new ControlPropertyMetadata(1f, CoerceSize, ControlRelation.Measure));
         #endregion
 
         #endregion
@@ -104,20 +192,37 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect ArrangeCore(Rect availableRect)
+        protected override sealed Rect ArrangeCore(Rect availableRect)
         {
-            return RenderSize.AlignToArea(availableRect,
-                HorizontalAlignment, VerticalAlignment);
+            var margin = Margin;
+            var padding = Padding;
+
+            RenderRect = ArrangeOverride(RenderSize.AlignToArea(availableRect - (margin + padding), HorizontalAlignment, VerticalAlignment))
+                .Rounded() + padding;
+
+            return RenderRect + margin;
         }
 
+        /// <summary>
+        /// 计算 <see cref="FrameworkControl"/> 的内容需要占用的区域
+        /// </summary>
+        /// <param name="availableRect">由 <see cref="FrameworkControl"/> 计算后分配的区域</param>
+        /// <returns>内容需要占用的区域。</returns>
+        protected virtual Rect ArrangeOverride(Rect availableRect) => availableRect;
+
         /// <inheritdoc/>
-        protected override Size MeasureCore(Size availableSize)
+        protected override sealed Size MeasureCore(Size availableSize)
         {
+            var margin = Margin;
+            var padding = Padding;
+
+            availableSize -= (margin + padding);
+
             float renderWidth, renderHeight;
 
             if (HorizontalAlignment is HorizontalAlignment.Stretch)
             {
-                renderWidth = availableSize.Width.FormatControlSize();
+                renderWidth = availableSize.Width;
             }
             else
             {
@@ -125,12 +230,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
                 renderWidth = logicalWidth > 1f
                     ? logicalWidth
-                    : availableSize.Width.FormatControlSize() * logicalWidth;
+                    : availableSize.Width * logicalWidth;
             }
 
             if (VerticalAlignment is VerticalAlignment.Stretch)
             {
-                renderHeight = availableSize.Height.FormatControlSize();
+                renderHeight = availableSize.Height;
             }
             else
             {
@@ -138,25 +243,56 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
                 renderHeight = logicalHeight > 1f
                     ? logicalHeight
-                    : availableSize.Height.FormatControlSize() * logicalHeight;
+                    : availableSize.Height * logicalHeight;
             }
 
-            return new Size(renderWidth, renderHeight);
+            RenderSize = MeasureOverride(new Size(renderWidth, renderHeight)).Round() + padding;
+
+            return RenderSize + margin;
         }
+
+        /// <summary>
+        /// 计算 <see cref="FrameworkControl"/> 的内容需要占用的尺寸
+        /// </summary>
+        /// <param name="availableSize">由 <see cref="FrameworkControl"/> 计算后可用的尺寸</param>
+        /// <returns>内容需要占用的尺寸。</returns>
+        protected virtual Size MeasureOverride(Size availableSize) => availableSize;
+
+        /// <inheritdoc/>
+        protected override SegmentResult SegmentCore(Rect visiableRect) => visiableRect.IntersectWith(RenderRect);
 
         #endregion
 
 
-        internal static bool ValidateSize(object value)
+        internal override sealed void DrawDebugContent()
         {
-            if (value is float size)
+            if (DebugContent.HasFlag(DebugContent.RenderRect) && RenderSize != Size.Empty)
             {
-                return size >= 0f && !float.IsInfinity(size) && !float.IsNaN(size);
+                UIUtility.DrawBorder(RenderRect, BrushUtility.RederRectBorderBrush);
             }
-            else
-            {
-                return false;
-            }
+
+            base.DrawDebugContent();
         }
+
+
+        //------------------------------------------------------
+        //
+        //  Private Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Static Methods
+
+        private static object CoerceSize(DependencyObject d, object baseValue)
+        {
+            return Mathf.Max((float)baseValue, 0f);
+        }
+
+        private static object CoerceThickness(DependencyObject d, object baseValue)
+        {
+            return ((Thickness)baseValue).Normalize();
+        }
+
+        #endregion
     }
 }

@@ -7,7 +7,7 @@ namespace Nebulae.RimWorld.UI.Patches
     internal static class StaticConstructorOnStartupUtility_Patch
     {
         [HarmonyPostfix]
-        internal static void Postfix()
+        internal static void CallAllPostfix()
         {
             StartUp.FinishQuests();
         }

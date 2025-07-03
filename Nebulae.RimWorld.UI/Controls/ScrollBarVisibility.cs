@@ -1,7 +1,7 @@
 ﻿namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
-    /// 滚动条的可见性
+    /// 滚动栏的可见性
     /// </summary>
     public enum ScrollBarVisibility
     {

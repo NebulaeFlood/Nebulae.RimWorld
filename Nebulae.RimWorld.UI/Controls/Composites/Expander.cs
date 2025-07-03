@@ -1,97 +1,83 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Controls.Composites.Components;
+using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Core.Events;
 using Nebulae.RimWorld.UI.Utilities;
+using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
+using Verse.Sound;
 
 namespace Nebulae.RimWorld.UI.Controls.Composites
 {
     /// <summary>
     /// 拓展器控件
     /// </summary>
-    public class Expander : Visual
+    public sealed class Expander : Control
     {
         /// <summary>
-        /// 拓展内容左填充边距
+        /// <see cref="Expander"/> 的标题高度
         /// </summary>
-        public const float ContentLeftPadding = 20f;
+        public const float HeaderHeight = 24f;
 
-        /// <summary>
-        /// 标题高度
-        /// </summary>
-        public const float HeadlineHight = 20f;
 
-        /// <summary>
-        /// 标签的左填充边距
-        /// </summary>
-        public const float LabelLeftPadding = 20f;
+        //------------------------------------------------------
+        //
+        //  Public Events
+        //
+        //------------------------------------------------------
 
-        /// <summary>
-        /// 拓展内容为空时标签的左填充边距
-        /// </summary>
-        public const float LabelLeftPaddingWhenEmpty = 6f;
-
+        #region Public Events
 
         #region Click
-
         /// <summary>
-        /// 当标题被点击时发生的弱事件
+        /// 当 <see cref="Expander"/> 的标题被点击时发生
         /// </summary>
-        public event Action<Control, EventArgs> Click
+        public event RoutedEventHandler Click
         {
-            add => _label.Click += value;
-            remove => _label.Click -= value;
+            add { _labelButton.AddHandler(ButtonBase.ClickEvent, value); }
+            remove { _labelButton.RemoveHandler(ButtonBase.ClickEvent, value);}
         }
-
         #endregion
 
-        #region Collapsed 
-
-        private readonly WeakEvent<Expander, Visual> _collapsed = new WeakEvent<Expander, Visual>();
-
+        #region Collapsed
         /// <summary>
-        /// 收起拓展内容时发生的弱事件
+        /// 当 <see cref="Expander"/> 收起 <see cref="Content"/> 时发生
         /// </summary>
-        public event Action<Expander, Visual> Collapsed
+        public event RoutedEventHandler Collapsed
         {
-            add => _collapsed.Add(value, value.Invoke);
-            remove => _collapsed.Remove(value);
+            add { AddHandler(CollapsedEvent, value); }
+            remove { RemoveHandler(CollapsedEvent, value); }
         }
 
+        /// <summary>
+        /// 标识 <see cref="Collapsed"/> 路由事件
+        /// </summary>
+        public static readonly RoutedEvent CollapsedEvent =
+            RoutedEvent.Register(nameof(Collapsed), RoutingStrategy.Direct, typeof(Expander), typeof(RoutedEventArgs));
         #endregion
 
-        #region Expanded 
-
-        private readonly WeakEvent<Expander, Visual> _expanded = new WeakEvent<Expander, Visual>();
-
+        #region Expanded
         /// <summary>
-        /// 展开拓展内容时发生的弱事件
+        /// 当 <see cref="Expander"/> 展开 <see cref="Content"/> 时发生
         /// </summary>
-        public event Action<Expander, Visual> Expanded
+        public event RoutedEventHandler Expanded
         {
-            add => _expanded.Add(value, value.Invoke);
-            remove => _expanded.Remove(value);
+            add { AddHandler(ExpandedEvent, value); }
+            remove { RemoveHandler(ExpandedEvent, value); }
         }
 
+        /// <summary>
+        /// 标识 <see cref="Expanded"/> 路由事件
+        /// </summary>
+        public static readonly RoutedEvent ExpandedEvent =
+            RoutedEvent.Register(nameof(Expanded), RoutingStrategy.Direct, typeof(Expander), typeof(RoutedEventArgs));
         #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private readonly ExpandButton _expandButton;
-        private readonly Label _label;
-
-        private Visual _content;
-
-        private bool _isEmpty = true;
 
         #endregion
 
@@ -105,38 +91,94 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         #region Public Properties
 
         /// <summary>
-        /// 要展示的拓展内容
+        /// 获取或设置 <see cref="Expander"/> 的内容控件
         /// </summary>
-        public Visual Content
+        public Control Content
         {
             get => _content;
             set
             {
-                if (!ReferenceEquals(value, _content))
+                if (!ReferenceEquals(_content, value))
                 {
                     if (!_isEmpty)
                     {
-                        _content.SetParent(null);
+                        _content.Parent = null;
                     }
 
-                    _content = value; ;
+                    _content = value;
                     _isEmpty = value is null;
 
-                    if (_isEmpty)
+                    if (!_isEmpty)
                     {
-                        return;
+                        _content.Parent = this;
+                        _content.Visibility = IsExpanded ? Visibility.Visible : Visibility.Collapsed;
+                        _expandButton.Visibility = Visibility.Visible;
                     }
-
-                    _content.SetParent(this);
-
-                    InvalidateMeasure();
+                    else
+                    {
+                        _expandButton.Visibility = Visibility.Collapsed;
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// 获取一个值，指示 <see cref="Expander"/> 是否没有内容控件
+        /// </summary>
+        public bool IsEmpty => _isEmpty;
+
+        /// <inheritdoc/>
+        public override IEnumerable<Control> LogicalChildren
+        {
+            get
+            {
+                yield return _expandButton;
+                yield return _labelButton;
+
+                if (!_isEmpty)
+                {
+                    yield return _content;
+                }
+            }
+        }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Dependency Properties
+        //
+        //------------------------------------------------------
+
+        #region Dependency Properties
+
+        #region Header
+        /// <summary>
+        /// 获取或设置 <see cref="Expander"/> 的标题内容
+        /// </summary>
+        public string Header
+        {
+            get { return (string)GetValue(HeaderProperty); }
+            set { SetValue(HeaderProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Header"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty HeaderProperty =
+            DependencyProperty.Register(nameof(Header), typeof(string), typeof(Expander),
+                new PropertyMetadata(string.Empty, OnHeaderChanged));
+
+        private static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((Expander)d)._labelButton.Text = (string)e.NewValue;
+        }
+        #endregion
+
         #region IsExpanded
         /// <summary>
-        /// 获取或设置
+        /// 获取或设置一个值，该值指示 <see cref="Expander"/> 是否处于展开状态
         /// </summary>
         public bool IsExpanded
         {
@@ -145,7 +187,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         }
 
         /// <summary>
-        /// 标识 <see cref="IsExpanded"/> 依赖属性。
+        /// 标识 <see cref="IsExpanded"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty IsExpandedProperty =
             DependencyProperty.Register(nameof(IsExpanded), typeof(bool), typeof(Expander),
@@ -154,36 +196,16 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         private static void OnIsExpandedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var expander = (Expander)d;
-            expander._expandButton.IsExpanded = (bool)e.NewValue;
+            var isExpanded = (bool)e.NewValue;
+
+            expander._expandButton.Icon = isExpanded ? TexButton.Collapse : TexButton.Reveal;
+
+            if (!expander._isEmpty)
+            {
+                expander._content.Visibility = isExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
         #endregion
-
-        /// <summary>
-        /// 标题文本
-        /// </summary>
-        public string Title
-        {
-            get => _label.Text;
-            set => _label.Text = value;
-        }
-
-        /// <summary>
-        /// 标题文本是否能够进行交互
-        /// </summary>
-        public bool TitleHitTestVisible
-        {
-            get => _label.IsHitTestVisible;
-            set => _label.IsHitTestVisible = value;
-        }
-
-        /// <summary>
-        /// 标题文本的提示框内容
-        /// </summary>
-        public TipSignal Tooltip
-        {
-            get => _label.Tooltip;
-            set => _label.Tooltip = value;
-        }
 
         #endregion
 
@@ -193,13 +215,20 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// </summary>
         public Expander()
         {
-            _expandButton = new ExpandButton(this);
-            _label = new Label
+            _expandButton = new SolidButton
+            {
+                Icon = TexButton.Reveal,
+                IsEnabled = false,
+                Parent = this
+            };
+            _expandButton.Click += OnExpandButtonClick;
+
+            _labelButton = new LabelButton
             {
                 Anchor = TextAnchor.MiddleLeft,
-                DrawHighlight = true
+                Text = Header,
+                Parent = this
             };
-            _label.SetParentSilently(this);
         }
 
 
@@ -214,132 +243,145 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// <inheritdoc/>
         protected override Rect ArrangeCore(Rect availableRect)
         {
-            float headlineHight = GameFont.Small.GetHeight();
-
-            Rect renderRect;
-
             if (_isEmpty)
             {
-                renderRect = new Rect(
-                    availableRect.x + LabelLeftPaddingWhenEmpty,
+                return _labelButton.Arrange(new Rect(
+                    availableRect.x + 6f,
                     availableRect.y,
-                    availableRect.width - LabelLeftPaddingWhenEmpty,
-                    headlineHight);
-
-                _expandButton.Arrange(Rect.zero);
-                _label.Arrange(renderRect);
-
-                return renderRect;
+                    DesiredSize.Width - 6f,
+                    HeaderHeight));
             }
 
-            renderRect = new Rect(availableRect.x, availableRect.y, availableRect.width, headlineHight);
+            _expandButton.Arrange(new Rect(availableRect.x, availableRect.y, DesiredSize.Width, HeaderHeight));
+            _labelButton.Arrange(new Rect(availableRect.x + 20f, availableRect.y, DesiredSize.Width - 20f, HeaderHeight));
 
-            _expandButton.Arrange(renderRect);
-            _label.Arrange(new Rect(renderRect.x + ContentLeftPadding, renderRect.y, renderRect.width - ContentLeftPadding, headlineHight));
-
-            if (_expandButton.IsExpanded)
+            if (IsExpanded)
             {
-                renderRect.height += _content.Arrange(new Rect(
-                    renderRect.x + ContentLeftPadding,
-                    renderRect.y + headlineHight,
-                    renderRect.width - ContentLeftPadding,
-                    float.PositiveInfinity)).height;
-            }
-            else
-            {
-                _content.Arrange(new Rect(renderRect.x, renderRect.y, 0f, 0f));
+                _content.Arrange(new Rect(
+                    availableRect.x + 20f,
+                    availableRect.y + HeaderHeight,
+                    DesiredSize.Width - 20f,
+                    HeaderHeight));
+
             }
 
-            return renderRect;
-        }
-
-        /// <inheritdoc/>
-        protected override void DrawCore()
-        {
-            if (_isEmpty)
-            {
-                _label.Draw();
-            }
-            else
-            {
-                _expandButton.Draw();
-                _label.Draw();
-
-                if (_expandButton.IsExpanded)
-                {
-                    _content.Draw();
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
-        {
-            yield return _expandButton;
-            yield return _label;
-
-            if (_isEmpty)
-            {
-                yield break;
-            }
-
-            yield return _content;
+            return new Rect(availableRect.x, availableRect.y, DesiredSize.Width, DesiredSize.Height);
         }
 
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            float headlineHight = GameFont.Small.GetHeight();
-
-            _expandButton.Measure(availableSize);
-
-            if (_isEmpty || !_expandButton.IsExpanded)
-            {
-                _label.Measure(_isEmpty
-                    ? new Size(availableSize.Width - LabelLeftPaddingWhenEmpty, headlineHight)
-                    : new Size(availableSize.Width - LabelLeftPadding, headlineHight));
-
-                return new Size(availableSize.Width, headlineHight);
-            }
-
-            _label.Measure(new Size(availableSize.Width - LabelLeftPadding, headlineHight));
-
-            return new Size(
-                availableSize.Width,
-                _content.Measure(new Size(
-                    availableSize.Width - ContentLeftPadding,
-                    float.PositiveInfinity))
-                .Height + headlineHight);
-        }
-
-        /// <inheritdoc/>
-        protected override void OnIsEnabledChanged(bool isEnabled)
-        {
-            if (!isEnabled)
-            {
-                IsExpanded = false;
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override Rect SegmentCore(Rect visiableRect)
-        {
-            Rect contentRect = RenderRect.IntersectWith(visiableRect);
+            _expandButton.Measure(new Size(18f));
 
             if (_isEmpty)
             {
-                _expandButton.Segment(Rect.zero);
+                _labelButton.Measure(new Size(availableSize.Width - 6f, HeaderHeight));
+
+                return new Size(availableSize.Width, HeaderHeight);
+            }
+
+            var hearderWidth = availableSize.Width - 20f;
+
+            _labelButton.Measure(new Size(hearderWidth, HeaderHeight));
+
+            var renderHeight = IsExpanded
+                ? Content.Measure(new Size(hearderWidth, HeaderHeight)).Height + HeaderHeight
+                : HeaderHeight;
+
+            return new Size(availableSize.Width, renderHeight);
+        }
+
+        /// <inheritdoc/>
+        protected override SegmentResult SegmentCore(Rect visiableRect)
+        {
+            visiableRect = visiableRect.IntersectWith(DesiredRect);
+
+            _expandButton.Segment(visiableRect);
+            _labelButton.Segment(visiableRect);
+
+            if (!_isEmpty)
+            {
+                Content.Segment(visiableRect);
+            }
+
+            return new SegmentResult(visiableRect, _labelButton.ControlRect, visiableRect);
+        }
+
+        /// <inheritdoc/>
+        protected override HitTestResult HitTestCore(Vector2 hitPoint)
+        {
+            var result = _expandButton.HitTest(hitPoint);
+
+            if (result.IsHit)
+            {
+                return result;
+            }
+
+            result = _labelButton.HitTest(hitPoint);
+
+            if (result.IsHit)
+            {
+                return result;
+            }
+
+            return base.HitTestCore(hitPoint);
+        }
+
+        /// <inheritdoc/>
+        protected override void DrawCore(ControlState states)
+        {
+            _expandButton.Draw();
+            _labelButton.Draw();
+            
+            if (!_isEmpty)
+            {
+                _content.Draw();
+            }
+        }
+
+        #endregion
+
+
+        private void OnExpandButtonClick(object sender, RoutedEventArgs e)
+        {
+            var isExpanded = IsExpanded;
+
+            if (isExpanded)
+            {
+                IsExpanded = false;
+
+                _expandButton.Icon = TexButton.Reveal;
+
+                SoundDefOf.TabClose.PlayOneShotOnCamera();
+                RaiseEvent(new RoutedEventArgs(this, CollapsedEvent));
             }
             else
             {
-                _content.Segment(_expandButton.IsExpanded ? contentRect : Rect.zero);
-                _expandButton.Segment(contentRect);
+                IsExpanded = true;
+
+                _expandButton.Icon = TexButton.Collapse;
+
+                SoundDefOf.TabOpen.PlayOneShotOnCamera();
+                RaiseEvent(new RoutedEventArgs(this, ExpandedEvent));
             }
 
-            _label.Segment(contentRect);
-
-            return contentRect;
+            e.Handled = true;
         }
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private Control _content;
+        private bool _isEmpty = true;
+
+        private readonly SolidButton _expandButton;
+        private readonly LabelButton _labelButton;
 
         #endregion
     }

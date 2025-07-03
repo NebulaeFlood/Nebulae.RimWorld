@@ -1,5 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
     /// <summary>
     /// 将控件排布在设定好的格子内的表格面板
     /// </summary>
-    public class Grid : Panel
+    public sealed class Grid : Panel
     {
         /// <summary>
         /// 表示自动尺寸
@@ -50,11 +50,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         //------------------------------------------------------
         //
-        //  Public Attached Properties
+        //  Attached Properties
         //
         //------------------------------------------------------
 
-        #region Public Attached Properties
+        #region Attached Properties
 
         #region Column
         /// <summary>
@@ -203,9 +203,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// 初始化 <see cref="Grid"/> 的新实例
         /// </summary>
-        public Grid()
-        {
-        }
+        public Grid() { }
 
 
         //------------------------------------------------------
@@ -306,23 +304,21 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <remarks>
         /// 必须保证输入的结构能够匹配设置的行数和列数，否则会引发未知的行为。
         /// </remarks>
-        public Grid Set(params Visual[] controls)
+        public Grid Set(params Control[] controls)
         {
-            Visual[] controlList = controls.ToArray();
-            Visual[] cleanList = controlList.Where(x => x != null).Distinct().ToArray();
-            Children.OverrideCollection(cleanList);
+            Children.OverrideCollection(controls.Where(x => x != null).Distinct());
 
-            cleanList = FilteredChildren;
+            var children = FilteredChildren;
 
-            Visual child;
+            Control child;
             int firstIndex;
             int lastIndex;
 
-            for (int i = 0; i < cleanList.Length; i++)
+            for (int i = 0; i < children.Length; i++)
             {
-                child = cleanList[i];
-                firstIndex = Array.IndexOf(controlList, child);
-                lastIndex = Array.LastIndexOf(controlList, child);
+                child = children[i];
+                firstIndex = Array.IndexOf(controls, child);
+                lastIndex = Array.LastIndexOf(controls, child);
 
                 if (firstIndex == lastIndex)
                 {
@@ -356,10 +352,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect ArrangeOverride(Rect availableRect)
+        protected override Rect ArrangeOverride(Rect availableRect, Control[] children)
         {
-            var children = FilteredChildren;
-
             if (_unitInfoChanged)
             {
                 InitUnitInfos(children);
@@ -379,11 +373,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize, Control[] children)
         {
             _unitInfoChanged = true;
 
-            return UpdateDefinitionsSize(availableSize, FilteredChildren);
+            return UpdateDefinitionsSize(availableSize, children);
         }
 
         #endregion
@@ -397,7 +391,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         #region Private Methods
 
-        private void InitUnitInfos(Visual[] children)
+        private void InitUnitInfos(Control[] children)
         {
             _unitInfos = new UnitInfo[children.Length];
 
@@ -412,7 +406,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             }
         }
 
-        private Size UpdateDefinitionsSize(Size availableSize, Visual[] children)
+        private Size UpdateDefinitionsSize(Size availableSize, Control[] children)
         {
             float height = 0f;
             float width = 0f;
@@ -569,7 +563,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             return new Size(width, height);
         }
 
-        private void UpdateUnitInfos(Rect availableRect, Visual[] children)
+        private void UpdateUnitInfos(Rect availableRect, Control[] children)
         {
             UnitInfo info;
 
@@ -672,6 +666,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         #endregion
+
 
         private readonly struct SizeCache
         {

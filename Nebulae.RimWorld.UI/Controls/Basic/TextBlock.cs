@@ -1,39 +1,31 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
-using GameText = Verse.Text;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 文本块控件
     /// </summary>
-    public class TextBlock : FrameworkControl
+    public sealed class TextBlock : FrameworkControl
     {
-        private TextAnchor _anchor = TextAnchor.UpperLeft;
-
-
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Public Properties
-
-        /// <summary>
-        /// 获取或设置文字在控件内显示的方位
-        /// </summary>
-        public TextAnchor Anchor
-        {
-            get => _anchor;
-            set => _anchor = value;
-        }
+        #region Dependency Properties
 
         #region FontSize
         /// <summary>
-        /// 获取或设置字体大小
+        /// 获取或设置 <see cref="TextBlock"/> 的字体大小
         /// </summary>
         public GameFont FontSize
         {
@@ -42,16 +34,22 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="FontSize"/> 依赖属性。
+        /// 标识 <see cref="FontSize"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
             DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(TextBlock),
-                new ControlPropertyMetadata(GameFont.Small, TextUtility.CoerceFontSize, ControlRelation.Measure));
+                new ControlPropertyMetadata(GameFont.Small, TextUtility.CoerceFontSize, OnFontSizeChanged, ControlRelation.Measure));
+
+        private static void OnFontSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var textBlock = (TextBlock)d;
+            textBlock._drawer = TextUtility.CreateLabelDrawer(TextAnchor.MiddleCenter, (GameFont)e.NewValue);
+        }
         #endregion
 
         #region Text
         /// <summary>
-        /// 获取或设置控件文本
+        /// 获取或设置 <see cref="TextBlock"/> 的文本
         /// </summary>
         public string Text
         {
@@ -60,11 +58,21 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="Text"/> 依赖属性。
+        /// 标识 <see cref="Text"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty TextProperty =
             DependencyProperty.Register(nameof(Text), typeof(string), typeof(TextBlock),
-                new ControlPropertyMetadata(string.Empty, ControlRelation.Measure));
+                new ControlPropertyMetadata(string.Empty, CoerceText, OnTextChanged, ControlRelation.Measure));
+
+        private static object CoerceText(DependencyObject d, object baseValue)
+        {
+            return string.IsNullOrWhiteSpace((string)baseValue) ? string.Empty : baseValue;
+        }
+
+        private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((TextBlock)d)._cache = (string)e.NewValue;
+        }
         #endregion
 
         #endregion
@@ -72,19 +80,14 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         static TextBlock()
         {
-            HorizontalAlignmentProperty.OverrideMetadata(typeof(TextBlock),
-                new ControlPropertyMetadata(HorizontalAlignment.Left, ControlRelation.Measure));
-
             VerticalAlignmentProperty.OverrideMetadata(typeof(TextBlock),
-                new ControlPropertyMetadata(VerticalAlignment.Top, ControlRelation.Measure));
+                new PropertyMetadata(VerticalAlignment.Top));
         }
 
         /// <summary>
         /// 初始化 <see cref="TextBlock"/> 的新实例
         /// </summary>
-        public TextBlock()
-        {
-        }
+        public TextBlock() { }
 
 
         //------------------------------------------------------
@@ -96,25 +99,37 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override void DrawCore()
+        protected override Size MeasureOverride(Size availableSize)
         {
-            TextAnchor currentAnchor = GameText.Anchor;
-            GameFont currentFont = GameText.Font;
-
-            GameText.Anchor = _anchor;
-            GameText.Font = FontSize;
-
-            Widgets.Label(RenderRect, Text);
-
-            GameText.Anchor = currentAnchor;
-            GameText.Font = currentFont;
+            return _cache.CalculateSize(availableSize.Width, FontSize, TextAnchor.MiddleCenter);
         }
 
         /// <inheritdoc/>
-        protected override Size MeasureCore(Size availableSize)
+        protected override void DrawCore(ControlState states)
         {
-            return Text.CalculateSize(availableSize.Width, FontSize, _anchor);
+            if (states.HasState(ControlState.Disabled))
+            {
+                GUI.color *= Widgets.InactiveColor;
+            }
+
+            _drawer(_cache, RenderRect);
         }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private static readonly LabelCache DefaultDrawer = TextUtility.CreateLabelDrawer(TextAnchor.MiddleCenter, GameFont.Small);
+
+        private string _cache = string.Empty;
+        private LabelCache _drawer = DefaultDrawer;
 
         #endregion
     }

@@ -1,114 +1,90 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Core.Events;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Verse;
 using Verse.Sound;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
-    /// 按钮的 UI 状态
-    /// </summary>
-    [Flags]
-    public enum ButtonStatus : int
-    {
-        /// <summary>
-        /// 正常状态
-        /// </summary>
-        Normal = 0b000,
-
-        /// <summary>
-        /// 禁止状态
-        /// </summary>
-        Disabled = 0b001,
-
-        /// <summary>
-        /// 高亮状态
-        /// </summary>
-        Hovered = 0b010,
-
-        /// <summary>
-        /// 按下状态
-        /// </summary>
-        Pressed = 0b110,
-    }
-
-    /// <summary>
-    /// 所有按钮控件的基类，定义了其共同特性
+    /// 按钮控件的基类
     /// </summary>
     public abstract class ButtonBase : FrameworkControl
     {
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
+        #region Click
+        /// <summary>
+        /// 当按钮被单击时发生
+        /// </summary>
+        public event RoutedEventHandler Click
+        {
+            add { AddHandler(ClickEvent, value); }
+            remove { RemoveHandler(ClickEvent, value); }
+        }
 
-        #region Private Fields
-
-        private SoundDef _clickSound;
-        private SoundDef _cursorOverSound;
-
-        private bool _playCursorOverSound;
-
+        /// <summary>
+        /// 标识 <see cref="Click"/> 路由事件
+        /// </summary>
+        public static readonly RoutedEvent ClickEvent =
+            RoutedEvent.Register(nameof(Click), RoutingStrategy.Direct, typeof(ButtonBase), typeof(RoutedEventArgs));
         #endregion
 
 
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Public Properties
+        #region Dependency Properties
 
+        #region ClickSound
         /// <summary>
-        /// 当光标位于按钮上方时播放的音效
-        /// </summary>
-        public SoundDef CursorOverSound
-        {
-            get => _cursorOverSound;
-            set => _cursorOverSound = value;
-        }
-
-        /// <summary>
-        /// 单击按钮时触发的声音
+        /// 获取或设置单击按钮时播放的音效
         /// </summary>
         public SoundDef ClickSound
         {
-            get => _clickSound;
-            set => _clickSound = value;
-        }
-
-        #region FontSize
-        /// <summary>
-        /// 获取或设置字体大小
-        /// </summary>
-        public GameFont FontSize
-        {
-            get { return (GameFont)GetValue(FontSizeProperty); }
-            set { SetValue(FontSizeProperty, value); }
+            get { return (SoundDef)GetValue(ClickSoundProperty); }
+            set { SetValue(ClickSoundProperty, value); }
         }
 
         /// <summary>
-        /// 标识 <see cref="FontSize"/> 依赖属性。
+        /// 标识 <see cref="ClickSound"/> 依赖属性
         /// </summary>
-        public static readonly DependencyProperty FontSizeProperty =
-            DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(ButtonBase),
-                new PropertyMetadata(GameFont.Small));
+        public static readonly DependencyProperty ClickSoundProperty =
+            DependencyProperty.Register(nameof(ClickSound), typeof(SoundDef), typeof(ButtonBase),
+                new PropertyMetadata());
         #endregion
 
+        #region CursorOverSound
         /// <summary>
-        /// 当光标位于按钮上方时是否播放音效
+        /// 获取或设置光标进入按钮范围时播放的音效
         /// </summary>
-        public bool PlayCursorOverSound
+        public SoundDef CursorEnterSound
         {
-            get => _playCursorOverSound;
-            set => _playCursorOverSound = value;
+            get { return (SoundDef)GetValue(CursorOverSoundProperty); }
+            set { SetValue(CursorOverSoundProperty, value); }
         }
+
+        /// <summary>
+        /// 标识 <see cref="CursorEnterSound"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty CursorOverSoundProperty =
+            DependencyProperty.Register(nameof(CursorEnterSound), typeof(SoundDef), typeof(ButtonBase),
+                new PropertyMetadata());
+        #endregion
 
         #endregion
 
+
+        static ButtonBase()
+        {
+            ClickEvent.RegisterClassHandler(typeof(ButtonBase), new RoutedEventHandler(OnClickTrunk));
+        }
 
         /// <summary>
         /// 为 <see cref="ButtonBase"/> 派生类实现基本初始化
@@ -128,70 +104,35 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <summary>
-        /// 绘制按钮
+        /// 当 <see cref="Click"/> 未被处理时调用
         /// </summary>
-        /// <param name="status">按钮状态</param>
-        protected abstract void DrawButton(ButtonStatus status);
-
-        /// <inheritdoc/>
-        protected sealed override void DrawCore()
+        /// <param name="e">事件数据</param>
+        protected virtual void OnClick(RoutedEventArgs e)
         {
-            bool isPressing = IsPressing;
-            bool isCursorOver = MouseUtility.LeftButtonPressing
-                ? isPressing
-                : IsCursorOver;
-
-            ButtonStatus status;
-
-            if (IsEnabled)
-            {
-                status = ButtonStatus.Normal;
-            }
-            else
-            {
-                status = ButtonStatus.Disabled;
-            }
-
-            if (isPressing)
-            {
-                status |= ButtonStatus.Pressed;
-            }
-            else if (isCursorOver)
-            {
-                status |= ButtonStatus.Hovered;
-            }
-
-            DrawButton(status);
+            ClickSound?.PlayOneShotOnCamera();
+            e.Handled = true;
         }
 
         /// <inheritdoc/>
-        protected internal override void OnClick()
+        protected override void OnMouseEnter(RoutedEventArgs e)
         {
-            _clickSound?.PlayOneShotOnCamera();
-        }
-
-        /// <inheritdoc/>
-        protected internal override void OnCursorEnter()
-        {
-            if (MouseUtility.IsPressing
-                || !IsEnabled
-                || !_playCursorOverSound
-                || _cursorOverSound is null)
+            if (!ControlStates.HasState(ControlState.Disabled | ControlState.Dragging | ControlState.Pressing))
             {
-                return;
+                CursorEnterSound?.PlayOneShotOnCamera();
             }
 
-            _cursorOverSound.PlayOneShotOnCamera();
-        }
-
-        /// <summary>
-        /// 播放点击音效
-        /// </summary>
-        protected void PlayClickSound()
-        {
-            _clickSound?.PlayOneShotOnCamera();
+            e.Handled = true;
         }
 
         #endregion
+
+
+        private static void OnClickTrunk(object sender, RoutedEventArgs e)
+        {
+            if (sender is ButtonBase control)
+            {
+                control.OnClick(e);
+            }
+        }
     }
 }

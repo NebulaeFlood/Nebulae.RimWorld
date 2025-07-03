@@ -1,34 +1,18 @@
 ﻿using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
-    /// 边框控件，用于装饰控件
+    /// 在子控件四周绘制边框和背景
     /// </summary>
-    public class Border : Control
+    public sealed class Border : ContentControl
     {
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private Texture2D _background = BrushUtility.Transparent;
-        private Texture2D _borderBrush = BrushUtility.Transparent;
-
-        private Thickness _borderThickness = Thickness.Empty;
-
-        private Visual _content;
-
-        private bool _isEmpty = true;
-
-        #endregion
-
-
         //------------------------------------------------------
         //
         //  Public Properties
@@ -38,7 +22,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Public Properties
 
         /// <summary>
-        /// 背景画刷
+        /// 获取或设置背景画刷
         /// </summary>
         public Texture2D Background
         {
@@ -55,7 +39,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 边框画刷
+        /// 获取或设置边框画刷
         /// </summary>
         public Texture2D BorderBrush
         {
@@ -90,46 +74,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             }
         }
 
-        /// <summary>
-        /// 内容控件
-        /// </summary>
-        public Visual Content
-        {
-            get => _content;
-            set
-            {
-                if (!ReferenceEquals(_content, value))
-                {
-                    InvalidateMeasure();
-
-                    if (!_isEmpty)
-                    {
-                        _content.SetParent(null);
-                    }
-
-                    _content = value;
-                    _isEmpty = value is null;
-
-                    if (_isEmpty)
-                    {
-                        return;
-                    }
-
-                    _content.SetParent(this);
-                }
-            }
-        }
-
         #endregion
 
 
         /// <summary>
         /// 初始化 <see cref="Border"/> 的新实例
         /// </summary>
-        public Border()
-        {
-            IsHitTestVisible = true;
-        }
+        public Border() { }
 
 
         //------------------------------------------------------
@@ -141,25 +92,50 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect ArrangeCore(Rect availableRect)
+        protected override Rect ArrangeOverride(Rect availableRect)
         {
-            if (_isEmpty)
+            if (!IsEmpty)
             {
-                return availableRect;
+                Content.Arrange(availableRect - _borderThickness);
             }
 
-            return _content.Arrange(availableRect - _borderThickness) + _borderThickness;
+            return availableRect;
         }
 
         /// <inheritdoc/>
-        protected override void DrawCore()
+        protected override Size MeasureOverride(Size availableSize)
         {
-            GUI.DrawTexture(RenderRect, _background);
+            if (!IsEmpty)
+            {
+                Content.Measure(availableSize - _borderThickness);
+            }
+
+            return availableSize;
+        }
+
+        /// <inheritdoc/>
+        protected override SegmentResult SegmentCore(Rect visiableRect)
+        {
+            if (!IsEmpty)
+            {
+                Content.Segment(visiableRect);
+            }
+
+            return visiableRect.IntersectWith(RenderRect);
+        }
+
+        /// <inheritdoc/>
+        protected override void DrawCore(ControlState states)
+        {
+            if (!ReferenceEquals(_background, BrushUtility.Transparent))
+            {
+                GUI.DrawTexture(RenderRect, _background, ScaleMode.StretchToFill);
+            }
 
             float x = RenderRect.x;
             float y = RenderRect.y;
-            float width = RenderRect.width;
-            float height = RenderRect.height;
+            float width = RenderSize.Width;
+            float height = RenderSize.Height;
 
             if (_borderThickness != 0f)
             {
@@ -173,44 +149,24 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 GUI.DrawTexture(new Rect(x, y + height - _borderThickness.Bottom, width, _borderThickness.Bottom), _borderBrush);
             }
 
-            if (!_isEmpty)
-            {
-                _content.Draw();
-            }
+            base.DrawCore(states);
         }
 
-        /// <inheritdoc/>
-        protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
-        {
-            if (_isEmpty)
-            {
-                yield break;
-            }
+        #endregion
 
-            yield return _content;
-        }
 
-        /// <inheritdoc/>
-        protected override Size MeasureCore(Size availableSize)
-        {
-            if (_isEmpty)
-            {
-                return availableSize;
-            }
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
 
-            return _content.Measure(availableSize - _borderThickness) + _borderThickness;
-        }
+        #region Private Fields
 
-        /// <inheritdoc/>
-        protected override Rect SegmentCore(Rect visiableRect)
-        {
-            if (_isEmpty)
-            {
-                return visiableRect;
-            }
+        private Texture2D _background = BrushUtility.Transparent;
+        private Texture2D _borderBrush = BrushUtility.Transparent;
 
-            return _content.Segment(visiableRect - _borderThickness) + _borderThickness;
-        }
+        private Thickness _borderThickness = Thickness.Empty;
 
         #endregion
     }

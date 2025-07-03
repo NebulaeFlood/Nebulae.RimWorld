@@ -1,32 +1,45 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 图片控件
     /// </summary>
-    public class ImageView : FrameworkControl
+    public sealed class ImageView : FrameworkControl
     {
-        private Color _compositionColor = Color.white;
-
-
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Public Properties
+        #region Dependency Properties
+
+        #region Composition
+        /// <summary>
+        /// 获取或设置图片混合色
+        /// </summary>
+        public Color Composition
+        {
+            get { return (Color)GetValue(CompositionProperty); }
+            set { SetValue(CompositionProperty, value); }
+        }
 
         /// <summary>
-        /// 图片混合色
+        /// 标识 <see cref="Composition"/> 依赖属性
         /// </summary>
-        public Color CompositionColor
-        {
-            get => _compositionColor;
-            set => _compositionColor = value;
-        }
+        public static readonly DependencyProperty CompositionProperty =
+            DependencyProperty.Register(nameof(Composition), typeof(Color), typeof(ImageView),
+                new PropertyMetadata(new Color(1f, 1f, 1f, 1f)));
+        #endregion
 
         #region ImageSource
         /// <summary>
@@ -35,15 +48,15 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         public Texture2D ImageSource
         {
             get { return (Texture2D)GetValue(ImageSourceProperty); }
-            set { SetValue(ImageSourceProperty, value); }
+            set { SetValue(ImageSourceProperty, value ?? throw new InvalidOperationException($"Cannot assign {Type}.{nameof(ImageSource)} to a null value.")); }
         }
 
         /// <summary>
-        /// 标识 <see cref="ImageSource"/> 依赖属性。
+        /// 标识 <see cref="ImageSource"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty ImageSourceProperty =
             DependencyProperty.Register(nameof(ImageSource), typeof(Texture2D), typeof(ImageView),
-                new ControlPropertyMetadata(null, ControlRelation.Measure));
+                new ControlPropertyMetadata(ControlRelation.Measure));
         #endregion
 
         #region ScaleMode
@@ -57,7 +70,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="ScaleMode"/> 依赖属性。
+        /// 标识 <see cref="ScaleMode"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty ScaleModeProperty =
             DependencyProperty.Register(nameof(ScaleMode), typeof(ScaleMode), typeof(ImageView),
@@ -65,15 +78,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #endregion
 
         #endregion
-
-
-
-        /// <summary>
-        /// 初始化 <see cref="ImageView"/> 的新实例
-        /// </summary>
-        public ImageView()
-        {
-        }
 
 
         //------------------------------------------------------
@@ -85,59 +89,75 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override void DrawCore()
+        protected override Size MeasureOverride(Size availableSize)
         {
-            if (ImageSource is Texture2D image)
-            {
-                Color color = GUI.color;
-                Color compositionColor = new Color(
-                    _compositionColor.r,
-                    _compositionColor.g,
-                    _compositionColor.b,
-                    _compositionColor.a * color.a);
+            var image = ImageSource;
+            var scaleMode = ScaleMode;
 
-                GUI.color = compositionColor;
-                GUI.DrawTexture(RenderRect, image, ScaleMode);
-                GUI.color = color;
-            }
-        }
+            UpdateDrawer(image, scaleMode);
 
-        /// <inheritdoc/>
-        protected override Size MeasureCore(Size availableSize)
-        {
-            availableSize = base.MeasureCore(availableSize);
-
-            if (!(ImageSource is Texture2D imageSource))
-            {
-                return Size.Empty;
-            }
-
-            if (ScaleMode is ScaleMode.ScaleToFit)
+            if (scaleMode is ScaleMode.ScaleToFit)
             {
                 float scale;
 
-                if (imageSource.width < availableSize.Width && imageSource.height < availableSize.Height)
+                if (image.width < availableSize.Width && image.height < availableSize.Height)
                 {
-                    scale = Mathf.Max(availableSize.Width / imageSource.width, availableSize.Height / imageSource.height);
+                    scale = Mathf.Max(availableSize.Width / image.width, availableSize.Height / image.height);
                 }
-                else if (imageSource.width <= availableSize.Width && imageSource.height > availableSize.Height)
+                else if (image.width <= availableSize.Width && image.height > availableSize.Height)
                 {
-                    scale = availableSize.Height / imageSource.height;
+                    scale = availableSize.Height / image.height;
                 }
-                else if (imageSource.width > availableSize.Width && imageSource.height <= availableSize.Height)
+                else if (image.width > availableSize.Width && image.height <= availableSize.Height)
                 {
-                    scale = availableSize.Width / imageSource.width;
+                    scale = availableSize.Width / image.width;
                 }
                 else
                 {
-                    scale = Mathf.Min(availableSize.Width / imageSource.width, availableSize.Height / imageSource.height);
+                    scale = Mathf.Min(availableSize.Width / image.width, availableSize.Height / image.height);
                 }
 
-                return new Size(imageSource.width * scale, imageSource.height * scale);
+                return new Size(image.width * scale, image.height * scale);
             }
 
-            return new Size(imageSource.width, imageSource.height);
+            return new Size(image.width, image.height);
         }
+
+        /// <inheritdoc/>
+        protected override void DrawCore(ControlState states)
+        {
+            _drawer(states);
+        }
+
+        #endregion
+
+
+        private void UpdateDrawer(Texture2D image, ScaleMode scaleMode)
+        {
+            var composition = Composition;
+
+            void Draw(ControlState states)
+            {
+                GUI.color *= states.HasState(ControlState.Disabled)
+                    ? composition * Widgets.InactiveColor
+                    : composition;
+
+                GUI.DrawTexture(RenderRect, image, scaleMode);
+            }
+
+            _drawer = Draw;
+        }
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private Action<ControlState> _drawer;
 
         #endregion
     }

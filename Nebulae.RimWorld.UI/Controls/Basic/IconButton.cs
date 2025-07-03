@@ -1,162 +1,119 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Controls.Resources;
+using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
-using RimWorld;
 using System;
+using System.Collections.Generic;
+
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
-using GameText = Verse.Text;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 图标按钮
     /// </summary>
-    public class IconButton : ButtonBase
+    public sealed class IconButton : ButtonBase
     {
         /// <summary>
-        /// 默认的图标尺寸
-        /// </summary>
-        public const float DefaultIconSize = 24f;
-
-
-        /// <summary>
-        /// 关闭按钮的混合色
-        /// </summary>
-        public static Color CloseButtonCompositionColor = new Color(1f, 0.3f, 0.35f);
-
-
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private string _text = string.Empty;
-
-        private Size _iconRenderSize = Size.Empty;
-        private Rect _iconRenderRect;
-
-        private Size _textRenderSize = Size.Empty;
-        private Rect _textRenderRect;
-
-        private Color _compositionColor = Color.white;
-
-        private Texture2D _icon;
-
-        private bool _iconHitOnly = false;
-        private bool _iconHighlightable = true;
-
-        private bool _reverseContent = false;
-        private bool _separateContent = false;
-
-        private ContentStatus _status = ContentStatus.None;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
-        #region Public Properties
-
-        /// <summary>
-        /// 按钮激活时，按钮材质的混合色
-        /// </summary>
-        public Color CompositionColor
-        {
-            get => _compositionColor;
-            set => _compositionColor = value;
-        }
-
-        /// <summary>
-        /// 按钮当前显示的图标
+        /// 获取或设置 <see cref="IconButton"/> 的图标
         /// </summary>
         public Texture2D Icon
         {
             get => _icon;
-            set => _icon = value;
+            set => _icon = value ?? throw new InvalidOperationException($"Cannot asign a null value to {Type}.{nameof(Icon)}.");
         }
 
-        #region IconSize
+
+        //------------------------------------------------------
+        //
+        //  Dependency Properties
+        //
+        //------------------------------------------------------
+
+        #region Dependency Properties
+
+        #region Composition
         /// <summary>
-        /// 获取或设置图标的尺寸
+        /// 获取或设置 <see cref="Button"/> 的混合色
         /// </summary>
-        public float IconSize
+        public Color Composition
         {
-            get { return (float)GetValue(IconSizeProperty); }
-            set { SetValue(IconSizeProperty, value); }
+            get { return (Color)GetValue(CompositionProperty); }
+            set { SetValue(CompositionProperty, value); }
         }
 
         /// <summary>
-        /// 标识 <see cref="IconSize"/> 依赖属性。
+        /// 标识 <see cref="Composition"/> 依赖属性
         /// </summary>
-        public static readonly DependencyProperty IconSizeProperty =
-            DependencyProperty.Register(nameof(IconSize), typeof(float), typeof(IconButton),
-                new ControlPropertyMetadata(DefaultIconSize, ControlRelation.Measure));
+        public static readonly DependencyProperty CompositionProperty =
+            DependencyProperty.Register(nameof(Composition), typeof(Color), typeof(IconButton),
+                new PropertyMetadata(new Color(1f, 1f, 1f, 1f), OnCompositionChanged));
+
+        private static void OnCompositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var button = (IconButton)d;
+            var states = button.ControlStates;
+
+            if (states.HasState(ControlState.Disabled))
+            {
+                button._composition = (Color)e.NewValue * Widgets.InactiveColor;
+            }
+            else if (states.HasState(ControlState.CursorDirectlyOver))
+            {
+                button._composition = (Color)e.NewValue * button.Highlight;
+            }
+            else
+            {
+                button._composition = (Color)e.NewValue;
+            }
+        }
         #endregion
 
+        #region Highlight
         /// <summary>
-        /// 按钮的图标是否可高亮
+        /// 获取或设置 <see cref="IconButton"/> 的高亮颜色
         /// </summary>
-        public bool IconHighlightable
+        public Color Highlight
         {
-            get => _iconHighlightable;
-            set => _iconHighlightable = value;
+            get { return (Color)GetValue(HighlightProperty); }
+            set { SetValue(HighlightProperty, value); }
         }
 
         /// <summary>
-        /// 是否翻转图标和文字的位置
+        /// 标识 <see cref="Highlight"/> 依赖属性
         /// </summary>
-        public bool ReverseContent
-        {
-            get => _reverseContent;
-            set => _reverseContent = value;
-        }
+        public static readonly DependencyProperty HighlightProperty =
+            DependencyProperty.Register(nameof(Highlight), typeof(Color), typeof(IconButton),
+                new PropertyMetadata(GenUI.MouseoverColor, OnHighlightChanged));
 
-        /// <summary>
-        /// 是否拆分图标为文字
-        /// </summary>
-        public bool SeparateContent
+        private static void OnHighlightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get => _separateContent;
-            set => _separateContent = value;
+            var button = (IconButton)d;
+            button._composition = button.ControlStates.HasState(ControlState.Disabled) ? Widgets.InactiveColor : (Color)e.NewValue;
         }
-
-        /// <summary>
-        /// 按钮的文本
-        /// </summary>
-        public string Text
-        {
-            get => _text;
-            set => _text = value ?? string.Empty;
-        }
+        #endregion
 
         #endregion
 
 
-        /// <summary>
-        /// 指示按钮是否只有图标可交互
-        /// </summary>
-        protected bool IconHitOnly
+        static IconButton()
         {
-            get => _iconHitOnly;
-            set => _iconHitOnly = value;
+            WidthProperty.OverrideMetadata(typeof(IconButton), 
+                new ControlPropertyMetadata(24f, ControlRelation.Measure));
+            HeightProperty.OverrideMetadata(typeof(IconButton), 
+                new ControlPropertyMetadata(24f, ControlRelation.Measure));
         }
-
 
         /// <summary>
         /// 初始化 <see cref="IconButton"/> 的新实例
         /// </summary>
-        public IconButton()
+        /// <param name="icon">按钮图标</param>
+        public IconButton(Texture2D icon)
         {
-            ClickSound = SoundDefOf.Click;
-            CursorOverSound = SoundDefOf.Mouseover_Standard;
-            PlayCursorOverSound = true;
+            _icon = icon ?? throw new ArgumentNullException(nameof(icon));
         }
 
 
@@ -169,171 +126,44 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect AnalyseCore(Rect contentRect)
+        protected override void DrawCore(ControlState states)
         {
-            if (_iconHitOnly)
-            {
-                return _iconRenderRect;
-            }
-            else
-            {
-                return contentRect;
-            }
+            GUI.color *= _composition;
+            GUI.DrawTexture(RenderRect, _icon, ScaleMode.ScaleToFit);
         }
 
         /// <inheritdoc/>
-        protected override Rect ArrangeCore(Rect availableRect)
+        protected override void OnStatesChanged(ControlState states)
         {
-            Rect renderRect = RenderSize.AlignToArea(availableRect,
-                HorizontalAlignment, VerticalAlignment);
-
-            if (_status is ContentStatus.None)
+            if (ControlStates.HasState(ControlState.Disabled))
             {
-                return renderRect;
+                _composition = Composition * Widgets.InactiveColor;
             }
-
-            Rect contentRenderRect = renderRect;
-
-            if (!_separateContent)
+            else if (ControlStates.HasState(ControlState.CursorDirectlyOver))
             {
-                contentRenderRect = new Size(
-                    _iconRenderSize.Width + _textRenderSize.Width,
-                    Mathf.Max(_iconRenderSize.Height, _textRenderSize.Height))
-                    .AlignToArea(
-                        renderRect,
-                        HorizontalAlignment.Center,
-                        VerticalAlignment.Center);
-            }
-
-            if ((_status & ContentStatus.IconSetted) != 0)
-            {
-                _iconRenderRect = _iconRenderSize
-                    .AlignToArea(
-                        contentRenderRect,
-                        HorizontalAlignment.Left.ReverseIf(_reverseContent),
-                        VerticalAlignment.Center);
+                _composition = Composition * Highlight;
             }
             else
             {
-                _iconRenderRect = Rect.zero;
+                _composition = Composition;
             }
-
-            if ((_status & ContentStatus.TextSetted) != 0)
-            {
-                _textRenderRect = _textRenderSize.AlignToArea(
-                    contentRenderRect,
-                    HorizontalAlignment.Right.ReverseIf(_reverseContent),
-                    VerticalAlignment.Center);
-            }
-            else
-            {
-                _textRenderRect = Rect.zero;
-            }
-
-            return renderRect;
-        }
-
-        /// <summary>
-        /// 绘制按钮背景
-        /// </summary>
-        /// <param name="status">按钮状态</param>
-        protected virtual void DrawBackground(ButtonStatus status)
-        {
-        }
-
-        /// <inheritdoc/>
-        protected override sealed void DrawButton(ButtonStatus status)
-        {
-            Color color = GUI.color;
-            bool isDisabled = status.HasFlag(ButtonStatus.Disabled);
-
-            GUI.color *= isDisabled
-                ? _compositionColor * Widgets.InactiveColor
-                : _compositionColor;
-
-            DrawBackground(status);
-
-            if ((_status & ContentStatus.TextSetted) != 0)
-            {
-                TextAnchor anchor = GameText.Anchor;
-                GameFont font = GameText.Font;
-                GameText.Anchor = TextAnchor.MiddleLeft;
-                GameText.Font = FontSize;
-
-                Widgets.Label(_textRenderRect, _text);
-
-                GameText.Font = font;
-                GameText.Anchor = anchor;
-            }
-
-            if ((_status & ContentStatus.IconSetted) != 0)
-            {
-                if (_iconHighlightable
-                    && !isDisabled
-                    && status.HasFlag(ButtonStatus.Hovered))
-                {
-                    GUI.color = _compositionColor * color * GenUI.MouseoverColor;
-                }
-
-                GUI.DrawTexture(_iconRenderRect, _icon, ScaleMode.ScaleToFit);
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override Size MeasureCore(Size availableSize)
-        {
-            _status = ContentStatus.None;
-
-            if (_icon is null)
-            {
-                _iconRenderSize = Size.Empty;
-            }
-            else
-            {
-                _iconRenderSize = new Size(IconSize);
-                _status |= ContentStatus.IconSetted;
-            }
-
-            string text = Text;
-
-            if (string.IsNullOrEmpty(text))
-            {
-                _textRenderSize = Size.Empty;
-            }
-            else
-            {
-                _textRenderSize = text.CalculateLineSize(FontSize, TextAnchor.MiddleCenter);
-                _status |= ContentStatus.TextSetted;
-            }
-
-            return base.MeasureCore(availableSize);
         }
 
         #endregion
 
 
-        /// <summary>
-        /// 按钮内容的状态
-        /// </summary>
-        [Flags]
-        protected enum ContentStatus : int
-        {
-            /// <summary>
-            /// 按钮没有设置内容
-            /// </summary>
-            None = 0b00,
-            /// <summary>
-            /// 按钮设置了图标
-            /// </summary>
-            IconSetted = 0b01,
-            /// <summary>
-            /// 按钮设置了文字
-            /// </summary>
-            TextSetted = 0b10,
-            /// <summary>
-            /// 按钮设置了图标和文字
-            /// </summary>
-            FullSetted = 0b11
-        }
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private Color _composition = new Color(1f, 1f, 1f, 1f);
+
+        private Texture2D _icon;
+
+        #endregion
     }
 }

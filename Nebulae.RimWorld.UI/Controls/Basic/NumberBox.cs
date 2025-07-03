@@ -1,8 +1,12 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.Utilities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
@@ -11,99 +15,66 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
     /// <summary>
     /// 专用于输入数字的文本框控件
     /// </summary>
-    public class NumberBox : FocusableControl
+    public sealed class NumberBox : InputControl
     {
         //------------------------------------------------------
         //
-        //  Private Fields
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Private Fields
+        #region Dependency Properties
 
-        private Regex _inputValidator = new Regex(@"^-?[0-9]{0,39}(\.[0-9]{0,2})?$");
+        #region AutoHeight
+        /// <summary>
+        /// 获取或设置一个值，该值指示 <see cref="NumberBox"/> 是否根据内容调整高度
+        /// </summary>
+        public bool AutoHeight
+        {
+            get { return (bool)GetValue(AutoHeightProperty); }
+            set { SetValue(AutoHeightProperty, value); }
+        }
 
-        private string _buffer = "0.00";
-
-        private float _maximun = 99999f;
-        private float _minimun = -99999f;
-
-        private int _decimalPartDigit = 2;
-        private bool _displayAsPercent;
-
-        private bool _isReadOnly;
-
-        private Thickness _textBoxExtension = Thickness.Empty;
-
-        private Rect _innerRect;
-        private Size _innerSize;
-
+        /// <summary>
+        /// 标识 <see cref="AutoHeight"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty AutoHeightProperty =
+            DependencyProperty.Register(nameof(AutoHeight), typeof(bool), typeof(NumberBox),
+                new ControlPropertyMetadata(true, ControlRelation.Measure));
         #endregion
 
-
-        //------------------------------------------------------
-        //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
-        #region Public Properties
-
+        #region Decimals
         /// <summary>
-        /// 小数点后最大位数
+        /// 获取或设置 <see cref="NumberBox"/> 的数字的小数位数
         /// </summary>
-        public int DecimalPartDigit
+        /// <remarks>只影响显示的值。</remarks>
+        public ushort Decimals
         {
-            get => _decimalPartDigit;
-            set
-            {
-                if (_decimalPartDigit != value)
-                {
-                    _decimalPartDigit = value;
-
-                    if (_displayAsPercent)
-                    {
-                        _buffer = string.Format("{0:F" + Math.Max(_decimalPartDigit - 2, 0) + "}%", Value * 100f);
-                        _inputValidator = new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{Math.Max(_decimalPartDigit - 2, 0)}}})?%$");
-                    }
-                    else
-                    {
-                        _buffer = string.Format("{0:F" + _decimalPartDigit + "}", Value);
-                        _inputValidator = new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{_decimalPartDigit}}})?$");
-                    }
-                }
-            }
+            get { return (ushort)GetValue(DecimalsProperty); }
+            set { SetValue(DecimalsProperty, value); }
         }
 
         /// <summary>
-        /// 以百分比形式呈现数值
+        /// 标识 <see cref="Decimals"/> 依赖属性
         /// </summary>
-        public bool DisplayAsPercent
-        {
-            get => _displayAsPercent;
-            set
-            {
-                if (_displayAsPercent != value)
-                {
-                    _displayAsPercent = value;
+        public static readonly DependencyProperty DecimalsProperty =
+            DependencyProperty.Register(nameof(Decimals), typeof(ushort), typeof(NumberBox),
+                new PropertyMetadata(0, CoerceDecimals, OnDecimalsChanged));
 
-                    if (_displayAsPercent)
-                    {
-                        _buffer = string.Format("{0:F" + Math.Max(_decimalPartDigit - 2, 0) + "}%", Value * 100f);
-                        _inputValidator = new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{Math.Max(_decimalPartDigit - 2, 0)}}})?%$");
-                    }
-                    else
-                    {
-                        _buffer = string.Format("{0:F" + _decimalPartDigit + "}", Value);
-                        _inputValidator = new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{_decimalPartDigit}}})?$");
-                    }
-                }
-            }
+        private static object CoerceDecimals(DependencyObject d, object baseValue)
+        {
+            return (ushort)baseValue > 5 ? 5 : baseValue;
         }
+
+        private static void OnDecimalsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((NumberBox)d).UpdateValueProcesser((ushort)e.NewValue, (bool)d.GetValue(IsPercentageProperty));
+        }
+        #endregion
 
         #region FontSize
         /// <summary>
-        /// 获取或设置字体大小
+        /// 获取或设置 <see cref="NumberBox"/> 的字体大小
         /// </summary>
         public GameFont FontSize
         {
@@ -112,110 +83,99 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="FontSize"/> 依赖属性。
+        /// 标识 <see cref="FontSize"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
             DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(NumberBox),
-                new ControlPropertyMetadata(GameFont.Small, TextUtility.CoerceFontSize, ControlRelation.Arrange));
+                new ControlPropertyMetadata(GameFont.Small, TextUtility.CoerceFontSize, UpdateDrawer, ControlRelation.Measure));
         #endregion
 
+        #region IsPercentage
         /// <summary>
-        /// 用户是否可编辑文字内容
+        /// 获取或设置一个值，该值指示 <see cref="NumberBox"/> 的数字是否以百分数的形式显示
+        /// </summary>
+        public bool IsPercentage
+        {
+            get { return (bool)GetValue(IsPercentageProperty); }
+            set { SetValue(IsPercentageProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="IsPercentage"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty IsPercentageProperty =
+            DependencyProperty.Register(nameof(IsPercentage), typeof(bool), typeof(NumberBox),
+                new PropertyMetadata(false, OnIsPercentageChanged));
+
+        private static void OnIsPercentageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var numberBox = (NumberBox)d;
+            numberBox._drawer = CreateDrawer(
+                (GameFont)d.GetValue(FontSizeProperty),
+                (bool)d.GetValue(IsPercentageProperty),
+                (bool)d.GetValue(IsReadOnlyProperty));
+
+            numberBox.UpdateValueProcesser(numberBox.Decimals, (bool)e.NewValue);
+        }
+        #endregion
+
+        #region IsReadOnly
+        /// <summary>
+        /// 获取或设置一个值，该值指示 <see cref="NumberBox"/> 的文本是否为只读
         /// </summary>
         public bool IsReadOnly
         {
-            get => _isReadOnly;
-            set => _isReadOnly = value;
+            get { return (bool)GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
         }
 
         /// <summary>
-        /// 数字的最大值
+        /// 标识 <see cref="IsReadOnly"/> 依赖属性
         /// </summary>
-        public float Maximum
+        public static readonly DependencyProperty IsReadOnlyProperty =
+            DependencyProperty.Register(nameof(IsReadOnly), typeof(bool), typeof(NumberBox),
+                new PropertyMetadata(false, UpdateDrawer));
+        #endregion
+
+        #region MaxValue
+        /// <summary>
+        /// 获取或设置 <see cref="NumberBox"/> 的最大值
+        /// </summary>
+        public float MaxValue
         {
-            get => _maximun;
-            set
-            {
-                if (_maximun != value)
-                {
-                    _maximun = value;
-
-                    float current = Value;
-                    float result = current.Clamp(_minimun, _maximun);
-
-                    if (current != result)
-                    {
-                        SetValue(ValueProperty, result);
-                    }
-                }
-            }
+            get { return (float)GetValue(MaxValueProperty); }
+            set { SetValue(MaxValueProperty, value); }
         }
 
         /// <summary>
-        /// 数字的最小值
+        /// 标识 <see cref="MaxValue"/> 依赖属性
         /// </summary>
-        public float Minimum
+        public static readonly DependencyProperty MaxValueProperty =
+            DependencyProperty.Register(nameof(MaxValue), typeof(float), typeof(NumberBox),
+                new PropertyMetadata(32767f, OnLimitChanged));
+        #endregion
+
+        #region MinValue
+        /// <summary>
+        /// 获取或设置 <see cref="NumberBox"/> 的最小值
+        /// </summary>
+        public float MinValue
         {
-            get => _minimun;
-            set
-            {
-                if (_minimun != value)
-                {
-                    _minimun = value;
-
-                    float current = Value;
-                    float result = current.Clamp(_minimun, _maximun);
-
-                    if (current != result)
-                    {
-                        SetValue(ValueProperty, result);
-                    }
-                }
-            }
+            get { return (float)GetValue(MinValueProperty); }
+            set { SetValue(MinValueProperty, value); }
         }
 
         /// <summary>
-        /// 文本输入框背景拓展量
+        /// 标识 <see cref="MinValue"/> 依赖属性
         /// </summary>
-        /// <remarks>只有 <see cref="Thickness.Top"/> 和 <see cref="Thickness.Bottom"/> 有效。</remarks>
-        public Thickness TextBoxExtension
-        {
-            get => _textBoxExtension;
-            set
-            {
-                value = value.Normalize();
-                value = new Thickness(0f, value.Top, 0f, value.Bottom);
-
-                if (_textBoxExtension != value)
-                {
-                    _textBoxExtension = value;
-
-                    InvalidateMeasure();
-                }
-            }
-        }
-
-        #region TextBoxVerticalAlignment
-        /// <summary>
-        /// 获取或设置文本输入框的垂直对齐方式
-        /// </summary>
-        public VerticalAlignment TextBoxVerticalAlignment
-        {
-            get { return (VerticalAlignment)GetValue(BackgroundVerticalAlignmentProperty); }
-            set { SetValue(BackgroundVerticalAlignmentProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="TextBoxVerticalAlignment"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty BackgroundVerticalAlignmentProperty =
-            DependencyProperty.Register(nameof(TextBoxVerticalAlignment), typeof(VerticalAlignment), typeof(NumberBox),
-                new ControlPropertyMetadata(VerticalAlignment.Center, ControlRelation.Arrange));
+        public static readonly DependencyProperty MinValueProperty =
+            DependencyProperty.Register(nameof(MinValue), typeof(float), typeof(NumberBox),
+                new PropertyMetadata(-32768f, OnLimitChanged));
         #endregion
 
         #region Value
         /// <summary>
-        /// 获取或设置输入数字的当前值
+        /// 获取或设置 <see cref="NumberBox"/> 的数字
         /// </summary>
         public float Value
         {
@@ -224,31 +184,21 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="Value"/> 依赖属性。
+        /// 标识 <see cref="Value"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register(nameof(Value), typeof(float), typeof(NumberBox),
-                new ControlPropertyMetadata(0f, OnValueChanged, ControlRelation.Arrange));
+                new PropertyMetadata(0f, CoerceValue, OnValueChanged));
+
+        private static object CoerceValue(DependencyObject d, object baseValue)
+        {
+            return Mathf.Clamp((float)baseValue, (float)d.GetValue(MinValueProperty), (float)d.GetValue(MaxValueProperty));
+        }
 
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            NumberBox numberBox = (NumberBox)d;
-
-
-            int decimalPartDigit;
-
-            if (numberBox._displayAsPercent)
-            {
-                decimalPartDigit = Math.Max(numberBox._decimalPartDigit - 2, 0);
-                numberBox._buffer = string.Format("{0:F" + decimalPartDigit + "}%", (float)e.NewValue * 100f);
-                numberBox._inputValidator = new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{decimalPartDigit}}})?%$");
-            }
-            else
-            {
-                decimalPartDigit = numberBox._decimalPartDigit;
-                numberBox._buffer = string.Format("{0:F" + decimalPartDigit + "}", e.NewValue);
-                numberBox._inputValidator = new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{numberBox._decimalPartDigit}}})?$");
-            }
+            var numberBox = (NumberBox)d;
+            numberBox._cache = numberBox._valueProcesser((float)e.NewValue);
         }
         #endregion
 
@@ -258,15 +208,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         static NumberBox()
         {
             HeightProperty.OverrideMetadata(typeof(NumberBox),
-                new ControlPropertyMetadata(AutoLayoutUtility.StandardRowHeight, ControlRelation.Measure));
+                new ControlPropertyMetadata(34f, ControlRelation.Measure));
         }
 
         /// <summary>
         /// 初始化 <see cref="NumberBox"/> 的新实例
         /// </summary>
-        public NumberBox()
-        {
-        }
+        public NumberBox() { }
 
 
         //------------------------------------------------------
@@ -278,84 +226,167 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect AnalyseCore(Rect contentRect)
+        protected override Size MeasureOverride(Size availableSize)
         {
-            return _innerRect.IntersectWith(contentRect);
+            var height = _cache.CalculateTextBoxHeight(
+                availableSize.Width,
+                (GameFont)GetValue(FontSizeProperty),
+                false);
+
+            if (height > availableSize.Height || AutoHeight)
+            {
+                return new Size(availableSize.Width, height);
+            }
+
+            return availableSize;
         }
 
         /// <inheritdoc/>
-        protected override Rect ArrangeCore(Rect availableRect)
+        protected override void DrawControl(ControlState states)
         {
-            Rect renderRect = RenderSize.AlignToArea(availableRect,
-                HorizontalAlignment, VerticalAlignment);
-
-            _innerRect = _innerSize.AlignToArea(renderRect,
-                HorizontalAlignment.Stretch, TextBoxVerticalAlignment);
-
-            return renderRect;
+            _drawer(this, states);
         }
 
-        /// <inheritdoc/>
-        protected override void DrawControl(bool isFocused)
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Static Methods
+
+        private static Action<NumberBox, ControlState> CreateDrawer(GameFont fontSize, bool isPercentage, bool isReadOnly)
         {
-            GameFont controlFont = FontSize;
-            GameFont font = Text.Font;
-            Text.Font = controlFont;
-
-            bool isDisabled = !IsEnabled;
-
-            if (isDisabled)
+            void Draw(NumberBox numberBox, ControlState states)
             {
-                GUI.color *= Widgets.InactiveColor;
-            }
+                var isDisabled = states.HasState(ControlState.Disabled);
 
-            if (_isReadOnly || isDisabled)
-            {
-                _buffer.DrawTextBox(_innerRect, FontSize, false, false);
-            }
-            else
-            {
-                string text = _buffer.DrawTextBox(_innerRect, FontSize, isFocused || IsCursorOver || IsPressing, false);
-
-                if (_buffer != text && _inputValidator.IsMatch(text))
+                if (isDisabled)
                 {
-                    Value = _displayAsPercent
-                        ? (text.Remove(text.Length - 1).Prase(_minimun) * 0.01f).Clamp(_minimun, _maximun)
-                        : text.Prase(_minimun).Clamp(_minimun, _maximun);
+                    GUI.color *= Widgets.InactiveColor;
+                }
+
+                if (isReadOnly || isDisabled)
+                {
+                    numberBox._cache.DrawTextBox(numberBox.RenderRect, fontSize, false, false);
+                }
+                else
+                {
+                    var buffer = numberBox._cache.DrawTextBox(numberBox.RenderRect, fontSize, states.HasState(ControlState.Focused | ControlState.CursorDirectlyOver | ControlState.Pressing), false);
+
+                    if (numberBox._cache != buffer && numberBox._inputValidator.IsMatch(buffer))
+                    {
+                        numberBox.SetValue(ValueProperty, string.IsNullOrEmpty(buffer)
+                            ? 0f
+                            : (isPercentage
+                                ? float.Parse(buffer.Remove(buffer.Length - 1)) * 0.01f
+                                : float.Parse(buffer)));
+                    }
                 }
             }
 
-            Text.Font = font;
+            return Draw;
         }
 
-        /// <inheritdoc/>
-        protected override Size MeasureCore(Size availableSize)
+        private static void OnLimitChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var backgroundVerticalAlignment = TextBoxVerticalAlignment;
-            Size renderSize = base.MeasureCore(availableSize);
-
-            if (backgroundVerticalAlignment is VerticalAlignment.Stretch)
-            {
-                _innerSize = renderSize;
-                return renderSize;
-            }
-
-            GameFont fontSize = FontSize;
-            float fontHeight = fontSize.GetHeight();
-
-            _innerSize = new Size(renderSize.Width,
-                _textBoxExtension.Top + fontHeight + _textBoxExtension.Bottom);
-
-            if (_innerSize.Height > renderSize.Height)
-            {
-                renderSize = new Size(renderSize.Width,
-                    backgroundVerticalAlignment is VerticalAlignment.Center
-                        ? _innerSize.Height + Mathf.Max(0f, AutoLayoutUtility.StandardRowHeight - (_textBoxExtension.Top + fontHeight + _textBoxExtension.Bottom))
-                        : _innerSize.Height);
-            }
-
-            return renderSize;
+            d.SetValue(ValueProperty, Mathf.Clamp((float)d.GetValue(ValueProperty), (float)d.GetValue(MinValueProperty), (float)d.GetValue(MaxValueProperty)));
         }
+
+        private static void UpdateDrawer(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((NumberBox)d)._drawer = CreateDrawer(
+                (GameFont)d.GetValue(FontSizeProperty),
+                (bool)d.GetValue(IsPercentageProperty),
+                (bool)d.GetValue(IsReadOnlyProperty));
+        }
+
+        private static Func<float, string> CreateFormatter(string formatter, bool isPercentage)
+        {
+            string Format(float value)
+            {
+                if (isPercentage)
+                {
+                    value *= 100f;
+                }
+
+                if (float.IsPositiveInfinity(value))
+                {
+                    return "∞";
+                }
+                else if (float.IsNegativeInfinity(value))
+                {
+                    return "-∞";
+                }
+                else
+                {
+                    return string.Format(formatter, value);
+                }
+            }
+
+            return Format;
+        }
+
+        #endregion
+
+
+        private void UpdateValueProcesser(ushort decimals, bool isPercentage)
+        {
+            if (isPercentage)
+            {
+                decimals -= 2;
+
+                if (decimals > 0)
+                {
+                    _inputValidator = new Regex($@"^-?[0-9]{{0,41}}(\.[0-9]{{0,{decimals}}})?%$");
+                    _valueProcesser = CreateFormatter($"{{0:F{decimals}}}%", isPercentage: true);
+                }
+                else
+                {
+                    _inputValidator = DefaultPercentageValidator;
+                    _valueProcesser = CreateFormatter("{0:F0}%", isPercentage: true);
+                }
+            }
+            else
+            {
+                if (decimals > 0)
+                {
+                    _inputValidator = new Regex($@"^-?[0-9]{{0,39}}(\.[0-9]{{0,{decimals}}})?$");
+                    _valueProcesser = CreateFormatter($"{{0:F{decimals}}}", isPercentage: false);
+                }
+                else
+                {
+                    _inputValidator = DefaultValidator;
+                    _valueProcesser = DefaultFormatter;
+                }
+            }
+
+            _cache = _valueProcesser(Value);
+        }
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private static readonly Action<NumberBox, ControlState> DefaultDrawer = CreateDrawer(GameFont.Small, false, false);
+        private static readonly Func<float, string> DefaultFormatter = CreateFormatter("{0:F0}", isPercentage: false);
+        private static readonly Regex DefaultPercentageValidator = new Regex(@"^-?[0-9]{0,41}?$");
+        private static readonly Regex DefaultValidator = new Regex(@"^-?[0-9]{0,39}?$");
+
+        private string _cache = "0";
+        private Func<float, string> _valueProcesser = DefaultFormatter;
+
+        private Regex _inputValidator = DefaultValidator;
+
+        private Action<NumberBox, ControlState> _drawer = DefaultDrawer;
 
         #endregion
     }

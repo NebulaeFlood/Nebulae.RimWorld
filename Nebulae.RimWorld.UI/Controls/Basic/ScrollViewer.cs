@@ -1,46 +1,21 @@
-﻿using Nebulae.RimWorld.UI.Data;
-using Nebulae.RimWorld.UI.Utilities;
-using Nebulae.RimWorld.Utilities;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
-using Verse;
 using Verse.Steam;
+using Verse;
+using Nebulae.RimWorld.UI.Utilities;
+using Nebulae.RimWorld.UI.Core.Data;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
-    /// 滚动视图控件
+    /// 一个可以滚动内容的控件
     /// </summary>
-    public class ScrollViewer : FrameworkControl
+    public sealed class ScrollViewer : ContentControl
     {
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private Visual _content;
-
-        private bool _hasContent;
-
-        private bool _horizontalScroll;
-
-        private bool _shouldDrawHorizontalScrollBar;
-        private bool _shouldDrawVerticalScrollBar;
-        private bool _shouldUpdateSegment = true;
-
-        private float _horizontalOffset = 0f;
-        private float _horizontalMaxOffset = 0f;
-        private float _verticalOffset = 0f;
-        private float _verticalMaxOffset = 0f;
-        private float _viewHeight = 0f;
-        private float _viewWidth = 0f;
-
-        #endregion
-
-
         //------------------------------------------------------
         //
         //  Public Properties
@@ -50,39 +25,30 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Public Properties
 
         /// <summary>
-        /// 内容控件
+        /// 获取或设置一个值，指示 <see cref="ScrollViewer"/> 是否启用拖动滚动
         /// </summary>
-        public Visual Content
+        public bool DragScroll
         {
-            get => _content;
-            set
-            {
-                if (!ReferenceEquals(_content, value))
-                {
-                    if (_hasContent)
-                    {
-                        _content.SetParent(null);
-                    }
-                    
-                    _content = value;
-                    _hasContent = value != null;
-
-                    if (_hasContent)
-                    {
-                        _content.SetParent(this);
-                        _content.InvalidateMeasure();
-                    }
-                }
-            }
+            get => _dragScroll;
+            set => _dragScroll = value;
         }
 
         /// <summary>
-        /// 内容的水平偏移量
+        /// 获取或设置一个值，指示 <see cref="ScrollViewer"/> 的内容的水平偏移量
         /// </summary>
         public float HorizontalOffset
         {
             get => _horizontalOffset;
-            set => _horizontalOffset = Mathf.Clamp(value, 0f, _horizontalMaxOffset);
+            set
+            {
+                value = Mathf.Clamp(value, 0f, _horizontalMaxOffset);
+
+                if (_horizontalOffset != value)
+                {
+                    _horizontalOffset = value;
+                    _shouldUpdateSegment = true;
+                }
+            }
         }
 
         #region HorizontalScrollBarVisibility
@@ -96,7 +62,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="HorizontalScrollBarVisibility"/> 依赖属性。
+        /// 标识 <see cref="HorizontalScrollBarVisibility"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty HorizontalScrollBarVisibilityProperty =
             DependencyProperty.Register(nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollViewer),
@@ -114,7 +80,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="HorizontalScrollOrigin"/> 依赖属性。
+        /// 标识 <see cref="HorizontalScrollOrigin"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty HorizontalScrollOriginProperty =
             DependencyProperty.Register(nameof(HorizontalScrollOrigin), typeof(HorizontalScrollOrigin), typeof(ScrollViewer),
@@ -122,7 +88,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #endregion
 
         /// <summary>
-        /// 默认使用水平滚动
+        /// 获取或设置一个值，指示鼠标滚轮滚动时，<see cref="ScrollViewer"/> 使用水平滚动还是垂直滚动
         /// </summary>
         public bool HorizontalScroll
         {
@@ -131,12 +97,21 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 内容的垂直偏移量
+        /// 获取或设置一个值，指示 <see cref="ScrollViewer"/> 的内容的垂直偏移量
         /// </summary>
         public float VerticalOffset
         {
             get => _verticalOffset;
-            set => _verticalOffset = Mathf.Clamp(value, 0f, _verticalMaxOffset);
+            set
+            {
+                value = Mathf.Clamp(value, 0f, _verticalMaxOffset);
+
+                if (_verticalOffset != value)
+                {
+                    _verticalOffset = value;
+                    _shouldUpdateSegment = true;
+                }
+            }
         }
 
         #region VerticalScrollBarVisibility
@@ -150,7 +125,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="VerticalScrollBarVisibility"/> 依赖属性。
+        /// 标识 <see cref="VerticalScrollBarVisibility"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty VerticalScrollBarVisibilityProperty =
             DependencyProperty.Register(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollViewer),
@@ -168,7 +143,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="VerticalScrollOrigin"/> 依赖属性。
+        /// 标识 <see cref="VerticalScrollOrigin"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty VerticalScrollOriginProperty =
             DependencyProperty.Register(nameof(VerticalScrollOrigin), typeof(VerticalScrollOrigin), typeof(ScrollViewer),
@@ -181,10 +156,10 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         static ScrollViewer()
         {
             HorizontalAlignmentProperty.OverrideMetadata(typeof(ScrollViewer),
-                new ControlPropertyMetadata(HorizontalAlignment.Stretch, ControlRelation.Measure));
+                new PropertyMetadata(HorizontalAlignment.Stretch));
 
             VerticalAlignmentProperty.OverrideMetadata(typeof(ScrollViewer),
-                new ControlPropertyMetadata(VerticalAlignment.Stretch, ControlRelation.Measure));
+                new PropertyMetadata(VerticalAlignment.Stretch));
         }
 
         /// <summary>
@@ -209,7 +184,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public void ScrollToBottom()
         {
-            _verticalOffset = _verticalMaxOffset;
+            if (_verticalOffset != _verticalMaxOffset)
+            {
+                _verticalOffset = _verticalMaxOffset;
+                _shouldUpdateSegment = true;
+            }
         }
 
         /// <summary>
@@ -217,7 +196,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public void ScrollToLeft()
         {
-            _horizontalOffset = 0f;
+            if (_horizontalOffset != 0f)
+            {
+                _horizontalOffset = 0f;
+                _shouldUpdateSegment = true;
+            }
         }
 
         /// <summary>
@@ -225,7 +208,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public void ScrollToRight()
         {
-            _horizontalOffset = _horizontalMaxOffset;
+            if (_horizontalOffset != _horizontalMaxOffset)
+            {
+                _horizontalOffset = _horizontalMaxOffset;
+                _shouldUpdateSegment = true;
+            }
         }
 
         /// <summary>
@@ -233,7 +220,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public void ScrollToTop()
         {
-            _verticalOffset = 0f;
+            if (_verticalOffset != 0f)
+            {
+                _verticalOffset = 0f;
+                _shouldUpdateSegment = true;
+            }
         }
 
         #endregion
@@ -248,30 +239,96 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect ArrangeCore(Rect availableRect)
+        protected override Rect ArrangeOverride(Rect availableRect)
         {
-            if (_hasContent)
+            Content?.Arrange(new Rect(
+                    0f,
+                    0f,
+                    Mathf.Max(_viewWidth, _contentSize.Width),
+                    Mathf.Max(_viewHeight, _contentSize.Height)));
+
+            return availableRect;
+        }
+
+        /// <inheritdoc/>
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            _shouldDrawHorizontalScrollBar = HorizontalScrollBarVisibility is ScrollBarVisibility.Visible;
+            _shouldDrawVerticalScrollBar = VerticalScrollBarVisibility is ScrollBarVisibility.Visible;
+
+            if (IsEmpty)
             {
-                _shouldUpdateSegment = true;
+                _horizontalOffset = 0f;
+                _horizontalMaxOffset = 0f;
 
-                Size contentSize = _content.DesiredSize;
+                _verticalOffset = 0f;
+                _verticalMaxOffset = 0f;
 
-                _content.Arrange(new Rect(
-                    0f,
-                    0f,
-                    Mathf.Min(_viewWidth, contentSize.Width),
-                    Mathf.Min(_viewHeight, contentSize.Height)));
+                _viewHeight = _shouldDrawHorizontalScrollBar
+                    ? availableSize.Height - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top
+                    : availableSize.Height;
+
+                _viewWidth = _shouldDrawVerticalScrollBar
+                    ? availableSize.Width - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right
+                    : availableSize.Width;
+            }
+            else
+            {
+                var content = Content;
+
+                float contentAvailableHeight = availableSize.Height;
+                float contentAvailableWidth = availableSize.Width;
+
+                if (_shouldDrawHorizontalScrollBar)
+                {
+                    contentAvailableHeight = contentAvailableHeight - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top;
+                }
+
+                if (_shouldDrawVerticalScrollBar)
+                {
+                    contentAvailableWidth = contentAvailableWidth - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right;
+                }
+
+                _contentSize = content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
+
+                bool shouldMeasureAgain = false;
+
+                if (!_shouldDrawHorizontalScrollBar
+                    && HorizontalScrollBarVisibility != ScrollBarVisibility.Hidden
+                    && _contentSize.Width > contentAvailableWidth)
+                {
+                    contentAvailableHeight = contentAvailableHeight - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top;
+                    shouldMeasureAgain = true;
+                    _shouldDrawHorizontalScrollBar = true;
+                }
+
+                if (!_shouldDrawVerticalScrollBar
+                    && VerticalScrollBarVisibility != ScrollBarVisibility.Hidden
+                    && _contentSize.Height > contentAvailableHeight)
+                {
+                    contentAvailableWidth = contentAvailableWidth - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right;
+                    shouldMeasureAgain = true;
+                    _shouldDrawVerticalScrollBar = true;
+                }
+
+                _viewHeight = contentAvailableHeight;
+                _viewWidth = contentAvailableWidth;
+
+                if (shouldMeasureAgain)
+                {
+                    _contentSize = content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
+                }
 
                 if (_horizontalMaxOffset > 0f)
                 {
                     float offsetPercent = _horizontalOffset / _horizontalMaxOffset;
 
-                    _horizontalMaxOffset = Mathf.Max(0f, contentSize.Width - _viewWidth);
-                    _horizontalOffset = (_horizontalMaxOffset * offsetPercent).Clamp(0f, _horizontalMaxOffset);
+                    _horizontalMaxOffset = Mathf.Max(0f, _contentSize.Width - _viewWidth);
+                    _horizontalOffset = Mathf.Clamp((_horizontalMaxOffset * offsetPercent), 0f, _horizontalMaxOffset);
                 }
                 else
                 {
-                    _horizontalMaxOffset = Mathf.Max(0f, contentSize.Width - _viewWidth);
+                    _horizontalMaxOffset = Mathf.Max(0f, _contentSize.Width - _viewWidth);
                     _horizontalOffset = HorizontalScrollOrigin is HorizontalScrollOrigin.Left ? 0f : _horizontalMaxOffset;
                 }
 
@@ -279,38 +336,70 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 {
                     float offsetPercent = _verticalOffset / _verticalMaxOffset;
 
-                    _verticalMaxOffset = Mathf.Max(0f, contentSize.Height - _viewHeight);
-                    _verticalOffset = (_verticalMaxOffset * offsetPercent).Clamp(0f, _verticalMaxOffset);
+                    _verticalMaxOffset = Mathf.Max(0f, _contentSize.Height - _viewHeight);
+                    _verticalOffset = Mathf.Clamp((_verticalMaxOffset * offsetPercent), 0f, _verticalMaxOffset);
                 }
                 else
                 {
-                    _verticalMaxOffset = Mathf.Max(0f, contentSize.Height - _viewHeight);
+                    _verticalMaxOffset = Mathf.Max(0f, _contentSize.Height - _viewHeight);
                     _verticalOffset = VerticalScrollOrigin is VerticalScrollOrigin.Top ? 0f : _verticalMaxOffset;
                 }
             }
-            else
-            {
-                _horizontalOffset = 0f;
-                _horizontalMaxOffset = 0f;
 
-                _verticalOffset = 0f;
-                _verticalMaxOffset = 0f;
-            }
+            _canScroll = _horizontalMaxOffset > 0f || _verticalMaxOffset > 0f;
 
-            return RenderSize.AlignToArea(availableRect,
-                HorizontalAlignment, VerticalAlignment);
+            return availableSize;
         }
 
         /// <inheritdoc/>
-        protected override void DrawCore()
+        protected override SegmentResult SegmentCore(Rect visiableRect)
+        {
+            if (IsEmpty)
+            {
+                return visiableRect.IntersectWith(RenderRect);
+            }
+
+            visiableRect = visiableRect.IntersectWith(RenderRect);
+
+            var visibleContentSize = visiableRect.IntersectSizeWith(new Rect(RenderRect.x, RenderRect.y, _viewWidth, _viewHeight));
+
+            Content.Segment(new Rect(_horizontalOffset, _verticalOffset, visibleContentSize.Width, visibleContentSize.Height));
+
+            return visiableRect;
+        }
+
+        /// <inheritdoc/>
+        protected override HitTestResult HitTestCore(Vector2 hitPoint)
+        {
+            if (!ControlRect.Contains(hitPoint))
+            {
+                return HitTestResult.Empty;
+            }
+
+            if (!IsEmpty)
+            {
+                var result = Content.HitTest(new Vector2(hitPoint.x - RenderRect.x + _horizontalOffset, hitPoint.y - RenderRect.y + _verticalOffset));
+
+                if (result.IsHit)
+                {
+                    return result;
+                }
+            }
+
+            return HitTestResult.HitTest(this, true);
+        }
+
+        /// <inheritdoc/>
+        protected override void DrawCore(ControlState states)
         {
             HandleSteamDeckTouchScreen(RenderRect);
 
-            EventType eventType = Event.current.type;
+            var currentEvent = Event.current;
+            var currentEventType = currentEvent.type;
 
-            if (!_hasContent)
+            if (IsEmpty)
             {
-                if (eventType is EventType.Layout || eventType is EventType.Used)
+                if (currentEventType is EventType.Layout || currentEventType is EventType.Used)
                 {
                     Widgets.mouseOverScrollViewStack.Pop();
                     return;
@@ -350,12 +439,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 return;
             }
 
+            var content = Content;
+
             #region BeginScrollViewer
 
-            if (eventType != EventType.Layout
-                && eventType != EventType.Used)
+            if (currentEventType != EventType.Layout && currentEventType != EventType.Used)
             {
-                if (eventType is EventType.Repaint)
+                if (currentEventType is EventType.Repaint)
                 {
                     GUI.skin.scrollView.Draw(
                         RenderRect,
@@ -376,9 +466,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                         _horizontalOffset,
                         _viewWidth,
                         0f,
-                        Mathf.Max(_content.DesiredSize.Width, _viewWidth),
-                        isHorizontal: true)
-                            .Clamp(0f, Mathf.Max(0f, _horizontalMaxOffset));
+                        Mathf.Max(content.DesiredSize.Width, _viewWidth),
+                        isHorizontal: true);
 
                     _shouldUpdateSegment = _shouldUpdateSegment || _horizontalOffset != horizontalOffset;
                     _horizontalOffset = horizontalOffset;
@@ -395,9 +484,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                         _verticalOffset,
                         _viewHeight,
                         0f,
-                        Mathf.Max(_content.DesiredSize.Height, _viewHeight),
-                        isHorizontal: false)
-                            .Clamp(0f, _verticalMaxOffset);
+                        Mathf.Max(content.DesiredSize.Height, _viewHeight),
+                        isHorizontal: false);
 
                     _shouldUpdateSegment = _shouldUpdateSegment || _verticalOffset != verticalOffset;
                     _verticalOffset = verticalOffset;
@@ -420,11 +508,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             if (_shouldUpdateSegment)
             {
-                _content.InvalidateSegment();
+                content.InvalidateSegment();
                 _shouldUpdateSegment = false;
             }
-            _content.Draw();
 
+            content.Draw();
 
             #region EndScrollViewer
 
@@ -432,144 +520,44 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             GUI.EndClip();
             Widgets.mouseOverScrollViewStack.Pop();
 
-            if (ControlRect.Contains(Event.current.mousePosition) && Event.current.type is EventType.ScrollWheel)
+            if (!_canScroll)
             {
-                if (_horizontalScroll && _content.DesiredSize.Width > _viewWidth)
-                {
-                    var delta = Event.current.delta;
-
-                    _horizontalOffset = (_horizontalOffset + delta.y * 20f)
-                        .Clamp(0f, Mathf.Max(0f, _content.DesiredSize.Width - _viewWidth));
-
-                    _verticalOffset = (_verticalOffset + delta.x * 20f)
-                        .Clamp(0f, Mathf.Max(0f, _content.DesiredSize.Height - _viewHeight));
-
-                    Event.current.Use();
-                    _shouldUpdateSegment = true;
-                }
-                else if (!_horizontalScroll && _content.DesiredSize.Height > _viewHeight)
-                {
-                    var delta = Event.current.delta;
-
-                    _horizontalOffset = (_horizontalOffset + delta.x * 20f)
-                        .Clamp(0f, Mathf.Max(0f, _content.DesiredSize.Width - _viewWidth));
-
-                    _verticalOffset = (_verticalOffset + delta.y * 20f)
-                        .Clamp(0f, Mathf.Max(0f, _content.DesiredSize.Height - _viewHeight));
-
-                    Event.current.Use();
-                    _shouldUpdateSegment = true;
-                }
+                return;
             }
+
+            if (_dragScroll && currentEventType is EventType.MouseDrag && IsDragging)
+            {
+                var delta = currentEvent.delta;
+
+                _horizontalOffset = Mathf.Clamp(_horizontalOffset - delta.x, 0f, _horizontalMaxOffset);
+                _verticalOffset = Mathf.Clamp(_verticalOffset - delta.y, 0f, _verticalMaxOffset);
+
+                Event.current.Use();
+
+                _shouldUpdateSegment = true;
+            }
+
+            if (states.HasState(ControlState.CursorOver) && currentEventType is EventType.ScrollWheel)
+            {
+                var delta = currentEvent.delta;
+
+                if (_horizontalScroll)
+                {
+                    _horizontalOffset = Mathf.Clamp(_horizontalOffset + delta.y * 20f, 0f, _horizontalMaxOffset);
+                    _verticalOffset = Mathf.Clamp(_verticalOffset + delta.x * 20f, 0f, _verticalMaxOffset);
+                }
+                else
+                {
+                    _horizontalOffset = Mathf.Clamp(_horizontalOffset + delta.x * 20f, 0f, _horizontalMaxOffset);
+                    _verticalOffset = Mathf.Clamp(_verticalOffset + delta.y * 20f, 0f, _verticalMaxOffset);
+                }
+
+                Event.current.Use();
+
+                _shouldUpdateSegment = true;
+            }
+
             #endregion
-        }
-
-        /// <inheritdoc/>
-        protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
-        {
-            if (_content is null)
-            {
-                yield break;
-            }
-
-            yield return _content;
-        }
-
-        /// <inheritdoc/>
-        protected override Size MeasureCore(Size availableSize)
-        {
-            Size renderSize = base.MeasureCore(availableSize);
-
-            _shouldDrawHorizontalScrollBar = HorizontalScrollBarVisibility is ScrollBarVisibility.Visible;
-            _shouldDrawVerticalScrollBar = VerticalScrollBarVisibility is ScrollBarVisibility.Visible;
-
-            if (_hasContent)
-            {
-                float contentAvailableHeight = renderSize.Height;
-                float contentAvailableWidth = renderSize.Width;
-
-                if (_shouldDrawHorizontalScrollBar)
-                {
-                    contentAvailableHeight = contentAvailableHeight - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top;
-                }
-
-                if (_shouldDrawVerticalScrollBar)
-                {
-                    contentAvailableWidth = contentAvailableWidth - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right;
-                }
-
-                _viewHeight = contentAvailableHeight;
-                _viewWidth = contentAvailableWidth;
-
-                Size contentSize = _content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
-
-                bool shouldMeasureAgain = false;
-
-                if (!_shouldDrawHorizontalScrollBar
-                    && HorizontalScrollBarVisibility != ScrollBarVisibility.Hidden
-                    && contentSize.Width > contentAvailableWidth)
-                {
-                    contentAvailableHeight = contentAvailableHeight - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top;
-                    shouldMeasureAgain = true;
-                    _shouldDrawHorizontalScrollBar = true;
-                }
-
-                if (!_shouldDrawVerticalScrollBar
-                    && VerticalScrollBarVisibility != ScrollBarVisibility.Hidden
-                    && contentSize.Height > contentAvailableHeight)
-                {
-                    contentAvailableWidth = contentAvailableWidth - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right;
-                    shouldMeasureAgain = true;
-                    _shouldDrawVerticalScrollBar = true;
-                }
-
-                if (shouldMeasureAgain)
-                {
-                    _content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
-                }
-            }
-            else
-            {
-                _viewHeight = _shouldDrawHorizontalScrollBar
-                    ? renderSize.Height - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top
-                    : renderSize.Height;
-
-                _viewWidth = _shouldDrawVerticalScrollBar
-                    ? renderSize.Width - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right
-                    : renderSize.Width;
-            }
-
-            return renderSize;
-        }
-
-        /// <inheritdoc/>
-        protected override Rect SegmentCore(Rect visiableRect)
-        {
-            if (IsChild)
-            {
-                Rect contentVisibleRect = visiableRect
-                    .IntersectWith(new Rect(
-                        RenderRect.x,
-                        RenderRect.y,
-                        _viewWidth,
-                        _viewHeight));
-
-                _content?.Segment(new Rect(
-                    _horizontalOffset,
-                    _verticalOffset,
-                    contentVisibleRect.width,
-                    contentVisibleRect.height));
-            }
-            else
-            {
-                _content?.Segment(new Rect(
-                    _horizontalOffset,
-                    _verticalOffset,
-                    _viewWidth,
-                    _viewHeight));
-            }
-
-            return visiableRect;
         }
 
         #endregion
@@ -636,6 +624,38 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             _horizontalOffset = scrollPosition.x;
             _verticalOffset = scrollPosition.y;
         }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private bool _canScroll;
+
+        private bool _dragScroll;
+
+        private bool _horizontalScroll;
+
+        private bool _shouldDrawHorizontalScrollBar;
+        private bool _shouldDrawVerticalScrollBar;
+        private bool _shouldUpdateSegment;
+
+        private Size _contentSize;
+
+        private float _horizontalOffset = 0f;
+        private float _horizontalMaxOffset = 0f;
+
+        private float _verticalOffset = 0f;
+        private float _verticalMaxOffset = 0f;
+
+        private float _viewHeight = 0f;
+        private float _viewWidth = 0f;
 
         #endregion
     }

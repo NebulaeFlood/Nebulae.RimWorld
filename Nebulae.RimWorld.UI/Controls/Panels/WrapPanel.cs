@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Core.Data;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
@@ -28,7 +29,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 标识 <see cref="ItemHeight"/> 依赖属性。
+        /// 标识 <see cref="ItemHeight"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty ItemHeightProperty =
             DependencyProperty.Register(nameof(ItemHeight), typeof(float), typeof(WrapPanel),
@@ -46,7 +47,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 标识 <see cref="ItemWidth"/> 依赖属性。
+        /// 标识 <see cref="ItemWidth"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty ItemWidthProperty =
             DependencyProperty.Register(nameof(ItemWidth), typeof(float), typeof(WrapPanel),
@@ -64,7 +65,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 标识 <see cref="Orientation"/> 依赖属性。
+        /// 标识 <see cref="Orientation"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty OrientationProperty =
             DependencyProperty.Register(nameof(Orientation), typeof(Orientation), typeof(WrapPanel),
@@ -77,9 +78,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// 初始化 <see cref="WrapPanel"/> 的新实例
         /// </summary>
-        public WrapPanel()
-        {
-        }
+        public WrapPanel() { }
 
         //------------------------------------------------------
         //
@@ -94,7 +93,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="control">要添加的控件</param>
         /// <returns>该面板控件</returns>
-        public WrapPanel Append(Visual control)
+        public WrapPanel Append(Control control)
         {
             Children.Add(control);
             return this;
@@ -105,7 +104,18 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="controls">要添加的控件</param>
         /// <returns>该面板控件</returns>
-        public WrapPanel Set(params Visual[] controls)
+        public WrapPanel Set(IEnumerable<Control> controls)
+        {
+            Children.OverrideCollection(controls);
+            return this;
+        }
+
+        /// <summary>
+        /// 清除面板并重新设置面板中的控件
+        /// </summary>
+        /// <param name="controls">要添加的控件</param>
+        /// <returns>该面板控件</returns>
+        public WrapPanel Set(params Control[] controls)
         {
             Children.OverrideCollection(controls);
             return this;
@@ -125,7 +135,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <param name="control">要插入的控件</param>
         /// <param name="index">被挤开的控件</param>
         /// <returns>若插入了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Insert(Visual control, Visual index)
+        public bool Insert(Control control, Control index)
         {
             return Children.Insert(index, control);
         }
@@ -135,7 +145,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="control">要移除的控件</param>
         /// <returns>若移除了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Remove(Visual control)
+        public bool Remove(Control control)
         {
             return Children.Remove(control);
         }
@@ -152,107 +162,70 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect ArrangeOverride(Rect availableRect)
+        protected override Rect ArrangeOverride(Rect availableRect, Control[] children)
         {
             Size childrenSize = RenderSize;
 
-            float childMaxHeight = ItemHeight;
-            float childMaxWidth = ItemWidth;
+            float currentX = availableRect.x;
+            float currentY = availableRect.y;
 
-            float currentX = 0f;
-            float currentY = 0f;
-
-            var children = FilteredChildren;
-
-            Size childAvailableSize;
+            float limitation;
 
             if (Orientation is Orientation.Horizontal)
             {
-                childAvailableSize = new Size(
-                    childMaxWidth > 1f
-                        ? Mathf.Min(childMaxWidth, availableRect.width)
-                        : childMaxWidth * availableRect.width,
-                    childMaxHeight > 1f
-                        ? childMaxHeight
-                        : childMaxHeight * availableRect.width);
+                limitation = currentX + childrenSize.Width;
 
                 for (int i = 0; i < children.Length; i++)
                 {
                     var child = children[i];
-                    if (child.RenderSize > Size.Empty)
+
+                ArrangeStart:
+                    if (currentX + _childMaxSize.Width > limitation)
                     {
+                        currentX = availableRect.x;
+                        currentY += _childMaxSize.Height;   // 换行
 
-                    ArrangeStart:
-                        if (currentX + childAvailableSize.Width > childrenSize.Width)
-                        {
-                            currentX = 0f;
-                            currentY += childAvailableSize.Height;   // 换行
+                        goto ArrangeStart;  // 重新排列该控件
+                    }
+                    else
+                    {
+                        child.Arrange(new Rect(currentX, currentY, _childMaxSize.Width, _childMaxSize.Height));
 
-                            goto ArrangeStart;  // 重新排列该控件
-                        }
-                        else
-                        {
-                            child.Arrange(new Rect(
-                                currentX + availableRect.x,
-                                currentY + availableRect.y,
-                                childAvailableSize.Width,
-                                childAvailableSize.Height));
-
-                            currentX += childAvailableSize.Width;
-                        }
+                        currentX += _childMaxSize.Width;
                     }
                 }
             }
             else
             {
-                childAvailableSize = new Size(
-                    childMaxWidth > 1f
-                        ? childMaxWidth
-                        : childMaxWidth * availableRect.width,
-                    childMaxHeight > 1f
-                        ? Mathf.Min(childMaxHeight, availableRect.height)
-                        : childMaxHeight * availableRect.height);
+                limitation = currentY + childrenSize.Height;
 
                 for (int i = 0; i < children.Length; i++)
                 {
                     var child = children[i];
-                    if (child.RenderSize > Size.Empty)
+
+                ArrangeStart:
+                    if (currentY + _childMaxSize.Height > limitation)
                     {
+                        currentY = availableRect.y;
+                        currentX += _childMaxSize.Width; // 换列
 
-                    ArrangeStart:
-                        if (currentY + childAvailableSize.Height > childrenSize.Height)
-                        {
-                            currentY = 0f;
-                            currentX += childAvailableSize.Width; // 换列
+                        goto ArrangeStart;  // 重新排列该控件
+                    }
+                    else
+                    {
+                        child.Arrange(new Rect(currentX, currentY, _childMaxSize.Width, _childMaxSize.Height));
 
-                            goto ArrangeStart;  // 重新排列该控件
-                        }
-                        else
-                        {
-                            child.Arrange(new Rect(
-                                currentX + availableRect.x,
-                                currentY + availableRect.y,
-                                childAvailableSize.Width,
-                                childAvailableSize.Height));
-
-                            currentY += childAvailableSize.Height;
-                        }
+                        currentY += _childMaxSize.Height;
                     }
                 }
             }
 
-            return new Rect(
-                availableRect.x,
-                availableRect.y,
-                childrenSize.Width,
-                childrenSize.Height);
+            return new Rect(availableRect.x, availableRect.y, childrenSize.Width, childrenSize.Height);
         }
 
         /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize, Control[] children)
         {
-            Visual[] filteredChildren = FilteredChildren;
-
             float childMaxHeight = ItemHeight;
             float childMaxWidth = ItemWidth;
 
@@ -271,9 +244,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         : childMaxHeight * availableSize.Height;
 
                 childrenColumnCount = (int)Mathf.Max(1f, availableSize.Width / childMaxWidth);
-                childrenRowCount = filteredChildren.Length / childrenColumnCount;
+                childrenRowCount = children.Length / childrenColumnCount;
 
-                if (filteredChildren.Length % childrenColumnCount > 0)
+                if (children.Length % childrenColumnCount > 0)
                 {
                     childrenRowCount++;
                 }
@@ -290,21 +263,19 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     : childMaxHeight * availableSize.Height;
 
                 childrenRowCount = (int)Mathf.Max(1f, availableSize.Height / childMaxHeight);
-                childrenColumnCount = filteredChildren.Length / childrenRowCount;
+                childrenColumnCount = children.Length / childrenRowCount;
 
-                if (filteredChildren.Length % childrenRowCount > 0)
+                if (children.Length % childrenRowCount > 0)
                 {
                     childrenColumnCount++;
                 }
             }
 
-            Size childMaxSize = new Size(childMaxWidth, childMaxHeight);
-
-            var children = FilteredChildren;
+            _childMaxSize = new Size(childMaxWidth, childMaxHeight);
 
             for (int i = 0; i < children.Length; i++)
             {
-                children[i].Measure(childMaxSize);
+                children[i].Measure(_childMaxSize);
             }
 
             return new Size(
@@ -313,5 +284,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         #endregion
+
+
+        private Size _childMaxSize = Size.Empty;
     }
 }

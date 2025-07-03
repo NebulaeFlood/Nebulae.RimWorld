@@ -1,9 +1,13 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using RimWorld;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
-using Verse.Sound;
 using GameText = Verse.Text;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
@@ -11,66 +15,39 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
     /// <summary>
     /// 标签控件
     /// </summary>
-    public class Label : FrameworkControl
+    public sealed class Label : FrameworkControl
     {
         //------------------------------------------------------
         //
-        //  Private Fields
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Private Fields
+        #region Dependency Properties
 
-        private TextAnchor _anchor = TextAnchor.MiddleCenter;
-
-        private string _buffer = string.Empty;
-
-        private SoundDef _clickSound = SoundDefOf.Tick_Tiny;
-
-        private bool _drawHighlight;
-        private bool _onlyTextHitTestVisible;
-
-        private Rect _labelRect;
-        private Rect _textRect;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
-        #region Public Properties
-
+        #region Anchor
         /// <summary>
-        /// 获取或设置文本锚点
+        /// 获取或设置 <see cref="Label"/> 的文本锚点
         /// </summary>
         public TextAnchor Anchor
         {
-            get => _anchor;
-            set => _anchor = value;
+            get { return (TextAnchor)GetValue(AnchorProperty); }
+            set { SetValue(AnchorProperty, value); }
         }
 
         /// <summary>
-        /// 点击标签时的音效
+        /// 标识 <see cref="Anchor"/> 依赖属性
         /// </summary>
-        public SoundDef ClickSound
-        {
-            get => _clickSound;
-            set => _clickSound = value;
-        }
+        public static readonly DependencyProperty AnchorProperty =
+            DependencyProperty.Register(nameof(Anchor), typeof(TextAnchor), typeof(Label),
+                new PropertyMetadata(TextAnchor.MiddleCenter, OnAnchorChanged));
 
-        /// <summary>
-        /// 是否绘制高亮效果
-        /// </summary>
-        /// <remarks>仅当 <see cref="Visual.IsHitTestVisible"/> 为 <see langword="true"/> 时有效。</remarks>
-        public bool DrawHighlight
+        private static void OnAnchorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get => _drawHighlight;
-            set => _drawHighlight = value;
+            var label = (Label)d;
+            label._drawer = TextUtility.CreateLabelDrawer((TextAnchor)e.NewValue, label.FontSize);
         }
+        #endregion
 
         #region FontSize
         /// <summary>
@@ -83,25 +60,22 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="FontSize"/> 依赖属性。
+        /// 标识 <see cref="FontSize"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty FontSizeProperty =
             DependencyProperty.Register(nameof(FontSize), typeof(GameFont), typeof(Label),
-                new ControlPropertyMetadata(GameFont.Small, TextUtility.CoerceFontSize, ControlRelation.Arrange));
-        #endregion
+                new ControlPropertyMetadata(GameFont.Small, TextUtility.CoerceFontSize, OnFontSizeChanged, ControlRelation.Arrange));
 
-        /// <summary>
-        /// 是否只有文字区域可交互
-        /// </summary>
-        public bool OnlyTextHitTestVisible
+        private static void OnFontSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get => _onlyTextHitTestVisible;
-            set => _onlyTextHitTestVisible = value;
+            var label = (Label)d;
+            label._drawer = TextUtility.CreateLabelDrawer(label.Anchor, (GameFont)e.NewValue);
         }
+        #endregion
 
         #region Text
         /// <summary>
-        /// 获取或设置标签文本
+        /// 获取或设置 <see cref="Label"/> 的文本内容
         /// </summary>
         public string Text
         {
@@ -110,30 +84,25 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="Text"/> 依赖属性。
+        /// 标识 <see cref="Text"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty TextProperty =
             DependencyProperty.Register(nameof(Text), typeof(string), typeof(Label),
-                new ControlPropertyMetadata(string.Empty, ControlRelation.Arrange));
-        #endregion
+                new ControlPropertyMetadata(string.Empty, CoerceText, ControlRelation.Measure));
 
-        #endregion
-
-
-        static Label()
+        private static object CoerceText(DependencyObject d, object baseValue)
         {
-            HorizontalAlignmentProperty.OverrideMetadata(typeof(Label),
-                new ControlPropertyMetadata(HorizontalAlignment.Stretch, ControlRelation.Measure));
-            VerticalAlignmentProperty.OverrideMetadata(typeof(Label),
-                new ControlPropertyMetadata(VerticalAlignment.Stretch, ControlRelation.Measure));
+            return string.IsNullOrWhiteSpace((string)baseValue) ? string.Empty : baseValue;
         }
+        #endregion
+
+        #endregion
+
 
         /// <summary>
         /// 初始化 <see cref="Label"/> 的新实例
         /// </summary>
-        public Label()
-        {
-        }
+        public Label() { }
 
 
         //------------------------------------------------------
@@ -144,59 +113,45 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         #region Protected Methods
 
-        /// <inheritdoc/>
-        protected override Rect AnalyseCore(Rect contentRect)
+        /// inheritdoc/>
+        protected override Size MeasureOverride(Size availableSize)
         {
-            return contentRect.IntersectWith(_onlyTextHitTestVisible
-                ? _textRect
-                : _labelRect);
+            var fontSize = FontSize;
+            var text = Text;
+
+            _cache = string.IsNullOrEmpty(text) 
+                ? string.Empty 
+                : text.Truncate(availableSize.Width, fontSize);
+
+            return new Size(availableSize.Width, fontSize.GetHeight());
         }
 
         /// <inheritdoc/>
-        protected override Rect ArrangeCore(Rect availableRect)
+        protected override void DrawCore(ControlState states)
         {
-            Rect renderRect = RenderSize.AlignToArea(availableRect,
-                HorizontalAlignment, VerticalAlignment);
-
-            _buffer = Text.Truncate(RenderSize.Width);
-            _textRect = _buffer.AlignToArea(FontSize, renderRect, _anchor);
-            _labelRect = new Rect(renderRect.x, _textRect.y, renderRect.width, _textRect.height);
-
-            return renderRect;
-        }
-
-        /// <inheritdoc/>
-        protected override void DrawCore()
-        {
-            if (_drawHighlight && IsCursorOver)
-            {
-                GUI.DrawTexture(
-                    _onlyTextHitTestVisible ? _textRect : _labelRect,
-                    TexUI.HighlightTex);
-            }
-
-            if (!IsEnabled)
+            if (states.HasState(ControlState.Disabled))
             {
                 GUI.color *= Widgets.InactiveColor;
             }
 
-            TextAnchor currentAnchor = GameText.Anchor;
-            GameFont currentFont = GameText.Font;
-
-            GameText.Anchor = _anchor;
-            GameText.Font = FontSize;
-
-            Widgets.Label(RenderRect, _buffer);
-
-            GameText.Anchor = currentAnchor;
-            GameText.Font = currentFont;
+            _drawer(_cache, RenderRect);
         }
 
-        /// <inheritdoc/>
-        protected internal override void OnClick()
-        {
-            _clickSound?.PlayOneShotOnCamera();
-        }
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private static readonly LabelCache DefaultDrawer = TextUtility.CreateLabelDrawer(TextAnchor.MiddleCenter, GameFont.Small);
+
+        private string _cache = string.Empty;
+        private LabelCache _drawer = DefaultDrawer;
 
         #endregion
     }

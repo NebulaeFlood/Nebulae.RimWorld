@@ -7,17 +7,17 @@ namespace Nebulae.RimWorld.UI.Controls
     [Serializable]
     internal sealed class LogicalTreeException : Exception
     {
-        internal LogicalTreeException(Visual control, string message) :
-            base(CreateMessageText(control, message))
+        internal LogicalTreeException(string message, Control control) :
+            base(CreateMessageText(message, control))
         {
         }
 
-        internal LogicalTreeException(Visual control, string message, Exception innerException) :
-            base(CreateMessageText(control, message, hasInnerException: true), innerException)
+        internal LogicalTreeException(string message, Control control, Exception innerException) :
+            base(CreateMessageText(message, control, hasInnerException: true), innerException)
         {
         }
 
-        private static string CreateMessageText(Visual control, string message, bool hasInnerException = false)
+        private static string CreateMessageText(string message, Control control, bool hasInnerException = false)
         {
             var sb = new StringBuilder("A control ");
 

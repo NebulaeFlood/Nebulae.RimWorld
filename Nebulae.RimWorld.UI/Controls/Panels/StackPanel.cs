@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Core.Data;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
@@ -29,11 +30,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 标识 <see cref="ReferenceSize"/> 依赖属性。
+        /// 标识 <see cref="ReferenceSize"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty ReferenceSizeProperty =
             DependencyProperty.Register(nameof(ReferenceSize), typeof(Size), typeof(StackPanel),
-                new ControlPropertyMetadata(Size.Epsilon, ControlRelation.Measure));
+                new ControlPropertyMetadata(new Size(1f, 34f), ControlRelation.Measure));
         #endregion
 
         #region Orientation
@@ -47,7 +48,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 标识 <see cref="Orientation"/> 依赖属性。
+        /// 标识 <see cref="Orientation"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty OrientationProperty =
             DependencyProperty.Register(nameof(Orientation), typeof(Orientation), typeof(StackPanel),
@@ -60,9 +61,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// 初始化 <see cref="StackPanel"/> 的新实例
         /// </summary>
-        public StackPanel()
-        {
-        }
+        public StackPanel() { }
 
 
         //------------------------------------------------------
@@ -78,7 +77,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="control">要添加的控件</param>
         /// <returns>该面板控件</returns>
-        public StackPanel Append(Visual control)
+        public StackPanel Append(Control control)
         {
             Children.Add(control);
             return this;
@@ -89,7 +88,18 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="controls">要添加的控件</param>
         /// <returns>该面板控件</returns>
-        public StackPanel Set(params Visual[] controls)
+        public StackPanel Set(IEnumerable<Control> controls)
+        {
+            Children.OverrideCollection(controls);
+            return this;
+        }
+
+        /// <summary>
+        /// 清除面板并重新设置面板中的控件
+        /// </summary>
+        /// <param name="controls">要添加的控件</param>
+        /// <returns>该面板控件</returns>
+        public StackPanel Set(params Control[] controls)
         {
             Children.OverrideCollection(controls);
             return this;
@@ -109,7 +119,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <param name="control">要插入的控件</param>
         /// <param name="index">被挤开的控件</param>
         /// <returns>若插入了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Insert(Visual control, Visual index)
+        public bool Insert(Control control, Control index)
         {
             return Children.Insert(index, control);
         }
@@ -119,7 +129,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         /// <param name="control">要移除的控件</param>
         /// <returns>若移除了指定控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Remove(Visual control)
+        public bool Remove(Control control)
         {
             return Children.Remove(control);
         }
@@ -136,32 +146,24 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect ArrangeOverride(Rect availableRect)
+        protected override Rect ArrangeOverride(Rect availableRect, Control[] children)
         {
             Size childrenSize = RenderSize;
             float currentX = availableRect.x;
             float currentY = availableRect.y;
-
-            var children = FilteredChildren;
-
-            Size childDesiredSize;
 
             if (Orientation is Orientation.Horizontal)
             {
                 for (int i = 0; i < children.Length; i++)
                 {
                     var child = children[i];
-                    childDesiredSize = child.DesiredSize;
 
-                    if (childDesiredSize > Size.Empty)
-                    {
-                        currentX += child.Arrange(new Rect(
-                            currentX,
-                            currentY,
-                            childDesiredSize.Width,
-                            childrenSize.Height))
-                                .width;
-                    }
+                    currentX += child.Arrange(new Rect(
+                        currentX,
+                        currentY,
+                        child.DesiredSize.Width,
+                        childrenSize.Height))
+                            .width;
                 }
             }
             else
@@ -169,17 +171,13 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 for (int i = 0; i < children.Length; i++)
                 {
                     var child = children[i];
-                    childDesiredSize = child.DesiredSize;
 
-                    if (childDesiredSize > Size.Empty)
-                    {
-                        currentY += child.Arrange(new Rect(
-                            currentX,
-                            currentY,
-                            childrenSize.Width,
-                            childDesiredSize.Height))
-                                .height;
-                    }
+                    currentY += child.Arrange(new Rect(
+                        currentX,
+                        currentY,
+                        childrenSize.Width,
+                        child.DesiredSize.Height))
+                            .height;
                 }
             }
 
@@ -191,12 +189,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize, Control[] children)
         {
             float childrenWidth = 0f;
             float childrenHeight = 0f;
-
-            var children = FilteredChildren;
 
             Size childReferenceSize = ReferenceSize.Resolve(availableSize);
             Size childDesiredSize;

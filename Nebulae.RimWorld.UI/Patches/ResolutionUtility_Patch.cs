@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
+using static Nebulae.RimWorld.UI.UIPatch;
 
 namespace Nebulae.RimWorld.UI.Patches
 {
@@ -7,9 +8,9 @@ namespace Nebulae.RimWorld.UI.Patches
     internal static class ResolutionUtility_Patch
     {
         [HarmonyPostfix]
-        internal static void SafeSetUIScalePostfix()
+        internal static void SafeSetUIScalePostfix(float newScale)
         {
-            UIPatch.UIEvent.Invoke(UIEventType.ScaleChanged);
+            ScaleChangedEvent.Invoke(HarmonyInstance, new ScaleChangedEventArgs(newScale));
         }
     }
 }

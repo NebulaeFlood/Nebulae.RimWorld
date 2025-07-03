@@ -1,5 +1,10 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
-using Nebulae.RimWorld.UI.Controls.Basic;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
@@ -8,126 +13,54 @@ namespace Nebulae.RimWorld.UI.Utilities
     /// <summary>
     /// 界面工具类
     /// </summary>
-    [StaticConstructorOnStartup]
+    [DebuggerStepThrough]
     public static class UIUtility
     {
         /// <summary>
-        /// <see cref="Visual.ContentRect"/> 边框颜色
+        /// 调试绘制模式
         /// </summary>
-        public static readonly Texture2D ContentRectBorderBrush = new Color(0f, 1f, 0f, 1f).ToBrush();
+        public static bool DebugDrawMode;
+
 
         /// <summary>
-        /// <see cref="Visual.DesiredRect"/> 边框颜色
+        /// 检查控件状态是否包含指定状态
         /// </summary>
-        public static readonly Texture2D DesiredRectBorderBrush = new Color(1f, 0.9215686f, 0.0156862f, 1f).ToBrush();
-
-        /// <summary>
-        /// 可交互区域边框颜色
-        /// </summary>
-        public static readonly Texture2D ControlRectBorderBrush = new Color(0f, 0f, 1f, 1f).ToBrush();
-
-        /// <summary>
-        /// <see cref="Visual.RenderRect"/> 边框颜色
-        /// </summary>
-        public static readonly Texture2D RederRectBorderBrush = new Color(1f, 1f, 1f, 1f).ToBrush();
-
-
-        private static readonly GUIStyle[] _inputBoxStyles = new GUIStyle[12];
-
-
-        static UIUtility()
+        /// <param name="state">要检查的状态</param>
+        /// <param name="targetState">要判断的状态</param>
+        /// <returns>若 <paramref name="state"/> 包含 <paramref name="targetState"/>，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public static bool HasState(this ControlState state, ControlState targetState)
         {
-            InitializeStyles();
-        }
-
-
-        /// <summary>
-        /// 计算按照指定对齐方式将该尺寸的矩形放置到指定区域后的位置
-        /// </summary>
-        /// <param name="rectSize">要放置的矩形大小</param>
-        /// <param name="availableArea">放置的区域</param>
-        /// <param name="horizontalAlignment">水平方向对齐方式</param>
-        /// <param name="verticalAlignment">垂直方向对齐方式</param>
-        /// <returns>矩形放置到指定区域后的位置。</returns>
-        public static Rect AlignToArea(
-            this Size rectSize,
-            Rect availableArea,
-            HorizontalAlignment horizontalAlignment,
-            VerticalAlignment verticalAlignment)
-        {
-            float x = availableArea.x;
-            float y = availableArea.y;
-            float width;
-            float height;
-
-            switch (horizontalAlignment)
-            {
-                case HorizontalAlignment.Center:
-                    x += (availableArea.width - rectSize.Width) * 0.5f;
-                    width = rectSize.Width;
-                    break;
-                case HorizontalAlignment.Right:
-                    x += availableArea.width - rectSize.Width;
-                    width = rectSize.Width;
-                    break;
-                case HorizontalAlignment.Left:
-                    width = rectSize.Width;
-                    break;
-                default:    // Stretch
-                    width = availableArea.width;
-                    break;
-            }
-
-            switch (verticalAlignment)
-            {
-                case VerticalAlignment.Center:
-                    y += (availableArea.height - rectSize.Height) * 0.5f;
-                    height = rectSize.Height;
-                    break;
-                case VerticalAlignment.Bottom:
-                    y += availableArea.height - rectSize.Height;
-                    height = rectSize.Height;
-                    break;
-                case VerticalAlignment.Top:
-                    height = rectSize.Height;
-                    break;
-                default:    // Stretch
-                    height = availableArea.height;
-                    break;
-            }
-
-            return new Rect(x, y, width, height);
+            return (state & targetState) != 0;
         }
 
         /// <summary>
-        /// 在一个新位置绘制控件的副本
+        /// 检查控件状态是否为指定状态
         /// </summary>
-        /// <param name="control">要绘制的控件</param>
-        /// <param name="renderRect">绘制副本的位置</param>
-        /// <param name="opacity">副本的不透明度</param>
-        public static void DrawAt(this Visual control, Rect renderRect, float opacity = 1f)
+        /// <param name="state">要检查的状态</param>
+        /// <param name="targetState">要判断的状态</param>
+        /// <returns>若 <paramref name="state"/> 处于指定状态，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public static bool IsState(this ControlState state, ControlState targetState)
         {
-            float x = control.RenderRect.x;
-            float y = control.RenderRect.y;
-            float width = x + renderRect.width;
-            float height = y + renderRect.height;
-
-            GUI.BeginClip(renderRect);
-            GUI.BeginGroup(new Rect(-x, -y, width, height));
-
-            Color color = GUI.color;
-            Color contentColor = GUI.contentColor;
-            Color opacityColor = new Color(1f, 1f, 1f, opacity);
-
-            GUI.color = opacityColor * color;
-            GUI.contentColor = opacityColor * contentColor;
-            control.Draw();
-            GUI.color = color;
-            GUI.contentColor = contentColor;
-
-            GUI.EndGroup();
-            GUI.EndClip();
+            return (state & targetState) == targetState;
         }
+
+        /// <summary>
+        /// 显示指定的窗口
+        /// </summary>
+        /// <param name="window">要显示的窗口</param>
+        public static void Show(this Window window)
+        {
+            Find.WindowStack.Add(window);
+        }
+
+
+        //------------------------------------------------------
+        //
+        //  Draw Geometry
+        //
+        //------------------------------------------------------
+
+        #region Draw Geometry
 
         /// <summary>
         /// 绘制边框
@@ -448,50 +381,91 @@ namespace Nebulae.RimWorld.UI.Utilities
             GUI.color = color;
         }
 
-        /// <summary>
-        /// 绘制输入框
-        /// </summary>
-        /// <param name="renderRect">绘制控件的位置</param>
-        /// <param name="text">输入框内的文字</param>
-        /// <param name="fontSize">字体尺寸</param>
-        /// <param name="isReadOnly">输入框是否为只读状态</param>
-        /// <param name="wrapText">输入框文字是否自动换行</param>
-        /// <returns>用户输入后的文字。</returns>
-        public static string DrawInputBox(Rect renderRect, string text, GameFont fontSize, bool isReadOnly, bool wrapText)
-        {
-            int index = (int)fontSize;
+        #endregion
 
-            if (isReadOnly)
+
+        //------------------------------------------------------
+        //
+        //  Layout
+        //
+        //------------------------------------------------------
+
+        #region Layout
+
+        /// <summary>
+        /// 计算按照指定对齐方式将该尺寸的矩形放置到指定区域后的位置
+        /// </summary>
+        /// <param name="rectSize">要放置的矩形大小</param>
+        /// <param name="availableArea">放置的区域</param>
+        /// <param name="horizontalAlignment">水平方向对齐方式</param>
+        /// <param name="verticalAlignment">垂直方向对齐方式</param>
+        /// <returns>矩形放置到指定区域后的位置。</returns>
+        public static Rect AlignToArea(this Size rectSize, Rect availableArea, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+        {
+            float x = availableArea.x;
+            float y = availableArea.y;
+            float width;
+            float height;
+
+            switch (horizontalAlignment)
             {
-                index += 3;
+                case HorizontalAlignment.Center:
+                    x += (availableArea.width - rectSize.Width) * 0.5f;
+                    width = rectSize.Width;
+                    break;
+                case HorizontalAlignment.Right:
+                    x += availableArea.width - rectSize.Width;
+                    width = rectSize.Width;
+                    break;
+                case HorizontalAlignment.Left:
+                    width = rectSize.Width;
+                    break;
+                default:    // Stretch
+                    width = availableArea.width;
+                    break;
             }
 
-            return wrapText
-                ? GUI.TextArea(renderRect, text, _inputBoxStyles[index])
-                : GUI.TextField(renderRect, text, _inputBoxStyles[index + 6]);
+            switch (verticalAlignment)
+            {
+                case VerticalAlignment.Center:
+                    y += (availableArea.height - rectSize.Height) * 0.5f;
+                    height = rectSize.Height;
+                    break;
+                case VerticalAlignment.Bottom:
+                    y += availableArea.height - rectSize.Height;
+                    height = rectSize.Height;
+                    break;
+                case VerticalAlignment.Top:
+                    height = rectSize.Height;
+                    break;
+                default:    // Stretch
+                    height = availableArea.height;
+                    break;
+            }
+
+            return new Rect(x, y, width, height);
         }
 
         /// <summary>
-        /// 格式化控件尺寸
-        /// </summary>
-        /// <param name="size">要格式化的尺寸</param>
-        /// <returns>格式化后的尺寸</returns>
-        public static float FormatControlSize(this float size)
-        {
-            if (size < 0f || float.IsInfinity(size) || float.IsNaN(size))
-            {
-                return 0f;
-            }
-
-            return size;
-        }
-
-        /// <summary>
-        /// 计算两个矩形的交集
+        /// 计算两个矩形相交的区域
         /// </summary>
         /// <param name="rect">第一个矩形</param>
         /// <param name="anotherRect">第二个矩形</param>
         /// <returns>俩个矩形的交集。</returns>
+        public static Size IntersectSizeWith(this Rect rect, Rect anotherRect)
+        {
+            float width = Mathf.Min(rect.xMax, anotherRect.xMax) - Mathf.Max(rect.x, anotherRect.x);
+            float height = Mathf.Min(rect.yMax, anotherRect.yMax) - Mathf.Max(rect.y, anotherRect.y);
+
+            return new Size(width > 0 ? width : 0, height > 0 ? height : 0);
+        }
+
+        /// <summary>
+        /// 计算矩形的交集
+        /// </summary>
+        /// <param name="rect">第一个矩形</param>
+        /// <param name="anotherRect">第二个矩形</param>
+        /// <returns>两个矩形的交集。</returns>
         public static Rect IntersectWith(this Rect rect, Rect anotherRect)
         {
             float left = Mathf.Max(rect.x, anotherRect.x);
@@ -503,206 +477,31 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
-        /// 对矩形坐标应用偏移
+        /// 将矩形偏移指定的偏移量
         /// </summary>
-        /// <param name="rect">要偏移坐标的矩形</param>
-        /// <param name="offsetX">X 坐标偏移量</param>
-        /// <param name="offsetY">Y 坐标偏移量</param>
-        /// <returns>坐标偏移后的矩形。</returns>
+        /// <param name="rect">要偏移的矩形</param>
+        /// <param name="offsetX">矩形在 X 轴的偏移量</param>
+        /// <param name="offsetY">矩形在 Y 轴的偏移量</param>
+        /// <returns>偏移后的矩形。</returns>
         public static Rect Offset(this Rect rect, float offsetX, float offsetY)
         {
-            return new Rect(
-                rect.x + offsetX,
-                rect.y + offsetY,
-                rect.width,
-                rect.height);
+            return new Rect(rect.x + offsetX, rect.y + offsetY, rect.width, rect.height);
         }
 
-        /// <summary>
-        /// 翻转水平排布方式
-        /// </summary>
-        /// <param name="align">要翻转的排布方式</param>
-        /// <returns>翻转后的排布方式</returns>
-        public static HorizontalAlignment Reverse(this HorizontalAlignment align)
-        {
-            switch (align)
-            {
-                case HorizontalAlignment.Left:
-                    return HorizontalAlignment.Right;
-                case HorizontalAlignment.Right:
-                    return HorizontalAlignment.Left;
-                default:
-                    return align;
-            }
-        }
-
-        /// <summary>
-        /// 翻转垂直排布方式
-        /// </summary>
-        /// <param name="align">要翻转的排布方式</param>
-        /// <returns>翻转后的排布方式</returns>
-        public static VerticalAlignment Reverse(this VerticalAlignment align)
-        {
-            switch (align)
-            {
-                case VerticalAlignment.Top:
-                    return VerticalAlignment.Bottom;
-                case VerticalAlignment.Bottom:
-                    return VerticalAlignment.Top;
-                default:
-                    return align;
-            }
-        }
-
-        /// <summary>
-        /// 如果满足条件，翻转水平排布方式
-        /// </summary>
-        /// <param name="align">要翻转的排布方式</param>
-        /// <param name="condition">是否满足条件</param>
-        /// <returns>翻转后的排布方式</returns>
-        public static HorizontalAlignment ReverseIf(this HorizontalAlignment align, bool condition)
-        {
-            if (condition)
-            {
-                switch (align)
-                {
-                    case HorizontalAlignment.Left:
-                        return HorizontalAlignment.Right;
-                    case HorizontalAlignment.Right:
-                        return HorizontalAlignment.Left;
-                    default:
-                        return align;
-                }
-            }
-            else
-            {
-                return align;
-            }
-        }
-
-        /// <summary>
-        /// 如果满足条件，翻转垂直排布方式
-        /// </summary>
-        /// <param name="align">要翻转的排布方式</param>
-        /// <param name="condition">是否满足条件</param>
-        /// <returns>翻转后的排布方式</returns>
-        public static VerticalAlignment ReverseIf(this VerticalAlignment align, bool condition)
-        {
-            if (condition)
-            {
-                switch (align)
-                {
-                    case VerticalAlignment.Top:
-                        return VerticalAlignment.Bottom;
-                    case VerticalAlignment.Bottom:
-                        return VerticalAlignment.Top;
-                    default:
-                        return align;
-                }
-            }
-            else
-            {
-                return align;
-            }
-        }
-
-        /// <summary>
-        /// 显示控件预览
-        /// </summary>
-        /// <param name="control">要显示预览的控件</param>
-        /// <param name="xOffset">预览窗口在 x 坐标的偏移量</param>
-        /// <param name="yOffset">预览窗口在 y 坐标的偏移量</param>
-        /// <param name="opacity">预览的不透明度</param>
-        public static void ShowPreview(
-            this Visual control,
-            float xOffset = 16f,
-            float yOffset = 16f,
-            float opacity = 0.8f)
-        {
-            ShowPreview(control, control.RenderRect, xOffset, yOffset, opacity);
-        }
-
-        /// <summary>
-        /// 显示控件预览
-        /// </summary>
-        /// <param name="control">要显示预览的控件</param>
-        /// <param name="bounds">预览窗口大小</param>
-        /// <param name="xOffset">预览窗口在 x 坐标的偏移量</param>
-        /// <param name="yOffset">预览窗口在 y 坐标的偏移量</param>
-        /// <param name="opacity">预览的不透明度</param>
-        public static void ShowPreview(
-            this Visual control,
-            Size bounds,
-            float xOffset = 16f,
-            float yOffset = 16f,
-            float opacity = 0.8f)
-        {
-            Find.WindowStack.ImmediateWindow(
-                2351 + control.GetHashCode(),
-                new Rect(
-                    MouseUtility.CursorPosition.x + xOffset + bounds.Width > Verse.UI.screenWidth
-                        ? MouseUtility.CursorPosition.x - bounds.Width
-                        : MouseUtility.CursorPosition.x + xOffset,
-                    MouseUtility.CursorPosition.y + yOffset,
-                    bounds.Width,
-                    bounds.Height),
-                WindowLayer.Super,
-                delegate { DrawPreviewControl(control, bounds, opacity); },
-                doBackground: false,
-                shadowAlpha: 0f);
-        }
+        #endregion
 
 
-        internal static void InitializeStyles()
-        {
-            GUIStyle style;
+        //------------------------------------------------------
+        //
+        //  Internal Fields
+        //
+        //------------------------------------------------------
 
-            for (int i = 0; i < 3; i++)
-            {
-                style = new GUIStyle(Text.textAreaStyles[i]) { richText = true };
-                _inputBoxStyles[i] = style;
-                _inputBoxStyles[i + 3] = new GUIStyle(style)
-                {
-                    focused = style.normal,
-                    hover = style.normal
-                };
-            }
+        #region Internal Fields
 
-            for (int i = 0; i < 3; i++)
-            {
-                style = new GUIStyle(Text.textFieldStyles[i]) { richText = true };
-                _inputBoxStyles[i + 6] = style;
-                _inputBoxStyles[i + 9] = new GUIStyle(style)
-                {
-                    focused = style.normal,
-                    hover = style.normal
-                };
-            }
-        }
+        internal static Event CurrentEvent;
+        internal static EventType CurrentEventType;
 
-
-        private static void DrawPreviewControl(Visual control, Size bounds, float opacity)
-        {
-            float x = control.RenderRect.x;
-            float y = control.RenderRect.y;
-            float width = x + bounds.Width;
-            float height = y + bounds.Height;
-
-            GUI.BeginGroup(new Rect(-x, -y, width, height));
-
-            Color color = GUI.color;
-            Color contentColor = GUI.contentColor;
-            Color opacityColor = new Color(1f, 1f, 1f, opacity);
-
-            Visual.PreviewDraw = true;
-            GUI.color = opacityColor * color;
-            GUI.contentColor = opacityColor * contentColor;
-            control.Draw();
-            GUI.color = color;
-            GUI.contentColor = contentColor;
-            Visual.PreviewDraw = false;
-
-            GUI.EndGroup();
-        }
+        #endregion
     }
 }

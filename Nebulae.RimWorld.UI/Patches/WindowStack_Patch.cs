@@ -9,27 +9,29 @@ namespace Nebulae.RimWorld.UI.Patches
     [HarmonyPatch(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI))]
     internal static class WindowStack_Patch
     {
-        internal static Event CurrentEvent;
-        internal static EventType CurrentEventType;
-        internal static List<Window> Windows;
-
-
         [HarmonyPrefix]
         internal static void WindowStackOnGUIPrefix(List<Window> ___windows)
         {
-            CurrentEvent = Event.current;
-            CurrentEventType = CurrentEvent.type;
-            Windows = ___windows;
+            UIUtility.CurrentEvent = Event.current;
+            UIUtility.CurrentEventType = UIUtility.CurrentEvent.type;
 
-            MouseUtility.CheckState(Windows);
-            KeyboardEventUtility.CheckEvent(CurrentEvent, CurrentEventType);
+            InputUtility.TraceWindow(___windows);
         }
 
         [HarmonyPostfix]
         internal static void WindowStackOnGUIPostfix()
         {
-            MouseUtility.Update();
-            PopupWindowUtility.CheckState(Windows);
+            InputUtility.TraceKeyBoard();
+
+            if (!InputUtility.isHitTesting)
+            {
+                return;
+            }
+
+            InputUtility.MouseTracker.TraceCursor();
+            InputUtility.LeftButton.Trace();
+            InputUtility.RightButton.Trace();
+            InputUtility.MiddleButton.Trace();
         }
     }
 }

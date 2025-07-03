@@ -1,36 +1,36 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using NAudio.Utils;
+using Nebulae.RimWorld.UI.Controls.Resources;
+using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.Utilities;
 using RimWorld;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
+using Verse.Noise;
 using Verse.Sound;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
-    /// 滑块控件，用于选取数字
+    /// 滑块控件
     /// </summary>
-    [StaticConstructorOnStartup]
-    public class Slider : Control
+    public sealed class Slider : FrameworkControl
     {
-        /// <summary>
-        /// 滑轨的混合色
-        /// </summary>
-        public static readonly Color SliderRailColor = new Color(0.6f, 0.6f, 0.6f, 1f);
+        //------------------------------------------------------
+        //
+        //  Public Consts
+        //
+        //------------------------------------------------------
+
+        #region Public Consts
 
         /// <summary>
-        /// 滑轨的图像
-        /// </summary>
-        public static readonly Texture2D SliderHandle = ContentFinder<Texture2D>.Get("UI/Buttons/SliderHandle");
-
-        /// <summary>
-        /// 滑块的图像
-        /// </summary>
-        public static readonly Texture2D SliderRailAtlas = ContentFinder<Texture2D>.Get("UI/Buttons/SliderRail");
-
-        /// <summary>
-        /// 滑块的高度
+        /// 滑块的尺寸
         /// </summary>
         public const float HandleSize = 12f;
 
@@ -39,101 +39,115 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public const float RailHeight = 8f;
 
-
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private static float _lastSoundPlayedTime = -1f;
-
-        private bool _displayAsPercent;
-
-        private Rect _sliderRect;
-
-        private float _maximun = 99999f;
-        private float _minimun = -99999f;
-        private float _step = 0.1f;
-
         #endregion
 
 
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Public Properties
+        #region Dependency Properties
 
+        #region Decimals
         /// <summary>
-        /// 以百分比形式呈现数值
+        /// 获取或设置 <see cref="Slider"/> 的数字的小数位数
         /// </summary>
-        public bool DisplayAsPercent
+        public ushort Decimals
         {
-            get => _displayAsPercent;
-            set => _displayAsPercent = value;
-        }
-
-        #region DrawExtremeValues
-        /// <summary>
-        /// 获取或设置指示绘制最值提示的值
-        /// </summary>
-        public bool DrawExtremeValues
-        {
-            get { return (bool)GetValue(DrawExtremeValuesProperty); }
-            set { SetValue(DrawExtremeValuesProperty, value); }
+            get { return (ushort)GetValue(DecimalsProperty); }
+            set { SetValue(DecimalsProperty, value); }
         }
 
         /// <summary>
-        /// 标识 <see cref="DrawExtremeValues"/> 依赖属性。
+        /// 标识 <see cref="Decimals"/> 依赖属性
         /// </summary>
-        public static readonly DependencyProperty DrawExtremeValuesProperty =
-            DependencyProperty.Register(nameof(DrawExtremeValues), typeof(bool), typeof(Slider),
-                new ControlPropertyMetadata(false, ControlRelation.Measure));
+        public static readonly DependencyProperty DecimalsProperty =
+            DependencyProperty.Register(nameof(Decimals), typeof(ushort), typeof(Slider),
+                new PropertyMetadata(0, CoerceDecimals, UpdateDrawer));
+
+        private static object CoerceDecimals(DependencyObject d, object baseValue)
+        {
+            return (ushort)baseValue > 5 ? 5 : baseValue;
+        }
         #endregion
 
+        #region IsPercentage
         /// <summary>
-        /// 数字的最大值
+        /// 获取或设置一个值，该值指示 <see cref="Slider"/> 的数字是否以百分数的形式显示
         /// </summary>
-        public float Maximum
+        public bool IsPercentage
         {
-            get => _maximun;
-            set
-            {
-                _maximun = value;
-                SetValue(ValueProperty, value.Clamp(_minimun, value));
-            }
+            get { return (bool)GetValue(IsPercentageProperty); }
+            set { SetValue(IsPercentageProperty, value); }
         }
 
         /// <summary>
-        /// 数字的最小值
+        /// 标识 <see cref="IsPercentage"/> 依赖属性
         /// </summary>
-        public float Minimum
+        public static readonly DependencyProperty IsPercentageProperty =
+            DependencyProperty.Register(nameof(IsPercentage), typeof(bool), typeof(Slider),
+                new ControlPropertyMetadata(false, UpdateDrawer, ControlRelation.Measure));
+        #endregion
+
+        #region MaxValue
+        /// <summary>
+        /// 获取或设置 <see cref="Slider"/> 的最大值
+        /// </summary>
+        public float MaxValue
         {
-            get => _minimun;
-            set
-            {
-                _minimun = value;
-                SetValue(ValueProperty, value.Clamp(value, _maximun));
-            }
+            get { return (float)GetValue(MaxValueProperty); }
+            set { SetValue(MaxValueProperty, value); }
         }
 
         /// <summary>
-        /// 范围中每个可取值的最小间隔
+        /// 标识 <see cref="MaxValue"/> 依赖属性
         /// </summary>
-        public float Step
+        public static readonly DependencyProperty MaxValueProperty =
+            DependencyProperty.Register(nameof(MaxValue), typeof(float), typeof(Slider),
+                new ControlPropertyMetadata(32767f, UpdateDrawer, ControlRelation.Arrange));
+        #endregion
+
+        #region MinValue
+        /// <summary>
+        /// 获取或设置 <see cref="Slider"/> 的最小值
+        /// </summary>
+        public float MinValue
         {
-            get => _step;
-            set => _step = value;
+            get { return (float)GetValue(MinValueProperty); }
+            set { SetValue(MinValueProperty, value); }
         }
+
+        /// <summary>
+        /// 标识 <see cref="MinValue"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty MinValueProperty =
+            DependencyProperty.Register(nameof(MinValue), typeof(float), typeof(Slider),
+                new ControlPropertyMetadata(-32768f, UpdateDrawer, ControlRelation.Arrange));
+        #endregion
+
+        #region ShowLabels
+        /// <summary>
+        /// 获取或设置一个值，该值指示 <see cref="Slider"/> 是否显示最大值和最小值的标签
+        /// </summary>
+        public bool ShowLabels
+        {
+            get { return (bool)GetValue(ShowLabelsProperty); }
+            set { SetValue(ShowLabelsProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="ShowLabels"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty ShowLabelsProperty =
+            DependencyProperty.Register(nameof(ShowLabels), typeof(bool), typeof(Slider),
+                new ControlPropertyMetadata(true, UpdateDrawer, ControlRelation.Arrange));
+        #endregion
 
         #region Value
         /// <summary>
-        /// 获取或设置输入数字的当前值
+        /// 获取或设置 <see cref="Slider"/> 的数字
         /// </summary>
         public float Value
         {
@@ -142,15 +156,26 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
-        /// 标识 <see cref="Value"/> 依赖属性。
+        /// 标识 <see cref="Value"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register(nameof(Value), typeof(float), typeof(Slider),
-                new PropertyMetadata(0f));
+                new PropertyMetadata(0f, OnValueChanged));
+
+        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((Slider)d)._cache = (float)e.NewValue;
+        }
         #endregion
 
         #endregion
 
+
+        static Slider()
+        {
+            MarginProperty.OverrideMetadata(typeof(Slider),
+                new ControlPropertyMetadata(new Thickness(6f, 0f, 6f, 0f), ControlRelation.Measure));
+        }
 
         /// <summary>
         /// 初始化 <see cref="Slider"/> 的新实例
@@ -170,149 +195,237 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect AnalyseCore(Rect contentRect)
+        protected override Rect ArrangeOverride(Rect availableRect)
         {
-            return contentRect.IntersectWith(new Rect(
-                _sliderRect.x - 6f,
-                _sliderRect.y,
-                _sliderRect.width + 12f,
-                HandleSize));
+            _sliderRect = new Size(RenderSize.Width, HandleSize)
+                .AlignToArea(availableRect, HorizontalAlignment.Stretch, VerticalAlignment.Center);
+
+            if ((bool)GetValue(ShowLabelsProperty))
+            {
+                FormatLimit(
+                    (ushort)GetValue(DecimalsProperty),
+                    (float)GetValue(MinValueProperty),
+                    (float)GetValue(MaxValueProperty),
+                    (bool)GetValue(IsPercentageProperty),
+                    out var minStr, out var maxStr);
+
+                _sliderRect.x += minStr.CalculateLength(GameFont.Tiny);
+                _sliderRect.xMax -= 10f + maxStr.CalculateLength(GameFont.Tiny);
+            }
+
+            _railRect = new Rect(_sliderRect.x + 6f, _sliderRect.y + 2f, _sliderRect.width - HandleSize, RailHeight);
+
+            return availableRect;
         }
 
         /// <inheritdoc/>
-        protected override Rect ArrangeCore(Rect availableRect)
+        protected override Size MeasureOverride(Size availableSize)
         {
-            Rect renderRect = RenderSize.AlignToArea(availableRect,
-                HorizontalAlignment.Stretch, VerticalAlignment.Center);
-
-            Size sliderSize = new Size(RenderSize.Width - 12f, HandleSize);
-
-            if (!DrawExtremeValues)
-            {
-                _sliderRect = sliderSize
-                    .AlignToArea(renderRect, HorizontalAlignment.Center, VerticalAlignment.Center);
-
-                return renderRect;
-            }
-
-            _sliderRect = sliderSize.AlignToArea(renderRect,
-                HorizontalAlignment.Center, VerticalAlignment.Bottom);
-
-            return renderRect;
+            return new Size(availableSize.Width, ShowLabels ? HandleSize + 12f : HandleSize);
         }
 
         /// <inheritdoc/>
-        protected override void DrawCore()
+        protected override SegmentResult SegmentCore(Rect visiableRect)
         {
-            Color color = GUI.color;
-
-            if (!IsEnabled)
-            {
-                GUI.color = color * SliderRailColor;
-            }
-
-            float buffer = Value;
-
-            DrawSlider(
-                _sliderRect,
-                buffer,
-                _minimun,
-                _maximun);
-
-            if (MouseUtility.IsHitTesting
-                && IsPressing)
-            {
-                float value = Mathf.Round(Mathf.Clamp(
-                    (Event.current.mousePosition.x - _sliderRect.x)
-                        / _sliderRect.width * (_maximun - _minimun)
-                    + _minimun,
-                    _minimun,
-                    _maximun) / _step) * _step;
-
-                if (buffer != value)
-                {
-                    Value = value;
-
-                    if (Time.realtimeSinceStartup > _lastSoundPlayedTime + 0.075f)
-                    {
-                        _lastSoundPlayedTime = Time.realtimeSinceStartup;
-                        SoundDefOf.DragSlider.PlayOneShotOnCamera();
-                    }
-                }
-            }
-
-            if (DrawExtremeValues)
-            {
-                string minimun;
-                string maximun;
-
-                if (_displayAsPercent)
-                {
-                    minimun = _minimun.ToStringPercent();
-                    maximun = _maximun.ToStringPercent();
-                }
-                else
-                {
-                    minimun = _minimun.ToString();
-                    maximun = _maximun.ToString();
-                }
-
-                TextAnchor anchor = Text.Anchor;
-                GameFont font = Text.Font;
-                Text.Font = GameFont.Tiny;
-                Text.Anchor = TextAnchor.UpperLeft;
-
-                Widgets.Label(RenderRect, minimun);
-
-                Text.Anchor = TextAnchor.UpperRight;
-
-                Widgets.Label(RenderRect, maximun);
-
-                Text.Anchor = anchor;
-                Text.Font = font;
-            }
-
-            GUI.color = color;
+            return new SegmentResult(_sliderRect.IntersectWith(visiableRect), RenderRect.IntersectWith(visiableRect));
         }
 
         /// <inheritdoc/>
-        override protected Size MeasureCore(Size availableSize)
+        protected override void DrawCore(ControlState states)
         {
-            return new Size(availableSize.Width, DrawExtremeValues ? HandleSize + 12f : HandleSize);
+            _drawer(this, states);
         }
 
         #endregion
 
 
-        private static void DrawSlider(
-            Rect sliderRect,
-            float value,
-            float min,
-            float max)
+        //------------------------------------------------------
+        //
+        //  Private Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Static Methods
+
+        private static void UpdateDrawer(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            float handlePos = Mathf.Clamp(
-                sliderRect.x + sliderRect.width * Mathf.InverseLerp(min, max, value) - 6f,
-                sliderRect.x - 6f,
-                sliderRect.xMax - 6f);
-
-            Rect handleRect = new Rect(
-                handlePos,
-                sliderRect.y,
-                HandleSize,
-                HandleSize);
-
-            Rect trackRect = new Rect(
-                sliderRect.x,
-                sliderRect.y + 2f,
-                sliderRect.width,
-                sliderRect.height - 4f);
-
-            Color color = GUI.color;
-            GUI.color = color * SliderRailColor;
-            Widgets.DrawAtlas(trackRect, SliderRailAtlas);
-            GUI.color = color;
-
-            GUI.DrawTexture(handleRect, SliderHandle);
+            ((Slider)d)._drawer = CreateDrawer(
+                (ushort)d.GetValue(DecimalsProperty),
+                (float)d.GetValue(MinValueProperty),
+                (float)d.GetValue(MaxValueProperty),
+                (bool)d.GetValue(IsPercentageProperty),
+                (bool)d.GetValue(ShowLabelsProperty));
         }
+
+        private static Action<Slider, ControlState> CreateDrawer(ushort decimals, float minValue, float maxValue, bool isPercentage, bool showLabels)
+        {
+            float range = maxValue - minValue;
+
+            if (showLabels)
+            {
+                FormatLimit(decimals, minValue, maxValue, isPercentage, out var minStr, out var maxStr);
+
+                void Draw(Slider slider, ControlState states)
+                {
+                    if (states.HasState(ControlState.Disabled))
+                    {
+                        GUI.color *= Widgets.InactiveColor;
+                    }
+
+                    var railWidth = slider._railRect.width;
+
+                    float handleX = Mathf.Round(
+                        Mathf.Clamp(
+                            railWidth * slider._cache / range,
+                            0f,
+                            railWidth));
+
+                    var handleRect = new Rect(slider._sliderRect.x + handleX, slider._sliderRect.y, HandleSize, HandleSize);
+
+                    var color = GUI.color;
+                    GUI.color = color * SliderResources.RailColor;
+                    Widgets.DrawAtlas(slider._railRect, SliderResources.RailAtlas);
+                    GUI.color = color;
+
+                    GUI.DrawTexture(handleRect, SliderResources.Handle, ScaleMode.ScaleToFit);
+
+                    if (states.HasState(ControlState.Pressing))
+                    {
+                        float currentValue = Mathf.Clamp((minValue + (Event.current.mousePosition.x - slider._railRect.x) * range / railWidth),
+                            minValue, maxValue).Round(decimals);
+
+                        if (currentValue != slider._cache)
+                        {
+                            slider.SetValue(ValueProperty, currentValue);
+
+                            if (Time.realtimeSinceStartup > _lastSoundPlayedTime + 0.075f)
+                            {
+                                _lastSoundPlayedTime = Time.realtimeSinceStartup;
+                                SoundDefOf.DragSlider.PlayOneShotOnCamera();
+                            }
+                        }
+                    }
+
+                    var anchor = Text.Anchor;
+                    var font = Text.Font;
+
+                    Text.Font = GameFont.Tiny;
+                    Text.Anchor = TextAnchor.LowerLeft;
+
+                    Widgets.Label(slider.RenderRect, minStr);
+
+                    Text.Anchor = TextAnchor.LowerRight;
+
+                    Widgets.Label(slider.RenderRect, maxStr);
+
+                    Text.Anchor = anchor;
+                    Text.Font = font;
+                }
+
+                return Draw;
+            }
+            else
+            {
+                void Draw(Slider slider, ControlState states)
+                {
+                    if (states.HasState(ControlState.Disabled))
+                    {
+                        GUI.color *= Widgets.InactiveColor;
+                    }
+
+                    var railWidth = slider._railRect.width;
+
+                    float handleX = Mathf.Round(
+                        Mathf.Clamp(
+                            railWidth * slider._cache / range,
+                            0f,
+                            railWidth));
+
+                    var handleRect = new Rect(slider._sliderRect.x + handleX, slider._sliderRect.y, HandleSize, HandleSize);
+
+                    var color = GUI.color;
+                    GUI.color = color * SliderResources.RailColor;
+                    Widgets.DrawAtlas(slider._railRect, SliderResources.RailAtlas);
+                    GUI.color = color;
+
+                    GUI.DrawTexture(handleRect, SliderResources.Handle, ScaleMode.ScaleToFit);
+
+                    if (states.HasState(ControlState.Pressing))
+                    {
+                        float currentValue = Mathf.Clamp((minValue + (Event.current.mousePosition.x - slider._railRect.x) * range / railWidth),
+                            minValue, maxValue).Round(decimals);
+
+                        if (currentValue != slider._cache)
+                        {
+                            slider.SetValue(ValueProperty, currentValue);
+
+                            if (Time.realtimeSinceStartup > _lastSoundPlayedTime + 0.075f)
+                            {
+                                _lastSoundPlayedTime = Time.realtimeSinceStartup;
+                                SoundDefOf.DragSlider.PlayOneShotOnCamera();
+                            }
+                        }
+                    }
+                }
+
+                return Draw;
+            }
+        }
+
+        private static void FormatLimit(ushort decimals, float minValue, float maxValue, bool isPercentage, out string minStr, out string maxStr)
+        {
+            string Format(string format, float value)
+            {
+                if (float.IsPositiveInfinity(value))
+                {
+                    return "∞";
+                }
+                else if (float.IsNegativeInfinity(value))
+                {
+                    return "-∞";
+                }
+                else
+                {
+                    return string.Format(format, value);
+                }
+            }
+
+            if (isPercentage)
+            {
+                var format = $"{{0:F{Math.Max(decimals - 2, 0)}}}%";
+
+                maxStr = Format(format, maxValue * 100f);
+                minStr = Format(format, minValue * 100f);
+            }
+            else
+            {
+                var format = $"{{0:F{decimals}}}";
+
+                maxStr = Format(format, maxValue);
+                minStr = Format(format, minValue);
+            }
+        }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private static readonly Action<Slider, ControlState> DefaultDrawer = CreateDrawer(0, -32768f, 32767f, false, true);
+        private static float _lastSoundPlayedTime = -1f;
+
+        private float _cache;
+        private Action<Slider, ControlState> _drawer = DefaultDrawer;
+
+        private Rect _railRect;
+        private Rect _sliderRect;
+
+        #endregion
     }
 }

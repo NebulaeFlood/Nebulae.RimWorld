@@ -1,5 +1,11 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
@@ -8,7 +14,7 @@ namespace Nebulae.RimWorld.UI.Windows
     /// <summary>
     /// 使用 <see cref="Control"/> 进行内容呈现的窗口
     /// </summary>
-    public class ControlWindow : Window, IUIEventListener
+    public class ControlWindow : Window
     {
         //------------------------------------------------------
         //
@@ -21,7 +27,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <summary>
         /// 默认的关闭按钮（X）要占用的高度
         /// </summary>
-        public const float DefaultCloseButtonDesiredHeight = 26f;
+        public const float DefaultCloseButtonHeight = 26f;
 
         /// <summary>
         /// 默认的窗口高度
@@ -32,27 +38,6 @@ namespace Nebulae.RimWorld.UI.Windows
         /// 默认的窗口宽度
         /// </summary>
         public const float DefaultWindowWidth = 900f;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private readonly LayoutManager _layoutManager;
-
-        private Rect _clientRect;
-        private Rect _nonClientRect;
-
-        private Thickness _padding = 18f;
-
-        private float _initialHeight = DefaultWindowHeight;
-        private float _initialWidth = DefaultWindowWidth;
 
         #endregion
 
@@ -73,7 +58,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <summary>
         /// 内容控件
         /// </summary>
-        public Visual Content
+        public Control Content
         {
             get => _layoutManager.Root;
             set => _layoutManager.Root = value;
@@ -148,9 +133,10 @@ namespace Nebulae.RimWorld.UI.Windows
 
 
 #if DEBUG
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        /// <summary>
+        /// <see cref="ControlWindow"/> 的析构函数
+        /// </summary>
         ~ControlWindow()
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
         {
             System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A window of type {GetType()} has been collected.");
         }
@@ -162,53 +148,29 @@ namespace Nebulae.RimWorld.UI.Windows
         public ControlWindow()
         {
             _layoutManager = new LayoutManager(this);
-            UIPatch.UIEvent.Manage(this);
         }
 
 
         //------------------------------------------------------
         //
-        //  Public Methods
+        //  Private Fields
         //
         //------------------------------------------------------
 
-        #region Public Methods
+        #region Private Fields
 
-        /// <summary>
-        /// 关闭窗口
-        /// </summary>
-        /// <param name="doCloseSound">是否播放关闭窗口的音效</param>
-        public override sealed void Close(bool doCloseSound = true)
-        {
-            Find.WindowStack.TryRemove(this, doCloseSound);
-        }
+        private readonly LayoutManager _layoutManager;
 
-        /// <summary>
-        /// 开始呈现窗口
-        /// </summary>
-        /// <param name="closeThenShow">是否关闭正在显示的窗口再打开</param>
-        public void Show(bool closeThenShow = true)
-        {
-            if (closeThenShow || !Find.WindowStack.IsOpen(this))
-            {
-                Find.WindowStack.Add(this);
-            }
-            else
-            {
-                SetInitialSizeAndPosition();
-            }
-        }
+        private Rect _clientRect;
+        private Rect _nonClientRect;
+
+        private Thickness _padding = 18f;
+
+        private float _initialHeight = DefaultWindowHeight;
+        private float _initialWidth = DefaultWindowWidth;
 
         #endregion
 
-
-        //------------------------------------------------------
-        //
-        //  Public Virtual Methods
-        //
-        //------------------------------------------------------
-
-        #region Public Virtual Methods
 
         /// <summary>
         /// 绘制窗口内容
@@ -221,7 +183,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
             if (doCloseX)
             {
-                inRect.yMin += Mathf.Abs(_padding.Top - DefaultCloseButtonDesiredHeight);
+                inRect.yMin += Mathf.Abs(_padding.Top - DefaultCloseButtonHeight);
             }
 
             if (doCloseButton)
@@ -237,19 +199,10 @@ namespace Nebulae.RimWorld.UI.Windows
 
             _layoutManager.Draw(inRect);
 
-            if (Prefs.DevMode
-                && _layoutManager.DrawDebugButtons)
+            if (UIUtility.DebugDrawMode && _layoutManager.DrawDebugButtons)
             {
                 _layoutManager.DrawWindowDebugButtons(_nonClientRect);
             }
         }
-
-        /// <inheritdoc/>
-        public virtual void HandleUIEvent(UIEventType type)
-        {
-            _layoutManager.InvalidateLayout();
-        }
-
-        #endregion
     }
 }

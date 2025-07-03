@@ -1,20 +1,27 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
-using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Core.Data;
+using RimWorld;
+using System;
 using UnityEngine;
 using Verse;
+using Verse.Noise;
 
 namespace Nebulae.RimWorld.UI.Utilities
 {
+    /// <summary>
+    /// 文本标签绘制程序缓存
+    /// </summary>
+    /// <param name="text">标签文本</param>
+    /// <param name="renderRect">绘制区域</param>
+    public delegate void LabelCache(string text, Rect renderRect);
+
+
     /// <summary>
     /// 文本帮助类
     /// </summary>
     [StaticConstructorOnStartup]
     public static class TextUtility
     {
-        private static readonly GUIContent _contentCache = new GUIContent();
-        private static readonly GUIStyle[] _inputBoxStyles = new GUIStyle[12];
-
-
         static TextUtility()
         {
             GUIStyle style;
@@ -28,7 +35,8 @@ namespace Nebulae.RimWorld.UI.Utilities
                     hover = style.focused,
                     margin = new RectOffset(0, 0, 0, 0),
                     normal = style.focused,
-                    richText = true
+                    richText = true,
+                    wordWrap = true
                 };
 
                 _inputBoxStyles[i + 3] = new GUIStyle(style)
@@ -36,7 +44,8 @@ namespace Nebulae.RimWorld.UI.Utilities
                     focused = style.normal,
                     hover = style.normal,
                     margin = new RectOffset(0, 0, 0, 0),
-                    richText = true
+                    richText = true,
+                    wordWrap = true
                 };
             }
 
@@ -49,7 +58,8 @@ namespace Nebulae.RimWorld.UI.Utilities
                     hover = style.focused,
                     margin = new RectOffset(0, 0, 0, 0),
                     normal = style.focused,
-                    richText = true
+                    richText = true,
+                    wordWrap = false
                 };
 
                 _inputBoxStyles[i + 9] = new GUIStyle(style)
@@ -57,103 +67,12 @@ namespace Nebulae.RimWorld.UI.Utilities
                     focused = style.normal,
                     hover = style.normal,
                     margin = new RectOffset(0, 0, 0, 0),
-                    richText = true
+                    richText = true,
+                    wordWrap = false
                 };
             }
         }
 
-
-        /// <summary>
-        /// 计算按照指定对齐方式将文本放置到指定区域后的位置
-        /// </summary>
-        /// <param name="text">要放置的文本</param>
-        /// <param name="fontSize">字体大小</param>
-        /// <param name="availableArea">放置的区域</param>
-        /// <param name="anchor">对齐方式</param>
-        /// <returns>矩形放置到指定区域后的位置。</returns>
-        public static Rect AlignToArea(
-            this string text,
-            GameFont fontSize,
-            Rect availableArea,
-            TextAnchor anchor)
-        {
-            int index = (int)anchor;
-
-            HorizontalAlignment horizontalAlignment;
-
-            if (index % 3 == 0)
-            {
-                horizontalAlignment = HorizontalAlignment.Left;
-            }
-            else if (index % 3 == 1)
-            {
-                horizontalAlignment = HorizontalAlignment.Center;
-            }
-            else
-            {
-                horizontalAlignment = HorizontalAlignment.Right;
-            }
-
-            VerticalAlignment verticalAlignment;
-
-            if (index < 3)
-            {
-                verticalAlignment = VerticalAlignment.Top;
-            }
-            else if (index < 6)
-            {
-                verticalAlignment = VerticalAlignment.Center;
-            }
-            else
-            {
-                verticalAlignment = VerticalAlignment.Bottom;
-            }
-
-            Size textSize = text.CalculateLineSize(fontSize, TextAnchor.MiddleCenter);
-
-            float x = availableArea.x;
-            float y = availableArea.y;
-            float width;
-            float height;
-
-            switch (horizontalAlignment)
-            {
-                case HorizontalAlignment.Center:
-                    x += (availableArea.width - textSize.Width) * 0.5f;
-                    width = textSize.Width;
-                    break;
-                case HorizontalAlignment.Right:
-                    x += availableArea.width - textSize.Width;
-                    width = textSize.Width;
-                    break;
-                case HorizontalAlignment.Left:
-                    width = textSize.Width;
-                    break;
-                default:    // Stretch
-                    width = availableArea.width;
-                    break;
-            }
-
-            switch (verticalAlignment)
-            {
-                case VerticalAlignment.Center:
-                    y += (availableArea.height - textSize.Height) * 0.5f;
-                    height = textSize.Height;
-                    break;
-                case VerticalAlignment.Bottom:
-                    y += availableArea.height - textSize.Height;
-                    height = textSize.Height;
-                    break;
-                case VerticalAlignment.Top:
-                    height = textSize.Height;
-                    break;
-                default:    // Stretch
-                    height = availableArea.height;
-                    break;
-            }
-
-            return new Rect(x, y, width, height);
-        }
 
         /// <summary>
         /// 计算文本在一定长度下排布后的高度
@@ -163,6 +82,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="fontSize">字体尺寸</param>
         /// <param name="anchor">文本锚点</param>
         /// <returns>文本排列后的高度</returns>
+        /// <remarks>应在主线程调用。</remarks>
         public static float CalculateHeight(this string text, float availableLength, GameFont fontSize, TextAnchor anchor)
         {
             fontSize = CoerceFontSize(fontSize);
@@ -178,13 +98,13 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
-        /// 计算文本排成一行的尺寸
+        ///  计算文本的长度
         /// </summary>
         /// <param name="text">文本内容</param>
         /// <param name="fontSize">字体尺寸</param>
-        /// <param name="anchor">文本锚点</param>
-        /// <returns>文本排成一行的尺寸。</returns>
-        public static Size CalculateLineSize(this string text, GameFont fontSize, TextAnchor anchor)
+        /// <returns>文本的长度。</returns>
+        /// <remarks>应在主线程调用。</remarks>
+        public static float CalculateLength(this string text, GameFont fontSize)
         {
             fontSize = CoerceFontSize(fontSize);
 
@@ -192,7 +112,27 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             var fontStyle = Text.fontStyles[(int)fontSize];
 
-            fontStyle.alignment = anchor;
+            fontStyle.wordWrap = false;
+
+            return fontStyle.CalcSize(_contentCache).x;
+        }
+
+        /// <summary>
+        /// 计算文本排成一行的尺寸
+        /// </summary>
+        /// <param name="text">文本内容</param>
+        /// <param name="fontSize">字体尺寸</param>
+        /// <returns>文本排成一行的尺寸。</returns>
+        /// <remarks>应在主线程调用。</remarks>
+        public static Size CalculateLineSize(this string text, GameFont fontSize)
+        {
+            fontSize = CoerceFontSize(fontSize);
+
+            _contentCache.text = text.StripTags();
+
+            var fontStyle = Text.fontStyles[(int)fontSize];
+
+            fontStyle.alignment = TextAnchor.MiddleCenter;
             fontStyle.wordWrap = false;
 
             return new Size(fontStyle.CalcSize(_contentCache).x, fontSize.GetHeight());
@@ -205,7 +145,8 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="availableLength">文本允许的最大长度</param>
         /// <param name="fontSize">字体尺寸</param>
         /// <param name="anchor">文本锚点</param>
-        /// <returns>文本排列后的高度</returns>
+        /// <returns>文本排列后的尺寸。</returns>
+        /// <remarks>应在主线程调用。</remarks>
         public static Size CalculateSize(this string text, float availableLength, GameFont fontSize, TextAnchor anchor)
         {
             fontSize = CoerceFontSize(fontSize);
@@ -278,12 +219,87 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
+        /// 强制转换字体大小
+        /// </summary>
+        /// <param name="d">字体大小将要更改的依赖对象</param>
+        /// <param name="baseValue">将要设置的字体大小</param>
+        /// <returns>强制转换后的字体大小。</returns>
+        /// <remarks>为 <see cref="GameFont"/> 类型的 <see cref="DependencyProperty"/> 的 <see cref="PropertyMetadata"/> 准备的 <see cref="CoerceValueCallback"/>。</remarks>
+#pragma warning disable IDE0060 // 删除未使用的参数
+        public static object CoerceFontSize(DependencyObject d, object baseValue)
+#pragma warning restore IDE0060 // 删除未使用的参数
+        {
+            if (baseValue is GameFont.Tiny && !Text.TinyFontSupported)
+            {
+                return GameFont.Small;
+            }
+
+            return baseValue;
+        }
+
+        /// <summary>
         /// 设置文本颜色
         /// </summary>
         /// <param name="text">要设置的文本</param>
         /// <param name="color">要设置的颜色。格式详见 Unity 富文本。</param>
         /// <returns>设置好颜色的文本</returns>
         public static string Colorize(this string text, string color) => string.Format("<color=#{0}>{1}</color>", color, text);
+
+        /// <summary>
+        /// 创建一个文本标签绘制程序缓存
+        /// </summary>
+        /// <param name="anchor">文本锚点</param>
+        /// <param name="fontSize">字体大小</param>
+        /// <returns>指定的绘制程序缓存。</returns>
+        public static LabelCache CreateLabelDrawer(TextAnchor anchor, GameFont fontSize)
+        {
+            void Draw(string text, Rect renderRect)
+            {
+                if (ReferenceEquals(text, string.Empty))
+                {
+                    return;
+                }
+
+                var anchorCache = Text.Anchor;
+                var fontSizeCache = Text.Font;
+
+                Text.Anchor = anchor;
+                Text.Font = fontSize;
+
+                Widgets.Label(renderRect, text);
+
+                Text.Font = fontSizeCache;
+                Text.Anchor = anchorCache;
+            }
+
+            return Draw;
+        }
+
+        /// <summary>
+        /// 绘制文本标签
+        /// </summary>
+        /// <param name="text">标签文本</param>
+        /// <param name="renderRect">绘制区域</param>
+        /// <param name="anchor">文本锚点</param>
+        /// <param name="fontSize">字体大小</param>
+        public static void DrawLabel(this string text, Rect renderRect, TextAnchor anchor = TextAnchor.MiddleCenter, GameFont fontSize = GameFont.Small)
+        {
+            if (ReferenceEquals(text, string.Empty))
+            {
+                return;
+            }
+
+            var anchorCache = Text.Anchor;
+            var fontSizeCache = Text.Font;
+
+            Text.Anchor = anchor;
+            Text.Font = fontSize;
+
+            Widgets.Label(renderRect, text);
+
+            Text.Font = fontSizeCache;
+            Text.Anchor = anchorCache;
+        }
 
         /// <summary>
         /// 绘制文本输入框
@@ -317,18 +333,116 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// 获取字体的高度
         /// </summary>
         /// <param name="fontSize">要获取高度的字体</param>
-        /// <returns>字体的高度</returns>
-        public static float GetHeight(this GameFont fontSize) => Text.LineHeightOf(fontSize);
-
-
-        internal static object CoerceFontSize(DependencyObject dp, object baseValue)
+        /// <returns>字体的高度。</returns>
+        public static float GetHeight(this GameFont fontSize)
         {
-            if (baseValue is GameFont.Tiny && !Text.TinyFontSupported)
+            return (fontSize is GameFont.Tiny && !Text.TinyFontSupported) ? Text.LineHeightOf(GameFont.Small) : Text.LineHeightOf(fontSize);
+        }
+
+        /// <summary>
+        /// 根据允许的长度截断字符串，被截断的部分将设置为省略号
+        /// </summary>
+        /// <param name="str">要截断的字符串</param>
+        /// <param name="availableLength">允许的长度</param>
+        /// <param name="fontSize">字体大小</param>
+        /// <returns>截断后的字符串。</returns>
+        /// <remarks>应在主线程调用。</remarks>
+        public static string Truncate(this string str, float availableLength, GameFont fontSize)
+        {
+            fontSize = CoerceFontSize(fontSize);
+
+            float CalcLength(string s, GameFont f)
             {
-                return GameFont.Small;
+                _contentCache.text = s.StripTags();
+
+                var fontStyle = Text.fontStyles[(int)f];
+
+                fontStyle.wordWrap = false;
+
+                return fontStyle.CalcSize(_contentCache).x;
             }
 
-            return baseValue;
+            if (CalcLength(str, fontSize) <= availableLength)
+            {
+                return str;
+            }
+
+            string text = str;
+
+            for (int i = str.Length - 1; i >= 0; i--)
+            {
+                text = text.Substring(0, i);
+
+                if (CalcLength(text + "...", fontSize) <= availableLength)
+                {
+                    break;
+                }
+            }
+
+            text += "...";
+
+            return text;
         }
+
+        /// <summary>
+        /// 根据允许的尺寸截断字符串，被截断的部分将设置为省略号
+        /// </summary>
+        /// <param name="str">要截断的字符串</param>
+        /// <param name="availableSize">允许的尺寸</param>
+        /// <param name="fontSize">字体大小</param>
+        /// <param name="anchor">文本锚点</param>
+        /// <returns>截断后的字符串。</returns>
+        /// <remarks>应在主线程调用。</remarks>
+        public static string Truncate(this string str, Size availableSize, GameFont fontSize, TextAnchor anchor)
+        {
+            fontSize = CoerceFontSize(fontSize);
+
+            float CalcHeight(string s, float availableLength, GameFont f, TextAnchor a)
+            {
+                _contentCache.text = s.StripTags();
+
+                var fontStyle = Text.fontStyles[(int)f];
+
+                fontStyle.alignment = a;
+                fontStyle.wordWrap = true;
+
+                return fontStyle.CalcHeight(_contentCache, availableLength);
+            }
+
+            if (CalcHeight(str, availableSize.Width, fontSize, anchor) <= availableSize.Height)
+            {
+                return str;
+            }
+
+            string text = str;
+
+            for (int i = str.Length - 1; i >= 0; i--)
+            {
+                text = text.Substring(0, i);
+
+                if (CalcHeight(text + "...", availableSize.Width, fontSize, anchor) <= availableSize.Height)
+                {
+                    break;
+                }
+            }
+
+            text += "...";
+
+            return text;
+        }
+
+
+        //------------------------------------------------------
+        //
+        //  Private Static Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Static Fields
+
+        private static readonly GUIContent _contentCache = new GUIContent();
+        private static readonly GUIStyle[] _inputBoxStyles = new GUIStyle[12];
+
+        #endregion
     }
 }

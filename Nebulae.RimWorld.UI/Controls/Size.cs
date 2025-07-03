@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls
@@ -6,6 +7,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 用于指定宽度和高度
     /// </summary>
+    [DebuggerStepThrough]
     public readonly struct Size : IEquatable<Size>
     {
         /// <summary>
@@ -37,6 +39,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public readonly float Width;
 
+        /// <summary>
+        /// 获取一个值，表示此 <see cref="Size"/> 的尺寸是否为空
+        /// </summary>
+        public readonly bool IsEmpty;
+
         #endregion
 
 
@@ -57,6 +64,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Width = width;
             Height = height;
+            IsEmpty = Width < 1f || Height < 1f;
         }
 
         /// <summary>
@@ -67,6 +75,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Width = size;
             Height = size;
+            IsEmpty = Width < 1f || Height < 1f;
         }
 
         /// <summary>
@@ -76,6 +85,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Width = rect.width;
             Height = rect.height;
+            IsEmpty = Width < 1f || Height < 1f;
         }
 
         /// <summary>
@@ -85,6 +95,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Width = vector.x;
             Height = vector.y;
+            IsEmpty = Width < 1f || Height < 1f;
         }
 
         #endregion

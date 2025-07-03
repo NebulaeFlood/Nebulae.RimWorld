@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls
@@ -6,6 +7,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 描述边框的粗细
     /// </summary>
+    [DebuggerStepThrough]
     public readonly struct Thickness : IEquatable<Thickness>
     {
         /// <summary>

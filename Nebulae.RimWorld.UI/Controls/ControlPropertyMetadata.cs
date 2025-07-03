@@ -1,10 +1,10 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Core.Data;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
-    /// 对象与控件布局的关系
+    /// 属性与控件布局的关系
     /// </summary>
     public enum ControlRelation : int
     {
@@ -23,14 +23,15 @@ namespace Nebulae.RimWorld.UI.Controls
     }
 
     /// <summary>
-    /// <see cref="Visual"/> 的依赖属性的元数据
+    /// <see cref="Control"/> 的依赖属性的元数据
     /// </summary>
     public class ControlPropertyMetadata : PropertyMetadata
     {
         /// <summary>
-        /// 依赖属性与控件的关系
+        /// 依赖属性与控件布局的关系
         /// </summary>
         public readonly ControlRelation Relation;
+
 
         //------------------------------------------------------
         //
@@ -53,9 +54,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="flag">依赖属性与控件的关系</param>
-        public ControlPropertyMetadata(
-            object defaultValue,
-            ControlRelation flag = ControlRelation.None)
+        public ControlPropertyMetadata(object defaultValue, ControlRelation flag = ControlRelation.None)
             : base(defaultValue)
         {
             Relation = flag;
@@ -67,10 +66,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="propertyChangedCallback">属性更改回调函数</param>
         /// <param name="flags">属性的特殊标记</param>
-        public ControlPropertyMetadata(
-            object defaultValue,
-            PropertyChangedCallback propertyChangedCallback,
-            ControlRelation flags = ControlRelation.None)
+        public ControlPropertyMetadata(object defaultValue, PropertyChangedCallback propertyChangedCallback, ControlRelation flags = ControlRelation.None)
             : base(defaultValue, propertyChangedCallback)
         {
             Relation = flags;
@@ -82,10 +78,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="defaultValue">属性默认值</param>
         /// <param name="coerceValueCallback">强制转换回调函数</param>
         /// <param name="flags">属性的特殊标记</param>
-        public ControlPropertyMetadata(
-            object defaultValue,
-            CoerceValueCallback coerceValueCallback,
-            ControlRelation flags = ControlRelation.None)
+        public ControlPropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, ControlRelation flags = ControlRelation.None)
             : base(defaultValue, coerceValueCallback)
         {
             Relation = flags;
@@ -98,11 +91,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="coerceValueCallback">强制转换回调函数</param>
         /// <param name="propertyChangedCallback">属性更改回调函数</param>
         /// <param name="flags">属性的特殊标记</param>
-        public ControlPropertyMetadata(
-            object defaultValue,
-            CoerceValueCallback coerceValueCallback,
-            PropertyChangedCallback propertyChangedCallback,
-            ControlRelation flags = ControlRelation.None)
+        public ControlPropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, PropertyChangedCallback propertyChangedCallback, ControlRelation flags = ControlRelation.None)
             : base(defaultValue, coerceValueCallback, propertyChangedCallback)
         {
             Relation = flags;

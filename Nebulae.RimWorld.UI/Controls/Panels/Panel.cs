@@ -1,32 +1,50 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Data;
+using Nebulae.RimWorld.UI.Core;
+using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using Verse.Noise;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
 {
     /// <summary>
     /// 面板控件的基类，定义了其共同特性
     /// </summary>
+    [DebuggerStepThrough]
     public abstract class Panel : FrameworkControl
     {
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
+        /// <inheritdoc/>
+        public override IEnumerable<Control> LogicalChildren => _children; 
 
-        #region Private Fields
 
-        private readonly PanelChildrenCollection _children;
+        #region Filter
 
-        private Visual[] _drawableChildren;
-        private Visual[] _filteredChildren;
+        /// <summary>
+        /// 获取或设置子控件过滤器
+        /// </summary>
+        public Predicate<Control> Filter
+        {
+            get { return (Predicate<Control>)GetValue(FilterProperty); }
+            set { SetValue(FilterProperty, value); }
+        }
 
-        private bool _isDrawableChildrenValid = false;
-        private bool _isFilteredChildrenValid = false;
+        /// <summary>
+        /// 标识 <see cref="Filter"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty FilterProperty =
+            DependencyProperty.Register(nameof(Filter), typeof(Predicate<Control>), typeof(Panel),
+                new ControlPropertyMetadata(null, OnFilterChanged, ControlRelation.Measure));
+
+        private static void OnFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((Panel)d).InvalidateFilter();
+        }
 
         #endregion
 
@@ -40,15 +58,15 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         #region Protected Properties
 
         /// <summary>
-        /// <see cref="Panel"/> 包含的子控件
+        /// 获取 <see cref="Panel"/> 包含的子控件
         /// </summary>
         /// <remarks>对于 <see cref="Grid"/>，部分项可能为 <see langword="null"/>。</remarks>
-        protected internal PanelChildrenCollection Children => _children;
+        protected PanelChildrenCollection Children => _children;
 
         /// <summary>
-        /// <see cref="Filter"/> 过滤后的子控件
+        /// 获取 <see cref="Panel"/> 由 <see cref="Filter"/> 过滤后的子控件
         /// </summary>
-        protected internal Visual[] FilteredChildren
+        protected Control[] FilteredChildren
         {
             get
             {
@@ -61,32 +79,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 _isFilteredChildrenValid = true;
                 return _filteredChildren;
             }
-        }
-
-        #endregion
-
-
-        #region Filter
-
-        /// <summary>
-        /// 获取或设置子控件过滤器
-        /// </summary>
-        public Predicate<Visual> Filter
-        {
-            get { return (Predicate<Visual>)GetValue(FilterProperty); }
-            set { SetValue(FilterProperty, value); }
-        }
-
-        /// <summary>
-        /// 标识 <see cref="Filter"/> 依赖属性。
-        /// </summary>
-        public static readonly DependencyProperty FilterProperty =
-            DependencyProperty.Register(nameof(Filter), typeof(Predicate<Visual>), typeof(Panel),
-                new ControlPropertyMetadata(null, OnFilterChanged, ControlRelation.Measure));
-
-        private static void OnFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((Panel)d).InvalidateFilter();
         }
 
         #endregion
@@ -119,7 +111,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         #region Public Methods
 
         /// <summary>
-        /// 要求面板在下次绘制控件之前重新判断子控件是否可绘制
+        /// 要求 <see cref="Panel"/> 在下次绘制控件之前重新判断子控件是否可绘制
         /// </summary>
         public void InvalidateDrawableChildren()
         {
@@ -127,7 +119,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 要求面板在下次绘制控件之前重新过滤子控件
+        /// 要求 <see cref="Panel"/> 在下次绘制控件之前重新过滤子控件
         /// </summary>
         public void InvalidateFilter()
         {
@@ -145,8 +137,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         internal void ClearInternal()
         {
-            _drawableChildren = Array.Empty<Visual>();
-            _filteredChildren = Array.Empty<Visual>();
+            _drawableChildren = Array.Empty<Control>();
+            _filteredChildren = Array.Empty<Control>();
 
             InvalidateFilter();
         }
@@ -161,22 +153,72 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected sealed override Rect ArrangeCore(Rect availableRect)
+        protected override sealed Rect ArrangeOverride(Rect availableRect)
         {
             _isDrawableChildrenValid = false;
-
-            return ArrangeOverride(base.ArrangeCore(availableRect));
+            return ArrangeOverride(availableRect, _filteredChildren);
         }
 
         /// <summary>
-        /// 计算排布将被绘制的子控件需要的区域
+        /// 计算 <see cref="Panel"/> 的内容需要占用的区域
         /// </summary>
-        /// <param name="availableRect">子控件允许排布的区域</param>
-        /// <returns>排布子控件占用的区域。</returns>
-        protected abstract Rect ArrangeOverride(Rect availableRect);
+        /// <param name="availableRect">由 <see cref="FrameworkControl"/> 计算后分配的区域</param>
+        /// <param name="children"><see cref="Filter"/> 过滤后的子控件</param>
+        /// <returns>内容需要占用的区域。</returns>
+        protected abstract Rect ArrangeOverride(Rect availableRect, Control[] children);
 
         /// <inheritdoc/>
-        protected sealed override void DrawCore()
+        protected override sealed Size MeasureOverride(Size availableSize)
+        {
+            return MeasureOverride(availableSize, FilteredChildren);
+        }
+
+        /// <summary>
+        /// 计算 <see cref="Panel"/> 的内容需要占用的尺寸
+        /// </summary>
+        /// <param name="availableSize">由 <see cref="FrameworkControl"/> 计算后可用的尺寸</param>
+        /// <param name="children"><see cref="Filter"/> 过滤后的子控件</param>
+        /// <returns>内容需要占用的尺寸。</returns>
+        protected abstract Size MeasureOverride(Size availableSize, Control[] children);
+
+        /// <inheritdoc/>
+        protected override sealed SegmentResult SegmentCore(Rect visiableRect)
+        {
+            _isDrawableChildrenValid = false;
+
+            visiableRect = visiableRect.IntersectWith(RenderRect);
+
+            for (int i = _filteredChildren.Length - 1; i >= 0; i--)
+            {
+                _filteredChildren[i].Segment(visiableRect);
+            }
+
+            return visiableRect;
+        }
+
+        /// <inheritdoc/>
+        protected override HitTestResult HitTestCore(Vector2 hitPoint)
+        {
+            if (!ControlRect.Contains(hitPoint))
+            {
+                return HitTestResult.Empty;
+            }
+
+            for (int i = _filteredChildren.Length - 1; i >= 0; i--)
+            {
+                var result = _filteredChildren[i].HitTest(hitPoint);
+
+                if (result.IsHit)
+                {
+                    return result;
+                }
+            }
+
+            return HitTestResult.HitTest(this, true);
+        }
+
+        /// <inheritdoc/>
+        protected override sealed void DrawCore(ControlState states)
         {
             if (!_isDrawableChildrenValid)
             {
@@ -188,50 +230,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             {
                 _drawableChildren[i].Draw();
             }
-        }
-
-        /// <inheritdoc/>
-        protected internal override IEnumerable<Visual> EnumerateLogicalChildren()
-        {
-            return _children;
-        }
-
-        /// <summary>
-        /// 判断子控件是否应该被绘制
-        /// </summary>
-        /// <param name="child">要判断的子控件</param>
-        /// <returns>子控件是否应该被绘制</returns>
-        protected virtual bool IsDrawable(Visual child)
-        {
-            return !(child.RenderSize < Size.Epsilon);
-        }
-
-        /// <inheritdoc/>
-        protected sealed override Size MeasureCore(Size availableSize)
-        {
-            return MeasureOverride(base.MeasureCore(availableSize));
-        }
-
-        /// <summary>
-        /// 计算排布将被绘制的子控件需要的尺寸
-        /// </summary>
-        /// <param name="availableSize">子控件允许排布的尺寸</param>
-        /// <returns>排布子控件需要的尺寸。</returns>
-        protected abstract Size MeasureOverride(Size availableSize);
-
-        /// <inheritdoc/>
-        protected override Rect SegmentCore(Rect visiableRect)
-        {
-            _isDrawableChildrenValid = false;
-
-            var children = FilteredChildren;
-
-            for (int i = 0; i < children.Length; i++)
-            {
-                children[i].Segment(visiableRect);
-            }
-
-            return visiableRect;
         }
 
         #endregion
@@ -249,9 +247,14 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 查找当前条件下可以被绘制的子控件
         /// </summary>
         /// <returns>当前条件下可以被绘制的子控件</returns>
-        private IEnumerable<Visual> FindDrawableChildren()
+        private IEnumerable<Control> FindDrawableChildren()
         {
             var filteredChildren = FilteredChildren;
+
+            bool IsDrawable(Control child)
+            {
+                return !(child.DesiredSize < Size.Epsilon) && VisibleRect.Overlaps(child.VisibleRect);
+            }
 
             for (int i = 0; i < filteredChildren.Length; i++)
             {
@@ -266,7 +269,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 查找 <see cref="Filter"/> 过滤后的子控件
         /// </summary>
         /// <returns><see cref="Filter"/> 过滤后的子控件</returns>
-        private Visual[] FindFilteredChildren()
+        private Control[] FindFilteredChildren()
         {
             var filter = Filter;
 
@@ -279,6 +282,25 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 return _children.FindAll(filter).ToArray();
             }
         }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private readonly PanelChildrenCollection _children;
+
+        private Control[] _drawableChildren = Array.Empty<Control>();
+        private Control[] _filteredChildren = Array.Empty<Control>();
+
+        private bool _isDrawableChildrenValid = false;
+        private bool _isFilteredChildrenValid = false;
 
         #endregion
     }

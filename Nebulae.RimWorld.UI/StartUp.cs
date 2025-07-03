@@ -1,13 +1,16 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
-using Nebulae.RimWorld.UI.Converters;
-using Nebulae.RimWorld.UI.Data;
-using Nebulae.RimWorld.UI.Data.Binding;
+using Nebulae.RimWorld.UI.Controls.Converters;
+using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Core.Data.Bindings;
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.Utilities;
+using RimWorld.QuestGen;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Verse;
@@ -19,30 +22,22 @@ namespace Nebulae.RimWorld.UI
     /// </summary>
     public static class StartUp
     {
-        private static List<Task> _startUpQuests = new List<Task>();
-
-
-        static StartUp()
-        {
-            AddQuest(() =>
-            {
-                BindingManager.AddDefaultConverter(ToggleStatusConverter.Instance, typeof(ToggleStatus), typeof(bool));
-                BindingManager.AddDefaultConverter(VisibilityConverter.Instance, typeof(ToggleStatus), typeof(Visibility));
-            }, typeof(StartUp), "Init Value Converters");
-        }
-
-
         /// <summary>
         /// 添加要在资源加载完毕时执行的初始化任务
         /// </summary>
         /// <param name="action">初始化方法</param>
-        /// <param name="owner">拥有任务的类型</param>
+        /// <param name="mod">添加任务的 Mod</param>
         /// <param name="questName">任务名</param>
-        public static void AddQuest(Action action, Type owner, string questName = null)
+        public static void AddQuest(Action action, ModContentPack mod, string questName = null)
         {
             if (_startUpQuests is null)
             {
                 return;
+            }
+
+            if (mod is null)
+            {
+                throw new ArgumentNullException(nameof(mod));
             }
 
             void WrappedAction()
@@ -50,70 +45,55 @@ namespace Nebulae.RimWorld.UI
                 try
                 {
                     action.Invoke();
-                    LogQuestFinished(owner, questName, action.Method);
+                    LogQuestFinished(mod.Name, questName, action.Method);
                 }
                 catch (Exception e)
                 {
-                    LogQuestFailed(owner, questName, e);
+                    LogQuestFailed(mod.Name, questName, e);
                 }
             }
 
             _startUpQuests.Add(new Task(WrappedAction));
         }
 
-        /// <summary>
-        /// 添加要在资源加载完毕时执行的初始化任务
-        /// </summary>
-        /// <param name="action">初始化方法</param>
-        /// <param name="owner">拥有任务的对象</param>
-        /// <param name="questName">任务名</param>
-        public static void AddQuest(Action action, object owner, string questName = null)
-        {
-            if (owner is null)
-            {
-                throw new ArgumentNullException("owner");
-            }
-
-            AddQuest(action, owner.GetType(), questName);
-        }
-
 
         internal static void FinishQuests()
         {
-            foreach (var item in typeof(DependencyObject).AllLeafSubclasses())
-            {
-                RuntimeHelpers.RunClassConstructor(item.TypeHandle);
-            }
+            // foreach (var item in typeof(DependencyObject).AllLeafSubclasses())
+            // {
+            //     RuntimeHelpers.RunClassConstructor(item.TypeHandle);
+            // }
+
+            _startUpQuests.Add(new Task(LoadDefaultConverters));
 
             var mre = new ManualResetEvent(false);
 
             async void FinishQuestsAsync()
             {
-                try
-                {
-                    _startUpQuests.ForEach(x =>
-                    {
-                        x.ConfigureAwait(false);
-                        x.Start();
-                    });
+                _startUpQuests.ForEach(x => x.Start());
 
-                    await Task.WhenAll(_startUpQuests.ToArray()).ConfigureAwait(false);
-                }
-                finally
-                {
-                    mre.Set();
-                }
+                await Task.WhenAll(_startUpQuests);
+
+                mre.Set();
+                mre.Dispose();
             }
 
             Task.Run(FinishQuestsAsync);
 
             mre.WaitOne();
-            mre.Dispose();
 
             _startUpQuests.Clear();
             _startUpQuests = null;
         }
 
+
+        //------------------------------------------------------
+        //
+        //  Private Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Static Methods
 
         private static string BuildLogMessage(bool isFailed, string title, string questName, string additionalInfo)
         {
@@ -126,17 +106,36 @@ namespace Nebulae.RimWorld.UI
             return $"A start up quest {questPart} {status}\n---> {additionalInfo}";
         }
 
-        private static void LogQuestFailed(Type owner, string questName, Exception e)
+        private static void LoadDefaultConverters()
         {
-            string message = BuildLogMessage(isFailed: true, UILogUtility.GetAssemblyTitle(owner), questName, additionalInfo: e.ToString());
+            try
+            {
+                BindingBase.AddDefaultConverter(typeof(ToggleState), typeof(bool), ToggleStateToBoolean.Instance);
+                BindingBase.AddDefaultConverter(typeof(ToggleState), typeof(Visibility), ToggleStateToVisibility.Instance);
+                LogQuestFinished("NebulaeFlood's Lib", "Load Default Converters", MethodBase.GetCurrentMethod());
+            }
+            catch (Exception e)
+            {
+                LogQuestFailed("NebulaeFlood's Lib", "Load Default Converters", e);
+            }
+        }
+
+        private static void LogQuestFailed(string modName, string questName, Exception e)
+        {
+            string message = BuildLogMessage(isFailed: true, modName, questName, additionalInfo: e.ToString());
             "NebulaeFlood's Lib".Error(message);
         }
 
-        private static void LogQuestFinished(Type owner, string questName, MethodInfo method)
+        private static void LogQuestFinished(string modName, string questName, MethodBase method)
         {
             string additionalInfo = $"{method.DeclaringType}.{method.Name}.";
-            string message = BuildLogMessage(isFailed: false, UILogUtility.GetAssemblyTitle(owner), questName, additionalInfo);
+            string message = BuildLogMessage(isFailed: false, modName, questName, additionalInfo);
             "NebulaeFlood's Lib".Message(message);
         }
+
+        #endregion
+
+
+        private static List<Task> _startUpQuests = new List<Task>();
     }
 }

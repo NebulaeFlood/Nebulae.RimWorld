@@ -1,5 +1,9 @@
 ﻿using Nebulae.RimWorld.UI.Windows;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Utilities
@@ -36,20 +40,17 @@ namespace Nebulae.RimWorld.UI.Utilities
             {
                 for (int i = windowStack.Count - 1; i >= 0; i--)
                 {
-                    if (windowStack[i] is PopupWindow window
-                        && !window.StayOpen)
+                    if (windowStack[i] is PopupWindow window)
                     {
-                        if (window.StayOpen)
+                        if (window._stayOpen)
                         {
-                            window.StayOpen = false;
+                            window._stayOpen = false;
                         }
                         else
                         {
                             window.PreClose();
                             windowStack.RemoveAt(i);
                             window.PostClose();
-
-                            window.Popped = false;
 
                             if (--count < 1)
                             {

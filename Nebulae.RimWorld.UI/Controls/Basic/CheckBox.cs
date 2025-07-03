@@ -1,38 +1,41 @@
-﻿using RimWorld;
+﻿using Nebulae.RimWorld.UI.Core.Events;
+using RimWorld;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
 using Verse;
-using Verse.Sound;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
     /// <summary>
     /// 复选框控件
     /// </summary>
-    public class CheckBox : ToggleButton
+    public sealed class CheckBox : ToggleButton
     {
         /// <summary>
         /// 初始化 <see cref="CheckBox"/> 的新实例
         /// </summary>
-        public CheckBox() : base(Widgets.CheckboxOnTex, Widgets.CheckboxPartialTex, Widgets.CheckboxOffTex)
-        {
-            ClickSound = null;
-            IconHighlightable = false;
-            ReverseContent = true;
-        }
+        public CheckBox() : base(Widgets.CheckboxOnTex, Widgets.CheckboxPartialTex, Widgets.CheckboxOffTex) { }
 
 
         /// <inheritdoc/>
-        protected internal override void OnClick()
+        protected override void OnClick(RoutedEventArgs e)
         {
-            if (Status is ToggleStatus.Checked)
+            if (State is ToggleState.On)
             {
-                Status = ToggleStatus.Unchecked;
-                SoundDefOf.Checkbox_TurnedOff.PlayOneShotOnCamera();
+                ClickSound = SoundDefOf.Checkbox_TurnedOff;
+                State = ToggleState.Off;
             }
             else
             {
-                Status = ToggleStatus.Checked;
-                SoundDefOf.Checkbox_TurnedOn.PlayOneShotOnCamera();
+                ClickSound = SoundDefOf.Checkbox_TurnedOn;
+                State = ToggleState.On;
             }
+
+            base.OnClick(e);
         }
     }
 }
