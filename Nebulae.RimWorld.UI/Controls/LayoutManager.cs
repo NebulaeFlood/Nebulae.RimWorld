@@ -197,10 +197,10 @@ namespace Nebulae.RimWorld.UI.Controls
                 nonClientRect.x + 154f,
                 nonClientRect.y,
                 130f,
-                24f), "Debug: ShowInfo")
+                24f), "Debug: ShowTree")
                 && !_isEmpty)
             {
-                // _root.ShowInfo();
+                _root.Debug();
             }
         }
 

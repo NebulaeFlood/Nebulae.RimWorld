@@ -454,6 +454,81 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         //------------------------------------------------------
         //
+        //  Internal Properties
+        //
+        //------------------------------------------------------
+
+        #region Internal Properties
+
+        internal bool DebugControlRect
+        {
+            get => _debugContent.HasFlag(DebugContent.ControlRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.ControlRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.ControlRect;
+                }
+            }
+        }
+
+        internal bool DebugDesiredRect
+        {
+            get => _debugContent.HasFlag(DebugContent.DesiredRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.DesiredRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.DesiredRect;
+                }
+            }
+        }
+
+        internal bool DebugRenderRect
+        {
+            get => _debugContent.HasFlag(DebugContent.RenderRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.RenderRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.RenderRect;
+                }
+            }
+        }
+
+        internal bool DebugVisibleRect
+        {
+            get => _debugContent.HasFlag(DebugContent.VisibleRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.VisibleRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.VisibleRect;
+                }
+            }
+        }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
         //  Public Methods
         //
         //------------------------------------------------------

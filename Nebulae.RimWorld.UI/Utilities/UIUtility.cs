@@ -1,4 +1,7 @@
-﻿using Nebulae.RimWorld.UI.Controls;
+﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
+using Nebulae.RimWorld.UI.Controls;
+using Nebulae.RimWorld.UI.Controls.Basic;
+using System;
 using System.Diagnostics;
 using UnityEngine;
 using Verse;
@@ -12,9 +15,9 @@ namespace Nebulae.RimWorld.UI.Utilities
     public static class UIUtility
     {
         /// <summary>
-        /// 调试绘制模式
+        /// 当前是否为 UI 调试模式
         /// </summary>
-        public static bool DebugDrawMode;
+        public static bool DebugMode;
 
 
         /// <summary>
@@ -37,6 +40,20 @@ namespace Nebulae.RimWorld.UI.Utilities
         public static bool IsState(this ControlState state, ControlState targetState)
         {
             return (state & targetState) == targetState;
+        }
+
+        /// <summary>
+        /// 调试控件
+        /// </summary>
+        /// <param name="control">要调试的控件</param>
+        public static void Debug(this Control control)
+        {
+            if (control is null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            LogicalTreeDebugWindow.Window.Show(control);
         }
 
         /// <summary>
