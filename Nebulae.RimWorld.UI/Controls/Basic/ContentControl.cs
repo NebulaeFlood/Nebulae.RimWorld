@@ -42,6 +42,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                         _content.Parent = this;
                     }
 
+                    InvalidateMeasure();
                     OnContentChanged();
                 }
             }

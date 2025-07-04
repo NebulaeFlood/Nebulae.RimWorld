@@ -89,34 +89,36 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Rect ArrangeOverride(Rect availableRect)
         {
-            if (!IsEmpty)
+            if (IsEmpty)
             {
-                Content.Arrange(availableRect - _borderThickness);
+                return availableRect;
             }
 
-            return availableRect;
+            return Content.Arrange(availableRect - _borderThickness) + _borderThickness;
         }
 
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (!IsEmpty)
+            if (IsEmpty)
             {
-                Content.Measure(availableSize - _borderThickness);
+                return availableSize;
             }
 
-            return availableSize;
+            return Content.Measure(availableSize - _borderThickness) + _borderThickness;
         }
 
         /// <inheritdoc/>
         protected override SegmentResult SegmentCore(Rect visiableRect)
         {
+            visiableRect = visiableRect.IntersectWith(RenderRect);
+
             if (!IsEmpty)
             {
                 Content.Segment(visiableRect);
             }
 
-            return visiableRect.IntersectWith(RenderRect);
+            return visiableRect;
         }
 
         /// <inheritdoc/>
@@ -135,13 +137,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             if (_borderThickness != 0f)
             {
                 // Left
-                GUI.DrawTexture(new Rect(x, y, _borderThickness.Left, height), _borderBrush);
+                GUI.DrawTexture(new Rect(x, y, _borderThickness.Left, height), _borderBrush, ScaleMode.StretchToFill);
                 // Top
-                GUI.DrawTexture(new Rect(x, y, width, _borderThickness.Top), _borderBrush);
+                GUI.DrawTexture(new Rect(x, y, width, _borderThickness.Top), _borderBrush, ScaleMode.StretchToFill);
                 // Right
-                GUI.DrawTexture(new Rect(x + width - _borderThickness.Right, y, _borderThickness.Right, height), _borderBrush);
+                GUI.DrawTexture(new Rect(x + width - _borderThickness.Right, y, _borderThickness.Right, height), _borderBrush, ScaleMode.StretchToFill);
                 // Bottom
-                GUI.DrawTexture(new Rect(x, y + height - _borderThickness.Bottom, width, _borderThickness.Bottom), _borderBrush);
+                GUI.DrawTexture(new Rect(x, y + height - _borderThickness.Bottom, width, _borderThickness.Bottom), _borderBrush, ScaleMode.StretchToFill);
             }
 
             base.DrawCore(states);
