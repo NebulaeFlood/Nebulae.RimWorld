@@ -9,7 +9,6 @@ namespace Nebulae.RimWorld.UI.Automation
 {
     internal readonly struct SettingEntryInfo
     {
-        public static readonly Comparison<SettingEntryInfo> Comparison = Compare;
         public static readonly StringBuilder KeyBuilder = new StringBuilder(0);
 
         public readonly SettingEntryBaseAttribute EntryInfo;
@@ -61,8 +60,5 @@ namespace Nebulae.RimWorld.UI.Automation
 
             KeyBuilder.Clear();
         }
-
-
-        private static int Compare(SettingEntryInfo x, SettingEntryInfo y) => x.EntryInfo.Order > y.EntryInfo.Order ? 1 : -1;
     }
 }
