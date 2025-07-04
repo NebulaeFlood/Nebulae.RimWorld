@@ -598,8 +598,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         private bool _anyAutoColumn;
         private bool _anyAutoRow;
 
-        private bool _unitInfoChanged = true;
-
         private readonly List<ColumnDefinition> _columnsUseRemain = new List<ColumnDefinition>();
         private readonly List<RowDefinition> _rowsUseRemain = new List<RowDefinition>();
 
