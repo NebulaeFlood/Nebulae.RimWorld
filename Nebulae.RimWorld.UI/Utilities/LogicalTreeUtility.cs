@@ -16,12 +16,52 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <returns>控件的指定代数的父控件，若 <paramref name="depth"/> 小于 <see langword="0"/>，返回结果为 <paramref name="control"/>；若不存在，则返回 <see langword="null"/>。</returns>
         public static Control GetParent(this Control control, int depth)
         {
-            if (depth < 0)
+            var result = control;
+
+            while (depth >= 0)
             {
-                return control;
+                if (result is null)
+                {
+                    break;
+                }
+
+                depth--;
+                result = result.Parent;
             }
 
-            return GetParent(control.Parent, depth - 1);
+            return result;
+        }
+
+        /// <summary>
+        /// 尝试查找控件的指定类型的父控件
+        /// </summary>
+        /// <typeparam name="T">父控件的类型</typeparam>
+        /// <param name="control">要查找父控件的控件</param>
+        /// <param name="parent">控件的父控件</param>
+        /// <returns>若找到指定类型的父控件，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public static bool TryFindPartent<T>(this Control control, out T parent) where T : Control
+        {
+            if (control is null)
+            {
+                parent = null;
+                return false;
+            }
+
+            var currentParent = control.Parent;
+
+            while (currentParent is null)
+            {
+                if (currentParent is T p)
+                {
+                    parent = p;
+                    return true;
+                }
+
+                currentParent = currentParent.Parent;
+            }
+
+            parent = null;
+            return false;
         }
 
         /// <summary>
