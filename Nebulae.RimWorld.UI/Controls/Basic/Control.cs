@@ -1,15 +1,20 @@
-﻿using Nebulae.RimWorld.UI.Core.Data;
+﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
+using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
+    // Priority 0 ~ 39
+
     /// <summary>
     /// Nebulae's Control 的基本控件
     /// </summary>
+    [DebuggerStepThrough]
     public abstract partial class Control : DependencyObject
     {
         //------------------------------------------------------
@@ -23,31 +28,37 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 控件响应用户交互的区域
         /// </summary>
+        [DebugMember(int.MinValue + 30)]
         public Rect ControlRect;
 
         /// <summary>
         /// 控件响应用户交互的尺寸
         /// </summary>
+        [DebugMember(int.MinValue + 31)]
         public Size ControlSize = Size.Empty;
 
         /// <summary>
         /// 控件需要占用的布局区域
         /// </summary>
+        [DebugMember(int.MinValue + 32)]
         public Rect DesiredRect;
 
         /// <summary>
         /// 控件需要占用的布局尺寸
         /// </summary>
+        [DebugMember(int.MinValue + 33)]
         public Size DesiredSize = Size.Empty;
 
         /// <summary>
         /// 控件呈现内容的可见区域
         /// </summary>
+        [DebugMember(int.MinValue + 36)]
         public Rect VisibleRect;
 
         /// <summary>
         /// 控件呈现内容的可见尺寸
         /// </summary>
+        [DebugMember(int.MinValue + 37)]
         public Size VisibleSize = Size.Empty;
 
         #endregion
@@ -81,11 +92,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取一个值，该值表示光标是否直接位于 <see cref="Control"/> 的交互区域上方
         /// </summary>
+        [DebugMember(int.MinValue + 6)]
         public bool CursorDirectlyOver => _controlStates.HasState(ControlState.CursorDirectlyOver);
 
         /// <summary>
         /// 获取一个值，该值表示光标是否位于 <see cref="Control"/> 的交互区域内
         /// </summary>
+        [DebugMember(int.MinValue + 7)]
         public bool CursorOver => _controlStates.HasState(ControlState.CursorOver);
 
         /// <summary>
@@ -119,6 +132,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取一个值，该值指示 <see cref="Control"/> 的排布是否有效
         /// </summary>
+        [DebugMember(int.MinValue + 9)]
         public bool IsArrangeValid
         {
             get
@@ -142,6 +156,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取一个值，该值指示 <see cref="Control"/> 是否正在被拖动
         /// </summary>
+        [DebugMember(int.MinValue + 8)]
         public bool IsDragging => _controlStates.HasState(ControlState.Dragging);
 
         /// <summary>
@@ -163,6 +178,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取一个值，该值指示 <see cref="Control"/> 的测量是否有效
         /// </summary>
+        [DebugMember(int.MinValue + 10)]
         public bool IsMeasureValid
         {
             get
@@ -186,6 +202,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取一个值，该值指示 <see cref="Control"/> 的分割是否有效
         /// </summary>
+        [DebugMember(int.MinValue + 11)]
         public bool IsSegmentValid
         {
             get
@@ -210,6 +227,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 获取或设置一个值，该值指示子控件是否可影响 <see cref="Control"/> 的布局
         /// </summary>
         /// <remarks>该值应只在初始化时被修改。</remarks>
+        [DebugMember(int.MinValue + 22)]
         public bool IsSolid
         {
             get => _isSolid;
@@ -329,6 +347,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置一个值，该值指示该 <see cref="Control"/> 是否可被拖动
         /// </summary>
+        [DebugMember(int.MinValue + 21)]
         public bool AllowDrag
         {
             get { return (bool)GetValue(AllowDragProperty); }
@@ -347,6 +366,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置一个值，该值指示是否在用户界面中启用此 <see cref="Control"/>
         /// </summary>
+        [DebugMember(int.MinValue + 20)]
         public bool IsEnabled
         {
             get { return (bool)GetValue(IsEnabledProperty); }
@@ -379,6 +399,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置 <see cref="Control"/> 的不透明度
         /// </summary>
+        [DebugMember(int.MinValue + 24)]
         public float Opacity
         {
             get { return (float)GetValue(OpacityProperty); }
@@ -411,6 +432,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置 <see cref="Control"/> 的显示状态
         /// </summary>
+        [DebugMember(int.MinValue + 23)]
         public Visibility Visibility
         {
             get { return (Visibility)GetValue(VisibilityProperty); }
@@ -684,11 +706,72 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 TooltipHandler.TipRegion(_tooltipRect, _tooltip);
             }
 
-            if (UIUtility.DebugDrawMode)
+            if (UIUtility.DebugMode)
             {
                 DrawDebugContent();
             }
         }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Internal Methods
+        //
+        //------------------------------------------------------
+
+        #region Internal Methods
+
+        internal bool CanHitTest()
+        {
+            return _isHitTestVisible && !_controlStates.HasState(ControlState.Disabled);
+        }
+
+        internal virtual void DrawDebugContent()
+        {
+            if (_debugContent.HasFlag(DebugContent.VisibleRect) && VisibleSize != Size.Empty)
+            {
+                UIUtility.DrawBorder(VisibleRect, BrushUtility.VisibleRectBorderBrush);
+            }
+
+            if (_debugContent.HasFlag(DebugContent.DesiredRect) && DesiredSize != Size.Empty)
+            {
+                UIUtility.DrawBorder(DesiredRect, BrushUtility.DesiredRectBorderBrush);
+            }
+
+            if (_debugContent.HasFlag(DebugContent.ControlRect) && ControlSize != Size.Empty)
+            {
+                UIUtility.DrawBorder(ControlRect, BrushUtility.ControlRectBorderBrush);
+            }
+        }
+
+        internal void DrawLightly(float opacity)
+        {
+            if (!_allowDraw || VisibleSize.IsEmpty)
+            {
+                return;
+            }
+
+            var color = GUI.color;
+            var contentColor = GUI.contentColor;
+            var opacityColor = new Color(1f, 1f, 1f, opacity);
+
+            GUI.color = opacityColor * color;
+            GUI.contentColor = opacityColor * contentColor;
+            DrawCore(ControlState.Normal);
+            GUI.color = color;
+            GUI.contentColor = contentColor;
+        }
+
+        internal static Size FormatSize(Size size)
+        {
+            return new Size(
+                (size.Width < 1f || float.IsInfinity(size.Width) || float.IsNaN(size.Width)) ? 0f : size.Width,
+                (size.Height < 1f || float.IsInfinity(size.Height) || float.IsNaN(size.Height)) ? 0f : size.Height);
+        }
+
+        internal Control GetSolidParent() => (!_isChild || _parent._isSolid) ? _parent : _parent.GetSolidParent();
 
         #endregion
 
@@ -766,67 +849,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         //------------------------------------------------------
         //
-        //  Internal Methods
-        //
-        //------------------------------------------------------
-
-        #region Internal Methods
-
-        internal bool CanHitTest()
-        {
-            return _isHitTestVisible && !_controlStates.HasState(ControlState.Disabled);
-        }
-
-        internal virtual void DrawDebugContent()
-        {
-            if (_debugContent.HasFlag(DebugContent.VisibleRect) && VisibleSize != Size.Empty)
-            {
-                UIUtility.DrawBorder(VisibleRect, BrushUtility.VisibleRectBorderBrush);
-            }
-
-            if (_debugContent.HasFlag(DebugContent.DesiredRect) && DesiredSize != Size.Empty)
-            {
-                UIUtility.DrawBorder(DesiredRect, BrushUtility.DesiredRectBorderBrush);
-            }
-
-            if (_debugContent.HasFlag(DebugContent.ControlRect) && ControlSize != Size.Empty)
-            {
-                UIUtility.DrawBorder(ControlRect, BrushUtility.ControlRectBorderBrush);
-            }
-        }
-
-        internal void DrawLightly(float opacity)
-        {
-            if (!_allowDraw || VisibleSize.IsEmpty)
-            {
-                return;
-            }
-
-            var color = GUI.color;
-            var contentColor = GUI.contentColor;
-            var opacityColor = new Color(1f, 1f, 1f, opacity);
-
-            GUI.color = opacityColor * color;
-            GUI.contentColor = opacityColor * contentColor;
-            DrawCore(ControlState.Normal);
-            GUI.color = color;
-            GUI.contentColor = contentColor;
-        }
-
-        internal static Size FormatSize(Size size)
-        {
-            return new Size(
-                (size < 1f || float.IsInfinity(size.Width) || float.IsNaN(size.Width)) ? 0f : size.Width,
-                (size < 1f || float.IsInfinity(size.Height) || float.IsNaN(size.Height)) ? 0f : size.Height);
-        }
-
-        internal Control GetSolidParent() => (!_isChild || _parent._isSolid) ? _parent : _parent.GetSolidParent();
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
         //  Private Fields
         //
         //------------------------------------------------------
@@ -841,6 +863,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         private bool _isHitTestVisible;
         private bool _isSolid;
 
+        [DebugMember(int.MinValue + 1, Name = "Name")]
         private string _name = string.Empty;
 
         private Control _parent;
@@ -849,7 +872,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         // Caches
 
+        [DebugMember(int.MinValue + 2, Name = "AllowDraw")]
         private bool _allowDraw = true;
+        [DebugMember(int.MinValue + 3, Name = "AllowOccupy")]
         private bool _allowOccupy = true;
 
         private bool _isArrangeValid;

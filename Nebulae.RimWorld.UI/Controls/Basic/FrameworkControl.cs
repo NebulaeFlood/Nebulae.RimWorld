@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Core.Data;
+﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
+using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System.Diagnostics;
 using UnityEngine;
@@ -6,6 +7,8 @@ using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
+    // Priority 40 ~ 49
+
     /// <summary>
     /// 可控制布局属性的控件
     /// </summary>
@@ -23,11 +26,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 控件将要绘制的区域
         /// </summary>
+        [DebugMember(int.MinValue + 34)]
         public Rect RenderRect;
 
         /// <summary>
         /// 控件将要绘制的尺寸
         /// </summary>
+        [DebugMember(int.MinValue + 35)]
         public Size RenderSize = Size.Empty;
 
         #endregion
@@ -45,6 +50,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置 <see cref="FrameworkControl"/> 的水平对齐方式
         /// </summary>
+        [DebugMember(int.MinValue + 40)]
         public HorizontalAlignment HorizontalAlignment
         {
             get { return (HorizontalAlignment)GetValue(HorizontalAlignmentProperty); }
@@ -75,6 +81,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置 <see cref="FrameworkControl"/> 的垂直对齐方式
         /// </summary>
+        [DebugMember(int.MinValue + 41)]
         public VerticalAlignment VerticalAlignment
         {
             get { return (VerticalAlignment)GetValue(VerticalAlignmentProperty); }
@@ -105,6 +112,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置 <see cref="FrameworkControl"/> 的外边距
         /// </summary>
+        [DebugMember(int.MinValue + 44)]
         public Thickness Margin
         {
             get { return (Thickness)GetValue(MarginProperty); }
@@ -123,6 +131,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置 <see cref="FrameworkControl"/> 的内边距
         /// </summary>
+        [DebugMember(int.MinValue + 45)]
         public Thickness Padding
         {
             get { return (Thickness)GetValue(PaddingProperty); }
@@ -142,6 +151,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 获取或设置 <see cref="FrameworkControl"/> 的宽度
         /// </summary>
         /// <remarks>当值为小于等于 1 的正数时，则表示所占可用空间的百分比。</remarks>
+        [DebugMember(int.MinValue + 42)]
         public float Width
         {
             get { return (float)GetValue(WidthProperty); }
@@ -161,6 +171,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 获取或设置 <see cref="FrameworkControl"/> 的高度
         /// </summary>
         /// <remarks>当值为小于等于 1 的正数时，则表示所占可用空间的百分比。</remarks>
+        [DebugMember(int.MinValue + 43)]
         public float Height
         {
             get { return (float)GetValue(HeightProperty); }
@@ -189,8 +200,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override sealed Rect ArrangeCore(Rect availableRect)
         {
-            var margin = Margin;
-            var padding = Padding;
+            var margin = (Thickness)GetValue(MarginProperty);
+            var padding = (Thickness)GetValue(PaddingProperty);
 
             RenderRect = ArrangeOverride((RenderSize - padding).AlignToArea(availableRect - (margin + padding), HorizontalAlignment, VerticalAlignment))
                 .Rounded() + padding;
@@ -208,8 +219,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override sealed Size MeasureCore(Size availableSize)
         {
-            var margin = Margin;
-            var padding = Padding;
+            var margin = (Thickness)GetValue(MarginProperty);
+            var padding = (Thickness)GetValue(PaddingProperty);
 
             availableSize -= (margin + padding);
 
