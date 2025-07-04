@@ -146,27 +146,6 @@ namespace Nebulae.RimWorld.UI.Windows
         }
 
 
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private readonly LayoutManager _layoutManager;
-
-        private Rect _clientRect;
-        private Rect _nonClientRect;
-
-        private Thickness _padding = 18f;
-
-        private float _initialHeight = DefaultWindowHeight;
-        private float _initialWidth = DefaultWindowWidth;
-
-        #endregion
-
-
         /// <summary>
         /// 绘制窗口内容
         /// </summary>
@@ -194,10 +173,31 @@ namespace Nebulae.RimWorld.UI.Windows
 
             _layoutManager.Draw(inRect);
 
-            if (UIUtility.DebugDrawMode && _layoutManager.DrawDebugButtons)
+            if (UIUtility.DebugMode && _layoutManager.DrawDebugButtons)
             {
                 _layoutManager.DrawWindowDebugButtons(_nonClientRect);
             }
         }
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private readonly LayoutManager _layoutManager;
+
+        private Rect _clientRect;
+        private Rect _nonClientRect;
+
+        private Thickness _padding = 18f;
+
+        private float _initialHeight = DefaultWindowHeight;
+        private float _initialWidth = DefaultWindowWidth;
+
+        #endregion
     }
 }
