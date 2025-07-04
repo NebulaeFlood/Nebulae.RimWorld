@@ -192,7 +192,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             var margin = Margin;
             var padding = Padding;
 
-            RenderRect = ArrangeOverride(RenderSize.AlignToArea(availableRect - (margin + padding), HorizontalAlignment, VerticalAlignment))
+            RenderRect = ArrangeOverride((RenderSize - padding).AlignToArea(availableRect - (margin + padding), HorizontalAlignment, VerticalAlignment))
                 .Rounded() + padding;
 
             return RenderRect + margin;
