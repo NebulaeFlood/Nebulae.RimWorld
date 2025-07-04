@@ -26,30 +26,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         //------------------------------------------------------
         //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private UnitInfo[] _unitInfos;
-
-        private ColumnDefinition[] _columnDefinitions = new ColumnDefinition[] { new ColumnDefinition(1f, 0) };
-        private RowDefinition[] _rowDefinitions = new RowDefinition[] { new RowDefinition(1f, 0) };
-
-        private bool _anyAutoColumn;
-        private bool _anyAutoRow;
-
-        private bool _unitInfoChanged = true;
-
-        private readonly List<ColumnDefinition> _columnsUseRemain = new List<ColumnDefinition>();
-        private readonly List<RowDefinition> _rowsUseRemain = new List<RowDefinition>();
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
         //  Attached Properties
         //
         //------------------------------------------------------
@@ -226,7 +202,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 _anyAutoColumn = false;
                 _columnDefinitions = new ColumnDefinition[columnWidths.Length];
                 _columnsUseRemain.Clear();
-                _unitInfoChanged = true;
 
                 for (int i = 0; i < columnWidths.Length; i++)
                 {
@@ -267,7 +242,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 _anyAutoRow = false;
                 _rowDefinitions = new RowDefinition[rowHeights.Length];
                 _rowsUseRemain.Clear();
-                _unitInfoChanged = true;
 
                 for (int i = 0; i < rowHeights.Length; i++)
                 {
@@ -354,19 +328,12 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Rect ArrangeOverride(Rect availableRect, Control[] children)
         {
-            if (_unitInfoChanged)
-            {
-                InitUnitInfos(children);
-                UpdateUnitInfos(availableRect, children);
+            float x = availableRect.x;
+            float y = availableRect.y;
 
-                _unitInfoChanged = false;
-            }
-            else
+            for (int i = 0; i < children.Length; i++)
             {
-                for (int i = 0; i < children.Length; i++)
-                {
-                    children[i].Arrange(_unitInfos[i].Rect.Offset(availableRect.x, availableRect.y));
-                }
+                children[i].Arrange(_unitInfos[i].Rect.Offset(x, y));
             }
 
             return new Rect(availableRect.x, availableRect.y, RenderSize.Width, RenderSize.Height);
@@ -375,9 +342,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize, Control[] children)
         {
-            _unitInfoChanged = true;
+            var renderSize = UpdateDefinitionsSize(availableSize, children);
 
-            return UpdateDefinitionsSize(availableSize, children);
+            UpdateUnitInfos(children);
+
+            return renderSize;
         }
 
         #endregion
@@ -390,21 +359,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         //------------------------------------------------------
 
         #region Private Methods
-
-        private void InitUnitInfos(Control[] children)
-        {
-            _unitInfos = new UnitInfo[children.Length];
-
-            for (int i = 0; i < children.Length; i++)
-            {
-                var child = children[i];
-                _unitInfos[i] = new UnitInfo(
-                    GetColumn(child),
-                    GetRow(child),
-                    GetColumnSpan(child),
-                    GetRowSpan(child));
-            }
-        }
 
         private Size UpdateDefinitionsSize(Size availableSize, Control[] children)
         {
@@ -563,8 +517,20 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             return new Size(width, height);
         }
 
-        private void UpdateUnitInfos(Rect availableRect, Control[] children)
+        private void UpdateUnitInfos(Control[] children)
         {
+            _unitInfos = new UnitInfo[children.Length];
+
+            for (int i = 0; i < children.Length; i++)
+            {
+                var child = children[i];
+                _unitInfos[i] = new UnitInfo(
+                    GetColumn(child),
+                    GetRow(child),
+                    GetColumnSpan(child),
+                    GetRowSpan(child));
+            }
+
             UnitInfo info;
 
             for (int i = 0; i < _unitInfos.Length; i++)
@@ -604,11 +570,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 }
 
                 children[i].Measure(new Size(info.Width, info.Height));
-                children[i].Arrange(new Rect(
-                    availableRect.x + info.X,
-                    availableRect.y + info.Y,
-                    info.Width,
-                    info.Height));
                 _unitInfos[i] = info;
             }
         }
@@ -617,6 +578,30 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         {
             return (int)value > -1;
         }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private UnitInfo[] _unitInfos;
+
+        private ColumnDefinition[] _columnDefinitions = new ColumnDefinition[] { new ColumnDefinition(1f, 0) };
+        private RowDefinition[] _rowDefinitions = new RowDefinition[] { new RowDefinition(1f, 0) };
+
+        private bool _anyAutoColumn;
+        private bool _anyAutoRow;
+
+        private bool _unitInfoChanged = true;
+
+        private readonly List<ColumnDefinition> _columnsUseRemain = new List<ColumnDefinition>();
+        private readonly List<RowDefinition> _rowsUseRemain = new List<RowDefinition>();
 
         #endregion
 
