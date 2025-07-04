@@ -17,6 +17,11 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
     public sealed class Expander : Control
     {
         /// <summary>
+        /// <see cref="Expander"/> 的按钮尺寸
+        /// </summary>
+        public const float ExpandButtonSize = 18f;
+
+        /// <summary>
         /// <see cref="Expander"/> 的标题高度
         /// </summary>
         public const float HeaderHeight = 24f;
@@ -36,8 +41,8 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// </summary>
         public event RoutedEventHandler Click
         {
-            add { _labelButton.AddHandler(ButtonBase.ClickEvent, value); }
-            remove { _labelButton.RemoveHandler(ButtonBase.ClickEvent, value); }
+            add { AddHandler(ButtonBase.ClickEvent, value); }
+            remove { RemoveHandler(ButtonBase.ClickEvent, value); }
         }
         #endregion
 
@@ -87,6 +92,15 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         #region Public Properties
 
         /// <summary>
+        /// 获取或设置 <see cref="Click"/> 触发时播放的音效
+        /// </summary>
+        public SoundDef ClickSound
+        {
+            get => _labelButton.ClickSound;
+            set => _labelButton.ClickSound = value;
+        }
+
+        /// <summary>
         /// 获取或设置 <see cref="Expander"/> 的内容控件
         /// </summary>
         public Control Content
@@ -114,6 +128,8 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
                     {
                         _expandButton.Visibility = Visibility.Collapsed;
                     }
+
+                    InvalidateMeasure();
                 }
             }
         }
@@ -214,7 +230,6 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             _expandButton = new SolidButton
             {
                 Icon = TexButton.Reveal,
-                IsEnabled = false,
                 Parent = this
             };
             _expandButton.Click += OnExpandButtonClick;
@@ -225,6 +240,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
                 Text = Header,
                 Parent = this
             };
+            _labelButton.Click += OnLabelButtonClick;
         }
 
 
@@ -244,21 +260,22 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
                 return _labelButton.Arrange(new Rect(
                     availableRect.x + 6f,
                     availableRect.y,
-                    DesiredSize.Width - 6f,
-                    HeaderHeight));
+                    _labelButton.DesiredSize.Width,
+                    _labelButton.DesiredSize.Height));
             }
 
-            _expandButton.Arrange(new Rect(availableRect.x, availableRect.y, DesiredSize.Width, HeaderHeight));
-            _labelButton.Arrange(new Rect(availableRect.x + 20f, availableRect.y, DesiredSize.Width - 20f, HeaderHeight));
+            _expandButton.Arrange(_expandButton.DesiredSize.AlignToArea(new Rect(availableRect.x, availableRect.y, DesiredSize.Width, HeaderHeight),
+                HorizontalAlignment.Left, VerticalAlignment.Center));
+
+            _labelButton.Arrange(new Rect(availableRect.x + ExpandButtonSize, availableRect.y, _labelButton.DesiredSize.Width, HeaderHeight));
 
             if (IsExpanded)
             {
                 _content.Arrange(new Rect(
-                    availableRect.x + 20f,
+                    availableRect.x + ExpandButtonSize,
                     availableRect.y + HeaderHeight,
-                    DesiredSize.Width - 20f,
-                    HeaderHeight));
-
+                    _content.DesiredSize.Width,
+                    _content.DesiredSize.Height));
             }
 
             return new Rect(availableRect.x, availableRect.y, DesiredSize.Width, DesiredSize.Height);
@@ -267,24 +284,25 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// <inheritdoc/>
         protected override Size MeasureCore(Size availableSize)
         {
-            _expandButton.Measure(new Size(18f));
-
             if (_isEmpty)
             {
+                _expandButton.Measure(Size.Empty);
                 _labelButton.Measure(new Size(availableSize.Width - 6f, HeaderHeight));
 
                 return new Size(availableSize.Width, HeaderHeight);
             }
 
-            var hearderWidth = availableSize.Width - 20f;
+            _expandButton.Measure(new Size(ExpandButtonSize));
+
+            var hearderWidth = availableSize.Width - ExpandButtonSize;
 
             _labelButton.Measure(new Size(hearderWidth, HeaderHeight));
 
-            var renderHeight = IsExpanded
+            var desiredHeight = IsExpanded
                 ? Content.Measure(new Size(hearderWidth, HeaderHeight)).Height + HeaderHeight
                 : HeaderHeight;
 
-            return new Size(availableSize.Width, renderHeight);
+            return new Size(availableSize.Width, desiredHeight);
         }
 
         /// <inheritdoc/>
@@ -306,21 +324,38 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// <inheritdoc/>
         protected override HitTestResult HitTestCore(Vector2 hitPoint)
         {
-            var result = _expandButton.HitTest(hitPoint);
+            if (!ControlRect.Contains(hitPoint))
+            {
+                return HitTestResult.Empty;
+            }
+
+            var result = _labelButton.HitTest(hitPoint);
 
             if (result.IsHit)
             {
                 return result;
             }
 
-            result = _labelButton.HitTest(hitPoint);
+            if (_isEmpty)
+            {
+                return HitTestResult.HitTest(this, true);
+            }
+
+            result = _expandButton.HitTest(hitPoint);
 
             if (result.IsHit)
             {
                 return result;
             }
 
-            return base.HitTestCore(hitPoint);
+            result = _content.HitTest(hitPoint);
+
+            if (result.IsHit)
+            {
+                return result;
+            }
+
+            return HitTestResult.HitTest(this, true);
         }
 
         /// <inheritdoc/>
@@ -337,6 +372,14 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
 
         #endregion
 
+
+        //------------------------------------------------------
+        //
+        //  Private Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Methods
 
         private void OnExpandButtonClick(object sender, RoutedEventArgs e)
         {
@@ -363,6 +406,13 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
 
             e.Handled = true;
         }
+
+        private void OnLabelButtonClick(object sender, RoutedEventArgs e)
+        {
+            RaiseEvent(e);
+        }
+
+        #endregion
 
 
         //------------------------------------------------------
