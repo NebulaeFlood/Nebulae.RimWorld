@@ -480,6 +480,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 }
             }
 
+            SettingEntryInfo.KeyBuilder.Clear();
             SettingEntryInfo.KeyBuilder.Capacity = 0;
         }
 

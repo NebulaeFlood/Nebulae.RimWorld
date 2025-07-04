@@ -252,7 +252,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             void Draw(string text, Rect renderRect)
             {
-                if (ReferenceEquals(text, string.Empty))
+                if (string.IsNullOrEmpty(text))
                 {
                     return;
                 }
@@ -281,7 +281,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="fontSize">字体大小</param>
         public static void DrawLabel(this string text, Rect renderRect, TextAnchor anchor = TextAnchor.MiddleCenter, GameFont fontSize = GameFont.Small)
         {
-            if (ReferenceEquals(text, string.Empty))
+            if (string.IsNullOrEmpty(text))
             {
                 return;
             }
