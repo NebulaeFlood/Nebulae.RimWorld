@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Core.Data.Bindings;
+﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
+using Nebulae.RimWorld.UI.Core.Data.Bindings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -139,6 +140,14 @@ namespace Nebulae.RimWorld.UI.Core.Data
         #endregion
 
 
+        //------------------------------------------------------
+        //
+        //  Internal Methods
+        //
+        //------------------------------------------------------
+
+        #region Internal Methods
+
         internal void SetValueByBinding(DependencyProperty property, object value)
         {
             if (property is null)
@@ -178,6 +187,8 @@ namespace Nebulae.RimWorld.UI.Core.Data
             args.Metadata.propertyChangedCallback?.Invoke(this, args);
             OnPropertyChanged(args);
         }
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -339,6 +350,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
         /// <summary>
         /// 依赖对象当前的类型
         /// </summary>
+        [DebugMember(int.MinValue)]
         public readonly Type Type;
 
 
