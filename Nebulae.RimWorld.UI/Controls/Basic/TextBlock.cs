@@ -96,7 +96,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            return _cache.CalculateSize(availableSize.Width, FontSize, TextAnchor.MiddleCenter);
+            return _cache.CalculateSize(availableSize.Width, FontSize, TextAnchor.UpperLeft);
         }
 
         /// <inheritdoc/>
@@ -121,7 +121,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         #region Private Fields
 
-        private static readonly LabelCache DefaultDrawer = TextUtility.CreateLabelDrawer(TextAnchor.MiddleCenter, GameFont.Small);
+        private static readonly LabelCache DefaultDrawer = TextUtility.CreateLabelDrawer(TextAnchor.UpperLeft, GameFont.Small);
 
         private string _cache = string.Empty;
         private LabelCache _drawer = DefaultDrawer;
