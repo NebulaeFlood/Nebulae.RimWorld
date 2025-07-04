@@ -149,6 +149,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         protected override Rect ArrangeOverride(Rect availableRect, Control[] children)
         {
             Size childrenSize = RenderSize;
+
             float currentX = availableRect.x;
             float currentY = availableRect.y;
 
@@ -158,12 +159,13 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 {
                     var child = children[i];
 
-                    currentX += child.Arrange(new Rect(
+                    child.Arrange(new Rect(
                         currentX,
                         currentY,
                         child.DesiredSize.Width,
-                        childrenSize.Height))
-                            .width;
+                        childrenSize.Height));
+
+                    currentX += child.DesiredSize.Width;
                 }
             }
             else
@@ -172,12 +174,13 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 {
                     var child = children[i];
 
-                    currentY += child.Arrange(new Rect(
+                    child.Arrange(new Rect(
                         currentX,
                         currentY,
                         childrenSize.Width,
-                        child.DesiredSize.Height))
-                            .height;
+                        child.DesiredSize.Height));
+
+                    currentY += child.DesiredSize.Height;
                 }
             }
 
