@@ -55,6 +55,11 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// </summary>
         public void Initialize()
         {
+            if (_content != null)
+            {
+                throw new InvalidOperationException($"Cannot initialize {Type} because {Type} has been initialized.");
+            }
+
             _content = CreateContent();
 
             if (_content is null)
