@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Diagnostics;
 using UnityEngine;
 using Verse;
@@ -127,6 +128,78 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 new ControlPropertyMetadata(Thickness.Empty, CoerceThickness, ControlRelation.Measure));
         #endregion
 
+        #region MaxWidth
+        /// <summary>
+        /// 获取或设置 <see cref="FrameworkControl"/> 的最大宽度
+        /// </summary>
+        public float MaxWidth
+        {
+            get { return (float)GetValue(MaxWidthProperty); }
+            set { SetValue(MaxWidthProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="MaxWidth"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty MaxWidthProperty =
+            DependencyProperty.Register(nameof(MaxWidth), typeof(float), typeof(FrameworkControl),
+                new ControlPropertyMetadata(float.MaxValue, CoerceSize, ControlRelation.Measure));
+        #endregion
+
+        #region MaxHeight
+        /// <summary>
+        /// 获取或设置 <see cref="FrameworkControl"/> 的最大高度
+        /// </summary>
+        public float MaxHeight
+        {
+            get { return (float)GetValue(MaxHeightProperty); }
+            set { SetValue(MaxHeightProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="MaxHeight"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty MaxHeightProperty =
+            DependencyProperty.Register(nameof(MaxHeight), typeof(float), typeof(FrameworkControl),
+                new ControlPropertyMetadata(float.MaxValue, CoerceSize, ControlRelation.Measure));
+        #endregion
+
+        #region MinWidth
+        /// <summary>
+        /// 获取或设置 <see cref="FrameworkControl"/> 的最小宽度
+        /// </summary>
+        public float MinWidth
+        {
+            get { return (float)GetValue(MinWidthProperty); }
+            set { SetValue(MinWidthProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="MinWidth"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty MinWidthProperty =
+            DependencyProperty.Register(nameof(MinWidth), typeof(float), typeof(FrameworkControl),
+                new ControlPropertyMetadata(0f, CoerceSize, ControlRelation.Measure));
+        #endregion
+
+        #region MinHeight
+        /// <summary>
+        /// 获取或设置 <see cref="FrameworkControl"/> 的最小高度
+        /// </summary>
+        public float MinHeight
+        {
+            get { return (float)GetValue(MinHeightProperty); }
+            set { SetValue(MinHeightProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="MinHeight"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty MinHeightProperty =
+            DependencyProperty.Register(nameof(MinHeight), typeof(float), typeof(FrameworkControl),
+                new ControlPropertyMetadata(0, CoerceSize, ControlRelation.Measure));
+        #endregion
+
         #region Padding
         /// <summary>
         /// 获取或设置 <see cref="FrameworkControl"/> 的内边距
@@ -239,6 +312,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                     : availableSize.Width * logicalWidth;
             }
 
+            renderWidth = Mathf.Clamp(renderWidth, (float)GetValue(MinWidthProperty), (float)GetValue(MaxWidthProperty));
+
             if (VerticalAlignment is VerticalAlignment.Stretch)
             {
                 renderHeight = availableSize.Height;
@@ -251,6 +326,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                     ? logicalHeight
                     : availableSize.Height * logicalHeight;
             }
+
+            renderHeight = Mathf.Clamp(renderHeight, (float)GetValue(MinHeightProperty), (float)GetValue(MaxHeightProperty));
 
             RenderSize = MeasureOverride(new Size(renderWidth, renderHeight)).Round() + padding;
 
