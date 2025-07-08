@@ -77,6 +77,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #endregion
 
 
+        static ToggleButton()
+        {
+            PaddingProperty.OverrideMetadata(typeof(ToggleButton),
+                new ControlPropertyMetadata(new Thickness(4f, 0f, 4f, 0f)));
+        }
+
         /// <summary>
         /// 为 <see cref="ToggleButton"/> 派生类实现基本初始化
         /// </summary>
@@ -142,9 +148,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             {
                 GUI.color *= Widgets.InactiveColor;
             }
+            else if (states.HasState(ControlState.Pressing))
+            {
+                GUI.DrawTexture(RegionRect, TexUI.HighlightSelectedTex);
+            }
             else if (states.HasState(ControlState.CursorDirectlyOver))
             {
-                GUI.DrawTexture(RenderRect, TexUI.HighlightTex);
+                GUI.DrawTexture(RegionRect, TexUI.HighlightTex);
             }
 
             _cache.DrawLabel(RenderRect, TextAnchor.MiddleLeft);

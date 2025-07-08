@@ -25,16 +25,28 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Public Fields
 
         /// <summary>
-        /// 控件将要绘制的区域
+        /// 控件内容绘制的区域
         /// </summary>
         [DebugMember(int.MinValue + 34)]
         public Rect RenderRect;
 
         /// <summary>
-        /// 控件将要绘制的尺寸
+        /// 控件内容绘制的尺寸
         /// </summary>
         [DebugMember(int.MinValue + 35)]
         public Size RenderSize = Size.Empty;
+
+        /// <summary>
+        /// 控件绘制占用的区域
+        /// </summary>
+        [DebugMember(int.MinValue + 36)]
+        public Rect RegionRect;
+
+        /// <summary>
+        /// 控件绘制占用的尺寸
+        /// </summary>
+        [DebugMember(int.MinValue + 37)]
+        public Size RegionSize = Size.Empty;
 
         #endregion
 
@@ -276,10 +288,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             var margin = (Thickness)GetValue(MarginProperty);
             var padding = (Thickness)GetValue(PaddingProperty);
 
-            RenderRect = ArrangeOverride((RenderSize - padding).AlignToArea(availableRect - (margin + padding), HorizontalAlignment, VerticalAlignment))
-                .Rounded() + padding;
-
-            return RenderRect + margin;
+            RenderRect = ArrangeOverride(
+                RenderSize.AlignToArea(availableRect - (margin + padding), 
+                    (HorizontalAlignment)GetValue(HorizontalAlignmentProperty), 
+                    (VerticalAlignment)GetValue(VerticalAlignmentProperty))).Rounded();
+            RegionRect = RenderRect + padding;
+            return RegionRect + margin;
         }
 
         /// <summary>
@@ -329,9 +343,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             renderHeight = Mathf.Clamp(renderHeight, (float)GetValue(MinHeightProperty), (float)GetValue(MaxHeightProperty));
 
-            RenderSize = MeasureOverride(new Size(renderWidth, renderHeight)).Round() + padding;
-
-            return RenderSize + margin;
+            RenderSize = MeasureOverride(new Size(renderWidth, renderHeight)).Round();
+            RegionSize = RenderSize + padding;
+            return RegionSize + margin;
         }
 
         /// <summary>

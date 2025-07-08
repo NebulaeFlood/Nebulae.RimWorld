@@ -141,7 +141,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             GUI.color *= _composition;
 
-            Widgets.DrawAtlas(RenderRect, _background);
+            Widgets.DrawAtlas(RegionRect, _background);
             _cache.DrawLabel(RenderRect);
         }
 

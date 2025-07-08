@@ -138,11 +138,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             }
             else if (states.HasState(ControlState.Pressing))
             {
-                GUI.DrawTexture(RenderRect, TexUI.HighlightSelectedTex, ScaleMode.StretchToFill);
+                GUI.DrawTexture(RegionRect, TexUI.HighlightSelectedTex, ScaleMode.StretchToFill);
             }
             else if (states.HasState(ControlState.CursorDirectlyOver))
             {
-                GUI.DrawTexture(RenderRect, TexUI.HighlightTex, ScaleMode.StretchToFill);
+                GUI.DrawTexture(RegionRect, TexUI.HighlightTex, ScaleMode.StretchToFill);
             }
 
             _drawer(_cache, RenderRect);

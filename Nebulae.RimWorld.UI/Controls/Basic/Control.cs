@@ -52,13 +52,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 控件呈现内容的可见区域
         /// </summary>
-        [DebugMember(int.MinValue + 36)]
+        [DebugMember(int.MinValue + 38)]
         public Rect VisibleRect;
 
         /// <summary>
         /// 控件呈现内容的可见尺寸
         /// </summary>
-        [DebugMember(int.MinValue + 37)]
+        [DebugMember(int.MinValue + 39)]
         public Size VisibleSize = Size.Empty;
 
         #endregion
@@ -526,6 +526,22 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 else
                 {
                     _debugContent &= ~DebugContent.RenderRect;
+                }
+            }
+        }
+
+        internal bool DebugRegionRect
+        {
+            get => _debugContent.HasFlag(DebugContent.RegionRect);
+            set
+            {
+                if (value)
+                {
+                    _debugContent |= DebugContent.RegionRect;
+                }
+                else
+                {
+                    _debugContent &= ~DebugContent.RegionRect;
                 }
             }
         }

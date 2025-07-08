@@ -94,9 +94,16 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// <inheritdoc/>
+        protected override Rect ArrangeOverride(Rect availableRect)
+        {
+            _cache = _cache.Truncate(availableRect, (GameFont)GetValue(FontSizeProperty));
+            return availableRect;
+        }
+
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            return _cache.CalculateSize(availableSize.Width, (GameFont)GetValue(FontSizeProperty), TextAnchor.UpperLeft);
+            return _cache.CalculateSize(availableSize.Width, (GameFont)GetValue(FontSizeProperty));
         }
 
         /// <inheritdoc/>

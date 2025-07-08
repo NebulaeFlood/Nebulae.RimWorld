@@ -126,13 +126,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             if (!ReferenceEquals(_background, BrushUtility.Transparent))
             {
-                GUI.DrawTexture(RenderRect, _background, ScaleMode.StretchToFill);
+                GUI.DrawTexture(RegionRect, _background, ScaleMode.StretchToFill);
             }
 
-            float x = RenderRect.x;
-            float y = RenderRect.y;
-            float width = RenderSize.Width;
-            float height = RenderSize.Height;
+            float x = RegionRect.x;
+            float y = RegionRect.y;
+            float width = RegionSize.Width;
+            float height = RegionSize.Height;
 
             if (_borderThickness != 0f)
             {
