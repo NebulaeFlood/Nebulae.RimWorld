@@ -56,7 +56,10 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 初始化 <see cref="TabItem"/> 的新实例
         /// </summary>
-        public TabItem() { }
+        public TabItem()
+        {
+            IsHitTestVisible = true;
+        }
 
 
         //------------------------------------------------------
