@@ -811,6 +811,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         /// <param name="hitPoint">进行命中测试的点</param>
         /// <returns>命中测试结果。</returns>
+        /// <remarks>必须先保证自身被 <see cref="HitTestResult.HitTest(Control, bool)"/> 或 <see cref="HitTestResult.HitTest(Control, Vector2)"/> 处理过，再保证子控件都调用过 <see cref="HitTest(Vector2)"/>。</remarks>
         protected virtual HitTestResult HitTestCore(Vector2 hitPoint) => HitTestResult.HitTest(this, hitPoint);
 
         /// <summary>

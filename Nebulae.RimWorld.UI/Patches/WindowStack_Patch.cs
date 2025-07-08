@@ -32,6 +32,7 @@ namespace Nebulae.RimWorld.UI.Patches
             InputUtility.LeftButton.Trace();
             InputUtility.RightButton.Trace();
             InputUtility.MiddleButton.Trace();
+            HitTestUtility.Results.TransferTo(HitTestUtility.PreviousResults);
         }
     }
 }

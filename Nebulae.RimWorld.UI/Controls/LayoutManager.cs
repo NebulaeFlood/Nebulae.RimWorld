@@ -22,7 +22,7 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Public Properties
 
         /// <summary>
-        /// 是否绘制调试用按钮
+        /// 获取或设置一个值，该值指示 <see cref="LayoutManager"/> 是否绘制调试用按钮
         /// </summary>
         public bool DrawDebugButtons
         {
@@ -31,12 +31,21 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 拥有该控件管理器的窗口
+        /// 获取或设置一个值，该值指示 <see cref="LayoutManager"/> 中的控件是否参与布局命中测试
+        /// </summary>
+        public bool IsHitTestVisible
+        {
+            get => _isHitTestVisible;
+            set => _isHitTestVisible = value;
+        }
+
+        /// <summary>
+        /// 获取拥有该 <see cref="LayoutManager"/> 的窗口
         /// </summary>
         public Window Owner => _owner;
 
         /// <summary>
-        /// 获取或设置根控件
+        /// 获取或设置 <see cref="LayoutManager"/> 的根控件
         /// </summary>
         public Control Root
         {
@@ -169,9 +178,16 @@ namespace Nebulae.RimWorld.UI.Controls
                     }
                 }
 
-                if (_isIndependent || ReferenceEquals(_owner, InputUtility.hoveredWindow))
+                if (_isHitTestVisible)
                 {
-                    HitTestUtility.InputHitTest(_root);
+                    if (ReferenceEquals(_owner, InputUtility.hoveredWindow))
+                    {
+                        HitTestUtility.InputHitTest(_root);
+                    }
+                    else if (_isIndependent)
+                    {
+                        HitTestUtility.InputHitTestIndependently(_root);
+                    }
                 }
             }
 
@@ -404,6 +420,7 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Private Fields
 
         private bool _isEmpty = true;
+        private bool _isHitTestVisible = true;
 
         private bool _isArrangeDirty = true;
         private readonly LayoutQueue _arrangeQueue = new LayoutQueue();

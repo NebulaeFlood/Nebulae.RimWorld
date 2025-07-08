@@ -10,8 +10,27 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             inputHitTest = true;
 
-            Results.TransferTo(PreviousResults);
+            Results.Clear();
             control.HitTest(Event.current.mousePosition);
+
+            inputHitTest = false;
+        }
+
+        internal static void InputHitTestIndependently(Control control)
+        {
+            inputHitTest = true;
+
+            Results.TransferTo(_results);
+            control.HitTest(Event.current.mousePosition);
+
+            if (Results.IsEmpty)
+            {
+                _results.TransferTo(Results);
+            }
+            else
+            {
+                _results.Clear();
+            }
 
             inputHitTest = false;
         }
@@ -26,6 +45,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         #region Internal Static Fields
 
         internal static readonly HitTestResults PreviousResults = new HitTestResults();
+
         internal static readonly HitTestResults Results = new HitTestResults();
 
         internal static bool inputHitTest;
@@ -33,9 +53,12 @@ namespace Nebulae.RimWorld.UI.Utilities
         #endregion
 
 
+        private static HitTestResults _results = new HitTestResults();
+
+
         internal sealed class HitTestResults : LinkedListThin<Control>
         {
-            internal Control HoveredControl => head?.Data;
+            internal Control HoveredControl => tail?.Data;
 
 
             internal void Add(Control item)

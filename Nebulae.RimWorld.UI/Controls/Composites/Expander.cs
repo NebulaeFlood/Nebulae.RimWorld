@@ -324,38 +324,40 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// <inheritdoc/>
         protected override HitTestResult HitTestCore(Vector2 hitPoint)
         {
-            if (!ControlRect.Contains(hitPoint))
-            {
-                return HitTestResult.Empty;
-            }
+            var result = HitTestResult.HitTest(this, hitPoint);
 
-            var result = _labelButton.HitTest(hitPoint);
-
-            if (result.IsHit)
+            if (!result.IsHit)
             {
                 return result;
+            }
+
+            var childResult = _labelButton.HitTest(hitPoint);
+
+            if (childResult.IsHit)
+            {
+                return childResult;
             }
 
             if (_isEmpty)
             {
-                return HitTestResult.HitTest(this, true);
-            }
-
-            result = _expandButton.HitTest(hitPoint);
-
-            if (result.IsHit)
-            {
                 return result;
             }
 
-            result = _content.HitTest(hitPoint);
+            childResult = _expandButton.HitTest(hitPoint);
 
-            if (result.IsHit)
+            if (childResult.IsHit)
             {
-                return result;
+                return childResult;
             }
 
-            return HitTestResult.HitTest(this, true);
+            childResult = _content.HitTest(hitPoint);
+
+            if (childResult.IsHit)
+            {
+                return childResult;
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>

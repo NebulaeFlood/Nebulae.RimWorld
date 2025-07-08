@@ -197,7 +197,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty MinHeightProperty =
             DependencyProperty.Register(nameof(MinHeight), typeof(float), typeof(FrameworkControl),
-                new ControlPropertyMetadata(0, CoerceSize, ControlRelation.Measure));
+                new ControlPropertyMetadata(0f, CoerceSize, ControlRelation.Measure));
         #endregion
 
         #region Padding

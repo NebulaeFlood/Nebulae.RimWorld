@@ -58,19 +58,17 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>命中测试结果。</returns>
         public static HitTestResult HitTest(Control control, Vector2 hitPoint)
         {
-            if (control.CanHitTest() && control.ControlRect.Contains(hitPoint))
-            {
-                if (HitTestUtility.inputHitTest)
-                {
-                    HitTestUtility.Results.Add(control);
-                }
-
-                return new HitTestResult(control, true);
-            }
-            else
+            if (!control.ControlRect.Contains(hitPoint))
             {
                 return Empty;
             }
+
+            if (HitTestUtility.inputHitTest && control.CanHitTest())
+            {
+                HitTestUtility.Results.Add(control);
+            }
+
+            return new HitTestResult(control, true);
         }
 
         /// <summary>
@@ -81,12 +79,12 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>命中测试结果。</returns>
         public static HitTestResult HitTest(Control control, bool isHit)
         {
-            if (!control.CanHitTest() || !isHit)
+            if (!isHit)
             {
                 return Empty;
             }
 
-            if (HitTestUtility.inputHitTest)
+            if (HitTestUtility.inputHitTest && control.CanHitTest())
             {
                 HitTestUtility.Results.Add(control);
             }

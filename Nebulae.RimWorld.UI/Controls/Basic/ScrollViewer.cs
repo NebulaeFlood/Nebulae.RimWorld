@@ -366,22 +366,21 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override HitTestResult HitTestCore(Vector2 hitPoint)
         {
-            if (!ControlRect.Contains(hitPoint))
+            var result = HitTestResult.HitTest(this, hitPoint);
+
+            if (!result.IsHit || IsEmpty)
             {
-                return HitTestResult.Empty;
+                return result;
             }
 
-            if (!IsEmpty)
-            {
-                var result = Content.HitTest(new Vector2(hitPoint.x - RenderRect.x + _horizontalOffset, hitPoint.y - RenderRect.y + _verticalOffset));
+            var childResult = Content.HitTest(new Vector2(hitPoint.x - RenderRect.x + _horizontalOffset, hitPoint.y - RenderRect.y + _verticalOffset));
 
-                if (result.IsHit)
-                {
-                    return result;
-                }
+            if (childResult.IsHit)
+            {
+                return childResult;
             }
 
-            return HitTestResult.HitTest(this, true);
+            return result;
         }
 
         /// <inheritdoc/>

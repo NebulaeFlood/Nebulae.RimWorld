@@ -201,6 +201,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 _hoveredControl = currentHoveredControl;
 
                 CursorEnter();
+                HitTestUtility.Results.TransferTo(HitTestUtility.PreviousResults);
             }
 
 
