@@ -257,15 +257,27 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             float currentX = availableRect.x;
             float currentY = availableRect.y;
 
-            _backgroundRect = new Rect(currentX, currentY + HeaderHeight - 1f, RenderSize.Width, RenderSize.Height - (HeaderHeight + 1f));
+            _backgroundRect = new Rect(currentX, currentY + HeaderHeight, RenderSize.Width, RenderSize.Height - HeaderHeight);
+            _rowLines[0] = new Rect(currentX, currentY + HeaderHeight - 1f, RenderSize.Width, 1f);  // y - 1f to match header's bottom border
 
+            // var contentRect = new Rect(
+            //     currentX,
+            //     currentY + _headerPanelSize.Height + 1f,
+            //     RenderSize.Width,
+            //     RenderSize.Height + 1f - _headerPanelSize.Height) - new Thickness(1f);
             var contentRect = new Rect(
-                currentX,
-                currentY + _headerPanelSize.Height - 2f,
-                RenderSize.Width,
+                currentX + 1f,
+                currentY + _headerPanelSize.Height,
+                RenderSize.Width - 2f,
                 RenderSize.Height - (_headerPanelSize.Height + 1f));
 
+            if (_columnCount < 1)
+            {
+                return availableRect;
+            }
+
             int columnIndex = 0;
+            int rowIndex = 0;
 
             var node = _items.Head;
 
@@ -286,6 +298,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
                     columnIndex = 0;
 
+                    _rowLines[++rowIndex] = new Rect(currentX, currentY + HeaderHeight - 1f, RenderSize.Width, 1f);
                     goto ArrangeStart;
                 }
 
@@ -303,22 +316,25 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 return availableSize;
             }
 
-            var rawHeaderWidth = HeaderWidth;
+            var rawHeaderWidth = (float)GetValue(HeaderWidthProperty);
 
-            if (rawHeaderWidth > 1f)
+            _headerWidth = rawHeaderWidth > 1f
+                ? Mathf.Clamp(rawHeaderWidth, 2f, availableSize.Width)
+                : rawHeaderWidth * availableSize.Width;
+            _columnCount = Mathf.FloorToInt(availableSize.Width / _headerWidth);
+
+            var rowCount = 1 + (_items.Count / _columnCount);
+
+            if (_columnCount > 1)
             {
-                _headerWidth = Mathf.Clamp(rawHeaderWidth, 2f, availableSize.Width);
-                _columnCount = Mathf.FloorToInt(availableSize.Width / _headerWidth);
-            }
-            else
-            {
-                _headerWidth = rawHeaderWidth * availableSize.Width;
-                _columnCount = Mathf.FloorToInt(1f / rawHeaderWidth);
+                _headerWidth += (_columnCount - 1) * 8f / _columnCount;
             }
 
-            _headerPanelSize = new Size(availableSize.Width, Mathf.CeilToInt(_items.Count * rawHeaderWidth) * (HeaderHeight + 2f));
+            _headerPanelSize = new Size(availableSize.Width, rowCount * (HeaderHeight + 2f) - 2f);
+            _rowLines = new Rect[rowCount];
 
-            var contentSize = new Size(availableSize.Width, Mathf.Max(0f, availableSize.Height - (_headerPanelSize.Height + 1f)));
+            // var contentSize = new Size(availableSize.Width, availableSize.Height - _headerPanelSize.Height) - new Thickness(1f);
+            var contentSize = new Size(availableSize.Width - 2f, availableSize.Height - (_headerPanelSize.Height + 2f));
             var headerSize = new Size(_headerWidth, HeaderHeight);
 
             var node = _items.Head;
@@ -378,6 +394,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             Widgets.DrawTexturePart(_backgroundRect, BackgroundUVRect, TabItemResources.HeaderAtlas);
 
+            for (int i = _rowLines.Length - 1; i >= 0; i--)
+            {
+                Widgets.DrawTexturePart(_rowLines[i], BottomUVRect, TabItemResources.HeaderAtlas);
+            }
+
             float x = _backgroundRect.x;
             float y = _backgroundRect.y;
             float width = _backgroundRect.width;
@@ -385,8 +406,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             // Left
             Widgets.DrawTexturePart(new Rect(x, y, 1f, height), BottomUVRect, TabItemResources.HeaderAtlas);
-            // Top
-            Widgets.DrawTexturePart(new Rect(x, y, width, 1f), BottomUVRect, TabItemResources.HeaderAtlas);
             // Right
             Widgets.DrawTexturePart(new Rect(x + width - 1f, y, 1f, height), BottomUVRect, TabItemResources.HeaderAtlas);
             // Bottom
@@ -470,6 +489,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         private float _headerWidth;
 
         private Control[] _renderQueue;
+        private Rect[] _rowLines;
 
         private Rect _backgroundRect;
         private Size _headerPanelSize;
