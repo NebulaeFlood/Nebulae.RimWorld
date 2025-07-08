@@ -261,20 +261,22 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             var contentRect = new Rect(
                 currentX,
-                currentY + _headerPanelSize.Height + 1f,
+                currentY + _headerPanelSize.Height - 2f,
                 RenderSize.Width,
                 RenderSize.Height - (_headerPanelSize.Height + 1f));
 
             int columnIndex = 0;
 
-            foreach (var item in _items)
+            var node = _items.Head;
+
+            while (node != null)
             {
             ArrangeStart:
                 if (columnIndex < _columnCount)
                 {
                     columnIndex++;
-                    item.Arrange(new Rect(currentX, currentY, _headerWidth, HeaderHeight));
-                    item.Content?.Arrange(contentRect);
+                    node.Data.Arrange(new Rect(currentX, currentY, _headerWidth, HeaderHeight));
+                    node.Data.Content?.Arrange(contentRect);
                     currentX += _headerWidth - 8f;
                 }
                 else
@@ -286,6 +288,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
                     goto ArrangeStart;
                 }
+
+                node = node.next;
             }
 
             return availableRect;
@@ -438,6 +442,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 .Append(_selectedItem)
                 .Append(_selectedItem.Content)
                 .ToArray();
+
+            _selectedItem.Content.Segment(VisibleRect);
         }
 
 
