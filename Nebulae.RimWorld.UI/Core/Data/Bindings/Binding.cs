@@ -585,7 +585,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Bindings
             _targetValueCache = e.NewValue;
 
             object convertedValue = RequiresConversion
-                ? Converter.ConvertBack(_targetValueCache, _target.Type, CurrentCulture)
+                ? Converter.ConvertBack(_targetValueCache, _source.Type, CurrentCulture)
                 : _targetValueCache;
 
             if (ReferenceEquals(convertedValue, DependencyProperty.UnsetValue)
@@ -631,7 +631,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Bindings
             _targetValueCache = _target.Value;
 
             object convertedValue = RequiresConversion
-                ? Converter.ConvertBack(_targetValueCache, _target.Type, CurrentCulture)
+                ? Converter.ConvertBack(_targetValueCache, _source.Type, CurrentCulture)
                 : _targetValueCache;
 
             if (ReferenceEquals(convertedValue, DependencyProperty.UnsetValue)
