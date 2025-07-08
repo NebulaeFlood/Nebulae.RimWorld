@@ -468,7 +468,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             fontSize = CoerceFontSize(fontSize);
 
             var fontStyle = Text.fontStyles[(int)fontSize];
-            fontStyle.wordWrap = false;
+            fontStyle.wordWrap = true;
 
             ContentCache.text = rawStr;
 
@@ -538,7 +538,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 sb.Append("</").Append(tagStack.Pop()).Append('>');
             }
 
-            return sb.ToString();
+            return sb.Append("...").ToString();
         }
 
 
