@@ -72,10 +72,25 @@ namespace Nebulae.RimWorld.UI.Utilities
         #endregion
 
 
+        //------------------------------------------------------
+        //
+        //  Window Brushes
+        //
+        //------------------------------------------------------
+
+        #region Window Brushes
+
         /// <summary>
         /// 窗口背景画刷
         /// </summary>
         public static readonly Texture2D WindowBackground = SolidColorMaterials.NewSolidColorTexture(Widgets.WindowBGFillColor);
+
+        /// <summary>
+        /// 窗口边框画刷
+        /// </summary>
+        public static readonly Texture2D WindowBorder = SolidColorMaterials.NewSolidColorTexture(new Color(0.3803922f, 0.4235294f, 0.4f));
+
+        #endregion
 
 
         /// <summary>
