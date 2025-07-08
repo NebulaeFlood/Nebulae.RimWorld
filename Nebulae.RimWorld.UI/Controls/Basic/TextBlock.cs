@@ -96,7 +96,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            return _cache.CalculateSize(availableSize.Width, FontSize, TextAnchor.UpperLeft);
+            return _cache.CalculateSize(availableSize.Width, (GameFont)GetValue(FontSizeProperty), TextAnchor.UpperLeft);
         }
 
         /// <inheritdoc/>

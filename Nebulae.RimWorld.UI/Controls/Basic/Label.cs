@@ -109,8 +109,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var fontSize = FontSize;
-            var text = Text;
+            var fontSize = (GameFont)GetValue(FontSizeProperty);
+            var text = (string)GetValue(TextProperty);
 
             _cache = string.IsNullOrEmpty(text)
                 ? string.Empty
