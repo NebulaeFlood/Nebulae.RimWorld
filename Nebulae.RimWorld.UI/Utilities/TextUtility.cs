@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Core.Data;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -90,8 +91,6 @@ namespace Nebulae.RimWorld.UI.Utilities
             ContentCache.text = text.StripTags();
 
             var fontStyle = Text.fontStyles[(int)fontSize];
-
-            fontStyle.alignment = anchor;
             fontStyle.wordWrap = true;
 
             return fontStyle.CalcHeight(ContentCache, availableLength);
@@ -111,7 +110,6 @@ namespace Nebulae.RimWorld.UI.Utilities
             ContentCache.text = text.StripTags();
 
             var fontStyle = Text.fontStyles[(int)fontSize];
-
             fontStyle.wordWrap = false;
 
             return fontStyle.CalcSize(ContentCache).x;
@@ -131,8 +129,6 @@ namespace Nebulae.RimWorld.UI.Utilities
             ContentCache.text = text.StripTags();
 
             var fontStyle = Text.fontStyles[(int)fontSize];
-
-            fontStyle.alignment = TextAnchor.MiddleCenter;
             fontStyle.wordWrap = false;
 
             return new Size(fontStyle.CalcSize(ContentCache).x, fontSize.GetHeight());
@@ -144,18 +140,15 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="text">文本内容</param>
         /// <param name="availableLength">文本允许的最大长度</param>
         /// <param name="fontSize">字体尺寸</param>
-        /// <param name="anchor">文本锚点</param>
         /// <returns>文本排列后的尺寸。</returns>
         /// <remarks>应在主线程调用。</remarks>
-        public static Size CalculateSize(this string text, float availableLength, GameFont fontSize, TextAnchor anchor)
+        public static Size CalculateSize(this string text, float availableLength, GameFont fontSize)
         {
             fontSize = CoerceFontSize(fontSize);
 
             ContentCache.text = text.StripTags();
 
             var fontStyle = Text.fontStyles[(int)fontSize];
-
-            fontStyle.alignment = anchor;
             fontStyle.wordWrap = true;
 
             return new Size(availableLength, fontStyle.CalcHeight(ContentCache, availableLength));
@@ -260,16 +253,32 @@ namespace Nebulae.RimWorld.UI.Utilities
                     return;
                 }
 
-                var anchorCache = Text.Anchor;
-                var fontSizeCache = Text.Font;
+                float scale = Prefs.UIScale;
 
-                Text.Anchor = anchor;
-                Text.Font = fontSize;
+                if (scale > 1f)
+                {
+                    var halfScale = scale * 0.5f;
 
-                Widgets.Label(renderRect, text);
+                    if (Mathf.Abs(halfScale - Mathf.Floor(halfScale)) > float.Epsilon)
+                    {
+                        float Adjust(float coord, float s)
+                        {
+                            double dCoord = s * coord;
+                            return coord - (float)((dCoord - Math.Floor(dCoord)) / s);
+                        }
 
-                Text.Font = fontSizeCache;
-                Text.Anchor = anchorCache;
+                        renderRect.xMin = Adjust(renderRect.xMin, scale);
+                        renderRect.yMin = Adjust(renderRect.yMin, scale);
+                        renderRect.xMax = Adjust(renderRect.xMax, scale);
+                        renderRect.yMax = Adjust(renderRect.yMax, scale);
+                    }
+                }
+
+                var fontStyle = Text.fontStyles[(int)fontSize];
+                fontStyle.alignment = anchor;
+                fontStyle.wordWrap = true;
+
+                GUI.Label(renderRect, text, fontStyle);
             }
 
             return Draw;
@@ -289,16 +298,32 @@ namespace Nebulae.RimWorld.UI.Utilities
                 return;
             }
 
-            var anchorCache = Text.Anchor;
-            var fontSizeCache = Text.Font;
+            float scale = Prefs.UIScale;
 
-            Text.Anchor = anchor;
-            Text.Font = fontSize;
+            if (scale > 1f)
+            {
+                var halfScale = scale * 0.5f;
 
-            Widgets.Label(renderRect, text);
+                if (Mathf.Abs(halfScale - Mathf.Floor(halfScale)) > float.Epsilon)
+                {
+                    float Adjust(float coord, float s)
+                    {
+                        double dCoord = s * coord;
+                        return coord - (float)((dCoord - Math.Floor(dCoord)) / s);
+                    }
 
-            Text.Font = fontSizeCache;
-            Text.Anchor = anchorCache;
+                    renderRect.xMin = Adjust(renderRect.xMin, scale);
+                    renderRect.yMin = Adjust(renderRect.yMin, scale);
+                    renderRect.xMax = Adjust(renderRect.xMax, scale);
+                    renderRect.yMax = Adjust(renderRect.yMax, scale);
+                }
+            }
+
+            var fontStyle = Text.fontStyles[(int)fontSize];
+            fontStyle.alignment = anchor;
+            fontStyle.wordWrap = true;
+
+            GUI.Label(renderRect, text, fontStyle);
         }
 
         /// <summary>
@@ -310,12 +335,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="drawHighlight">是否绘制高亮效果</param>
         /// <param name="wrapText">输入框文字是否自动换行</param>
         /// <returns>用户输入后的文字。</returns>
-        public static string DrawTextBox(
-            this string text,
-            Rect renderRect,
-            GameFont fontSize,
-            bool drawHighlight,
-            bool wrapText)
+        public static string DrawTextBox(this string text, Rect renderRect, GameFont fontSize, bool drawHighlight, bool wrapText)
         {
             int index = (int)fontSize;
 
@@ -357,7 +377,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             fontSize = CoerceFontSize(fontSize);
 
             var fontStyle = Text.fontStyles[(int)fontSize];
-                fontStyle.wordWrap = false;
+            fontStyle.wordWrap = false;
 
             ContentCache.text = rawStr;
 
@@ -448,7 +468,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             fontSize = CoerceFontSize(fontSize);
 
             var fontStyle = Text.fontStyles[(int)fontSize];
-                fontStyle.wordWrap = false;
+            fontStyle.wordWrap = false;
 
             ContentCache.text = rawStr;
 
