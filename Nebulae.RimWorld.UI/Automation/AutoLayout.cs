@@ -59,6 +59,7 @@ namespace Nebulae.RimWorld.UI.Automation
         {
             var checkBox = new CheckBox
             {
+                Padding = new Thickness(12f, 0f, 12f, 0f),
                 State = entryValue ? ToggleState.On : ToggleState.Off,
                 Text = label,
                 Tooltip = tooltip
@@ -89,6 +90,7 @@ namespace Nebulae.RimWorld.UI.Automation
             var converter = CreateConverter<bool>(entry.ValueType, out bool requireConversion);
             var checkBox = new CheckBox
             {
+                Padding = new Thickness(12f, 0f, 12f, 0f),
                 Text = label,
                 Tooltip = tooltip
             };
@@ -199,7 +201,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 entryName,
                 mode);
 
-            return new Grid { Padding = new Thickness(4f, 0f, 4f, 0f) }.DefineColumns(200f, Grid.Remain, 160f).DefineRows(StandardRowHeight)
+            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(200f, Grid.Remain, 160f).DefineRows(StandardRowHeight)
                 .Set(entryLabel, slider, numberBox);
         }
 
@@ -273,7 +275,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 mode,
                 converter);
 
-            return new Grid { Padding = new Thickness(4f, 0f, 4f, 0f) }.DefineColumns(200f, Grid.Remain, 160f).DefineRows(StandardRowHeight)
+            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(200f, Grid.Remain, 160f).DefineRows(StandardRowHeight)
                 .Set(entryLabel, slider, numberBox);
         }
         #endregion
@@ -338,7 +340,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 entryName,
                 mode);
 
-            return new Grid { Padding = new Thickness(4f, 0f, 4f, 0f) }.DefineColumns(0.35f, 0.65f).DefineRows(Grid.Auto)
+            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(0.35f, 0.65f).DefineRows(Grid.Auto)
                 .Set(entryLabel, textBox);
         }
 
@@ -384,7 +386,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 mode,
                 converter);
 
-            return new Grid { Padding = new Thickness(4f, 0f, 4f, 0f) }.DefineColumns(200f, Grid.Remain, 160f).DefineRows(Grid.Auto)
+            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(200f, Grid.Remain, 160f).DefineRows(Grid.Auto)
                 .Set(entryLabel, null, textBox);
         }
         #endregion

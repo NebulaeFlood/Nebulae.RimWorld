@@ -77,12 +77,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #endregion
 
 
-        static ToggleButton()
-        {
-            PaddingProperty.OverrideMetadata(typeof(ToggleButton),
-                new ControlPropertyMetadata(new Thickness(4f, 0f, 4f, 0f)));
-        }
-
         /// <summary>
         /// 为 <see cref="ToggleButton"/> 派生类实现基本初始化
         /// </summary>
