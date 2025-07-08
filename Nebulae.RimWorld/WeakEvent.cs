@@ -95,6 +95,7 @@ namespace Nebulae.RimWorld
             while (node != null)
             {
                 node.Value.Invoke(sender, args);
+                node = node.Next;
             }
         }
 
