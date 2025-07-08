@@ -1,5 +1,8 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Core.Data;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
 
@@ -27,7 +30,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             {
                 style = Text.textAreaStyles[i];
 
-                _inputBoxStyles[i] = new GUIStyle(style)
+                InputBoxStyles[i] = new GUIStyle(style)
                 {
                     hover = style.focused,
                     margin = new RectOffset(0, 0, 0, 0),
@@ -36,7 +39,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                     wordWrap = true
                 };
 
-                _inputBoxStyles[i + 3] = new GUIStyle(style)
+                InputBoxStyles[i + 3] = new GUIStyle(style)
                 {
                     focused = style.normal,
                     hover = style.normal,
@@ -50,7 +53,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             {
                 style = Text.textFieldStyles[i];
 
-                _inputBoxStyles[i + 6] = new GUIStyle(style)
+                InputBoxStyles[i + 6] = new GUIStyle(style)
                 {
                     hover = style.focused,
                     margin = new RectOffset(0, 0, 0, 0),
@@ -59,7 +62,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                     wordWrap = false
                 };
 
-                _inputBoxStyles[i + 9] = new GUIStyle(style)
+                InputBoxStyles[i + 9] = new GUIStyle(style)
                 {
                     focused = style.normal,
                     hover = style.normal,
@@ -84,14 +87,14 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             fontSize = CoerceFontSize(fontSize);
 
-            _contentCache.text = text.StripTags();
+            ContentCache.text = text.StripTags();
 
             var fontStyle = Text.fontStyles[(int)fontSize];
 
             fontStyle.alignment = anchor;
             fontStyle.wordWrap = true;
 
-            return fontStyle.CalcHeight(_contentCache, availableLength);
+            return fontStyle.CalcHeight(ContentCache, availableLength);
         }
 
         /// <summary>
@@ -105,13 +108,13 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             fontSize = CoerceFontSize(fontSize);
 
-            _contentCache.text = text.StripTags();
+            ContentCache.text = text.StripTags();
 
             var fontStyle = Text.fontStyles[(int)fontSize];
 
             fontStyle.wordWrap = false;
 
-            return fontStyle.CalcSize(_contentCache).x;
+            return fontStyle.CalcSize(ContentCache).x;
         }
 
         /// <summary>
@@ -125,14 +128,14 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             fontSize = CoerceFontSize(fontSize);
 
-            _contentCache.text = text.StripTags();
+            ContentCache.text = text.StripTags();
 
             var fontStyle = Text.fontStyles[(int)fontSize];
 
             fontStyle.alignment = TextAnchor.MiddleCenter;
             fontStyle.wordWrap = false;
 
-            return new Size(fontStyle.CalcSize(_contentCache).x, fontSize.GetHeight());
+            return new Size(fontStyle.CalcSize(ContentCache).x, fontSize.GetHeight());
         }
 
         /// <summary>
@@ -148,14 +151,14 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             fontSize = CoerceFontSize(fontSize);
 
-            _contentCache.text = text.StripTags();
+            ContentCache.text = text.StripTags();
 
             var fontStyle = Text.fontStyles[(int)fontSize];
 
             fontStyle.alignment = anchor;
             fontStyle.wordWrap = true;
 
-            return new Size(availableLength, fontStyle.CalcHeight(_contentCache, availableLength));
+            return new Size(availableLength, fontStyle.CalcHeight(ContentCache, availableLength));
         }
 
         /// <summary>
@@ -171,12 +174,12 @@ namespace Nebulae.RimWorld.UI.Utilities
             fontSize = CoerceFontSize(fontSize);
 
             GUIStyle style = wrapText
-                ? _inputBoxStyles[(int)fontSize]
-                : _inputBoxStyles[(int)fontSize + 6];
+                ? InputBoxStyles[(int)fontSize]
+                : InputBoxStyles[(int)fontSize + 6];
 
-            _contentCache.text = text;
+            ContentCache.text = text;
 
-            return style.CalcHeight(_contentCache, availableLength);
+            return style.CalcHeight(ContentCache, availableLength);
         }
 
         /// <summary>
@@ -192,12 +195,12 @@ namespace Nebulae.RimWorld.UI.Utilities
             fontSize = CoerceFontSize(fontSize);
 
             GUIStyle style = wrapText
-                ? _inputBoxStyles[(int)fontSize]
-                : _inputBoxStyles[(int)fontSize + 6];
+                ? InputBoxStyles[(int)fontSize]
+                : InputBoxStyles[(int)fontSize + 6];
 
-            _contentCache.text = text;
+            ContentCache.text = text;
 
-            return new Size(availableLength, style.CalcHeight(_contentCache, availableLength));
+            return new Size(availableLength, style.CalcHeight(ContentCache, availableLength));
         }
 
         /// <summary>
@@ -322,8 +325,8 @@ namespace Nebulae.RimWorld.UI.Utilities
             }
 
             return wrapText
-                ? GUI.TextArea(renderRect, text, _inputBoxStyles[index])
-                : GUI.TextField(renderRect, text, _inputBoxStyles[index + 6]);
+                ? GUI.TextArea(renderRect, text, InputBoxStyles[index])
+                : GUI.TextField(renderRect, text, InputBoxStyles[index + 6]);
         }
 
         /// <summary>
@@ -339,93 +342,192 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// 根据允许的长度截断字符串，被截断的部分将设置为省略号
         /// </summary>
-        /// <param name="str">要截断的字符串</param>
+        /// <param name="rawStr">要截断的字符串</param>
         /// <param name="availableLength">允许的长度</param>
         /// <param name="fontSize">字体大小</param>
         /// <returns>截断后的字符串。</returns>
         /// <remarks>应在主线程调用。</remarks>
-        public static string Truncate(this string str, float availableLength, GameFont fontSize)
+        public static string Truncate(this string rawStr, float availableLength, GameFont fontSize)
         {
+            if (string.IsNullOrEmpty(rawStr))
+            {
+                return rawStr;
+            }
+
             fontSize = CoerceFontSize(fontSize);
 
             float CalcLength(string s, GameFont f)
             {
-                _contentCache.text = s.StripTags();
+                ContentCache.text = XmlRegex.Replace(TagRegex.Replace(s, string.Empty), string.Empty);
 
                 var fontStyle = Text.fontStyles[(int)f];
-
                 fontStyle.wordWrap = false;
 
-                return fontStyle.CalcSize(_contentCache).x;
+                return fontStyle.CalcSize(ContentCache).x;
             }
 
-            if (CalcLength(str, fontSize) <= availableLength)
+            if (CalcLength(rawStr, fontSize) <= availableLength)
             {
-                return str;
+                return rawStr;
             }
 
-            string text = str;
+            var sb = new StringBuilder();
+            var tagStack = new Stack<string>();
 
-            for (int i = str.Length - 1; i >= 0; i--)
+            var xmlMatch = XmlRegex.Match(rawStr, 0);
+            var tagMatch = TagRegex.Match(rawStr, 0);
+
+            var length = rawStr.Length;
+
+            for (int i = 0; i < length; i++)
             {
-                text = text.Substring(0, i);
+                if (xmlMatch.Success && xmlMatch.Index == i)
+                {
+                    var xmlTag = xmlMatch.Value;
+                    sb.Append(xmlTag);
 
-                if (CalcLength(text + "...", fontSize) <= availableLength)
+                    if (xmlTag.StartsWith("</"))
+                    {
+                        if (tagStack.Count > 0)
+                        {
+                            tagStack.Pop();
+                        }
+                    }
+                    else if (xmlTag.StartsWith('<') && !xmlTag.EndsWith("/>"))
+                    {
+                        // 提取标签名，正则匹配结果类似 <b
+                        tagStack.Push(TagNameRegex.Match(xmlTag).Value.Substring(1));
+                    }
+
+                    i += xmlTag.Length;
+                    xmlMatch = XmlRegex.Match(rawStr, i);
+                    continue;
+                }
+                else if (tagMatch.Success && tagMatch.Index == i)
+                {
+                    var tag = tagMatch.Value;
+                    sb.Append(tag);
+
+                    i += tag.Length;
+                    tagMatch = TagRegex.Match(rawStr, i);
+                    continue;
+                }
+
+                int charLength = char.IsHighSurrogate(rawStr[i]) && i + 1 < length && char.IsLowSurrogate(rawStr[i + 1]) ? 2 : 1;
+                var str = rawStr.Substring(0, i + charLength);
+
+                if (CalcLength(str + "...", fontSize) >= availableLength)
                 {
                     break;
                 }
+
+                sb.Append(rawStr.Substring(i, charLength));
+
+                i += charLength;
             }
 
-            text += "...";
+            while (tagStack.Count > 0)
+            {
+                sb.Append("</").Append(tagStack.Pop()).Append('>');
+            }
 
-            return text;
+            return sb.Append("...").ToString();
         }
 
         /// <summary>
         /// 根据允许的尺寸截断字符串，被截断的部分将设置为省略号
         /// </summary>
-        /// <param name="str">要截断的字符串</param>
+        /// <param name="rawStr">要截断的字符串</param>
         /// <param name="availableSize">允许的尺寸</param>
         /// <param name="fontSize">字体大小</param>
         /// <param name="anchor">文本锚点</param>
         /// <returns>截断后的字符串。</returns>
         /// <remarks>应在主线程调用。</remarks>
-        public static string Truncate(this string str, Size availableSize, GameFont fontSize, TextAnchor anchor)
+        public static string Truncate(this string rawStr, Size availableSize, GameFont fontSize, TextAnchor anchor)
         {
+            if (string.IsNullOrEmpty(rawStr))
+            {
+                return rawStr;
+            }
+
             fontSize = CoerceFontSize(fontSize);
 
-            float CalcHeight(string s, float availableLength, GameFont f, TextAnchor a)
+            float CalcHeight(string s, float availableWidth, GameFont f)
             {
-                _contentCache.text = s.StripTags();
+                ContentCache.text = XmlRegex.Replace(TagRegex.Replace(s, string.Empty), string.Empty);
 
                 var fontStyle = Text.fontStyles[(int)f];
+                fontStyle.wordWrap = false;
 
-                fontStyle.alignment = a;
-                fontStyle.wordWrap = true;
-
-                return fontStyle.CalcHeight(_contentCache, availableLength);
+                return fontStyle.CalcHeight(ContentCache, availableWidth);
             }
 
-            if (CalcHeight(str, availableSize.Width, fontSize, anchor) <= availableSize.Height)
+            if (CalcHeight(rawStr, availableSize.Width, fontSize) <= availableSize.Height)
             {
-                return str;
+                return rawStr;
             }
 
-            string text = str;
+            var sb = new StringBuilder();
+            var tagStack = new Stack<string>();
 
-            for (int i = str.Length - 1; i >= 0; i--)
+            var xmlMatch = XmlRegex.Match(rawStr, 0);
+            var tagMatch = TagRegex.Match(rawStr, 0);
+
+            var length = rawStr.Length;
+
+            for (int i = 0; i < length; i++)
             {
-                text = text.Substring(0, i);
+                if (xmlMatch.Success && xmlMatch.Index == i)
+                {
+                    var xmlTag = xmlMatch.Value;
+                    sb.Append(xmlTag);
 
-                if (CalcHeight(text + "...", availableSize.Width, fontSize, anchor) <= availableSize.Height)
+                    if (xmlTag.StartsWith("</"))
+                    {
+                        if (tagStack.Count > 0)
+                        {
+                            tagStack.Pop();
+                        }
+                    }
+                    else if (xmlTag.StartsWith('<') && !xmlTag.EndsWith("/>"))
+                    {
+                        // 提取标签名，正则匹配结果类似 <b
+                        tagStack.Push(TagNameRegex.Match(xmlTag).Value.Substring(1));
+                    }
+
+                    i += xmlTag.Length;
+                    xmlMatch = XmlRegex.Match(rawStr, i);
+                    continue;
+                }
+                else if (tagMatch.Success && tagMatch.Index == i)
+                {
+                    var tag = tagMatch.Value;
+                    sb.Append(tag);
+
+                    i += tag.Length;
+                    tagMatch = TagRegex.Match(rawStr, i);
+                    continue;
+                }
+
+                int charLength = char.IsHighSurrogate(rawStr[i]) && i + 1 < length && char.IsLowSurrogate(rawStr[i + 1]) ? 2 : 1;
+                var str = rawStr.Substring(0, i + charLength);
+
+                if (CalcHeight(str + "...", availableSize.Width ,fontSize) >= availableSize.Height)
                 {
                     break;
                 }
+
+                sb.Append(rawStr.Substring(i, charLength));
+
+                i += charLength;
             }
 
-            text += "...";
+            while (tagStack.Count > 0)
+            {
+                sb.Append("</").Append(tagStack.Pop()).Append('>');
+            }
 
-            return text;
+            return sb.ToString();
         }
 
 
@@ -437,8 +539,12 @@ namespace Nebulae.RimWorld.UI.Utilities
 
         #region Private Static Fields
 
-        private static readonly GUIContent _contentCache = new GUIContent();
-        private static readonly GUIStyle[] _inputBoxStyles = new GUIStyle[12];
+        private static readonly GUIContent ContentCache = new GUIContent();
+        private static readonly GUIStyle[] InputBoxStyles = new GUIStyle[12];
+
+        private static readonly Regex XmlRegex = new Regex("<[^>]*>");
+        private static readonly Regex TagRegex = new Regex(@"\([\*\/][^\)]*\)");
+        private static readonly Regex TagNameRegex = new Regex(@"<([\w]+)");
 
         #endregion
     }
