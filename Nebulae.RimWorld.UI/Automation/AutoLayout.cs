@@ -199,7 +199,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 entryName,
                 mode);
 
-            return new Grid().DefineColumns(200f, Grid.Remain, 160f).DefineRows(StandardRowHeight)
+            return new Grid { Padding = new Thickness(4f, 0f, 4f, 0f) }.DefineColumns(200f, Grid.Remain, 160f).DefineRows(StandardRowHeight)
                 .Set(entryLabel, slider, numberBox);
         }
 
@@ -273,7 +273,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 mode,
                 converter);
 
-            return new Grid().DefineColumns(200f, Grid.Remain, 160f).DefineRows(StandardRowHeight)
+            return new Grid { Padding = new Thickness(4f, 0f, 4f, 0f) }.DefineColumns(200f, Grid.Remain, 160f).DefineRows(StandardRowHeight)
                 .Set(entryLabel, slider, numberBox);
         }
         #endregion
@@ -338,7 +338,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 entryName,
                 mode);
 
-            return new Grid().DefineColumns(0.35f, 0.65f).DefineRows(Grid.Auto)
+            return new Grid { Padding = new Thickness(4f, 0f, 4f, 0f) }.DefineColumns(0.35f, 0.65f).DefineRows(Grid.Auto)
                 .Set(entryLabel, textBox);
         }
 
@@ -384,7 +384,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 mode,
                 converter);
 
-            return new Grid().DefineColumns(200f, Grid.Remain, 160f).DefineRows(Grid.Auto)
+            return new Grid { Padding = new Thickness(4f, 0f, 4f, 0f) }.DefineColumns(200f, Grid.Remain, 160f).DefineRows(Grid.Auto)
                 .Set(entryLabel, null, textBox);
         }
         #endregion
