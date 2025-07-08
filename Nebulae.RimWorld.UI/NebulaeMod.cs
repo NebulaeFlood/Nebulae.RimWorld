@@ -48,6 +48,13 @@ namespace Nebulae.RimWorld.UI
             _settings = GetSettings<T>();
             _type = GetType();
 
+            if (_settings is null)
+            {
+                return;
+            }
+
+            _settings.OnCheckIntegrity();
+
             void Initialize()
             {
                 OnInitializing();

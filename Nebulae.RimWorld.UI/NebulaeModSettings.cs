@@ -41,5 +41,10 @@ namespace Nebulae.RimWorld.UI
                 _savedEvent.Invoke((T)this, EventArgs.Empty);
             }
         }
+
+        /// <summary>
+        /// 当检查设置内容完整性时调用
+        /// </summary>
+        public virtual void OnCheckIntegrity() { }
     }
 }
