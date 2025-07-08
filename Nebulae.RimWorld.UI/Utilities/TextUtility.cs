@@ -356,17 +356,12 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             fontSize = CoerceFontSize(fontSize);
 
-            float CalcLength(string s, GameFont f)
-            {
-                ContentCache.text = XmlRegex.Replace(TagRegex.Replace(s, string.Empty), string.Empty);
-
-                var fontStyle = Text.fontStyles[(int)f];
+            var fontStyle = Text.fontStyles[(int)fontSize];
                 fontStyle.wordWrap = false;
 
-                return fontStyle.CalcSize(ContentCache).x;
-            }
+            ContentCache.text = rawStr;
 
-            if (CalcLength(rawStr, fontSize) <= availableLength)
+            if (fontStyle.CalcSize(ContentCache).x <= availableLength)
             {
                 return rawStr;
             }
@@ -377,11 +372,12 @@ namespace Nebulae.RimWorld.UI.Utilities
             var xmlMatch = XmlRegex.Match(rawStr, 0);
             var tagMatch = TagRegex.Match(rawStr, 0);
 
+            int index = 0;
             var length = rawStr.Length;
 
-            for (int i = 0; i < length; i++)
+            while (index < length)
             {
-                if (xmlMatch.Success && xmlMatch.Index == i)
+                if (xmlMatch.Success && xmlMatch.Index == index)
                 {
                     var xmlTag = xmlMatch.Value;
                     sb.Append(xmlTag);
@@ -399,31 +395,31 @@ namespace Nebulae.RimWorld.UI.Utilities
                         tagStack.Push(TagNameRegex.Match(xmlTag).Value.Substring(1));
                     }
 
-                    i += xmlTag.Length;
-                    xmlMatch = XmlRegex.Match(rawStr, i);
+                    index += xmlTag.Length;
+                    xmlMatch = XmlRegex.Match(rawStr, index);
                     continue;
                 }
-                else if (tagMatch.Success && tagMatch.Index == i)
+                else if (tagMatch.Success && tagMatch.Index == index)
                 {
                     var tag = tagMatch.Value;
                     sb.Append(tag);
 
-                    i += tag.Length;
-                    tagMatch = TagRegex.Match(rawStr, i);
+                    index += tag.Length;
+                    tagMatch = TagRegex.Match(rawStr, index);
                     continue;
                 }
 
-                int charLength = char.IsHighSurrogate(rawStr[i]) && i + 1 < length && char.IsLowSurrogate(rawStr[i + 1]) ? 2 : 1;
-                var str = rawStr.Substring(0, i + charLength);
+                int charLength = char.IsHighSurrogate(rawStr[index]) && index + 1 < length && char.IsLowSurrogate(rawStr[index + 1]) ? 2 : 1;
+                ContentCache.text = rawStr.Substring(0, index + charLength) + "...";
 
-                if (CalcLength(str + "...", fontSize) >= availableLength)
+                if (fontStyle.CalcSize(ContentCache).x >= availableLength)
                 {
                     break;
                 }
 
-                sb.Append(rawStr.Substring(i, charLength));
+                sb.Append(rawStr.Substring(index, charLength));
 
-                i += charLength;
+                index += charLength;
             }
 
             while (tagStack.Count > 0)
@@ -440,10 +436,9 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="rawStr">要截断的字符串</param>
         /// <param name="availableSize">允许的尺寸</param>
         /// <param name="fontSize">字体大小</param>
-        /// <param name="anchor">文本锚点</param>
         /// <returns>截断后的字符串。</returns>
         /// <remarks>应在主线程调用。</remarks>
-        public static string Truncate(this string rawStr, Size availableSize, GameFont fontSize, TextAnchor anchor)
+        public static string Truncate(this string rawStr, Size availableSize, GameFont fontSize)
         {
             if (string.IsNullOrEmpty(rawStr))
             {
@@ -452,17 +447,12 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             fontSize = CoerceFontSize(fontSize);
 
-            float CalcHeight(string s, float availableWidth, GameFont f)
-            {
-                ContentCache.text = XmlRegex.Replace(TagRegex.Replace(s, string.Empty), string.Empty);
-
-                var fontStyle = Text.fontStyles[(int)f];
+            var fontStyle = Text.fontStyles[(int)fontSize];
                 fontStyle.wordWrap = false;
 
-                return fontStyle.CalcHeight(ContentCache, availableWidth);
-            }
+            ContentCache.text = rawStr;
 
-            if (CalcHeight(rawStr, availableSize.Width, fontSize) <= availableSize.Height)
+            if (fontStyle.CalcHeight(ContentCache, availableSize.Width) <= availableSize.Height)
             {
                 return rawStr;
             }
@@ -473,11 +463,12 @@ namespace Nebulae.RimWorld.UI.Utilities
             var xmlMatch = XmlRegex.Match(rawStr, 0);
             var tagMatch = TagRegex.Match(rawStr, 0);
 
+            int index = 0;
             var length = rawStr.Length;
 
-            for (int i = 0; i < length; i++)
+            while (index < length)
             {
-                if (xmlMatch.Success && xmlMatch.Index == i)
+                if (xmlMatch.Success && xmlMatch.Index == index)
                 {
                     var xmlTag = xmlMatch.Value;
                     sb.Append(xmlTag);
@@ -495,31 +486,31 @@ namespace Nebulae.RimWorld.UI.Utilities
                         tagStack.Push(TagNameRegex.Match(xmlTag).Value.Substring(1));
                     }
 
-                    i += xmlTag.Length;
-                    xmlMatch = XmlRegex.Match(rawStr, i);
+                    index += xmlTag.Length;
+                    xmlMatch = XmlRegex.Match(rawStr, index);
                     continue;
                 }
-                else if (tagMatch.Success && tagMatch.Index == i)
+                else if (tagMatch.Success && tagMatch.Index == index)
                 {
                     var tag = tagMatch.Value;
                     sb.Append(tag);
 
-                    i += tag.Length;
-                    tagMatch = TagRegex.Match(rawStr, i);
+                    index += tag.Length;
+                    tagMatch = TagRegex.Match(rawStr, index);
                     continue;
                 }
 
-                int charLength = char.IsHighSurrogate(rawStr[i]) && i + 1 < length && char.IsLowSurrogate(rawStr[i + 1]) ? 2 : 1;
-                var str = rawStr.Substring(0, i + charLength);
+                int charLength = char.IsHighSurrogate(rawStr[index]) && index + 1 < length && char.IsLowSurrogate(rawStr[index + 1]) ? 2 : 1;
+                ContentCache.text = rawStr.Substring(0, index + charLength) + "...";
 
-                if (CalcHeight(str + "...", availableSize.Width ,fontSize) >= availableSize.Height)
+                if (fontStyle.CalcHeight(ContentCache, availableSize.Width) >= availableSize.Height)
                 {
                     break;
                 }
 
-                sb.Append(rawStr.Substring(i, charLength));
+                sb.Append(rawStr.Substring(index, charLength));
 
-                i += charLength;
+                index += charLength;
             }
 
             while (tagStack.Count > 0)
