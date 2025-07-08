@@ -92,7 +92,7 @@ namespace Nebulae.RimWorld.Utilities
             GlobalTargetSelector targetSelector = null,
             GlobalTargetValidator targetValidator = null,
             Action customUIDrawer = null,
-            Func<GlobalTargetInfo, string> attachedLabelGenerator = null,
+            Func<GlobalTargetInfo, TaggedString> attachedLabelGenerator = null,
             Texture2D mouseAttachedIcon = null,
             bool canTargetTiles = true,
             bool quitWorldUIAtLast = false)
@@ -142,7 +142,7 @@ namespace Nebulae.RimWorld.Utilities
             GlobalTargetSelector targetSelector = null,
             GlobalTargetValidator targetValidator = null,
             Action customUIDrawer = null,
-            Func<GlobalTargetInfo, string> attachedLabelGenerator = null,
+            Func<GlobalTargetInfo, TaggedString> attachedLabelGenerator = null,
             Texture2D mouseAttachedIcon = null,
             bool canTargetTiles = true,
             bool quitWorldUIAtLast = false)
