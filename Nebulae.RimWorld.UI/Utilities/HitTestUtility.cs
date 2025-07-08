@@ -53,7 +53,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         #endregion
 
 
-        private static HitTestResults _results = new HitTestResults();
+        private static readonly HitTestResults _results = new HitTestResults();
 
 
         internal sealed class HitTestResults : LinkedListThin<Control>
