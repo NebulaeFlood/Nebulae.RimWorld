@@ -157,6 +157,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             if (states.HasState(ControlState.Disabled))
             {
+                _background = ButtonResources.NormalBackground;
                 _composition *= Widgets.InactiveColor;
             }
             else if (states.HasState(ControlState.Pressing))
