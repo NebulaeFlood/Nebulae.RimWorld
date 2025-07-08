@@ -177,14 +177,14 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var height = _cache.CalculateTextBoxHeight(
-                availableSize.Width,
-                (GameFont)GetValue(FontSizeProperty),
-                (bool)GetValue(WrapTextProperty));
-
-            if (height > availableSize.Height || AutoHeight)
+            if ((bool)GetValue(AutoHeightProperty))
             {
-                return new Size(availableSize.Width, height);
+                var height = _cache.CalculateTextBoxHeight(
+                    availableSize.Width,
+                    (GameFont)GetValue(FontSizeProperty),
+                    (bool)GetValue(WrapTextProperty));
+
+                return new Size(availableSize.Width, Mathf.Clamp(height, (float)GetValue(MinHeightProperty), (float)GetValue(MaxHeightProperty)));
             }
 
             return availableSize;

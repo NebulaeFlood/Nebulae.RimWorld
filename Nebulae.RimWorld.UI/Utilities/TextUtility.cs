@@ -81,10 +81,9 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <param name="text">文本内容</param>
         /// <param name="availableLength">文本允许的最大长度</param>
         /// <param name="fontSize">字体尺寸</param>
-        /// <param name="anchor">文本锚点</param>
         /// <returns>文本排列后的高度</returns>
         /// <remarks>应在主线程调用。</remarks>
-        public static float CalculateHeight(this string text, float availableLength, GameFont fontSize, TextAnchor anchor)
+        public static float CalculateHeight(this string text, float availableLength, GameFont fontSize)
         {
             fontSize = CoerceFontSize(fontSize);
 

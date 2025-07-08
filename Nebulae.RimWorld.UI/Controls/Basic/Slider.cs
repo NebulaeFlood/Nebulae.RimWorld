@@ -331,7 +331,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
                     float handleX = Mathf.Round(
                         Mathf.Clamp(
-                            railWidth * slider._cache / range,
+                            railWidth * (slider._cache - minValue) / range,
                             0f,
                             railWidth));
 

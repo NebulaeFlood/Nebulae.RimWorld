@@ -18,6 +18,24 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         #region Dependency Properties
 
+        #region AutoHeight
+        /// <summary>
+        /// 获取或设置一个值，该值指示 <see cref="TextBlock"/> 是否根据内容调整高度
+        /// </summary>
+        public bool AutoHeight
+        {
+            get { return (bool)GetValue(AutoHeightProperty); }
+            set { SetValue(AutoHeightProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="AutoHeight"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty AutoHeightProperty =
+            DependencyProperty.Register(nameof(AutoHeight), typeof(bool), typeof(TextBlock),
+                new ControlPropertyMetadata(true, ControlRelation.Measure));
+        #endregion
+
         #region FontSize
         /// <summary>
         /// 获取或设置 <see cref="TextBlock"/> 的字体大小
@@ -103,7 +121,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            return _cache.CalculateSize(availableSize.Width, (GameFont)GetValue(FontSizeProperty));
+            if ((bool)GetValue(AutoHeightProperty))
+            {
+                float height = _cache.CalculateHeight(availableSize.Width, (GameFont)GetValue(FontSizeProperty));
+                return new Size(availableSize.Width, Mathf.Clamp(height, (float)GetValue(MinHeightProperty), (float)GetValue(MaxHeightProperty)));
+            }
+
+            return availableSize;
         }
 
         /// <inheritdoc/>
