@@ -13,6 +13,7 @@ namespace Nebulae.RimWorld.UI
             UIPatch.PatchAll();
         }
 
+
         /// <summary>
         /// 为 <see cref="NebulaeModBase"/> 及其派生类实现基本初始化
         /// </summary>

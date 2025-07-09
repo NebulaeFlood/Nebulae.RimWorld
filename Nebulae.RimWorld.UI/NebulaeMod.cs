@@ -67,7 +67,7 @@ namespace Nebulae.RimWorld.UI
                 OnInitialized();
             }
 
-            StartUp.AddQuest(Initialize, content, $"Initialize {content.Name}'s Setting Window");
+            StartUp.AddQuest(Initialize, content, $"Initialize Setting Window");
         }
 
 
