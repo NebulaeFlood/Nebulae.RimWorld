@@ -18,6 +18,12 @@ namespace Nebulae.RimWorld.UI
     public static class StartUp
     {
         /// <summary>
+        /// 此动态链接库的名称
+        /// </summary>
+        public const string Lib = "NebulaeFlood's Lib";
+
+
+        /// <summary>
         /// 添加要在资源加载完毕时执行的初始化任务
         /// </summary>
         /// <param name="action">初始化方法</param>
@@ -54,11 +60,6 @@ namespace Nebulae.RimWorld.UI
 
         internal static void FinishQuests()
         {
-            // foreach (var item in typeof(DependencyObject).AllLeafSubclasses())
-            // {
-            //     RuntimeHelpers.RunClassConstructor(item.TypeHandle);
-            // }
-
             _startUpQuests.Add(new Task(LoadDefaultConverters));
 
             var mre = new ManualResetEvent(false);
@@ -92,7 +93,7 @@ namespace Nebulae.RimWorld.UI
 
         private static string BuildLogMessage(bool isFailed, string title, string questName, string additionalInfo)
         {
-            string color = isFailed ? "orange" : "green";
+            string color = isFailed ? "orange" : "cyan";
             string questPart = string.IsNullOrEmpty(questName)
                 ? $"from <color={color}><{title}></color>"
                 : $"named <color={color}><{title}>[{questName}]</color>";
@@ -107,25 +108,25 @@ namespace Nebulae.RimWorld.UI
             {
                 BindingBase.AddDefaultConverter(typeof(ToggleState), typeof(bool), ToggleStateToBoolean.Instance);
                 BindingBase.AddDefaultConverter(typeof(ToggleState), typeof(Visibility), ToggleStateToVisibility.Instance);
-                LogQuestFinished("NebulaeFlood's Lib", "Load Default Converters", MethodBase.GetCurrentMethod());
+                LogQuestFinished(Lib, "Load Default Converters", MethodBase.GetCurrentMethod());
             }
             catch (Exception e)
             {
-                LogQuestFailed("NebulaeFlood's Lib", "Load Default Converters", e);
+                LogQuestFailed(Lib, "Load Default Converters", e);
             }
         }
 
         private static void LogQuestFailed(string modName, string questName, Exception e)
         {
             string message = BuildLogMessage(isFailed: true, modName, questName, additionalInfo: e.ToString());
-            "NebulaeFlood's Lib".Error(message);
+            Lib.Error(message);
         }
 
         private static void LogQuestFinished(string modName, string questName, MethodBase method)
         {
             string additionalInfo = $"{method.DeclaringType}.{method.Name}.";
             string message = BuildLogMessage(isFailed: false, modName, questName, additionalInfo);
-            "NebulaeFlood's Lib".Message(message);
+            Lib.Succeed(message);
         }
 
         #endregion

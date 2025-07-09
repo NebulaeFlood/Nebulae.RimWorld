@@ -47,9 +47,13 @@ namespace Nebulae.RimWorld.UI.Patches
                 }
             }
 
-            if (!patched)
+            if (patched)
             {
-                "NebulaeFlood's Lib".Error($"Failed to patch method: {typeof(Page_ModsConfig)}.DoModInfo");
+                StartUp.Lib.Succeed($"Succeeded to apply method transpiler to\n---> <color=cyan>{typeof(Page_ModsConfig)}.DoModInfo</color>");
+            }
+            else
+            {
+                StartUp.Lib.Error($"Failed to patch method to\n---> <color=cyan>{typeof(Page_ModsConfig)}.DoModInfo</color>");
             }
         }
 
