@@ -177,7 +177,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     child.Arrange(new Rect(
                         currentX,
                         currentY,
-                        _childWidth,
+                        child.DesiredSize.Width,
                         RenderSize.Height));
 
                     currentX += child.DesiredSize.Width;
@@ -193,7 +193,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         currentX,
                         currentY,
                         RenderSize.Width,
-                        _childHeight));
+                        child.DesiredSize.Height));
 
                     currentY += child.DesiredSize.Height;
                 }
@@ -212,18 +212,18 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             float childrenWidth = 0f;
             float childrenHeight = 0f;
 
-            _childWidth = (float)GetValue(ItemWidthProperty);
-            _childHeight = (float)GetValue(ItemHeightProperty);
+            float childWidth = (float)GetValue(ItemWidthProperty);
+            float childHeight = (float)GetValue(ItemHeightProperty);
 
-            if (_childWidth <= 0f || _childHeight <= 0f)
+            if (childWidth <= 0f || childHeight <= 0f)
             {
                 return Size.Empty;
             }
 
-            _childWidth = _childWidth > 1f ? _childWidth : _childWidth * availableSize.Width;
-            _childHeight = _childHeight > 1f ? _childHeight : _childHeight * availableSize.Height;
+            childWidth = childWidth > 1f ? childWidth : childWidth * availableSize.Width;
+            childHeight = childHeight > 1f ? childHeight : childHeight * availableSize.Height;
 
-            Size childSize = new Size(_childWidth, _childHeight);
+            Size childSize = new Size(childWidth, childHeight);
             Size childDesiredSize;
 
             if (Orientation is Orientation.Horizontal)
@@ -247,20 +247,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             return new Size(childrenWidth, childrenHeight);
         }
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private float _childWidth;
-        private float _childHeight;
 
         #endregion
     }
