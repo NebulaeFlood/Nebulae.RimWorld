@@ -218,11 +218,11 @@ namespace Nebulae.RimWorld.UI.Automation.Diagnostics.Views
         private readonly Grid _content;
         private readonly TextBlock _textBlock = new TextBlock { Margin = new Thickness(4f, 4f, 0f, 0f) };
 
-        private readonly CheckBox _debugControlRect = new CheckBox { Text = "Show Control Rect" };
-        private readonly CheckBox _debugDesiredRect = new CheckBox { Text = "Show Desired Rect" };
-        private readonly CheckBox _debugRenderRect = new CheckBox { Text = "Show Render Rect" };
-        private readonly CheckBox _debugRegionRect = new CheckBox { Text = "Show Region Rect" };
-        private readonly CheckBox _debugVisibleRect = new CheckBox { Text = "Show Visible Rect" };
+        private readonly CheckBox _debugControlRect = new CheckBox { Padding = new Thickness(12f, 0f, 12f, 0f), Text = "Show Control Rect" };
+        private readonly CheckBox _debugDesiredRect = new CheckBox { Padding = new Thickness(12f, 0f, 12f, 0f), Text = "Show Desired Rect" };
+        private readonly CheckBox _debugRenderRect = new CheckBox { Padding = new Thickness(12f, 0f, 12f, 0f), Text = "Show Render Rect" };
+        private readonly CheckBox _debugRegionRect = new CheckBox { Padding = new Thickness(12f, 0f, 12f, 0f), Text = "Show Region Rect" };
+        private readonly CheckBox _debugVisibleRect = new CheckBox { Padding = new Thickness(12f, 0f, 12f, 0f), Text = "Show Visible Rect" };
 
         private Binding _debugControlRectBinding;
         private Binding _debugDesiredRectBinding;
