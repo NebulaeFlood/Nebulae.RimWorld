@@ -140,10 +140,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override void OnMouseEnter(RoutedEventArgs e)
         {
-            if (!_isSelected)
+            if (!_isSelected && !ControlStates.HasState(ControlState.Disabled | ControlState.Dragging | ControlState.Pressing))
             {
                 SoundDefOf.Mouseover_Tab.PlayOneShotOnCamera();
             }
+
+            e.Handled = true;
         }
 
         #endregion
