@@ -107,6 +107,55 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #region Protected Methods
 
         /// inheritdoc/>
+        protected override Rect ArrangeOverride(Rect availableRect)
+        {
+            if (string.IsNullOrEmpty(_cache))
+            {
+                _labelRect = new Rect(availableRect.x, availableRect.y, 0f, 0f);
+            }
+            else
+            {
+                Size labelSize = new Size(_cache.CalculateLength((GameFont)GetValue(FontSizeProperty)), RenderSize.Height);
+
+                switch ((TextAnchor)GetValue(AnchorProperty))
+                {
+                    case TextAnchor.UpperLeft:
+                        _labelRect = labelSize.AlignToArea(availableRect, HorizontalAlignment.Left, VerticalAlignment.Top);
+                        break;
+                    case TextAnchor.UpperCenter:
+                        _labelRect = labelSize.AlignToArea(availableRect, HorizontalAlignment.Center, VerticalAlignment.Top);
+                        break;
+                    case TextAnchor.UpperRight:
+                        _labelRect = labelSize.AlignToArea(availableRect, HorizontalAlignment.Right, VerticalAlignment.Top);
+                        break;
+                    case TextAnchor.MiddleLeft:
+                        _labelRect = labelSize.AlignToArea(availableRect, HorizontalAlignment.Left, VerticalAlignment.Center);
+                        break;
+                    case TextAnchor.MiddleCenter:
+                        _labelRect = labelSize.AlignToArea(availableRect, HorizontalAlignment.Center, VerticalAlignment.Center);
+                        break;
+                    case TextAnchor.MiddleRight:
+                        _labelRect = labelSize.AlignToArea(availableRect, HorizontalAlignment.Right, VerticalAlignment.Center);
+                        break;
+                    case TextAnchor.LowerLeft:
+                        _labelRect = labelSize.AlignToArea(availableRect, HorizontalAlignment.Left, VerticalAlignment.Bottom);
+                        break;
+                    case TextAnchor.LowerCenter:
+                        _labelRect = labelSize.AlignToArea(availableRect, HorizontalAlignment.Center, VerticalAlignment.Bottom);
+                        break;
+                    case TextAnchor.LowerRight:
+                        _labelRect = labelSize.AlignToArea(availableRect, HorizontalAlignment.Right, VerticalAlignment.Bottom);
+                        break;
+                    default:
+                        _labelRect = availableRect;
+                        break;
+                }
+            }
+
+            return availableRect;
+        }
+
+        /// inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             var fontSize = (GameFont)GetValue(FontSizeProperty);
@@ -117,6 +166,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 : text.Truncate(availableSize.Width, fontSize);
 
             return new Size(availableSize.Width, fontSize.GetHeight());
+        }
+
+        /// inheritdoc/>
+        protected override SegmentResult SegmentCore(Rect visiableRect)
+        {
+            visiableRect = visiableRect.IntersectWith(RegionRect);
+            return new SegmentResult(visiableRect.IntersectWith(_labelRect), visiableRect);
         }
 
         /// <inheritdoc/>
@@ -145,6 +201,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private string _cache = string.Empty;
         private LabelCache _drawer = DefaultDrawer;
+
+        private Rect _labelRect;
 
         #endregion
     }
