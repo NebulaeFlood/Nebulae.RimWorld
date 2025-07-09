@@ -98,22 +98,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
 
-        //------------------------------------------------------
-        //
-        //  Public Methods
-        //
-        //------------------------------------------------------
-
-        #region Public Methods
-
-        /// <summary>
-        /// 要求 <see cref="Panel"/> 在下次绘制控件之前重新判断子控件是否可绘制
-        /// </summary>
-        public void InvalidateDrawableChildren()
-        {
-            _isDrawableChildrenValid = false;
-        }
-
         /// <summary>
         /// 要求 <see cref="Panel"/> 在下次绘制控件之前重新过滤子控件
         /// </summary>
@@ -127,8 +111,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 InvalidateMeasure();
             }
         }
-
-        #endregion
 
 
         internal void ClearInternal()
@@ -151,6 +133,11 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override sealed Rect ArrangeOverride(Rect availableRect)
         {
+            if (RenderSize.IsEmpty || _filteredChildren.Length < 1)
+            {
+                return new Rect(availableRect.x, availableRect.y, 0f, 0f);
+            }
+
             _isDrawableChildrenValid = false;
             return ArrangeOverride(availableRect, _filteredChildren);
         }
@@ -166,7 +153,14 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override sealed Size MeasureOverride(Size availableSize)
         {
-            return MeasureOverride(availableSize, FilteredChildren);
+            var children = FilteredChildren;
+
+            if (children.Length < 1)
+            {
+                return Size.Empty;
+            }
+
+            return MeasureOverride(availableSize, children);
         }
 
         /// <summary>

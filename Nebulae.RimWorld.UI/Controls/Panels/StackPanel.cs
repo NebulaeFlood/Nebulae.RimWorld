@@ -12,34 +12,51 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
     {
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Public Properties
+        #region Dependency Properties
 
-        #region ReferenceSize
+        #region ItemWidth
         /// <summary>
-        /// 获取或设置子控件参照尺寸
+        /// 获取或设置 <see cref="StackPanel"/> 分配给子控件的宽度
         /// </summary>
-        /// <remarks>代表了在对子控件进行测量时，子控件能够获取到的尺寸。</remarks>
-        public Size ReferenceSize
+        public float ItemWidth
         {
-            get { return (Size)GetValue(ReferenceSizeProperty); }
-            set { SetValue(ReferenceSizeProperty, value.Normalize()); }
+            get { return (float)GetValue(ItemWidthProperty); }
+            set { SetValue(ItemWidthProperty, value); }
         }
 
         /// <summary>
-        /// 标识 <see cref="ReferenceSize"/> 依赖属性
+        /// 标识 <see cref="ItemWidth"/> 依赖属性
         /// </summary>
-        public static readonly DependencyProperty ReferenceSizeProperty =
-            DependencyProperty.Register(nameof(ReferenceSize), typeof(Size), typeof(StackPanel),
-                new ControlPropertyMetadata(new Size(1f, 34f), ControlRelation.Measure));
+        public static readonly DependencyProperty ItemWidthProperty =
+            DependencyProperty.Register(nameof(ItemWidth), typeof(float), typeof(StackPanel),
+                new ControlPropertyMetadata(1f, ControlRelation.Measure));
+        #endregion
+
+        #region ItemHeight
+        /// <summary>
+        /// 获取或设置 <see cref="StackPanel"/> 分配给子控件的高度
+        /// </summary>
+        public float ItemHeight
+        {
+            get { return (float)GetValue(ItemHeightProperty); }
+            set { SetValue(ItemHeightProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="ItemHeight"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty ItemHeightProperty =
+            DependencyProperty.Register(nameof(ItemHeight), typeof(float), typeof(StackPanel),
+                new ControlPropertyMetadata(34f, ControlRelation.Measure));
         #endregion
 
         #region Orientation
         /// <summary>
-        /// 获取或设置子控件的排列方向
+        /// 获取或设置 <see cref="StackPanel"/> 排列子控件的方向
         /// </summary>
         public Orientation Orientation
         {
@@ -148,8 +165,6 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Rect ArrangeOverride(Rect availableRect, Control[] children)
         {
-            Size childrenSize = RenderSize;
-
             float currentX = availableRect.x;
             float currentY = availableRect.y;
 
@@ -162,8 +177,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     child.Arrange(new Rect(
                         currentX,
                         currentY,
-                        child.DesiredSize.Width,
-                        childrenSize.Height));
+                        _childWidth,
+                        RenderSize.Height));
 
                     currentX += child.DesiredSize.Width;
                 }
@@ -177,8 +192,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     child.Arrange(new Rect(
                         currentX,
                         currentY,
-                        childrenSize.Width,
-                        child.DesiredSize.Height));
+                        RenderSize.Width,
+                        _childHeight));
 
                     currentY += child.DesiredSize.Height;
                 }
@@ -187,8 +202,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             return new Rect(
                 availableRect.x,
                 availableRect.y,
-                childrenSize.Width,
-                childrenSize.Height);
+                RenderSize.Width,
+                RenderSize.Height);
         }
 
         /// <inheritdoc/>
@@ -197,14 +212,25 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             float childrenWidth = 0f;
             float childrenHeight = 0f;
 
-            Size childReferenceSize = ReferenceSize.Resolve(availableSize);
+            _childWidth = (float)GetValue(ItemWidthProperty);
+            _childHeight = (float)GetValue(ItemHeightProperty);
+
+            if (_childWidth <= 0f || _childHeight <= 0f)
+            {
+                return Size.Empty;
+            }
+
+            _childWidth = _childWidth > 1f ? _childWidth : _childWidth * availableSize.Width;
+            _childHeight = _childHeight > 1f ? _childHeight : _childHeight * availableSize.Height;
+
+            Size childSize = new Size(_childWidth, _childHeight);
             Size childDesiredSize;
 
             if (Orientation is Orientation.Horizontal)
             {
                 for (int i = 0; i < children.Length; i++)
                 {
-                    childDesiredSize = children[i].Measure(childReferenceSize);
+                    childDesiredSize = children[i].Measure(childSize);
                     childrenWidth += childDesiredSize.Width;
                     childrenHeight = Mathf.Max(childrenHeight, childDesiredSize.Height);
                 }
@@ -213,7 +239,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             {
                 for (int i = 0; i < children.Length; i++)
                 {
-                    childDesiredSize = children[i].Measure(childReferenceSize);
+                    childDesiredSize = children[i].Measure(childSize);
                     childrenHeight += childDesiredSize.Height;
                     childrenWidth = Mathf.Max(childrenWidth, childDesiredSize.Width);
                 }
@@ -221,6 +247,20 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             return new Size(childrenWidth, childrenHeight);
         }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private float _childWidth;
+        private float _childHeight;
 
         #endregion
     }
