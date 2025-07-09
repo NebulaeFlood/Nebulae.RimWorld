@@ -49,7 +49,7 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             var currentParent = control.Parent;
 
-            while (currentParent is null)
+            while (currentParent != null)
             {
                 if (currentParent is T p)
                 {
