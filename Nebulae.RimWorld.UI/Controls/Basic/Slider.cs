@@ -203,8 +203,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                     (bool)GetValue(IsPercentageProperty),
                     out var minStr, out var maxStr);
 
-                _sliderRect.x += minStr.CalculateLength(GameFont.Tiny);
-                _sliderRect.xMax -= 10f + maxStr.CalculateLength(GameFont.Tiny);
+                _sliderRect.xMin += minStr.CalculateLength(GameFont.Tiny);
+                _sliderRect.xMax -= maxStr.CalculateLength(GameFont.Tiny);
             }
 
             _railRect = new Rect(_sliderRect.x + 6f, _sliderRect.y + 2f, _sliderRect.width - HandleSize, RailHeight);
