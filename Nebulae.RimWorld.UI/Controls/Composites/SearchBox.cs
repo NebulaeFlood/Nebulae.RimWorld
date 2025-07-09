@@ -274,21 +274,14 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// <inheritdoc/>
         protected override HitTestResult HitTestCore(Vector2 hitPoint)
         {
-            var result = HitTestResult.HitTest(this, hitPoint);
+            var result = _clearButton.HitTest(hitPoint);
 
-            if (!result.IsHit)
+            if (result.IsHit)
             {
                 return result;
             }
 
-            var childResult = _clearButton.HitTest(hitPoint);
-
-            if (childResult.IsHit)
-            {
-                return childResult;
-            }
-
-            return result;
+            return HitTestResult.HitTest(this, hitPoint);
         }
 
         /// <inheritdoc/>
