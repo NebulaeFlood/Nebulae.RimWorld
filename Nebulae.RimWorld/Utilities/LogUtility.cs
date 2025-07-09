@@ -54,6 +54,17 @@ namespace Nebulae.RimWorld.Utilities
         }
 
         /// <summary>
+        /// 以 <paramref name="logLabel"/> 为主语，提交成功信息
+        /// </summary>
+        /// <param name="logLabel">主语</param>
+        /// <param name="message">日志内容</param>
+        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Succeed(this string logLabel, string message, string color = "3F48CCFF")
+        {
+            Log.Message($"<color=#{color}>[{logLabel}]</color> <color=lime>{message}</color>");
+        }
+
+        /// <summary>
         /// 以 <paramref name="logLabel"/> 为主语，提交警告
         /// </summary>
         /// <param name="logLabel">主语</param>
