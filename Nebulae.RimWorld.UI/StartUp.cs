@@ -29,11 +29,16 @@ namespace Nebulae.RimWorld.UI
         /// <param name="action">初始化方法</param>
         /// <param name="mod">添加任务的 Mod</param>
         /// <param name="questName">任务名</param>
-        public static void AddQuest(Action action, ModContentPack mod, string questName = null)
+        public static void AddQuest(Action action, ModContentPack mod, string questName)
         {
             if (_startUpQuests is null)
             {
                 return;
+            }
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
             }
 
             if (mod is null)
@@ -41,20 +46,12 @@ namespace Nebulae.RimWorld.UI
                 throw new ArgumentNullException(nameof(mod));
             }
 
-            void WrappedAction()
+            if (string.IsNullOrWhiteSpace(questName))
             {
-                try
-                {
-                    action.Invoke();
-                    LogQuestFinished(mod.Name, questName, action.Method);
-                }
-                catch (Exception e)
-                {
-                    LogQuestFailed(mod.Name, questName, e);
-                }
+                throw new InvalidOperationException("Quest name cannot be null or white space.");
             }
 
-            _startUpQuests.Add(new Task(WrappedAction));
+            _startUpQuests.Add(new Task(new Quest(action, mod, questName).Start));
         }
 
 
@@ -133,5 +130,45 @@ namespace Nebulae.RimWorld.UI
 
 
         private static List<Task> _startUpQuests = new List<Task>();
+
+
+        private readonly struct Quest
+        {
+            //------------------------------------------------------
+            //
+            //  Public Fields
+            //
+            //------------------------------------------------------
+
+            #region Public Fields
+
+            public readonly Action Action;
+            public readonly string ModName;
+            public readonly string QuestName;
+
+            #endregion
+
+
+            public Quest(Action action, ModContentPack mod, string questName)
+            {
+                Action = action;
+                ModName = mod.Name;
+                QuestName = questName;
+            }
+
+
+            public void Start()
+            {
+                try
+                {
+                    Action.Invoke();
+                    LogQuestFinished(ModName, QuestName, Action.Method);
+                }
+                catch (Exception e)
+                {
+                    LogQuestFailed(ModName, QuestName, e);
+                }
+            }
+        }
     }
 }

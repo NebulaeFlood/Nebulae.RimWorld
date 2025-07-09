@@ -55,18 +55,6 @@ namespace Nebulae.RimWorld.UI
 
             _settings.OnCheckIntegrity();
 
-            void Initialize()
-            {
-                OnInitializing();
-
-                _settingWindow = new ModSettingWindow(this)
-                {
-                    Content = CreateContent()
-                };
-
-                OnInitialized();
-            }
-
             StartUp.AddQuest(Initialize, content, $"Initialize Setting Window");
         }
 
@@ -110,6 +98,19 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         protected virtual void OnInitializing() { }
         #endregion
+
+
+        private void Initialize()
+        {
+            OnInitializing();
+
+            _settingWindow = new ModSettingWindow(this)
+            {
+                Content = CreateContent()
+            };
+
+            OnInitialized();
+        }
 
 
         //------------------------------------------------------
