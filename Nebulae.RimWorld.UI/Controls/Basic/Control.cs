@@ -162,6 +162,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置一个值，该值指示 <see cref="Control"/> 是否参与命中测试
         /// </summary>
+        [DebugMember(int.MinValue + 25)]
         public bool IsHitTestVisible
         {
             get => _isHitTestVisible;
