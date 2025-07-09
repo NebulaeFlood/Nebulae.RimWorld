@@ -11,6 +11,14 @@ namespace Nebulae.RimWorld.UI.Controls
     [DebuggerStepThrough]
     public readonly struct SegmentResult
     {
+        //------------------------------------------------------
+        //
+        //  Public Fields
+        //
+        //------------------------------------------------------
+
+        #region Public Fields
+
         /// <summary>
         /// <see cref="Control"/> 的交互区域
         /// </summary>
@@ -26,6 +34,16 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         public readonly Rect VisibleRect;
 
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Constructors
+        //
+        //------------------------------------------------------
+
+        #region Constructors
 
         /// <summary>
         /// 初始化 <see cref="SegmentResult"/> 的新实例
@@ -64,6 +82,8 @@ namespace Nebulae.RimWorld.UI.Controls
             TooltipRect = tooltipRect.Rounded();
             VisibleRect = visibleRect.Rounded();
         }
+
+        #endregion
 
 
         /// <summary>
