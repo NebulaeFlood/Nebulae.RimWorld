@@ -262,14 +262,14 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             // var contentRect = new Rect(
             //     currentX,
-            //     currentY + _headerPanelSize.Height + 1f,
+            //     currentY + _headerPanelSize.Height - 1f,
             //     RenderSize.Width,
-            //     RenderSize.Height + 1f - _headerPanelSize.Height) - new Thickness(1f);
+            //     RenderSize.Height - _headerPanelSize.Height) - new Thickness(1f);
             var contentRect = new Rect(
                 currentX + 1f,
                 currentY + _headerPanelSize.Height,
                 RenderSize.Width - 2f,
-                RenderSize.Height - (_headerPanelSize.Height + 1f));
+                RenderSize.Height - (_headerPanelSize.Height + 2f));
 
             if (_columnCount < 1)
             {
@@ -311,7 +311,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (_items.IsEmpty)
+            int count = _items.Count;
+
+            if (count < 1)
             {
                 return availableSize;
             }
@@ -319,11 +321,16 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             var rawHeaderWidth = (float)GetValue(HeaderWidthProperty);
 
             _headerWidth = rawHeaderWidth > 1f
-                ? Mathf.Clamp(rawHeaderWidth, 2f, availableSize.Width)
+                ? Mathf.Min(rawHeaderWidth, availableSize.Width)
                 : rawHeaderWidth * availableSize.Width;
             _columnCount = Mathf.FloorToInt(availableSize.Width / _headerWidth);
 
-            var rowCount = 1 + (_items.Count / _columnCount);
+            var rowCount = count / _columnCount;
+
+            if (count % _columnCount > 0)
+            {
+                rowCount++;
+            }
 
             if (_columnCount > 1)
             {
