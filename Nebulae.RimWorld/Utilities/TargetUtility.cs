@@ -1,498 +1,381 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
+using Steamworks;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using Verse;
+using Verse.Noise;
+using static UnityEngine.GraphicsBuffer;
 
 namespace Nebulae.RimWorld.Utilities
 {
-    /// <summary>
-    /// 获取 <see cref="GlobalTargetInfo"/> 时判断当前对象是否可选中的委托
-    /// </summary>
-    /// <param name="target">当前的目标位置</param>
-    /// <returns>当前对象是否可选中。</returns>
-    public delegate bool GlobalTargetSelector(GlobalTargetInfo target);
-    /// <summary>
-    /// 获取 <see cref="LocalTargetInfo"/> 时验证目标的委托
-    /// </summary>
-    /// <param name="target">当前的目标位置</param>
-    /// <returns>当前目标是否为可用目标。</returns>
-    public delegate bool GlobalTargetValidator(GlobalTargetInfo target);
+    //------------------------------------------------------
+    //
+    //  Global Targer Delegates
+    //
+    //------------------------------------------------------
+
+    #region Global Targer Delegates
 
     /// <summary>
-    /// 获取 <see cref="LocalTargetInfo"/> 时绘制 UI 的委托
+    /// 过滤世界地图中的位置以留下可选位置的方法
     /// </summary>
-    /// <param name="target">当前的目标位置</param>
-    public delegate void LocalTargettingUIDrawer(LocalTargetInfo target);
+    /// <param name="target">要判断的世界地图中的位置</param>
+    /// <returns>若 <paramref name="target"/> 是可选位置，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+    public delegate bool GlobalTargetFilter(GlobalTargetInfo target);
+
     /// <summary>
-    /// 获取 <see cref="LocalTargetInfo"/> 时绘制高亮的委托
+    /// 选中世界地图中的位置时的回调函数
     /// </summary>
-    /// <param name="target">当前的目标位置</param>
-    public delegate void LocalTargetHeighlighter(LocalTargetInfo target);
+    /// <param name="target">选中的世界地图中的位置</param>
+    public delegate void GlobalTargetSelectedCallback(GlobalTargetInfo target);
+
     /// <summary>
-    /// 获取 <see cref="LocalTargetInfo"/> 时生成附加标签的委托
+    /// 验证选取的世界地图位置是否可用的方法
     /// </summary>
-    /// <param name="target">当前的目标位置</param>
-    /// <returns>光标旁显示的标签</returns>
-    public delegate string LocalTargetMouseAttachedLabelGenerator(LocalTargetInfo target);
+    /// <param name="target">要验证的世界地图中的位置</param>
+    /// <param name="message">当前位置对应的信息</param>
+    /// <returns>若 <paramref name="target"/> 是可用位置，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+    public delegate bool GlobalTargetValidator(GlobalTargetInfo target, out TaggedString message);
+
+    #endregion
+
+
+    //------------------------------------------------------
+    //
+    //  Local Target Delegates
+    //
+    //------------------------------------------------------
+
+    #region Local Target Delegates
+
     /// <summary>
-    /// 获取 <see cref="LocalTargetInfo"/> 时验证目标的委托
+    /// 过滤当前地图中的位置以留下可选位置的方法
     /// </summary>
-    /// <param name="target">当前的目标位置</param>
-    /// <param name="showMessage">是否提示不可用的原因</param>
-    /// <returns>当前目标是否为可用目标。</returns>
-    public delegate bool LocalTargetValidator(LocalTargetInfo target, bool showMessage);
+    /// <param name="target">要判断的当前地图中的位置</param>
+    /// <returns>若 <paramref name="target"/> 是可选位置，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+    public delegate bool LocalTargetFilter(LocalTargetInfo target);
+
+    /// <summary>
+    /// 验证选取的当前地图位置是否可用的方法
+    /// </summary>
+    /// <param name="target">要验证的当前地图中的位置</param>
+    /// <param name="message">当前位置对应的信息</param>
+    /// <returns>若 <paramref name="target"/> 是可用位置，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+    public delegate bool LocalTargetValidator(LocalTargetInfo target, out TaggedString message);
+
+    /// <summary>
+    /// 选取位置时绘制自定义 UI 的方法
+    /// </summary>
+    /// <param name="target">当前光标指向的位置</param>
+    public delegate void LocalTargeterUIDrawer(LocalTargetInfo target);
+
+    #endregion
 
 
     /// <summary>
-    /// 获取地图或世界地图的位置的工具类
+    /// 选取地图或世界地图的位置的工具类
     /// </summary>
     public static class TargetUtility
     {
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private static readonly GlobalTargetSource _globalTargetSource = new GlobalTargetSource();
-        private static GlobalTargetInfo _globalTargetCache = GlobalTargetInfo.Invalid;
-        private static bool _globalTargetSelected;
-
-        private static readonly LocalTargetingSource _localTargetingSource = new LocalTargetingSource();
-        private static LocalTargetInfo _localTargetCache = LocalTargetInfo.Invalid;
-        private static bool _localTargetSelected;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Get Global Target
-        //
-        //------------------------------------------------------
-
-        #region Get Global Target
-
         /// <summary>
-        /// 选取世界地图内的位置
+        /// 开始选取当前地图中的位置
         /// </summary>
-        /// <param name="targetSelector">判断对象是否可选的委托</param>
-        /// <param name="targetValidator">验证对象是否可用的委托</param>
-        /// <param name="customUIDrawer">绘制选取位置时的 UI 的委托</param>
-        /// <param name="attachedLabelGenerator">生成附加标签的委托</param>
-        /// <param name="mouseAttachedIcon">附加图标</param>
-        /// <param name="canTargetTiles">空地块（即没有任何基地等 <see cref="WorldObject"/>）是否可选中</param>
-        /// <param name="quitWorldUIAtLast">结束选取后是否关闭世界地图</param>
-        /// <returns>世界地图的指定位置。</returns>
-        public static async Task<GlobalTargetInfo> GetGlobalTarget(
-            GlobalTargetSelector targetSelector = null,
-            GlobalTargetValidator targetValidator = null,
-            Action customUIDrawer = null,
-            Func<GlobalTargetInfo, TaggedString> attachedLabelGenerator = null,
-            Texture2D mouseAttachedIcon = null,
-            bool canTargetTiles = true,
-            bool quitWorldUIAtLast = false)
-        {
-            _globalTargetSource.Initialize(targetSelector, targetValidator, null);
-
-            Find.DesignatorManager.Deselect();
-            CameraJumper.TryShowWorld();
-            Find.WorldTargeter.BeginTargeting(
-                _globalTargetSource.ValidateTarget,
-                canTargetTiles,
-                mouseAttachedIcon,
-                quitWorldUIAtLast,
-                customUIDrawer,
-                attachedLabelGenerator,
-                _globalTargetSource.IsTargetSelectable);
-
-            await AwaitUtility.WaitForUnpauseAsync();
-
-            if (!_globalTargetSelected)
-            {
-                _globalTargetSource.Reset();
-                return GlobalTargetInfo.Invalid;
-            }
-
-            var target = _globalTargetCache;
-            _globalTargetCache = GlobalTargetInfo.Invalid;
-            _globalTargetSelected = false;
-
-            return target;
-        }
-
-        /// <summary>
-        /// 选取世界地图内的位置
-        /// </summary>
-        /// <param name="onSelected">结束选取后的执行的委托</param>
-        /// <param name="targetSelector">判断对象是否可选的委托</param>
-        /// <param name="targetValidator">验证对象是否可用的委托</param>
-        /// <param name="customUIDrawer">绘制选取位置时的 UI 的委托</param>
-        /// <param name="attachedLabelGenerator">生成附加标签的委托</param>
-        /// <param name="mouseAttachedIcon">附加图标</param>
-        /// <param name="canTargetTiles">空地块（即没有任何基地等 <see cref="WorldObject"/>）是否可选中</param>
-        /// <param name="quitWorldUIAtLast">结束选取后是否关闭世界地图</param>
-        /// <returns>世界地图的指定位置。</returns>
-        public static void SelectGlobalTarget(
-            Action<GlobalTargetInfo> onSelected,
-            GlobalTargetSelector targetSelector = null,
-            GlobalTargetValidator targetValidator = null,
-            Action customUIDrawer = null,
-            Func<GlobalTargetInfo, TaggedString> attachedLabelGenerator = null,
-            Texture2D mouseAttachedIcon = null,
-            bool canTargetTiles = true,
-            bool quitWorldUIAtLast = false)
-        {
-            if (onSelected is null)
-            {
-                throw new ArgumentNullException(nameof(onSelected));
-            }
-
-            _globalTargetSource.Initialize(targetSelector, targetValidator, onSelected);
-
-            Find.DesignatorManager.Deselect();
-            CameraJumper.TryShowWorld();
-            Find.WorldTargeter.BeginTargeting(
-                _globalTargetSource.ValidateTarget,
-                canTargetTiles,
-                mouseAttachedIcon,
-                quitWorldUIAtLast,
-                customUIDrawer,
-                attachedLabelGenerator,
-                _globalTargetSource.IsTargetSelectable);
-        }
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Get Local Target
-        //
-        //------------------------------------------------------
-
-        #region Get Local Target
-
-        /// <summary>
-        /// 选取地图内的位置
-        /// </summary>
-        /// <param name="parameters">允许选择的对象类型</param>
-        /// <param name="targetValidator">验证对象是否可用的委托</param>
-        /// <param name="attachedLabelGenerator">生成附加标签的委托</param>
-        /// <param name="customUIDrawer">绘制选取位置时的 UI 的委托</param>
-        /// <param name="heighlighter">绘制选取位置时的高亮的委托</param>
-        /// <param name="caster">要求选取位置的对象</param>
-        /// <param name="mouseAttachedIcon">附加图标</param>
-        /// <returns>地图内的指定位置。</returns>
-        /// <exception cref="ArgumentNullException">当 <paramref name="parameters"/> 为 <see langword="null"/> 时发生。</exception>
-        /// <remarks>右键取消时返回 <see cref="LocalTargetInfo.Invalid"/>。</remarks>
-        public static async Task<LocalTargetInfo> GetLocalTarget(
+        /// <param name="callback">成功选取位置时的回调函数</param>
+        /// <param name="parameters">可被选取的位置类型</param>
+        /// <param name="icon">在光标旁显示的图标</param>
+        /// <param name="filter">过滤地图位置的方法</param>
+        /// <param name="validator">验证位置是否可用的方法</param>
+        /// <param name="drawer">选取位置时绘制自定义 UI 的方法</param>
+        public static void TargetLocal(
+            Action<LocalTargetInfo> callback,
             TargetingParameters parameters,
-            LocalTargetValidator targetValidator = null,
-            LocalTargetMouseAttachedLabelGenerator attachedLabelGenerator = null,
-            LocalTargettingUIDrawer customUIDrawer = null,
-            LocalTargetHeighlighter heighlighter = null,
-            Pawn caster = null,
-            Texture2D mouseAttachedIcon = null)
+            Texture2D icon = null,
+            LocalTargetFilter filter = null,
+            LocalTargetValidator validator = null,
+            LocalTargeterUIDrawer drawer = null)
         {
+            if (callback is null)
+            {
+                throw new ArgumentNullException(nameof(callback));
+            }
+
             if (parameters is null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            _localTargetingSource.Initialize(
-                customUIDrawer,
-                heighlighter,
-                attachedLabelGenerator,
-                targetValidator,
-                mouseAttachedIcon,
-                null);
+            var targetQuest = new LocalTargetQuset(icon, filter, validator, drawer);
 
-            Find.DesignatorManager.Deselect();
             Find.Targeter.BeginTargeting(
-                parameters,
-                _localTargetingSource.SelectTarget,
-                _localTargetingSource.DrawHighlight,
-                _localTargetingSource.ValidateTarget,
-                caster,
-                onGuiAction: _localTargetingSource.OnGUI);
-
-            await AwaitUtility.WaitForUnpauseAsync();
-
-            if (!_localTargetSelected)
-            {
-                _localTargetingSource.Reset();
-                return LocalTargetInfo.Invalid;
-            }
-
-            var target = _localTargetCache;
-            _localTargetCache = LocalTargetInfo.Invalid;
-            _localTargetSelected = false;
-
-            return target;
+                targetParams: parameters,
+                action: callback,
+                highlightAction: null,
+                targetValidator: targetQuest.ValidateTarget,
+                caster: null,
+                actionWhenFinished: null,
+                mouseAttachment: null,
+                playSoundOnAction: true,
+                onGuiAction: targetQuest.DrawUI,
+                onUpdateAction: null);
         }
 
         /// <summary>
-        /// 选取地图内的位置
+        /// 以当前地图作为起始视角，开始选取世界地图中的位置
         /// </summary>
-        /// <param name="parameters">允许选择的对象类型</param>
-        /// <param name="onSelected">结束选取后的执行的委托</param>
-        /// <param name="targetValidator">验证对象是否可用的委托</param>
-        /// <param name="attachedLabelGenerator">生成附加标签的委托</param>
-        /// <param name="customUIDrawer">绘制选取位置时的 UI 的委托</param>
-        /// <param name="heighlighter">绘制选取位置时的高亮的委托</param>
-        /// <param name="caster">要求选取位置的对象</param>
-        /// <param name="mouseAttachedIcon">附加图标</param>
-        /// <exception cref="ArgumentNullException">当 <paramref name="parameters"/> 或 <paramref name="onSelected"/> 为 <see langword="null"/> 时发生。</exception>
-        public static void SelectLocalTarget(
-            TargetingParameters parameters,
-            Action<LocalTargetInfo> onSelected,
-            LocalTargetValidator targetValidator = null,
-            LocalTargetMouseAttachedLabelGenerator attachedLabelGenerator = null,
-            LocalTargettingUIDrawer customUIDrawer = null,
-            LocalTargetHeighlighter heighlighter = null,
-            Pawn caster = null,
-            Texture2D mouseAttachedIcon = null)
+        /// <param name="callback">成功选取位置时的回调函数</param>
+        /// <param name="icon">在光标旁显示的图标</param>
+        /// <param name="filter">过滤地图位置的方法</param>
+        /// <param name="validator">验证位置是否可用的方法</param>
+        /// <param name="drawer">选取位置时绘制自定义 UI 的方法</param>
+        /// <param name="closeMap">结束选取时是否关闭世界地图</param>
+        public static void TargetWorld(
+            GlobalTargetSelectedCallback callback,
+            Texture2D icon = null,
+            GlobalTargetFilter filter = null,
+            GlobalTargetValidator validator = null,
+            Action drawer = null,
+            bool closeMap = true)
         {
-            if (parameters is null)
+            if (callback is null)
             {
-                throw new ArgumentNullException(nameof(parameters));
+                throw new ArgumentNullException(nameof(callback));
             }
 
-            if (onSelected is null)
+            var map = Find.CurrentMap;
+
+            if (map is null)
             {
-                throw new ArgumentNullException(nameof(onSelected));
+                TargetWorldInternal(callback, PlanetTile.Invalid, icon, filter, validator, drawer, closeMap);
+            }
+            else
+            {
+                TargetWorldInternal(callback, map.Tile, icon, filter, validator, drawer, closeMap);
+            }
+        }
+
+        /// <summary>
+        /// 以指定位置作为起始视角，开始选取世界地图中的位置
+        /// </summary>
+        /// <param name="callback">成功选取位置时的回调函数</param>
+        /// <param name="startTile">作为起始视角的位置</param>
+        /// <param name="icon">在光标旁显示的图标</param>
+        /// <param name="filter">过滤地图位置的方法</param>
+        /// <param name="validator">验证位置是否可用的方法</param>
+        /// <param name="drawer">选取位置时绘制自定义 UI 的方法</param>
+        /// <param name="closeMap">结束选取时是否关闭世界地图</param>
+        public static void TargetWorld(
+            GlobalTargetSelectedCallback callback,
+            PlanetTile startTile,
+            Texture2D icon = null,
+            GlobalTargetFilter filter = null,
+            GlobalTargetValidator validator = null,
+            Action drawer = null,
+            bool closeMap = false)
+        {
+            if (callback is null)
+            {
+                throw new ArgumentNullException(nameof(callback));
             }
 
-            _localTargetingSource.Initialize(
-                customUIDrawer,
-                heighlighter,
-                attachedLabelGenerator,
-                targetValidator,
-                mouseAttachedIcon,
-                onSelected);
+            TargetWorldInternal(callback, startTile, icon, filter, validator, drawer, closeMap);
+        }
+
+
+        //------------------------------------------------------
+        //
+        //  Private Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Static Methods
+
+        private static void TargetWorldInternal(GlobalTargetSelectedCallback callback, PlanetTile startTile, Texture2D icon, GlobalTargetFilter filter, GlobalTargetValidator validator, Action drawer, bool closeMap)
+        {
+            var targetQuest = new WorldTargetQuest(callback, icon, filter, validator);
 
             Find.DesignatorManager.Deselect();
-            Find.Targeter.BeginTargeting(
-                parameters,
-                _localTargetingSource.SelectTarget,
-                _localTargetingSource.DrawHighlight,
-                _localTargetingSource.ValidateTarget,
-                caster,
-                onGuiAction: _localTargetingSource.OnGUI);
+
+            if (startTile.Valid)
+            {
+                CameraJumper.TryJump(new GlobalTargetInfo(startTile));
+                Find.WorldTargeter.BeginTargeting(
+                    action: targetQuest.ValidateTarget,
+                    canTargetTiles: true,
+                    mouseAttachment: icon,
+                    closeWorldTabWhenFinished: closeMap,
+                    onUpdate: drawer,
+                    extraLabelGetter: targetQuest.GetAttachedLabel,
+                    canSelectTarget: targetQuest.FilterTarget,
+                    originForClosest: startTile,
+                    showCancelButton: true);
+            }
+            else
+            {
+                CameraJumper.TryShowWorld();
+                Find.WorldTargeter.BeginTargeting(
+                    action: targetQuest.ValidateTarget,
+                    canTargetTiles: true,
+                    mouseAttachment: icon,
+                    closeWorldTabWhenFinished: closeMap,
+                    onUpdate: drawer,
+                    extraLabelGetter: targetQuest.GetAttachedLabel,
+                    canSelectTarget: targetQuest.FilterTarget,
+                    originForClosest: null,
+                    showCancelButton: true);
+            }
         }
 
         #endregion
 
 
-        internal static void NotifyTargetSelected(GlobalTargetInfo targetInfo)
+        //------------------------------------------------------
+        //
+        //  Private Static Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Static Fields
+
+
+
+        #endregion
+
+
+        private readonly struct WorldTargetQuest
         {
-            _globalTargetCache = targetInfo;
-            _globalTargetSource.Reset();
-            _globalTargetSelected = true;
-        }
-
-        internal static void NotifyTargetSelected(LocalTargetInfo targetInfo)
-        {
-            _localTargetCache = targetInfo;
-            _localTargetingSource.Reset();
-            _localTargetSelected = true;
-        }
+            public readonly GlobalTargetSelectedCallback Callback;
+            public readonly Texture2D Icon;
+            public readonly GlobalTargetFilter Filter;
+            public readonly GlobalTargetValidator Validator;
 
 
-        private sealed class GlobalTargetSource
-        {
-            //------------------------------------------------------
-            //
-            //  Private Fields
-            //
-            //------------------------------------------------------
-
-            #region Private Fields
-
-            private GlobalTargetSelector _targetSelector;
-            private GlobalTargetValidator _targetValidator;
-            private Action<GlobalTargetInfo> _onSelected;
-
-            #endregion
-
-
-            //------------------------------------------------------
-            //
-            //  internal Methods
-            //
-            //------------------------------------------------------
-
-            #region internal Methods
-
-            internal void Initialize(
-                GlobalTargetSelector targetSelector,
-                GlobalTargetValidator targetValidator,
-                Action<GlobalTargetInfo> onSelected)
+            static WorldTargetQuest()
             {
-                _targetSelector = targetSelector;
-                _targetValidator = targetValidator;
-                _onSelected = onSelected;
+                var type = typeof(WorldTargeter);
+                var field = type.GetField("mouseAttachment", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                var targeterExp = Expression.Parameter(type, "targeter");
+                var iconExp = Expression.Parameter(typeof(Texture2D), "icon");
+                var fieldExp = Expression.Field(targeterExp, field);
+
+                IconSetter = Expression.Lambda<Action<WorldTargeter, Texture2D>>(
+                    Expression.Assign(fieldExp, iconExp), targeterExp, iconExp)
+                    .Compile();
             }
 
-            internal bool IsTargetSelectable(GlobalTargetInfo target)
+            public WorldTargetQuest(GlobalTargetSelectedCallback callback, Texture2D icon, GlobalTargetFilter filter, GlobalTargetValidator validator)
             {
-                return _targetSelector is null || _targetSelector(target);
+                Callback = callback;
+                Icon = icon ?? TexCommand.Attack;
+                Filter = filter;
+                Validator = validator;
             }
 
-            internal void Reset()
+
+            public bool FilterTarget(GlobalTargetInfo target)
             {
-                _targetSelector = null;
-                _targetValidator = null;
+                return Filter?.Invoke(target) ?? true;
             }
 
-            internal bool ValidateTarget(GlobalTargetInfo target)
+            public TaggedString GetAttachedLabel(GlobalTargetInfo target)
             {
-                if (_targetValidator is null
-                    || _targetValidator(target))
+                if (Validator is null)
                 {
-                    if (_onSelected is null)
-                    {
-                        NotifyTargetSelected(target);
-                    }
-                    else
-                    {
-                        _onSelected(target);
-                        Reset();
-                    }
-
-                    return true;
+                    IconSetter(Find.WorldTargeter, Icon);
+                    return TaggedString.Empty;
                 }
-
-                return false;
-            }
-
-            #endregion
-        }
-
-        private sealed class LocalTargetingSource
-        {
-            //------------------------------------------------------
-            //
-            //  Priate Fields
-            //
-            //------------------------------------------------------
-
-            #region Priate Fields
-
-            private Texture2D _mouseAttachedIcon;
-
-            private LocalTargettingUIDrawer _targetUIDrawer;
-            private LocalTargetHeighlighter _targetHeighlighter;
-            private LocalTargetMouseAttachedLabelGenerator _targetLabelGenerator;
-            private LocalTargetValidator _targetValidator;
-
-            private Action<LocalTargetInfo> _onSelected;
-
-            #endregion
-
-
-            //------------------------------------------------------
-            //
-            //  Intetnal Methods
-            //
-            //------------------------------------------------------
-
-            #region Intetnal Methods
-
-            internal void DrawHighlight(LocalTargetInfo target)
-            {
-                if (_targetHeighlighter is null)
+                else if (Validator(target, out var message))
                 {
-                    if (target.IsValid)
-                    {
-                        GenDraw.DrawTargetHighlight(target);
-                    }
+                    IconSetter(Find.WorldTargeter, Icon);
+                    return message;
                 }
                 else
                 {
-                    _targetHeighlighter(target);
+                    IconSetter(Find.WorldTargeter, TexCommand.CannotShoot);
+                    return message;
                 }
             }
 
-            internal void Initialize(
-                LocalTargettingUIDrawer targetUIDrawer,
-                LocalTargetHeighlighter heighlighter,
-                LocalTargetMouseAttachedLabelGenerator targetLabelGenerator,
-                LocalTargetValidator targetValidator,
-                Texture2D mouseAttachedIcon,
-                Action<LocalTargetInfo> onSelected)
+            public bool ValidateTarget(GlobalTargetInfo target)
             {
-                _targetUIDrawer = targetUIDrawer;
-                _targetHeighlighter = heighlighter;
-                _targetLabelGenerator = targetLabelGenerator;
-                _targetValidator = targetValidator;
-                _mouseAttachedIcon = mouseAttachedIcon;
-                _onSelected = onSelected;
+                var message = TaggedString.Empty;
+                bool isValid = Validator?.Invoke(target, out message) ?? true;
+
+                if (isValid)
+                {
+                    Callback(target);
+                }
+                else if (!message.NullOrEmpty())
+                {
+                    Messages.Message(message, MessageTypeDefOf.RejectInput, historical: false);
+                }
+
+                return isValid;
             }
 
-            internal void OnGUI(LocalTargetInfo target)
+
+            private static readonly Action<WorldTargeter, Texture2D> IconSetter;
+        }
+
+        private readonly struct LocalTargetQuset
+        {
+            public readonly Texture2D Icon;
+            public readonly LocalTargetFilter Filter;
+            public readonly LocalTargetValidator Validator;
+            public readonly LocalTargeterUIDrawer Drawer;
+
+
+            public LocalTargetQuset(Texture2D icon, LocalTargetFilter filter, LocalTargetValidator validator, LocalTargeterUIDrawer drawer)
             {
-                if (_targetUIDrawer is null)
+                Icon = icon ?? TexCommand.Attack;
+                Filter = filter;
+                Validator = validator;
+                Drawer = drawer;
+            }
+
+
+            public void DrawUI(LocalTargetInfo target)
+            {
+                var message = TaggedString.Empty;
+                bool isValid = Validator?.Invoke(target, out message) ?? true;
+
+                if (isValid)
                 {
-                    string attachedText = _targetLabelGenerator?.Invoke(target);
-
-                    if (_targetValidator is null || _targetValidator(target, false))
-                    {
-                        if (_mouseAttachedIcon != null)
-                        {
-                            GenUI.DrawMouseAttachment(_mouseAttachedIcon);
-                        }
-
-                        if (!string.IsNullOrEmpty(attachedText))
-                        {
-                            Widgets.MouseAttachedLabel(attachedText);
-                        }
-                    }
-                    else
-                    {
-                        GenUI.DrawMouseAttachment(TexCommand.CannotShoot);
-                    }
+                    GenUI.DrawMouseAttachment(Icon, message);
                 }
                 else
                 {
-                    _targetUIDrawer(target);
+                    GenUI.DrawMouseAttachment(TexCommand.CannotShoot);
                 }
+
+                Drawer?.Invoke(target);
             }
 
-            internal void Reset()
+            public bool FilterTarget(LocalTargetInfo target)
             {
-                _targetUIDrawer = null;
-                _targetHeighlighter = null;
-                _targetLabelGenerator = null;
-                _targetValidator = null;
-                _mouseAttachedIcon = null;
-                _onSelected = null;
+                return Filter?.Invoke(target) ?? true;
             }
 
-            internal void SelectTarget(LocalTargetInfo target)
+            public bool ValidateTarget(LocalTargetInfo target)
             {
-                if (_onSelected is null)
+                var message = TaggedString.Empty;
+                bool isValid = Validator?.Invoke(target, out message) ?? true;
+
+                if (!isValid && !message.NullOrEmpty())
                 {
-                    NotifyTargetSelected(target);
+                    Messages.Message(message, MessageTypeDefOf.RejectInput, historical: false);
                 }
-                else
-                {
-                    _onSelected(target);
-                    Reset();
-                }
-            }
 
-            internal bool ValidateTarget(LocalTargetInfo target)
-            {
-                return _targetValidator is null || _targetValidator(target, true);
+                return isValid;
             }
-
-            #endregion
         }
     }
 }
