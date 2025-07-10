@@ -189,14 +189,6 @@ namespace Nebulae.RimWorld.Utilities
         }
 
 
-        //------------------------------------------------------
-        //
-        //  Private Static Methods
-        //
-        //------------------------------------------------------
-
-        #region Private Static Methods
-
         private static void TargetWorldInternal(GlobalTargetSelectedCallback callback, PlanetTile startTile, Texture2D icon, GlobalTargetFilter filter, GlobalTargetValidator validator, Action drawer, bool closeMap)
         {
             var targetQuest = new WorldTargetQuest(callback, icon, filter, validator);
@@ -232,8 +224,6 @@ namespace Nebulae.RimWorld.Utilities
                     showCancelButton: true);
             }
         }
-
-        #endregion
 
 
         //------------------------------------------------------
