@@ -1,11 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics.Views;
 using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Windows;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
@@ -48,8 +43,8 @@ namespace Nebulae.RimWorld.UI.Automation.Diagnostics
         protected override void SetInitialSizeAndPosition()
         {
             windowRect = new Rect(
-                Verse.UI.screenWidth - InitialWidth, 
-                0f, 
+                Verse.UI.screenWidth - InitialWidth,
+                0f,
                 InitialWidth,
                 Verse.UI.screenHeight);
         }

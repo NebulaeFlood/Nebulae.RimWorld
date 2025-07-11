@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
-using static Mono.Security.X509.X520;
 
 namespace Nebulae.RimWorld.UI.Patches
 {

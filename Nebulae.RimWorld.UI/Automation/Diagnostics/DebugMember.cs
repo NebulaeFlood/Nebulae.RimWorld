@@ -1,11 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Core.Data.Bindings;
-using Nebulae.RimWorld.UI.Core.Data.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Nebulae.RimWorld.UI.Automation.Diagnostics
 {

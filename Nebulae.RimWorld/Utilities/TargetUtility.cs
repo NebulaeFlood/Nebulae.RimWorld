@@ -1,18 +1,10 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
-using Steamworks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 using Verse;
-using Verse.Noise;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Nebulae.RimWorld.Utilities
 {
@@ -224,19 +216,6 @@ namespace Nebulae.RimWorld.Utilities
                     showCancelButton: true);
             }
         }
-
-
-        //------------------------------------------------------
-        //
-        //  Private Static Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Static Fields
-
-
-
-        #endregion
 
 
         private readonly struct WorldTargetQuest

@@ -1,7 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
-using System;
 using System.Diagnostics;
 using UnityEngine;
 using Verse;
@@ -289,8 +288,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             var padding = (Thickness)GetValue(PaddingProperty);
 
             RenderRect = ArrangeOverride(
-                RenderSize.AlignToArea(availableRect - (margin + padding), 
-                    (HorizontalAlignment)GetValue(HorizontalAlignmentProperty), 
+                RenderSize.AlignToArea(availableRect - (margin + padding),
+                    (HorizontalAlignment)GetValue(HorizontalAlignmentProperty),
                     (VerticalAlignment)GetValue(VerticalAlignmentProperty))).Rounded();
             RegionRect = RenderRect + padding;
             return RegionRect + margin;
