@@ -15,7 +15,7 @@ namespace Nebulae.RimWorld.UI.Patches
     internal static class DebugTabMenu_Settings_Patch
     {
         [HarmonyPostfix]
-        internal static void InitActionsPostfix(DebugTabMenu_Settings __instance, ref DebugActionNode __result)
+        internal static void InitActionsPostfix(DebugTabMenu_Settings __instance)
         {
 			try
 			{
