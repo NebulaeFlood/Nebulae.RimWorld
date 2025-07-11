@@ -182,10 +182,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
                 metadata,
                 newEntry);
 
-            _effectiveValues[args.Property] = args.NewEntry;
-
-            args.Metadata.propertyChangedCallback?.Invoke(this, args);
-            OnPropertyChanged(args);
+            SetValueStraightly(args);
         }
 
         #endregion
