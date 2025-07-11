@@ -41,14 +41,7 @@ namespace Nebulae.RimWorld.UI.Patches
                 }
             }
 
-            if (patched)
-            {
-                StartUp.Lib.Succeed($"Succeeded to apply method transpiler to\n---> <color=cyan>{typeof(Dialog_Options)}.DoModOptions</color>");
-            }
-            else
-            {
-                StartUp.Lib.Error($"Failed to patch method to\n---> <color=cyan>{typeof(Dialog_Options)}.DoModOptions</color>");
-            }
+            StartUp.Lib.TranspileMessage(patched, typeof(Dialog_Options), "DoModOptions");
         }
 
         private static Window ReplaceModSettingWindow(Window window, Mod mod)

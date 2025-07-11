@@ -47,14 +47,7 @@ namespace Nebulae.RimWorld.UI.Patches
                 }
             }
 
-            if (patched)
-            {
-                StartUp.Lib.Succeed($"Succeeded to apply method transpiler to\n---> <color=cyan>{typeof(Page_ModsConfig)}.DoModInfo</color>");
-            }
-            else
-            {
-                StartUp.Lib.Error($"Failed to patch method to\n---> <color=cyan>{typeof(Page_ModsConfig)}.DoModInfo</color>");
-            }
+            StartUp.Lib.TranspileMessage(patched, typeof(Page_ModsConfig), "DoModInfo");
         }
 
         private static Action CreateDelegate(Mod mod)
