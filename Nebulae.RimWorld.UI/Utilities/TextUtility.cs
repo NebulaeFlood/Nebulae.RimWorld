@@ -87,7 +87,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             fontSize = CoerceFontSize(fontSize);
 
-            ContentCache.text = text.StripTags();
+            ContentCache.text = XmlRegex.Replace(TagRegex.Replace(text, string.Empty), string.Empty);
 
             var fontStyle = Text.fontStyles[(int)fontSize];
             fontStyle.wordWrap = true;
@@ -106,7 +106,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             fontSize = CoerceFontSize(fontSize);
 
-            ContentCache.text = text.StripTags();
+            ContentCache.text = XmlRegex.Replace(TagRegex.Replace(text, string.Empty), string.Empty);
 
             var fontStyle = Text.fontStyles[(int)fontSize];
             fontStyle.wordWrap = false;
@@ -125,7 +125,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             fontSize = CoerceFontSize(fontSize);
 
-            ContentCache.text = text.StripTags();
+            ContentCache.text = XmlRegex.Replace(TagRegex.Replace(text, string.Empty), string.Empty);
 
             var fontStyle = Text.fontStyles[(int)fontSize];
             fontStyle.wordWrap = false;
@@ -145,7 +145,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         {
             fontSize = CoerceFontSize(fontSize);
 
-            ContentCache.text = text.StripTags();
+            ContentCache.text = XmlRegex.Replace(TagRegex.Replace(text, string.Empty), string.Empty);
 
             var fontStyle = Text.fontStyles[(int)fontSize];
             fontStyle.wordWrap = true;
@@ -378,7 +378,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             var fontStyle = Text.fontStyles[(int)fontSize];
             fontStyle.wordWrap = false;
 
-            ContentCache.text = rawStr;
+            ContentCache.text = XmlRegex.Replace(TagRegex.Replace(rawStr, string.Empty), string.Empty);
 
             if (fontStyle.CalcSize(ContentCache).x <= availableLength)
             {
@@ -429,7 +429,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 }
 
                 int charLength = char.IsHighSurrogate(rawStr[index]) && index + 1 < length && char.IsLowSurrogate(rawStr[index + 1]) ? 2 : 1;
-                ContentCache.text = rawStr.Substring(0, index + charLength) + "...";
+                ContentCache.text = XmlRegex.Replace(TagRegex.Replace(rawStr.Substring(0, index + charLength), string.Empty), string.Empty) + "...";
 
                 if (fontStyle.CalcSize(ContentCache).x >= availableLength)
                 {
@@ -469,7 +469,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             var fontStyle = Text.fontStyles[(int)fontSize];
             fontStyle.wordWrap = true;
 
-            ContentCache.text = rawStr;
+            ContentCache.text = XmlRegex.Replace(TagRegex.Replace(rawStr, string.Empty), string.Empty);
 
             if (fontStyle.CalcHeight(ContentCache, availableSize.Width) <= availableSize.Height)
             {
@@ -520,7 +520,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 }
 
                 int charLength = char.IsHighSurrogate(rawStr[index]) && index + 1 < length && char.IsLowSurrogate(rawStr[index + 1]) ? 2 : 1;
-                ContentCache.text = rawStr.Substring(0, index + charLength) + "...";
+                ContentCache.text = XmlRegex.Replace(TagRegex.Replace(rawStr.Substring(0, index + charLength), string.Empty), string.Empty) + "...";
 
                 if (fontStyle.CalcHeight(ContentCache, availableSize.Width) >= availableSize.Height)
                 {
