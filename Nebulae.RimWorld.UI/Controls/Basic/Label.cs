@@ -163,14 +163,16 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             var width = text.CalculateLength(fontSize);
 
-            if (width > availableSize.Width && availableSize.Width > 26f)
+            // Usually means grid is calculating auto size
+            if (availableSize.Width is 0f)
+            {
+                _cache = text;
+            }
+            else
             {
                 width = availableSize.Width;
+                _cache = string.IsNullOrEmpty(text) ? string.Empty : text.Truncate(width, fontSize);
             }
-
-            _cache = string.IsNullOrEmpty(text)
-                ? string.Empty
-                : text.Truncate(width, fontSize);
 
             return new Size(width, fontSize.GetHeight());
         }
