@@ -552,7 +552,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         private static readonly GUIContent ContentCache = new GUIContent();
         private static readonly GUIStyle[] InputBoxStyles = new GUIStyle[12];
 
-        private static readonly Regex XmlRegex = new Regex("<[^>]*>");
+        private static readonly Regex XmlRegex = new Regex(@"<[^>]*?[^\s>][^>]*>");
         private static readonly Regex TagRegex = new Regex(@"\([\*\/][^\)]*\)");
         private static readonly Regex TagNameRegex = new Regex(@"<([\w]+)");
 
