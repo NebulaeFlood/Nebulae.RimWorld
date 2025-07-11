@@ -57,6 +57,11 @@ namespace Nebulae.RimWorld.UI
 
         internal static void FinishQuests()
         {
+            if (_startUpQuests is null)
+            {
+                return;
+            }
+
             _startUpQuests.Add(new Task(LoadDefaultConverters));
 
             var mre = new ManualResetEvent(false);
