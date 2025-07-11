@@ -1,4 +1,5 @@
-﻿using Nebulae.RimWorld.UI.Automation.Attributes;
+﻿using Mono.Security.Cryptography;
+using Nebulae.RimWorld.UI.Automation.Attributes;
 using Nebulae.RimWorld.UI.Core.Data.Utilities;
 using System;
 using System.Reflection;
@@ -35,6 +36,7 @@ namespace Nebulae.RimWorld.UI.Automation
 
             if (info.Prompted)
             {
+                KeyBuilder.Clear();
                 Tooltip = KeyBuilder.Append(translationKeyPrefix).Append('.').Append(key).Append(".Tooltip").ToString().Translate().Resolve();
             }
             else
