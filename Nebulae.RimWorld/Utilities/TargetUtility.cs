@@ -318,11 +318,16 @@ namespace Nebulae.RimWorld.Utilities
 
                 if (isValid)
                 {
-                    GenUI.DrawMouseAttachment(Icon, message);
+                    GenUI.DrawMouseAttachment(Icon);
                 }
                 else
                 {
                     GenUI.DrawMouseAttachment(TexCommand.CannotShoot);
+                }
+
+                if (!message.NullOrEmpty())
+                {
+                    Widgets.MouseAttachedLabel(message);
                 }
 
                 Drawer?.Invoke(target);
