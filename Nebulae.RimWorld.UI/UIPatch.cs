@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using System;
+using System.Reflection;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
@@ -37,7 +38,7 @@ namespace Nebulae.RimWorld.UI
 
         internal static void PatchAll()
         {
-            HarmonyInstance.PatchAll();
+            HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
             HarmonyInstance.Patch(AccessTools.Method(typeof(Root), nameof(Root.OnGUI)),
                 postfix: new HarmonyMethod(AccessTools.Method(typeof(Dispatcher), nameof(Dispatcher.Update))));
         }
