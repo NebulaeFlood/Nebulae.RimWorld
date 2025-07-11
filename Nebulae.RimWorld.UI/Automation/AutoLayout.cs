@@ -203,7 +203,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 entryName,
                 mode);
 
-            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(Grid.Auto, Grid.Remain, 80f).DefineRows(StandardRowHeight)
+            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(Grid.Auto, Grid.Remain, 100f).DefineRows(StandardRowHeight)
                 .Set(entryLabel, slider, numberBox);
         }
 
@@ -279,7 +279,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 mode,
                 converter);
 
-            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(Grid.Auto, Grid.Remain, 80f).DefineRows(StandardRowHeight)
+            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(Grid.Auto, Grid.Remain, 100f).DefineRows(StandardRowHeight)
                 .Set(entryLabel, slider, numberBox);
         }
         #endregion
