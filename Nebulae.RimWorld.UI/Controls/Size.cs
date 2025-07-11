@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls
@@ -6,12 +7,18 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 用于指定宽度和高度
     /// </summary>
-    public struct Size : IEquatable<Size>
+    [DebuggerStepThrough]
+    public readonly struct Size : IEquatable<Size>
     {
         /// <summary>
         /// <see cref="Width"/> 和 <see cref="Height"/> 为 0 的 <see cref="Size"/>
         /// </summary>
         public static readonly Size Empty = new Size(0f);
+
+        /// <summary>
+        /// 表示大于零的最小正 <see cref="Size"/>
+        /// </summary>
+        public static readonly Size Epsilon = new Size(1f);
 
 
         //------------------------------------------------------
@@ -31,6 +38,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 获取此 <see cref="Size"/> 结构的水平长度
         /// </summary>
         public readonly float Width;
+
+        /// <summary>
+        /// 获取一个值，表示此 <see cref="Size"/> 的尺寸是否为空
+        /// </summary>
+        public readonly bool IsEmpty;
 
         #endregion
 
@@ -52,6 +64,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Width = width;
             Height = height;
+            IsEmpty = Width < 1f || Height < 1f;
         }
 
         /// <summary>
@@ -62,6 +75,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Width = size;
             Height = size;
+            IsEmpty = Width < 1f || Height < 1f;
         }
 
         /// <summary>
@@ -71,6 +85,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Width = rect.width;
             Height = rect.height;
+            IsEmpty = Width < 1f || Height < 1f;
         }
 
         /// <summary>
@@ -80,6 +95,7 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             Width = vector.x;
             Height = vector.y;
+            IsEmpty = Width < 1f || Height < 1f;
         }
 
         #endregion
@@ -145,6 +161,55 @@ namespace Nebulae.RimWorld.UI.Controls
         public override int GetHashCode()
         {
             return Width.GetHashCode() ^ Height.GetHashCode();
+        }
+
+        /// <summary>
+        /// 规范化此 <see cref="Size"/>
+        /// </summary>
+        /// <returns>规范后的该 <see cref="Size"/>。</returns>
+        public Size Normalize()
+        {
+            return new Size(
+                Width > 0f ? Width : 0f,
+                Height > 0f ? Height : 0f);
+        }
+
+        /// <summary>
+        /// 解析此 <see cref="Size"/> 最终的实际尺寸
+        /// </summary>
+        /// <param name="availableSize">可用的尺寸</param>
+        /// <returns>规范后的该 <see cref="Size"/>。</returns>
+        public Size Resolve(Size availableSize)
+        {
+            float width, height;
+
+            if (Width < 0f)
+            {
+                width = 0f;
+            }
+            else if (Width > 1f)
+            {
+                width = Width;
+            }
+            else
+            {
+                width = Width * availableSize.Width;
+            }
+
+            if (Height < 0f)
+            {
+                height = 0f;
+            }
+            else if (Height > 1f)
+            {
+                height = Height;
+            }
+            else
+            {
+                height = Height * availableSize.Height;
+            }
+
+            return new Size(width, height);
         }
 
         /// <summary>
@@ -306,8 +371,8 @@ namespace Nebulae.RimWorld.UI.Controls
         /// </summary>
         /// <param name="left">第一个 <see cref="Size"/> 对象</param>
         /// <param name="right">第二个 <see cref="Size"/> 对象</param>
-        /// <returns>如果 <paramref name="left"/> 的宽度和高度均小于 <paramref name="right"/>，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public static bool operator <(Size left, Size right) => left.Width < right.Width && left.Height < right.Height;
+        /// <returns>如果 <paramref name="left"/> 的宽度或高度小于 <paramref name="right"/>，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public static bool operator <(Size left, Size right) => left.Width < right.Width || left.Height < right.Height;
 
         /// <summary>
         /// 将两个 <see cref="Size"/> 对象相加，返回新 <see cref="Size"/> 对象

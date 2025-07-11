@@ -1,6 +1,8 @@
-﻿using Nebulae.RimWorld.UI.Utilities;
+﻿using HarmonyLib;
+using LudeonTK;
+using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Utilities;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
@@ -13,34 +15,6 @@ namespace Nebulae.RimWorld.UI.Controls
     {
         //------------------------------------------------------
         //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private bool _isDirty = true;
-        private bool _isEmpty = true;
-
-        private bool _isArrangeValid = false;
-        private readonly SortedSet<Control> _arrangeQueue = new SortedSet<Control>(ControlComparer.Instance);
-
-        private bool _isMeasureValid = false;
-        private readonly SortedSet<Control> _measureQueue = new SortedSet<Control>(ControlComparer.Instance);
-
-        private bool _isSegmentValid = false;
-        private readonly SortedSet<Control> _segmentQueue = new SortedSet<Control>(ControlComparer.Instance);
-
-        private readonly Window _owner;
-        private Control _root;
-
-        private DebugContent _debugContent = DebugContent.Buttons;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
         //  Public Properties
         //
         //------------------------------------------------------
@@ -48,116 +22,30 @@ namespace Nebulae.RimWorld.UI.Controls
         #region Public Properties
 
         /// <summary>
-        /// 要绘制的调试内容
+        /// 获取或设置一个值，该值指示 <see cref="LayoutManager"/> 是否绘制调试用按钮
         /// </summary>
-        public DebugContent DebugContent
+        public bool DrawDebugButtons
         {
-            get => _debugContent;
-            set => _debugContent = value;
+            get => _drawDebugButtons;
+            set => _drawDebugButtons = value;
         }
 
         /// <summary>
-        /// 是否绘制调试用按钮
+        /// 获取或设置一个值，该值指示 <see cref="LayoutManager"/> 中的控件是否参与布局命中测试
         /// </summary>
-        public bool DebugDrawButtons
+        public bool IsHitTestVisible
         {
-            get => _debugContent.HasFlag(DebugContent.Buttons);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.Buttons;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.Buttons;
-                }
-            }
+            get => _isHitTestVisible;
+            set => _isHitTestVisible = value;
         }
 
         /// <summary>
-        /// 是否绘制控件可见区域
-        /// </summary>
-        public bool DebugDrawContentRect
-        {
-            get => _debugContent.HasFlag(DebugContent.ContentRect);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.ContentRect;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.ContentRect;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否绘制控件布局区域
-        /// </summary>
-        public bool DebugDrawDesiredRect
-        {
-            get => _debugContent.HasFlag(DebugContent.DesiredRect);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.DesiredRect;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.DesiredRect;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否绘制可交互区域
-        /// </summary>
-        public bool DebugDrawHitTestRect
-        {
-            get => _debugContent.HasFlag(DebugContent.ControlRect);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.ControlRect;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.ControlRect;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否绘制控件绘制区域
-        /// </summary>
-        public bool DebugDrawRenderRect
-        {
-            get => _debugContent.HasFlag(DebugContent.RenderRect);
-            set
-            {
-                if (value)
-                {
-                    _debugContent |= DebugContent.RenderRect;
-                }
-                else
-                {
-                    _debugContent &= ~DebugContent.RenderRect;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 拥有该控件管理器的窗口
+        /// 获取拥有该 <see cref="LayoutManager"/> 的窗口
         /// </summary>
         public Window Owner => _owner;
 
         /// <summary>
-        /// 获取或设置根控件
+        /// 获取或设置 <see cref="LayoutManager"/> 的根控件
         /// </summary>
         public Control Root
         {
@@ -168,34 +56,17 @@ namespace Nebulae.RimWorld.UI.Controls
                 {
                     if (!_isEmpty)
                     {
-                        _root.SetParent(null);
+                        _root.Parent = null;
                     }
 
-                    _isDirty = true;
                     _isEmpty = value is null;
                     _root = value;
 
-                    if (_isEmpty)
-                    {
-                        return;
-                    }
+                    InvalidateLayout();
 
-                    _root.IsChild = false;
-                    _root.LayoutManager = this;
-                    _root.Parent = null;
-                    _root.Rank = 0;
-
-                    foreach (var child in _root.LogicalChildren)
+                    if (!_isEmpty)
                     {
-                        try
-                        {
-                            child.LayoutManager = this;
-                            child.Rank = child.Parent.Rank + 1;
-                        }
-                        catch (Exception e)
-                        {
-                            throw new LogicalTreeException(child, "A error occured when setting the root of a layout tree, please check that the parent-child relationship between controls has been set correctly.", e);
-                        }
+                        _root.LayoutManager = this;
                     }
                 }
             }
@@ -204,18 +75,36 @@ namespace Nebulae.RimWorld.UI.Controls
         #endregion
 
 
+        //------------------------------------------------------
+        //
+        //  Constructors
+        //
+        //------------------------------------------------------
+
+        #region Constructors
+
         /// <summary>
         /// 初始化 <see cref="LayoutManager"/> 的新实例
         /// </summary>
+        public LayoutManager()
+        {
+            _isIndependent = true;
+            UIPatch.ScaleChanged += OnScaleChanged;
+        }
+
+        /// <summary>
+        /// 初始化 <see cref="LayoutManager"/> 的新实例
+        /// </summary>
+        /// <param name="owner">拥有管理器的窗口</param>
         public LayoutManager(Window owner)
         {
-            if (owner is null)
-            {
-                throw new ArgumentNullException(nameof(owner));
-            }
+            _owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            _isIndependent = false;
 
-            _owner = owner;
+            UIPatch.ScaleChanged += OnScaleChanged;
         }
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -229,89 +118,77 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <summary>
         /// 绘制控件
         /// </summary>
-        /// <param name="clientRect">窗口的客户区</param>
-        public void Draw(Rect clientRect)
+        /// <param name="layoutInfo">允许绘制的区域</param>
+        public void Draw(LayoutInfo layoutInfo)
         {
             if (_isEmpty)
             {
                 return;
             }
 
-            if (_isDirty)
+            if (InputUtility.isHitTesting)
             {
-                _root.Measure(clientRect);
-                _root.Arrange(clientRect);
-                _root.Segment(clientRect);
-
-                _isDirty = false;
-
-                _isArrangeValid = true;
-                _isMeasureValid = true;
-                _isSegmentValid = true;
-
-                _arrangeQueue.Clear();
-                _measureQueue.Clear();
-                _segmentQueue.Clear();
-
-                _root.Draw();
-                return;
-            }
-
-            if (!_isMeasureValid)
-            {
-                foreach (var control in _measureQueue)
+                if (_isMeasureDirty || _layoutInfo.IsMeasureDirty(layoutInfo))
                 {
-                    // Means that the control is a scroll viewer.
-                    if (control.IsChild)
+                    Rect availableRect = layoutInfo;
+
+                    _root.Measure(layoutInfo);
+                    _root.Arrange(availableRect);
+                    _root.Segment(availableRect);
+
+                    _isArrangeDirty = false;
+                    _isMeasureDirty = false;
+                    _isSegmentDirty = false;
+
+                    _layoutInfo = layoutInfo;
+                }
+                else if (_isArrangeDirty || _layoutInfo.IsArrangeDirty(layoutInfo))
+                {
+                    Rect availableRect = layoutInfo;
+
+                    _root.Arrange(availableRect);
+                    _root.Segment(availableRect);
+
+                    _isArrangeDirty = false;
+                    _isSegmentDirty = false;
+
+                    _layoutInfo = layoutInfo;
+                }
+                else if (_isSegmentDirty)
+                {
+                    _root.Segment(layoutInfo);
+
+                    _isSegmentDirty = false;
+                }
+                else
+                {
+                    if (!_measureQueue.IsEmpty)
                     {
-                        control.Measure(control.DesiredSize);
+                        _measureQueue.Measure();
                     }
-                    else
+
+                    if (!_arrangeQueue.IsEmpty)
                     {
-                        control.Measure(clientRect);
+                        _arrangeQueue.Arrange();
+                    }
+
+                    if (!_segmentQueue.IsEmpty)
+                    {
+                        _segmentQueue.Segment();
                     }
                 }
 
-                _measureQueue.Clear();
-                _isMeasureValid = true;
-            }
-
-            if (!_isArrangeValid)
-            {
-                foreach (var control in _arrangeQueue)
+                if (_isHitTestVisible)
                 {
-                    // Means that the control is a scroll viewer.
-                    if (control.IsChild)
+                    if (ReferenceEquals(_owner, InputUtility.hoveredWindow))
                     {
-                        control.Arrange(control.DesiredRect);
+                        HitTestUtility.InputHitTest(_root);
                     }
-                    else
+                    else if (_isIndependent)
                     {
-                        control.Arrange(clientRect);
+                        HitTestUtility.InputHitTestIndependently(_root);
                     }
                 }
-
-                _arrangeQueue.Clear();
-                _isArrangeValid = true;
-            }
-
-            if (!_isSegmentValid)
-            {
-                foreach (var control in _segmentQueue)
-                {
-                    // Means that the control is a scroll viewer.
-                    if (control.IsChild)
-                    {
-                        control.Segment(control.ContentRect);
-                    }
-                    else
-                    {
-                        control.Segment(clientRect);
-                    }
-                }
-
-                _segmentQueue.Clear();
-                _isSegmentValid = true;
             }
 
             _root.Draw();
@@ -323,7 +200,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="nonClientRect">窗口的非客户区</param>
         public void DrawWindowDebugButtons(Rect nonClientRect)
         {
-            if (Widgets.ButtonText(new Rect(
+            if (DevGUI.ButtonText(new Rect(
                 nonClientRect.x,
                 nonClientRect.y,
                 150f,
@@ -332,14 +209,14 @@ namespace Nebulae.RimWorld.UI.Controls
                 InvalidateLayout();
             }
 
-            if (Widgets.ButtonText(new Rect(
+            if (DevGUI.ButtonText(new Rect(
                 nonClientRect.x + 154f,
                 nonClientRect.y,
                 130f,
-                24f), "Debug: ShowInfo")
+                24f), "Debug: ShowTree")
                 && !_isEmpty)
             {
-                _root.ShowInfo();
+                _root.Debug();
             }
         }
 
@@ -349,59 +226,32 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="control">排布被无效化的控件</param>
         public void InvalidateArrange(Control control)
         {
-            if (_isDirty || _isEmpty)
+            if (_isArrangeDirty || _isEmpty)
             {
                 return;
             }
 
-            if (!control.IsChild)
-            {
-                _arrangeQueue.Clear();
-                _segmentQueue.Clear();
+            var parent = control.Parent;
 
-                _arrangeQueue.Add(control);
-                _segmentQueue.Add(control);
-
-                _isArrangeValid = false;
-                _isSegmentValid = false;
-            }
-            else if (control.Parent is ScrollViewer viewer)
+            while (parent != null)
             {
-                if (!IsInfected(viewer, _arrangeQueue))
+                if (parent.IsSolid)
                 {
-                    if (_arrangeQueue.Count > 0)
-                    {
-                        _arrangeQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
-                    }
+                    _arrangeQueue.Enqueue(parent);
+                    _segmentQueue.Enqueue(parent);
 
-                    _arrangeQueue.Add(viewer);
+                    return;
                 }
 
-                if (!IsInfected(viewer, _segmentQueue))
-                {
-                    if (_segmentQueue.Count > 0)
-                    {
-                        _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
-                    }
-
-                    _segmentQueue.Add(viewer);
-                }
-
-                _isArrangeValid = false;
-                _isSegmentValid = false;
+                control = parent;
+                parent = control.Parent;
             }
-            else
-            {
-                InvalidateArrange(control.Parent);
-            }
-        }
 
-        /// <summary>
-        /// 无效化控件布局
-        /// </summary>
-        public void InvalidateLayout()
-        {
-            _isDirty = true;
+            _arrangeQueue.Clear();
+            _segmentQueue.Clear();
+
+            _isArrangeDirty = true;
+            _isSegmentDirty = true;
         }
 
         /// <summary>
@@ -410,55 +260,35 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="control">度量被无效化的控件</param>
         public void InvalidateMeasure(Control control)
         {
-            if (_isDirty || _isEmpty)
+            if (_isMeasureDirty || _isEmpty)
             {
                 return;
             }
 
-            if (!control.IsChild)
-            {
-                _isDirty = true;
-            }
-            else if (control.Parent is ScrollViewer viewer)
-            {
-                if (!IsInfected(viewer, _measureQueue))
-                {
-                    if (_measureQueue.Count > 0)
-                    {
-                        _measureQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
-                    }
+            var parent = control.Parent;
 
-                    _measureQueue.Add(viewer);
+            while (parent != null)
+            {
+                if (parent.IsSolid)
+                {
+                    _arrangeQueue.Enqueue(parent);
+                    _measureQueue.Enqueue(parent);
+                    _segmentQueue.Enqueue(parent);
+
+                    return;
                 }
 
-                if (!IsInfected(viewer, _arrangeQueue))
-                {
-                    if (_arrangeQueue.Count > 0)
-                    {
-                        _arrangeQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
-                    }
-
-                    _arrangeQueue.Add(viewer);
-                }
-
-                if (!IsInfected(viewer, _segmentQueue))
-                {
-                    if (_segmentQueue.Count > 0)
-                    {
-                        _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
-                    }
-
-                    _segmentQueue.Add(viewer);
-                }
-
-                _isArrangeValid = false;
-                _isMeasureValid = false;
-                _isSegmentValid = false;
+                control = parent;
+                parent = control.Parent;
             }
-            else
-            {
-                InvalidateMeasure(control.Parent);
-            }
+
+            _arrangeQueue.Clear();
+            _measureQueue.Clear();
+            _segmentQueue.Clear();
+
+            _isArrangeDirty = true;
+            _isMeasureDirty = true;
+            _isSegmentDirty = true;
         }
 
         /// <summary>
@@ -467,38 +297,43 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="control">分割被无效化的控件</param>
         public void InvalidateSegment(Control control)
         {
-            if (_isDirty || _isEmpty)
+            if (_isSegmentDirty || _isEmpty)
             {
                 return;
             }
 
-            _isSegmentValid = false;
+            var parent = control.Parent;
 
-            if (!control.IsChild)
+            while (parent != null)
             {
-                _segmentQueue.Clear();
-                _segmentQueue.Add(control);
-
-                _isSegmentValid = false;
-            }
-            else if (control.Parent is ScrollViewer viewer)
-            {
-                if (!IsInfected(viewer, _segmentQueue))
+                if (parent.IsSolid)
                 {
-                    if (_segmentQueue.Count > 0)
-                    {
-                        _segmentQueue.RemoveWhere(x => CanInfectLayout(viewer, x));
-                    }
+                    _segmentQueue.Enqueue(parent);
 
-                    _segmentQueue.Add(viewer);
+                    return;
                 }
 
-                _isSegmentValid = false;
+                control = parent;
+                parent = control.Parent;
             }
-            else
-            {
-                InvalidateSegment(control.Parent);
-            }
+
+            _segmentQueue.Clear();
+
+            _isSegmentDirty = true;
+        }
+
+        /// <summary>
+        /// 无效化控件布局
+        /// </summary>
+        public void InvalidateLayout()
+        {
+            _isArrangeDirty = true;
+            _isMeasureDirty = true;
+            _isSegmentDirty = true;
+
+            _arrangeQueue.Clear();
+            _measureQueue.Clear();
+            _segmentQueue.Clear();
         }
 
         /// <summary>
@@ -508,17 +343,17 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>控件排布是否有效。</returns>
         public bool IsArrangeValid(Control control)
         {
-            if (_isDirty || _isEmpty)
+            if (_isArrangeDirty || _isEmpty)
             {
                 return false;
             }
 
-            if (_isArrangeValid)
+            if (_arrangeQueue.IsEmpty)
             {
                 return true;
             }
 
-            return !IsInfected(control, _arrangeQueue);
+            return !_arrangeQueue.Exist(control);
         }
 
         /// <summary>
@@ -528,17 +363,17 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>控件度量是否有效。</returns>
         public bool IsMeasureValid(Control control)
         {
-            if (_isDirty || _isEmpty)
+            if (_isMeasureDirty || _isEmpty)
             {
                 return false;
             }
 
-            if (_isMeasureValid)
+            if (_measureQueue.IsEmpty)
             {
                 return true;
             }
 
-            return !IsInfected(control, _measureQueue);
+            return !_measureQueue.Exist(control);
         }
 
         /// <summary>
@@ -548,87 +383,62 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>控件分割是否有效。</returns>
         public bool IsSegmentValid(Control control)
         {
-            if (_isDirty || _isEmpty)
+            if (_isSegmentDirty || _isEmpty)
             {
                 return false;
             }
 
-            if (_isSegmentValid)
+            if (_segmentQueue.IsEmpty)
             {
                 return true;
             }
 
-            return !IsInfected(control, _segmentQueue);
+            return !_segmentQueue.Exist(control);
         }
 
         #endregion
 
 
-        private static bool CanInfectLayout(Control instigator, Control target)
+        private void OnScaleChanged(Harmony sender, ScaleChangedEventArgs args)
         {
-            if (target.IsChild)
-            {
-                Control parent = target.Parent;
+            _isArrangeDirty = true;
+            _isMeasureDirty = true;
+            _isSegmentDirty = true;
 
-                if (ReferenceEquals(instigator, parent))
-                {
-                    return true;
-                }
-                else if (parent is ScrollViewer)
-                {
-                    return false;
-                }
-                else
-                {
-                    return CanInfectLayout(instigator, parent);
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private static bool IsInfected(Control control, SortedSet<Control> layoutQueue)
-        {
-            foreach (var item in layoutQueue)
-            {
-                if (item.Rank > control.Rank)
-                {
-                    return false;
-                }
-
-                if (ReferenceEquals(item, control)
-                    || CanInfectLayout(item, control))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            _arrangeQueue.Clear();
+            _measureQueue.Clear();
+            _segmentQueue.Clear();
         }
 
 
-        private class ControlComparer : IComparer<Control>
-        {
-            public static readonly ControlComparer Instance = new ControlComparer();
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
 
+        #region Private Fields
 
-            public int Compare(Control x, Control y)
-            {
-                if (x.Rank < y.Rank)
-                {
-                    return -1;
-                }
-                else if (ReferenceEquals(x, y))
-                {
-                    return 0;
-                }
-                else
-                {
-                    return 1;
-                }
-            }
-        }
+        private bool _isEmpty = true;
+        private bool _isHitTestVisible = true;
+
+        private bool _isArrangeDirty = true;
+        private readonly LayoutQueue _arrangeQueue = new LayoutQueue();
+
+        private bool _isMeasureDirty = true;
+        private readonly LayoutQueue _measureQueue = new LayoutQueue();
+
+        private bool _isSegmentDirty = true;
+        private readonly LayoutQueue _segmentQueue = new LayoutQueue();
+
+        private readonly bool _isIndependent;
+        private readonly Window _owner;
+        private Control _root;
+
+        private LayoutInfo _layoutInfo;
+
+        private bool _drawDebugButtons = true;
+
+        #endregion
     }
 }

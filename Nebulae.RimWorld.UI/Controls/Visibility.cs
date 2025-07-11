@@ -1,4 +1,4 @@
-﻿namespace Nebulae.RimWorld.UI
+﻿namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
     /// 指示控件的显示状态

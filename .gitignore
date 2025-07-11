@@ -5,6 +5,7 @@
 
 # Output Dir
 /build
+*.ffs_db
 
 # User-specific files
 *.rsuser

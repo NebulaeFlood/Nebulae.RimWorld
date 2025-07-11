@@ -1,4 +1,7 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Core.Data;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
@@ -18,7 +21,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         #region ItemHeight
         /// <summary>
-        /// 获取或设置分配给子控件的高度
+        /// 获取或设置 <see cref="WrapPanel"/> 分配给子控件的高度
         /// </summary>
         public float ItemHeight
         {
@@ -27,7 +30,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 标识 <see cref="ItemHeight"/> 依赖属性。
+        /// 标识 <see cref="ItemHeight"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty ItemHeightProperty =
             DependencyProperty.Register(nameof(ItemHeight), typeof(float), typeof(WrapPanel),
@@ -36,7 +39,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         #region ItemWidth
         /// <summary>
-        /// 获取或设置分配给子控件的宽度
+        /// 获取或设置 <see cref="WrapPanel"/> 分配给子控件的宽度
         /// </summary>
         public float ItemWidth
         {
@@ -45,7 +48,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 标识 <see cref="ItemWidth"/> 依赖属性。
+        /// 标识 <see cref="ItemWidth"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty ItemWidthProperty =
             DependencyProperty.Register(nameof(ItemWidth), typeof(float), typeof(WrapPanel),
@@ -54,7 +57,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
         #region Orientation
         /// <summary>
-        /// 获取或设置子控件的排列方向
+        /// 获取或设置 <see cref="WrapPanel"/> 排列子控件的方向
         /// </summary>
         public Orientation Orientation
         {
@@ -63,7 +66,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 标识 <see cref="Orientation"/> 依赖属性。
+        /// 标识 <see cref="Orientation"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty OrientationProperty =
             DependencyProperty.Register(nameof(Orientation), typeof(Orientation), typeof(WrapPanel),
@@ -76,9 +79,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// 初始化 <see cref="WrapPanel"/> 的新实例
         /// </summary>
-        public WrapPanel()
-        {
-        }
+        public WrapPanel() { }
 
         //------------------------------------------------------
         //
@@ -96,6 +97,17 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         public WrapPanel Append(Control control)
         {
             Children.Add(control);
+            return this;
+        }
+
+        /// <summary>
+        /// 清除面板并重新设置面板中的控件
+        /// </summary>
+        /// <param name="controls">要添加的控件</param>
+        /// <returns>该面板控件</returns>
+        public WrapPanel Set(IEnumerable<Control> controls)
+        {
+            Children.OverrideCollection(controls);
             return this;
         }
 
@@ -151,165 +163,143 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect ArrangeOverride(Rect availableRect)
+        protected override Rect ArrangeOverride(Rect availableRect, Control[] children)
         {
-            Size childrenSize = RenderSize;
-
-            float childMaxHeight = ItemHeight;
-            float childMaxWidth = ItemWidth;
-
-            float currentX = 0f;
-            float currentY = 0f;
-
-            var children = FilteredChildren;
-
-            Size childAvailableSize;
+            float currentX = availableRect.x;
+            float currentY = availableRect.y;
 
             if (Orientation is Orientation.Horizontal)
             {
-                childAvailableSize = new Size(
-                    childMaxWidth > 1f
-                        ? Mathf.Min(childMaxWidth, availableRect.width)
-                        : childMaxWidth * availableRect.width,
-                    childMaxHeight > 1f
-                        ? childMaxHeight
-                        : childMaxHeight * availableRect.width);
+                int columnIndex = 0;
 
                 for (int i = 0; i < children.Length; i++)
                 {
                     var child = children[i];
-                    if (child.RenderSize > Size.Empty)
+
+                ArrangeStart:
+                    if (columnIndex < _columnCount)
                     {
+                        child.Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
+                        columnIndex++;
+                        currentX += _childWidth;
+                    }
+                    else
+                    {
+                        currentX = availableRect.x;
+                        currentY += _childHeight;   // 换行
+                        columnIndex = 0;
 
-                    ArrangeStart:
-                        if (currentX + childAvailableSize.Width > childrenSize.Width)
-                        {
-                            currentX = 0f;
-                            currentY += childAvailableSize.Height;   // 换行
-
-                            goto ArrangeStart;  // 重新排列该控件
-                        }
-                        else
-                        {
-                            child.Arrange(new Rect(
-                                currentX + availableRect.x,
-                                currentY + availableRect.y,
-                                childAvailableSize.Width,
-                                childAvailableSize.Height));
-
-                            currentX += childAvailableSize.Width;
-                        }
+                        goto ArrangeStart;  // 重新排列该控件
                     }
                 }
             }
             else
             {
-                childAvailableSize = new Size(
-                    childMaxWidth > 1f
-                        ? childMaxWidth
-                        : childMaxWidth * availableRect.width,
-                    childMaxHeight > 1f
-                        ? Mathf.Min(childMaxHeight, availableRect.height)
-                        : childMaxHeight * availableRect.height);
+                int rowIndex = 0;
 
                 for (int i = 0; i < children.Length; i++)
                 {
                     var child = children[i];
-                    if (child.RenderSize > Size.Empty)
+
+                ArrangeStart:
+                    if (rowIndex < _rowCount)
                     {
+                        child.Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
+                        currentY += _childHeight;
+                        rowIndex++;
+                    }
+                    else
+                    {
+                        currentY = availableRect.y;
+                        currentX += _childWidth;    // 换列
+                        rowIndex = 0;
 
-                    ArrangeStart:
-                        if (currentY + childAvailableSize.Height > childrenSize.Height)
-                        {
-                            currentY = 0f;
-                            currentX += childAvailableSize.Width; // 换列
-
-                            goto ArrangeStart;  // 重新排列该控件
-                        }
-                        else
-                        {
-                            child.Arrange(new Rect(
-                                currentX + availableRect.x,
-                                currentY + availableRect.y,
-                                childAvailableSize.Width,
-                                childAvailableSize.Height));
-
-                            currentY += childAvailableSize.Height;
-                        }
+                        goto ArrangeStart;  // 重新排列该控件
                     }
                 }
             }
 
-            return new Rect(
-                availableRect.x,
-                availableRect.y,
-                childrenSize.Width,
-                childrenSize.Height);
+            return new Rect(availableRect.x, availableRect.y, RenderSize.Width, RenderSize.Height);
         }
 
         /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize, Control[] children)
         {
-            Control[] filteredChildren = FilteredChildren;
+            _childWidth = (float)GetValue(ItemWidthProperty);
+            _childHeight = (float)GetValue(ItemHeightProperty);
 
-            float childMaxHeight = ItemHeight;
-            float childMaxWidth = ItemWidth;
+            if (_childWidth <= 0 || _childHeight <= 0)
+            {
+                return Size.Empty;
+            }
 
-            int childrenColumnCount;
-            int childrenRowCount;
+            int count = children.Length;
 
             if (Orientation is Orientation.Horizontal)
             {
-                childMaxWidth = childMaxWidth > 1f
-                        ? Mathf.Min(childMaxWidth, availableSize.Width)
-                        : childMaxWidth * availableSize.Width;
-
                 // 限制子控件最大宽度不超过面板宽度
-                childMaxHeight = childMaxHeight > 1f
-                        ? childMaxHeight
-                        : childMaxHeight * availableSize.Height;
+                _childWidth = _childWidth > 1f
+                    ? Mathf.Min(_childWidth, availableSize.Width)
+                    : _childWidth * availableSize.Width;
 
-                childrenColumnCount = (int)(availableSize.Width / childMaxWidth);
-                childrenRowCount = filteredChildren.Length / childrenColumnCount;
+                _childHeight = _childHeight > 1f
+                        ? _childHeight
+                        : _childHeight * availableSize.Height;
 
-                if (filteredChildren.Length % childrenColumnCount > 0)
+                _columnCount = Mathf.FloorToInt(availableSize.Width / _childWidth);
+                _rowCount = count / _columnCount;
+
+                if (count % _columnCount > 0)
                 {
-                    childrenRowCount++;
+                    _rowCount++;
                 }
             }
             else
             {
-                childMaxWidth = childMaxWidth > 1f
-                    ? childMaxWidth
-                    : childMaxWidth * availableSize.Width;
+                _childWidth = _childWidth > 1f
+                    ? _childWidth
+                    : _childWidth * availableSize.Width;
 
                 // 限制子控件最大高度不超过面板高度
-                childMaxHeight = childMaxHeight > 1f
-                    ? Mathf.Min(childMaxHeight, availableSize.Height)
-                    : childMaxHeight * availableSize.Height;
+                _childHeight = _childHeight > 1f
+                    ? Mathf.Min(_childHeight, availableSize.Height)
+                    : _childHeight * availableSize.Height;
 
-                childrenRowCount = (int)(availableSize.Height / childMaxHeight);
-                childrenColumnCount = filteredChildren.Length / childrenRowCount;
+                _rowCount = Mathf.FloorToInt(availableSize.Height / _childHeight);
+                _columnCount = count / _rowCount;
 
-                if (filteredChildren.Length % childrenRowCount > 0)
+                if (count % _rowCount > 0)
                 {
-                    childrenColumnCount++;
+                    _columnCount++;
                 }
             }
 
-            Size childMaxSize = new Size(childMaxWidth, childMaxHeight);
-
-            var children = FilteredChildren;
+            var childSize = new Size(_childWidth, _childHeight);
 
             for (int i = 0; i < children.Length; i++)
             {
-                children[i].Measure(childMaxSize);
+                children[i].Measure(childSize);
             }
 
-            return new Size(
-                childMaxWidth * childrenColumnCount,
-                childMaxHeight * childrenRowCount);
+            return new Size(_childWidth * _columnCount, _childHeight * _rowCount);
         }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Fields
+
+        private float _childWidth;
+        private float _childHeight;
+
+        private int _columnCount;
+        private int _rowCount;
 
         #endregion
     }

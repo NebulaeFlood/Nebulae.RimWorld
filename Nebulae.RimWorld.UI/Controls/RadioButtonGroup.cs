@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Nebulae.RimWorld.UI.Controls
@@ -74,13 +75,14 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="button">要添加到组的按钮</param>
         public void Add(RadioButton button)
         {
-            if (button.Status is ToggleStatus.Checked)
+            if (button.State is ToggleState.On)
             {
                 foreach (var btn in _buttons)
                 {
-                    btn.Status = ToggleStatus.Unchecked;
+                    btn.State = ToggleState.Off;
                 }
             }
+
             _buttons.Add(button);
         }
 
@@ -118,24 +120,46 @@ namespace Nebulae.RimWorld.UI.Controls
         {
             if (_buttons.Remove(button))
             {
-                if (button.Status is ToggleStatus.Checked)
+                if (button.State is ToggleState.On)
                 {
                     foreach (var btn in _buttons)
                     {
-                        btn.Status = ToggleStatus.Indeterminate;
+                        btn.State = ToggleState.Indeterminate;
                     }
                 }
+
                 return true;
             }
+
             return false;
+        }
+
+        /// <summary>
+        /// 选中组中的指定按钮
+        /// </summary>
+        /// <param name="button">要选中的按钮</param>
+        public void Select(RadioButton button)
+        {
+            if (!_buttons.Contains(button))
+            {
+                return;
+            }
+
+            foreach (var btn in _buttons)
+            {
+                btn.State = ToggleState.Off;
+            }
+
+            button.State = ToggleState.On;
         }
 
         #endregion
 
+
         /// <summary>
         /// 获取循环访问组的枚举器
         /// </summary>
-        /// <returns>获取循环访问组的枚举器</returns>
+        /// <returns>获取循环访问组的枚举器。</returns>
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_buttons).GetEnumerator();
     }
 }

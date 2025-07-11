@@ -1,4 +1,6 @@
-﻿using Nebulae.RimWorld.UI.Data;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Core.Data;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
@@ -10,51 +12,51 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
     {
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Public Properties
+        #region Dependency Properties
 
-        #region ChildMaxHeight
+        #region ItemWidth
         /// <summary>
-        /// 获取或设置子控件的最大高度
+        /// 获取或设置 <see cref="StackPanel"/> 分配给子控件的宽度
         /// </summary>
-        public float ChildMaxHeight
+        public float ItemWidth
         {
-            get { return (float)GetValue(ChildMaxHeightProperty); }
-            set { SetValue(ChildMaxHeightProperty, value); }
+            get { return (float)GetValue(ItemWidthProperty); }
+            set { SetValue(ItemWidthProperty, value); }
         }
 
         /// <summary>
-        /// 标识 <see cref="ChildMaxHeight"/> 依赖属性。
+        /// 标识 <see cref="ItemWidth"/> 依赖属性
         /// </summary>
-        public static readonly DependencyProperty ChildMaxHeightProperty =
-            DependencyProperty.Register(nameof(ChildMaxHeight), typeof(float), typeof(StackPanel),
-                new ControlPropertyMetadata(40f, ControlRelation.Measure));
+        public static readonly DependencyProperty ItemWidthProperty =
+            DependencyProperty.Register(nameof(ItemWidth), typeof(float), typeof(StackPanel),
+                new ControlPropertyMetadata(1f, ControlRelation.Measure));
         #endregion
 
-        #region ChildMaxWidth
+        #region ItemHeight
         /// <summary>
-        /// 获取或设置子控件的最大宽度
+        /// 获取或设置 <see cref="StackPanel"/> 分配给子控件的高度
         /// </summary>
-        public float ChildMaxWidth
+        public float ItemHeight
         {
-            get { return (float)GetValue(ChildMaxWidthProperty); }
-            set { SetValue(ChildMaxWidthProperty, value); }
+            get { return (float)GetValue(ItemHeightProperty); }
+            set { SetValue(ItemHeightProperty, value); }
         }
 
         /// <summary>
-        /// 标识 <see cref="ChildMaxWidth"/> 依赖属性。
+        /// 标识 <see cref="ItemHeight"/> 依赖属性
         /// </summary>
-        public static readonly DependencyProperty ChildMaxWidthProperty =
-            DependencyProperty.Register(nameof(ChildMaxWidth), typeof(float), typeof(StackPanel),
-                new ControlPropertyMetadata(1f, ControlRelation.Measure));
+        public static readonly DependencyProperty ItemHeightProperty =
+            DependencyProperty.Register(nameof(ItemHeight), typeof(float), typeof(StackPanel),
+                new ControlPropertyMetadata(34f, ControlRelation.Measure));
         #endregion
 
         #region Orientation
         /// <summary>
-        /// 获取或设置子控件的排列方向
+        /// 获取或设置 <see cref="StackPanel"/> 排列子控件的方向
         /// </summary>
         public Orientation Orientation
         {
@@ -63,7 +65,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 标识 <see cref="Orientation"/> 依赖属性。
+        /// 标识 <see cref="Orientation"/> 依赖属性
         /// </summary>
         public static readonly DependencyProperty OrientationProperty =
             DependencyProperty.Register(nameof(Orientation), typeof(Orientation), typeof(StackPanel),
@@ -76,9 +78,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// 初始化 <see cref="StackPanel"/> 的新实例
         /// </summary>
-        public StackPanel()
-        {
-        }
+        public StackPanel() { }
 
 
         //------------------------------------------------------
@@ -97,6 +97,17 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         public StackPanel Append(Control control)
         {
             Children.Add(control);
+            return this;
+        }
+
+        /// <summary>
+        /// 清除面板并重新设置面板中的控件
+        /// </summary>
+        /// <param name="controls">要添加的控件</param>
+        /// <returns>该面板控件</returns>
+        public StackPanel Set(IEnumerable<Control> controls)
+        {
+            Children.OverrideCollection(controls);
             return this;
         }
 
@@ -152,30 +163,24 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override Rect ArrangeOverride(Rect availableRect)
+        protected override Rect ArrangeOverride(Rect availableRect, Control[] children)
         {
-            Size childrenSize = RenderSize;
             float currentX = availableRect.x;
             float currentY = availableRect.y;
 
-            var children = FilteredChildren;
-
-            Size childDesiredSize;
             if (Orientation is Orientation.Horizontal)
             {
                 for (int i = 0; i < children.Length; i++)
                 {
                     var child = children[i];
-                    childDesiredSize = child.DesiredSize;
-                    if (childDesiredSize > Size.Empty)
-                    {
-                        currentX += child.Arrange(new Rect(
-                            currentX,
-                            currentY,
-                            childDesiredSize.Width,
-                            childrenSize.Height))
-                                .width;
-                    }
+
+                    child.Arrange(new Rect(
+                        currentX,
+                        currentY,
+                        child.DesiredSize.Width,
+                        RenderSize.Height));
+
+                    currentX += child.DesiredSize.Width;
                 }
             }
             else
@@ -183,75 +188,63 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 for (int i = 0; i < children.Length; i++)
                 {
                     var child = children[i];
-                    childDesiredSize = child.DesiredSize;
-                    if (childDesiredSize > Size.Empty)
-                    {
-                        currentY += child.Arrange(new Rect(
-                            currentX,
-                            currentY,
-                            childrenSize.Width,
-                            childDesiredSize.Height))
-                                .height;
-                    }
+
+                    child.Arrange(new Rect(
+                        currentX,
+                        currentY,
+                        RenderSize.Width,
+                        child.DesiredSize.Height));
+
+                    currentY += child.DesiredSize.Height;
                 }
             }
 
             return new Rect(
                 availableRect.x,
                 availableRect.y,
-                childrenSize.Width,
-                childrenSize.Height);
+                RenderSize.Width,
+                RenderSize.Height);
         }
 
         /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size MeasureOverride(Size availableSize, Control[] children)
         {
-            float childMaxHeight = ChildMaxHeight;
-            float childMaxWidth = ChildMaxWidth;
             float childrenWidth = 0f;
             float childrenHeight = 0f;
 
-            var children = FilteredChildren;
+            float childWidth = (float)GetValue(ItemWidthProperty);
+            float childHeight = (float)GetValue(ItemHeightProperty);
 
-            Size childAvailableSize;
+            if (childWidth <= 0f || childHeight <= 0f)
+            {
+                return Size.Empty;
+            }
+
+            childWidth = childWidth > 1f ? childWidth : childWidth * availableSize.Width;
+            childHeight = childHeight > 1f ? childHeight : childHeight * availableSize.Height;
+
+            Size childSize = new Size(childWidth, childHeight);
             Size childDesiredSize;
 
             if (Orientation is Orientation.Horizontal)
             {
-                childAvailableSize = new Size(
-                    childMaxWidth > 1f
-                        ? childMaxWidth
-                        : childMaxWidth * availableSize.Width,
-                    childMaxHeight > 1f
-                        ? childMaxHeight
-                        : childMaxHeight * availableSize.Height);
-
                 for (int i = 0; i < children.Length; i++)
                 {
-                    var child = children[i];
-                    childDesiredSize = child.Measure(childAvailableSize);
+                    childDesiredSize = children[i].Measure(childSize);
                     childrenWidth += childDesiredSize.Width;
                     childrenHeight = Mathf.Max(childrenHeight, childDesiredSize.Height);
                 }
             }
             else
             {
-                childAvailableSize = new Size(
-                    childMaxWidth > 1f
-                        ? childMaxWidth
-                        : childMaxWidth * availableSize.Width,
-                    childMaxHeight > 1f
-                        ? childMaxHeight
-                        : childMaxHeight * availableSize.Height);
-
                 for (int i = 0; i < children.Length; i++)
                 {
-                    var child = children[i];
-                    childDesiredSize = child.Measure(childAvailableSize);
+                    childDesiredSize = children[i].Measure(childSize);
                     childrenHeight += childDesiredSize.Height;
                     childrenWidth = Mathf.Max(childrenWidth, childDesiredSize.Width);
                 }
             }
+
             return new Size(childrenWidth, childrenHeight);
         }
 

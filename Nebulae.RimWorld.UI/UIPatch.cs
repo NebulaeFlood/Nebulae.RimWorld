@@ -1,87 +1,75 @@
 ﻿using HarmonyLib;
-using Nebulae.RimWorld.WeakEventManagers;
+using System;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
 {
     /// <summary>
-    /// UI 事件的类型
-    /// </summary>
-    public enum UIEventType
-    {
-        /// <summary>
-        /// 语言被更改
-        /// </summary>
-        LanguageChanged,
-
-        /// <summary>
-        /// 缩放系数被更改
-        /// </summary>
-        ScaleChanged
-    }
-
-
-    /// <summary>
     /// 原版 UI 补丁
     /// </summary>
-    [StaticConstructorOnStartup]
     public static class UIPatch
     {
-        internal const string UniqueId = "Nebulae.RimWorld.UI";
+        /// <summary>
+        /// <see cref="Harmony"/> 的唯一标识符
+        /// </summary>
+        public const string UniqueId = "Nebulae.RimWorld.UI";
+
+
+        #region ScaleChanged
+        internal static readonly WeakEvent<Harmony, ScaleChangedEventArgs> ScaleChangedEvent = new WeakEvent<Harmony, ScaleChangedEventArgs>();
 
         /// <summary>
-        /// 原版 UI Patch
+        /// UI 缩放比例改变时发生
         /// </summary>
-        internal static readonly Harmony HarmonyInstance;
-
-        /// <summary>
-        /// 原版 UI 事件管理器
-        /// </summary>
-        public static readonly UIEventManager UIEvent = new UIEventManager();
-
-
-        static UIPatch()
+        public static event ScaleChangedEventHandler ScaleChanged
         {
-            HarmonyInstance = new Harmony(UniqueId);
+            add => ScaleChangedEvent.AddHandler(value);
+            remove => ScaleChangedEvent.RemoveHandler(value);
+        }
+        #endregion
+
+
+        /// <summary>
+        /// <see cref="Harmony"/> 实例
+        /// </summary>
+        public static readonly Harmony HarmonyInstance = new Harmony(UniqueId);
+
+
+        internal static void PatchAll()
+        {
             HarmonyInstance.PatchAll();
+            HarmonyInstance.Patch(AccessTools.Method(typeof(Root), nameof(Root.OnGUI)),
+                postfix: new HarmonyMethod(AccessTools.Method(typeof(Dispatcher), nameof(Dispatcher.Update))));
         }
     }
 
 
     /// <summary>
-    /// 通过 <see cref="UIPatch"/> 创建的原版 UI 事件的订阅者
+    /// <see cref="UIPatch.ScaleChanged"/> 的事件处理程序
     /// </summary>
-    public interface IUIEventListener
-    {
-        /// <summary>
-        /// 原版 UI 事件的处理器
-        /// </summary>
-        /// <param name="type">UI 事件的类型</param>
-        void HandleUIEvent(UIEventType type);
-    }
+    /// <param name="sender">发起事件的 <see cref="Harmony"/></param>
+    /// <param name="args">事件数据</param>
+    public delegate void ScaleChangedEventHandler(Harmony sender, ScaleChangedEventArgs args);
 
 
     /// <summary>
-    /// UI 事件管理器
+    /// <see cref="UIPatch.ScaleChanged"/> 的事件数据
     /// </summary>
-    public sealed class UIEventManager : WeakEventManager<IUIEventListener>
+    public sealed class ScaleChangedEventArgs : EventArgs
     {
-        internal UIEventManager()
-        {
-        }
+        /// <summary>
+        /// 新的 UI 缩放比例
+        /// </summary>
+        public readonly float NewScale;
+
 
         /// <summary>
-        /// 调用所有订阅者的事件处理方法
+        /// 初始化 <see cref="ScaleChangedEventArgs"/> 的新实例
         /// </summary>
-        /// <param name="eventType">事件类型</param>
-        internal void Invoke(UIEventType eventType)
+        /// <param name="newScale">新的 UI 缩放比例</param>
+        public ScaleChangedEventArgs(float newScale)
         {
-            var subscribers = GetSubcribers();
-
-            for (int i = subscribers.Count - 1; i >= 0; i--)
-            {
-                subscribers[i].HandleUIEvent(eventType);
-            }
+            NewScale = newScale;
         }
     }
 }

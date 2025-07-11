@@ -1,36 +1,42 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using System;
+using System.Text;
 
 namespace Nebulae.RimWorld.UI.Controls
 {
     [Serializable]
     internal sealed class LogicalTreeException : Exception
     {
-        internal LogicalTreeException(Control control, string message) :
-            base(CreateMessageText(control, message))
+        internal LogicalTreeException(string message, Control control) :
+            base(CreateMessageText(message, control))
         {
         }
 
-        internal LogicalTreeException(Control control, string message, Exception innerException) :
-            base(CreateMessageText(control, message, hasInnerException: true), innerException)
+        internal LogicalTreeException(string message, Control control, Exception innerException) :
+            base(CreateMessageText(message, control, hasInnerException: true), innerException)
         {
         }
 
-        private static string CreateMessageText(Control control, string message, bool hasInnerException = false)
+        private static string CreateMessageText(string message, Control control, bool hasInnerException = false)
         {
-            string test = "An control";
+            var sb = new StringBuilder("A control ");
 
-            test += string.IsNullOrEmpty(control.Name)
-                ? string.Empty
-                : " named: " + control.Name;
+            if (!string.IsNullOrEmpty(control.Name))
+            {
+                sb.Append("named: ")
+                    .Append(control.Name)
+                    .Append(' ');
+            }
 
-            test += "raised an logical tree error: " + message;
+            sb.Append("raised a logical tree error: ")
+              .Append(message);
 
             if (hasInnerException)
             {
-                test += " --->";
+                sb.Append("\n--->");
             }
 
-            return test;
+            return sb.ToString();
         }
     }
 }

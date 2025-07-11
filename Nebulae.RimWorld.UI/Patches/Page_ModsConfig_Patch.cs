@@ -47,19 +47,23 @@ namespace Nebulae.RimWorld.UI.Patches
                 }
             }
 
-            if (!patched)
+            if (patched)
             {
-                "NebulaeFlood's Lib".Error($"Failed to patch method: {typeof(Page_ModsConfig)}.DoModInfo");
+                StartUp.Lib.Succeed($"Succeeded to apply method transpiler to\n---> <color=cyan>{typeof(Page_ModsConfig)}.DoModInfo</color>");
+            }
+            else
+            {
+                StartUp.Lib.Error($"Failed to patch method to\n---> <color=cyan>{typeof(Page_ModsConfig)}.DoModInfo</color>");
             }
         }
 
         private static Action CreateDelegate(Mod mod)
         {
-            return () =>
+            return delegate
             {
                 Window settingWindow;
 
-                if (mod is INebulaeMod nebulaeMod)
+                if (mod is NebulaeModBase nebulaeMod)
                 {
                     settingWindow = nebulaeMod.GetSettingWindow();
                 }

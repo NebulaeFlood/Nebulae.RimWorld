@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
 	<metadata>
 		<id>Nebulae.RimWorld</id>
-		<version>1.1.4</version>
+		<version>1.4.0</version>
 		<authors>NubulaeFlood</authors>
 		<license type="file">LICENSE.txt</license>
 		<licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
@@ -13,7 +13,7 @@
 		<repository type="git" url="https://github.com/NebulaeFlood/Nebulae.RimWorld" />
 		<dependencies>
 			<group targetFramework=".NETFramework4.7.2">
-				<dependency id="Krafs.Rimworld.Ref" version="1.5.4297" exclude="Build,Analyzers" />
+				<dependency id="Krafs.Rimworld.Ref" version="1.6.4518" exclude="Build,Analyzers" />
 			</group>
 		</dependencies>
 		<frameworkAssemblies>
@@ -24,7 +24,7 @@
 		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.dll" target="lib\net472\Nebulae.RimWorld.dll" />
 		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.pdb" target="lib\net472\Nebulae.RimWorld.pdb" />
 		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.xml" target="lib\net472\Nebulae.RimWorld.xml" />
-		
+
 		<file src="LICENSE.txt" target="LICENSE.txt" />
 		<file src="NEBULAE-RIMWORLD.md" target="README.md" />
 	</files>

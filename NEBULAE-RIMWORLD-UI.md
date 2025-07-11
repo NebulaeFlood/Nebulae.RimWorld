@@ -2,7 +2,8 @@
 
 ## Known Issues
 
+- Since change using language will not happen offen and many people use [Hugslib](https://github.com/UnlimitedHugs/RimworldHugsLib/) witch restart game, so I removed the feaure that respawn setting windows to fit current language.
+
 ## Acknowledgements
 
-- [__[Walterlv]__](https://github.com/walterlv) - [WeakEvents](https://github.com/walterlv/Walterlv.Packages/tree/master/src/Utils/Walterlv.WeakEvents)
 - [__[.NET Platform]__](https://github.com/dotnet) - [WPF](https://github.com/dotnet/wpf)

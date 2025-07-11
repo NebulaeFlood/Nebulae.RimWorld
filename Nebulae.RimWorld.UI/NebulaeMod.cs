@@ -1,69 +1,41 @@
-﻿using Nebulae.RimWorld.UI.Controls;
+﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Utilities;
 using Nebulae.RimWorld.UI.Windows;
-using Nebulae.RimWorld.WeakEventManagers;
-using UnityEngine;
+using System;
 using Verse;
 
 namespace Nebulae.RimWorld.UI
 {
     /// <summary>
-    /// 定义一个使用 <see cref="Control"/> 作为设置窗口的 Mod
+    /// NebulaeFlood's Lib 可修改设置窗口的对 <see cref="Mod"/> 的实现
     /// </summary>
-    public interface INebulaeMod
+    /// <typeparam name="T">Mod 设置类型</typeparam>
+    public abstract class NebulaeMod<T> : NebulaeModBase where T : NebulaeModSettings<T>, new()
     {
-        /// <summary>
-        /// 获取设置窗口
-        /// </summary>
-        /// <returns>Mod 的设置窗口</returns>
-        ModSettingWindow GetSettingWindow();
-    }
+        //------------------------------------------------------
+        //
+        //  Public Static Properties
+        //
+        //------------------------------------------------------
 
-    /// <summary>
-    /// 定义一个 Mod 设置事件的订阅者
-    /// </summary>
-    /// <typeparam name="T">Mod 设置类的类型</typeparam>
-    public interface IModSettingsEventListener<T>
-    {
-        /// <summary>
-        /// 当 Mod 设置更新时调用的方法
-        /// </summary>
-        /// <param name="mod">设置被更新的 Mod</param>
-        /// <param name="settings">新的设置内容</param>
-        void HandleModSettingsUpdated(Mod mod, T settings);
-    }
-
-
-    /// <summary>
-    /// 使用 <see cref="Control"/> 作为设置窗口的内容的 Mod 基类
-    /// </summary>
-    /// <typeparam name="T">Mod 设置类的类型</typeparam>
-    public abstract class NebulaeMod<T> : Mod, INebulaeMod, IUIEventListener
-        where T : ModSettings, new()
-    {
-        private static T _settings;
-        private static ModSettingWindow _settingWindow;
-
+        #region Public Static Properties
 
         /// <summary>
-        /// 显示在 Mod 选项的标签名称
-        /// </summary>
-        public abstract string CategoryLabel { get; }
-
-        /// <summary>
-        /// Mod 设置事件管理器
-        /// </summary>
-        public static readonly ModSettingsEventManager SettingsEvent = new ModSettingsEventManager();
-
-        /// <summary>
-        /// Mod 设置的数据
+        /// 获取当前 Mod 的设置内容
         /// </summary>
         public static T Settings => _settings;
 
         /// <summary>
-        /// Mod 设置窗口
+        /// 获取当前 Mod 的 <see cref="System.Type"/>
         /// </summary>
-        public static ModSettingWindow SettingWindow => _settingWindow;
+        public static Type Type => _type;
+
+        /// <summary>
+        /// 获取当前 Mod 的设置窗口
+        /// </summary>
+        public static ModSettingWindow Window => _settingWindow;
+
+        #endregion
 
 
         /// <summary>
@@ -72,64 +44,34 @@ namespace Nebulae.RimWorld.UI
         /// <param name="content">Mod 内容</param>
         protected NebulaeMod(ModContentPack content) : base(content)
         {
+            _mod = this;
             _settings = GetSettings<T>();
+            _type = GetType();
 
-            StartUpQuestManager.AddQuest(InitializeSettingWindow);
-            UIPatch.UIEvent.Manage(this);
-        }
-
-
-        //------------------------------------------------------
-        //
-        //  Public Methods
-        //
-        //------------------------------------------------------
-
-        #region Public Methods
-
-        /// <summary>
-        /// 在窗口控件上方绘制的内容
-        /// </summary>
-        /// <param name="clientRect">允许绘制的区域</param>
-        public override void DoSettingsWindowContents(Rect clientRect) { }
-
-        /// <inheritdoc/>
-        public ModSettingWindow GetSettingWindow() => _settingWindow;
-
-        /// <inheritdoc/>
-        public virtual void HandleUIEvent(UIEventType type)
-        {
-            if (type is UIEventType.LanguageChanged)
+            if (_settings is null)
             {
-                InitializeSettingWindow();
+                return;
             }
+
+            _settings.OnCheckIntegrity();
+
+            StartUp.AddQuest(Initialize, content, $"Initialize Setting Window");
         }
+
 
         /// <summary>
         /// 初始化设置窗口
         /// </summary>
-        public void InitializeSettingWindow()
+        public static void ResetSettingWindow()
         {
-            _settingWindow?.Unbind();
-            _settingWindow = CreateSettingWindow();
-            _settingWindow.Content = CreateContent();
+            LogicalTreeUtility.Unbind(_settingWindow.Content);
+
+            _settingWindow.Content = _mod.CreateContent();
         }
 
-        /// <summary>
-        /// 显示在 Mod 选项的标签名称
-        /// </summary>
-        public sealed override string SettingsCategory() => CategoryLabel;
 
-        /// <summary>
-        /// 保存 Mos 设置
-        /// </summary>
-        public sealed override void WriteSettings()
-        {
-            base.WriteSettings();
-            SettingsEvent.Invoke(this, _settings);
-        }
-
-        #endregion
+        /// <inheritdoc/>
+        protected internal override sealed ModSettingWindow GetSettingWindow() => _settingWindow;
 
 
         //------------------------------------------------------
@@ -147,37 +89,43 @@ namespace Nebulae.RimWorld.UI
         protected abstract Control CreateContent();
 
         /// <summary>
-        /// 创建 Mod 设置窗口
+        /// Mod 设置窗口创建后执行的方法
         /// </summary>
-        /// <returns>Mod 设置窗口</returns>
-        protected virtual ModSettingWindow CreateSettingWindow() => new ModSettingWindow(this);
+        protected virtual void OnInitialized() { }
 
+        /// <summary>
+        /// Mod 设置窗口即将创建时执行的方法
+        /// </summary>
+        protected virtual void OnInitializing() { }
         #endregion
 
 
-        /// <summary>
-        /// Mod 设置事件管理器
-        /// </summary>
-        public sealed class ModSettingsEventManager : WeakEventManager<IModSettingsEventListener<T>>
+        private void Initialize()
         {
-            internal ModSettingsEventManager()
-            {
-            }
+            OnInitializing();
 
-            /// <summary>
-            /// 调用所有订阅者的事件处理方法
-            /// </summary>
-            /// <param name="mod">设置被更新的 Mod</param>
-            /// <param name="settings">新的设置内容</param>
-            internal void Invoke(Mod mod, T settings)
+            _settingWindow = new ModSettingWindow(this)
             {
-                var subscribers = GetSubcribers();
+                Content = CreateContent()
+            };
 
-                for (int i = subscribers.Count - 1; i >= 0; i--)
-                {
-                    subscribers[i].HandleModSettingsUpdated(mod, settings);
-                }
-            }
+            OnInitialized();
         }
+
+
+        //------------------------------------------------------
+        //
+        //  Private Static Fields
+        //
+        //------------------------------------------------------
+
+        #region Private Static Fields
+
+        private static NebulaeMod<T> _mod;
+        private static T _settings;
+        private static ModSettingWindow _settingWindow;
+        private static Type _type;
+
+        #endregion
     }
 }

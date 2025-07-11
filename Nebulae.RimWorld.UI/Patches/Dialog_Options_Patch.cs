@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
+using static Mono.Security.X509.X520;
 
 namespace Nebulae.RimWorld.UI.Patches
 {
@@ -41,15 +42,19 @@ namespace Nebulae.RimWorld.UI.Patches
                 }
             }
 
-            if (!patched)
+            if (patched)
             {
-                "NebulaeFlood's Lib".Error($"Failed to patch method: {typeof(Dialog_Options)}.DoModOptions");
+                StartUp.Lib.Succeed($"Succeeded to apply method transpiler to\n---> <color=cyan>{typeof(Dialog_Options)}.DoModOptions</color>");
+            }
+            else
+            {
+                StartUp.Lib.Error($"Failed to patch method to\n---> <color=cyan>{typeof(Dialog_Options)}.DoModOptions</color>");
             }
         }
 
         private static Window ReplaceModSettingWindow(Window window, Mod mod)
         {
-            if (mod is INebulaeMod nebulaeMod)
+            if (mod is NebulaeModBase nebulaeMod)
             {
                 return nebulaeMod.GetSettingWindow();
             }

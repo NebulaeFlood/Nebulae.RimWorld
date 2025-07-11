@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
-using System;
+using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Utilities;
 using UnityEngine;
 using Verse;
 
@@ -8,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Windows
     /// <summary>
     /// 使用 <see cref="Control"/> 进行内容呈现的窗口
     /// </summary>
-    public class ControlWindow : Window, IUIEventListener
+    public class ControlWindow : Window
     {
         //------------------------------------------------------
         //
@@ -21,7 +22,7 @@ namespace Nebulae.RimWorld.UI.Windows
         /// <summary>
         /// 默认的关闭按钮（X）要占用的高度
         /// </summary>
-        public const float DefaultCloseButtonDesiredHeight = 26f;
+        public const float DefaultCloseButtonHeight = 26f;
 
         /// <summary>
         /// 默认的窗口高度
@@ -32,29 +33,6 @@ namespace Nebulae.RimWorld.UI.Windows
         /// 默认的窗口宽度
         /// </summary>
         public const float DefaultWindowWidth = 900f;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
-
-        private readonly LayoutManager _layoutManager;
-
-        private Rect _clientRect;
-        private Rect _nonClientRect;
-
-        private Thickness _padding = 18f;
-
-        private bool _isOpen = false;
-
-        private float _initialHeight = DefaultWindowHeight;
-        private float _initialWidth = DefaultWindowWidth;
 
         #endregion
 
@@ -109,11 +87,6 @@ namespace Nebulae.RimWorld.UI.Windows
         public LayoutManager LayoutManager => _layoutManager;
 
         /// <summary>
-        /// 窗口是否正在呈现
-        /// </summary>
-        public new bool IsOpen => _isOpen;
-
-        /// <summary>
         /// 窗口的初始宽度
         /// </summary>
         public float InitialWidth
@@ -155,9 +128,10 @@ namespace Nebulae.RimWorld.UI.Windows
 
 
 #if DEBUG
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        /// <summary>
+        /// <see cref="ControlWindow"/> 的析构函数
+        /// </summary>
         ~ControlWindow()
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
         {
             System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A window of type {GetType()} has been collected.");
         }
@@ -168,44 +142,9 @@ namespace Nebulae.RimWorld.UI.Windows
         /// </summary>
         public ControlWindow()
         {
-            doCloseButton = true;
-            doCloseX = true;
-
             _layoutManager = new LayoutManager(this);
-            UIPatch.UIEvent.Manage(this);
         }
 
-
-        //------------------------------------------------------
-        //
-        //  Public Methods
-        //
-        //------------------------------------------------------
-
-        #region Public Methods
-
-        /// <summary>
-        /// 点击 <see cref="ButtonBase"/> 后关闭窗口的 <see cref="ButtonBase.Clicked"/> 事件处理器
-        /// </summary>
-        /// <param name="button">被点击的按钮</param>
-        /// <param name="args">事件数据</param>
-        public void CloseWindow(ButtonBase button, EventArgs args) => Close();
-
-        /// <summary>
-        /// 开始呈现窗口
-        /// </summary>
-        public void Show() => Find.WindowStack.Add(this);
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Public Virtual Methods
-        //
-        //------------------------------------------------------
-
-        #region Public Virtual Methods
 
         /// <summary>
         /// 绘制窗口内容
@@ -218,7 +157,7 @@ namespace Nebulae.RimWorld.UI.Windows
 
             if (doCloseX)
             {
-                inRect.yMin += Mathf.Abs(_padding.Top - DefaultCloseButtonDesiredHeight);
+                inRect.yMin += Mathf.Abs(_padding.Top - DefaultCloseButtonHeight);
             }
 
             if (doCloseButton)
@@ -234,36 +173,30 @@ namespace Nebulae.RimWorld.UI.Windows
 
             _layoutManager.Draw(inRect);
 
-            if (Prefs.DevMode
-                && _layoutManager.DebugDrawButtons)
+            if (UIUtility.DebugMode && _layoutManager.DrawDebugButtons)
             {
                 _layoutManager.DrawWindowDebugButtons(_nonClientRect);
             }
         }
 
-        /// <inheritdoc/>
-        public virtual void HandleUIEvent(UIEventType type)
-        {
-            _layoutManager.InvalidateLayout();
-        }
 
-        /// <summary>
-        /// 当窗口关闭时引发的操作
-        /// </summary>
-        public override void PostClose()
-        {
-            base.PostClose();
-            _isOpen = false;
-        }
+        //------------------------------------------------------
+        //
+        //  Private Fields
+        //
+        //------------------------------------------------------
 
-        /// <summary>
-        /// 当窗口打开时执行的操作
-        /// </summary>
-        public override void PostOpen()
-        {
-            base.PostOpen();
-            _isOpen = true;
-        }
+        #region Private Fields
+
+        private readonly LayoutManager _layoutManager;
+
+        private Rect _clientRect;
+        private Rect _nonClientRect;
+
+        private Thickness _padding = 18f;
+
+        private float _initialHeight = DefaultWindowHeight;
+        private float _initialWidth = DefaultWindowWidth;
 
         #endregion
     }
