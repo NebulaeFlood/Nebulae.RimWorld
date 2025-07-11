@@ -122,11 +122,18 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             var fontSize = (GameFont)GetValue(FontSizeProperty);
             var text = (string)GetValue(TextProperty);
 
+            var width = text.CalculateLength(fontSize);
+
+            if (width > availableSize.Width && availableSize.Width > 26f)
+            {
+                width = availableSize.Width;
+            }
+
             _cache = string.IsNullOrEmpty(text)
                 ? string.Empty
-                : text.Truncate(availableSize.Width, fontSize);
+                : text.Truncate(width, fontSize);
 
-            return new Size(availableSize.Width, fontSize.GetHeight());
+            return new Size(width, fontSize.GetHeight());
         }
 
         /// <inheritdoc/>
