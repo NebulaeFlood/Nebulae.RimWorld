@@ -16,6 +16,10 @@
 		<Copyright>Copyright (c) 2024 NubulaeFlood</Copyright>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+	</ItemGroup>
+
 	<Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'RELEASE'">
 		<Exec Command="xcopy $(OutDir)$(TargetName).dll $(SolutionDir)build\Assemblies\ /y" />
 		<Exec Command="xcopy $(OutDir)$(TargetName).xml $(SolutionDir)build\Assemblies\ /y" />
