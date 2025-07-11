@@ -22,9 +22,7 @@ namespace Nebulae.RimWorld.UI.Patches
             {
                 var code = codes[i];
 
-                if (!patched
-                    && code.opcode == OpCodes.Ldstr
-                    && code.operand is "ModOptions")
+                if (!patched && code.opcode == OpCodes.Ldstr && code.operand is "ModOptions")
                 {
                     yield return codes[i++];
                     yield return codes[i++];
