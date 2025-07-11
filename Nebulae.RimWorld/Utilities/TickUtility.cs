@@ -134,15 +134,16 @@ namespace Nebulae.RimWorld.Utilities
 
                 while (node != null)
                 {
-                    if (!node.Value.Tick(_intervalTick))
+                    if (node.Value.Tick(_intervalTick))
                     {
-                        var nextNode = node.Next;
-                        Clocks.Remove(node);
-                        node = nextNode;
+                        node = node.Next;
                     }
                     else
                     {
-                        node = node.Next;
+                        var nextNode = node.Next;
+                        Clocks.Remove(node);
+                        node.Value.OnStopped();
+                        node = nextNode;
                     }
                 }
 
