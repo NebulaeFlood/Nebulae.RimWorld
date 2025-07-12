@@ -40,10 +40,25 @@ namespace Nebulae.RimWorld.UI.Utilities
         #endregion
 
 
+        //------------------------------------------------------
+        //
+        //  Public Static Properties
+        //
+        //------------------------------------------------------
+
+        #region Public Static Properties
+
         /// <summary>
         /// 光标在 UI 系统中的坐标（和窗口在同一坐标系）
         /// </summary>
         public static Vector2 CursorPosition => _cursorPosition;
+
+        /// <summary>
+        /// 游戏窗口的尺寸
+        /// </summary>
+        public static Rect ScreenRect => _screenRect;
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -98,6 +113,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             cursorPos.y = Verse.UI.screenHeight - cursorPos.y;
 
             _cursorPosition = cursorPos;
+            _screenRect = new Rect(0f, 0f, Verse.UI.screenWidth, Verse.UI.screenHeight);
 
             _isKeyDown = UIUtility.CurrentEventType is EventType.KeyDown;
             _isKeyUp = UIUtility.CurrentEventType is EventType.KeyUp;
@@ -152,6 +168,8 @@ namespace Nebulae.RimWorld.UI.Utilities
         #region Private Static Fields
 
         private static Control _protentialFocusControl;
+
+        private static Rect _screenRect;
 
         // Mouse
 
@@ -233,33 +251,37 @@ namespace Nebulae.RimWorld.UI.Utilities
                     return;
                 }
 
-                _hoveredControl.ControlStates |= ControlState.CursorDirectlyOver;
-
-                var hoveredControls = HitTestUtility.Results.Except(HitTestUtility.PreviousResults);
+                // Skip _hoveredControl
+                var enteredControls = HitTestUtility.Results.Skip(1).Except(HitTestUtility.PreviousResults);
                 var mouseEnterArgs = new RoutedEventArgs(_hoveredControl, Control.MouseEnterEvent);
+
+                _hoveredControl.ControlStates |= ControlState.CursorDirectlyOver | ControlState.CursorOver;
+                _hoveredControl.RaiseEvent(mouseEnterArgs);
 
                 if (_anyControlDragging)
                 {
                     var dragEnterArgs = new DragEventArgs(_pressingControl, MouseButton.LeftMouse, _cursorPosition, _hoveredControl, Control.DragEnterEvent);
 
-                    foreach (var control in hoveredControls)
-                    {
-                        control.RaiseEvent(mouseEnterArgs);
-                        control.RaiseEvent(dragEnterArgs);
+                    _hoveredControl.RaiseEvent(dragEnterArgs);
 
+                    foreach (var control in enteredControls)
+                    {
                         control.ControlStates |= ControlState.CursorOver;
                         mouseEnterArgs.Handled = false;
                         dragEnterArgs.Handled = false;
+
+                        control.RaiseEvent(mouseEnterArgs);
+                        control.RaiseEvent(dragEnterArgs);
                     }
                 }
                 else
                 {
-                    foreach (var control in hoveredControls)
+                    foreach (var control in enteredControls)
                     {
-                        control.RaiseEvent(mouseEnterArgs);
-
                         control.ControlStates |= ControlState.CursorOver;
                         mouseEnterArgs.Handled = false;
+
+                        control.RaiseEvent(mouseEnterArgs);
                     }
                 }
             }
@@ -271,33 +293,37 @@ namespace Nebulae.RimWorld.UI.Utilities
                     return;
                 }
 
-                _hoveredControl.ControlStates &= ~ControlState.CursorDirectlyOver;
-
-                var hoveredControls = HitTestUtility.PreviousResults.Except(HitTestUtility.Results);
+                // Skip _hoveredControl witch cursor is directly leaved 
+                var leavedControls = HitTestUtility.PreviousResults.Skip(1).Except(HitTestUtility.Results);
                 var mouseLeaveArgs = new RoutedEventArgs(_hoveredControl, Control.MouseLeaveEvent);
+
+                _hoveredControl.ControlStates &= ~(ControlState.CursorDirectlyOver | ControlState.CursorOver);
+                _hoveredControl.RaiseEvent(mouseLeaveArgs);
 
                 if (_anyControlDragging)
                 {
                     var dragLeaveArgs = new DragEventArgs(_pressingControl, MouseButton.LeftMouse, _cursorPosition, _hoveredControl, Control.DragLeaveEvent);
+                    _hoveredControl.RaiseEvent(dragLeaveArgs);
 
-                    foreach (var control in hoveredControls)
+                    foreach (var control in leavedControls)
                     {
-                        control.RaiseEvent(mouseLeaveArgs);
-                        control.RaiseEvent(dragLeaveArgs);
-
                         control.ControlStates &= ~ControlState.CursorOver;
+
                         mouseLeaveArgs.Handled = false;
                         dragLeaveArgs.Handled = false;
+
+                        control.RaiseEvent(mouseLeaveArgs);
+                        control.RaiseEvent(dragLeaveArgs);
                     }
                 }
                 else
                 {
-                    foreach (var control in hoveredControls)
+                    foreach (var control in leavedControls)
                     {
-                        control.RaiseEvent(mouseLeaveArgs);
-
                         control.ControlStates &= ~ControlState.CursorOver;
                         mouseLeaveArgs.Handled = false;
+
+                        control.RaiseEvent(mouseLeaveArgs);
                     }
                 }
             }
