@@ -16,7 +16,7 @@ namespace Nebulae.RimWorld.UI.Patches
         {
             bool patched = false;
 
-            CodeInstruction[] codes = instructions.ToArray();
+            var codes = instructions.ToArray();
 
             for (int i = 0; i < codes.Length; i++)
             {
