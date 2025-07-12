@@ -729,6 +729,15 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             }
         }
 
+        /// <summary>
+        /// 获取表示该 <see cref="Control"/> 的字符串
+        /// </summary>
+        /// <returns>表示该 <see cref="Control"/> 的字符串。</returns>
+        public override string ToString()
+        {
+            return string.IsNullOrWhiteSpace(_name) ? Type.FullName : _name;
+        }
+
         #endregion
 
 
