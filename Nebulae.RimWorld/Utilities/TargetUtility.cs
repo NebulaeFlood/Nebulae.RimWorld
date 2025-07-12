@@ -1,18 +1,10 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
-using Steamworks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 using Verse;
-using Verse.Noise;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Nebulae.RimWorld.Utilities
 {
@@ -226,19 +218,6 @@ namespace Nebulae.RimWorld.Utilities
         }
 
 
-        //------------------------------------------------------
-        //
-        //  Private Static Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Static Fields
-
-
-
-        #endregion
-
-
         private readonly struct WorldTargetQuest
         {
             public readonly GlobalTargetSelectedCallback Callback;
@@ -339,11 +318,16 @@ namespace Nebulae.RimWorld.Utilities
 
                 if (isValid)
                 {
-                    GenUI.DrawMouseAttachment(Icon, message);
+                    GenUI.DrawMouseAttachment(Icon);
                 }
                 else
                 {
                     GenUI.DrawMouseAttachment(TexCommand.CannotShoot);
+                }
+
+                if (!message.NullOrEmpty())
+                {
+                    Widgets.MouseAttachedLabel(message);
                 }
 
                 Drawer?.Invoke(target);

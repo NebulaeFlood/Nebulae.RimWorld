@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using Nebulae.RimWorld.Utilities;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -17,15 +16,13 @@ namespace Nebulae.RimWorld.UI.Patches
         {
             bool patched = false;
 
-            CodeInstruction[] codes = instructions.ToArray();
+            var codes = instructions.ToArray();
 
             for (int i = 0; i < codes.Length; i++)
             {
                 var code = codes[i];
 
-                if (!patched
-                    && code.opcode == OpCodes.Ldstr
-                    && code.operand is "ModOptions")
+                if (!patched && code.opcode == OpCodes.Ldstr && code.operand is "ModOptions")
                 {
                     yield return codes[i++];
                     yield return codes[i++];
@@ -47,14 +44,7 @@ namespace Nebulae.RimWorld.UI.Patches
                 }
             }
 
-            if (patched)
-            {
-                StartUp.Lib.Succeed($"Succeeded to apply method transpiler to\n---> <color=cyan>{typeof(Page_ModsConfig)}.DoModInfo</color>");
-            }
-            else
-            {
-                StartUp.Lib.Error($"Failed to patch method to\n---> <color=cyan>{typeof(Page_ModsConfig)}.DoModInfo</color>");
-            }
+            StartUp.Lib.TranspileMessage(patched, typeof(Page_ModsConfig), "DoModInfo");
         }
 
         private static Action CreateDelegate(Mod mod)

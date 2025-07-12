@@ -2,7 +2,6 @@
 using Nebulae.RimWorld.UI.Controls.Converters;
 using Nebulae.RimWorld.UI.Core.Data.Bindings;
 using Nebulae.RimWorld.Utilities;
-using RimWorld.QuestGen;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -22,6 +21,14 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         public const string Lib = "NebulaeFlood's Lib";
 
+
+        //------------------------------------------------------
+        //
+        //  Public Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Static Methods
 
         /// <summary>
         /// 添加要在资源加载完毕时执行的初始化任务
@@ -53,6 +60,48 @@ namespace Nebulae.RimWorld.UI
 
             _startUpQuests.Add(new Task(new Quest(action, mod, questName).Start));
         }
+
+        /// <summary>
+        /// 以 <paramref name="logLabel"/> 为主语，提交转译信息
+        /// </summary>
+        /// <param name="logLabel">主语</param>
+        /// <param name="succeeded">是否转译成功</param>
+        /// <param name="type">方法被转译的类</param>
+        /// <param name="methodName">转译方法的名称</param>
+        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void TranspileMessage(this string logLabel, bool succeeded, Type type, string methodName, string color = "3F48CCFF")
+        {
+            if (succeeded)
+            {
+                logLabel.Succeed($"Succeeded to transpile method.\n---> <color=cyan>{type.FullName}.{methodName}</color>", color);
+            }
+            else
+            {
+                logLabel.Error($"Failed to transpile method.\n---> <color=cyan>{type.FullName}.{methodName}</color>", color);
+            }
+        }
+
+        /// <summary>
+        /// 以 <paramref name="logLabel"/> 为主语，提交转译信息
+        /// </summary>
+        /// <param name="logLabel">主语</param>
+        /// <param name="succeeded">是否转译成功</param>
+        /// <param name="typeFullName">方法被转译的类的全名</param>
+        /// <param name="methodName">转译方法的名称</param>
+        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void TranspileMessage(this string logLabel, bool succeeded, string typeFullName, string methodName, string color = "3F48CCFF")
+        {
+            if (succeeded)
+            {
+                logLabel.Succeed($"Succeeded to transpile method.\n---> <color=cyan>{typeFullName}.{methodName}</color>", color);
+            }
+            else
+            {
+                logLabel.Error($"Failed to transpile method.\n---> <color=cyan>{typeFullName}.{methodName}</color>", color);
+            }
+        }
+
+        #endregion
 
 
         internal static void FinishQuests()

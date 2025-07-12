@@ -1,12 +1,9 @@
 ﻿using HarmonyLib;
-using Nebulae.RimWorld.Utilities;
 using RimWorld;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
-using static Mono.Security.X509.X520;
 
 namespace Nebulae.RimWorld.UI.Patches
 {
@@ -16,11 +13,9 @@ namespace Nebulae.RimWorld.UI.Patches
         [HarmonyTranspiler]
         internal static IEnumerable<CodeInstruction> DoModOptionsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
+            var method = AccessTools.Method(typeof(WindowStack), nameof(WindowStack.Add));
+
             bool patched = false;
-
-            MethodInfo method = AccessTools.Method(typeof(WindowStack), nameof(WindowStack.Add));
-
-            ConstructorInfo constructorInfo = AccessTools.Constructor(typeof(Dialog_ModSettings), parameters: new Type[] { typeof(Mod) });
 
             foreach (var code in instructions)
             {
@@ -42,14 +37,7 @@ namespace Nebulae.RimWorld.UI.Patches
                 }
             }
 
-            if (patched)
-            {
-                StartUp.Lib.Succeed($"Succeeded to apply method transpiler to\n---> <color=cyan>{typeof(Dialog_Options)}.DoModOptions</color>");
-            }
-            else
-            {
-                StartUp.Lib.Error($"Failed to patch method to\n---> <color=cyan>{typeof(Dialog_Options)}.DoModOptions</color>");
-            }
+            StartUp.Lib.TranspileMessage(patched, typeof(Dialog_Options), "DoModOptions");
         }
 
         private static Window ReplaceModSettingWindow(Window window, Mod mod)
