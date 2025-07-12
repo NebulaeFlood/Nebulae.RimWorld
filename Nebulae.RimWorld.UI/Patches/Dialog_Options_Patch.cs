@@ -14,11 +14,9 @@ namespace Nebulae.RimWorld.UI.Patches
         [HarmonyTranspiler]
         internal static IEnumerable<CodeInstruction> DoModOptionsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
+            var method = AccessTools.Method(typeof(WindowStack), nameof(WindowStack.Add));
+
             bool patched = false;
-
-            MethodInfo method = AccessTools.Method(typeof(WindowStack), nameof(WindowStack.Add));
-
-            ConstructorInfo constructorInfo = AccessTools.Constructor(typeof(Dialog_ModSettings), parameters: new Type[] { typeof(Mod) });
 
             foreach (var code in instructions)
             {
