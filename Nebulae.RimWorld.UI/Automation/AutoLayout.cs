@@ -459,22 +459,25 @@ namespace Nebulae.RimWorld.UI.Automation
         /// 生成一个布局面板，包含所有布局条目
         /// </summary>
         /// <typeparam name="T">保存数据的类型</typeparam>
-        /// <param name="settings">保存数据的对象</param>
+        /// <param name="model">保存数据的对象</param>
         /// <returns>包含所有设置条目的 <see cref="StackPanel"/>。</returns>
-        public static StackPanel GenerateLayout<T>(this T settings) where T : class
+        public static StackPanel GenerateLayout<T>(this T model)
         {
-            if (settings is null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
             var type = typeof(T);
             var settingAttribute = type.GetCustomAttribute<LayoutModelAttribute>(false)
                 ?? throw new InvalidOperationException($"Failed to generate layout for type \"{type.FullName}\": a [{typeof(LayoutModelAttribute)}] is required on the type definition.");
 
-            return new StackPanel { VerticalAlignment = VerticalAlignment.Top }
-                .Set(
-                    PrecessEntryInfos(
-                        ProcessMembers(settings, settingAttribute.TraslationKeyPrefix, type)));
+            try
+            {
+                return new StackPanel { VerticalAlignment = VerticalAlignment.Top }
+                    .Set(
+                        PrecessEntryInfos(
+                            ProcessMembers(model, settingAttribute.TraslationKeyPrefix, type)));
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Failed to generate layout for type \"{type.FullName}\".", e);
+            }
         }
 
 
