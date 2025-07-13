@@ -114,7 +114,7 @@ namespace Nebulae.RimWorld
 
             return Expression.Lambda<Func<object, MethodInfo, object>>(
                 Expression.Call(
-                    typeof(WeakEventHandler<,,>).MakeGenericType(key.OwnerType, key.SenderType, key.ArgsType).GetMethod("CreateCreator", BindingFlags.NonPublic | BindingFlags.Static),
+                    typeof(WeakEventHandler<,,>).MakeGenericType(key.OwnerType, key.SenderType, key.ArgsType).GetMethod("Create", BindingFlags.NonPublic | BindingFlags.Static),
                     Expression.Convert(targetExp, key.OwnerType),
                     methodExp
                 ),
