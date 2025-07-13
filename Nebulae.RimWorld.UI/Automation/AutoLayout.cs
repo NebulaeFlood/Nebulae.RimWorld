@@ -355,8 +355,13 @@ namespace Nebulae.RimWorld.UI.Automation
             {
                 Anchor = TextAnchor.MiddleLeft,
                 Text = label,
-                Tooltip = tooltip,
+                Tooltip = tooltip
             };
+
+            if (wrapText)
+            {
+                entryLabel.VerticalAlignment = VerticalAlignment.Top;
+            }
 
             var textBox = new TextBox
             {
@@ -382,7 +387,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 mode);
             }
 
-            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }
+            return new Grid { Padding = new Thickness(12f, 4f, 12f, 4f) }
                 .DefineColumns(Grid.Auto, Grid.Remain, 260f)
                 .DefineRows(Grid.Auto)
                 .Set(entryLabel, null, textBox);
@@ -409,6 +414,11 @@ namespace Nebulae.RimWorld.UI.Automation
                 Text = label,
                 Tooltip = tooltip
             };
+
+            if (wrapText)
+            {
+                entryLabel.VerticalAlignment = VerticalAlignment.Top;
+            }
 
             var converter = CreateConverter<string>(entry.ValueType, out bool convertOperation);
 
@@ -437,7 +447,7 @@ namespace Nebulae.RimWorld.UI.Automation
                     converter);
             }
 
-            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }
+            return new Grid { Padding = new Thickness(12f, 4f, 12f, 4f) }
                 .DefineColumns(Grid.Auto, Grid.Remain, 260f)
                 .DefineRows(Grid.Auto)
                 .Set(entryLabel, null, textBox);
