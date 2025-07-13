@@ -15,11 +15,6 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
         public GameFont FontSize = GameFont.Small;
 
         /// <summary>
-        /// 输入框是否为只读状态
-        /// </summary>
-        public bool IsReadOnly;
-
-        /// <summary>
         /// 输入框是否自动换行
         /// </summary>
         public bool WrapText;
