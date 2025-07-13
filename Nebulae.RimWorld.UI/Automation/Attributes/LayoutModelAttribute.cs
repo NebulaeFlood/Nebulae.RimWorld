@@ -3,10 +3,10 @@
 namespace Nebulae.RimWorld.UI.Automation.Attributes
 {
     /// <summary>
-    /// 标记类型为设置内容类
+    /// 标记类型为布局模板
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
-    public class SettingsAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+    public class LayoutModelAttribute : Attribute
     {
         /// <summary>
         /// 类型成员的翻译键前缀
@@ -14,10 +14,10 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
         public readonly string TraslationKeyPrefix;
 
         /// <summary>
-        /// 初始化 <see cref="SettingsAttribute"/> 的新实例
+        /// 初始化 <see cref="LayoutModelAttribute"/> 的新实例
         /// </summary>
         /// <param name="key">类型成员的翻译键前缀</param>
-        public SettingsAttribute(string key)
+        public LayoutModelAttribute(string key)
         {
             if (string.IsNullOrEmpty(key))
             {

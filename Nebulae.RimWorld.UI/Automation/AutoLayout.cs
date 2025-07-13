@@ -33,13 +33,13 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 为可转化为 <see cref="ToggleState"/> 的设置选项创建一个 <see cref="CheckBox"/>
         /// </summary>
-        /// <typeparam name="T">保存设置数据的类型</typeparam>
-        /// <param name="settings">保存设置数据的实例</param>
+        /// <typeparam name="T">保存数据的类型</typeparam>
+        /// <param name="settings">保存数据的实例</param>
         /// <param name="entryName">设置选项对应的成员的名称</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
         /// <param name="readOnly">选项是否不可修改</param>
-        /// <param name="mode"><see cref="CheckBox"/> 与对应设置数据的绑定模式</param>
+        /// <param name="mode"><see cref="CheckBox"/> 与对应数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="CheckBox"/> 的实例。</returns>
         public static CheckBox CreateBooleanEntry<T>(T settings, string entryName, string label, string tooltip, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
@@ -49,13 +49,13 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 为可转化为 <see cref="ToggleState"/> 的设置选项创建一个 <see cref="CheckBox"/>
         /// </summary>
-        /// <param name="settings">保存设置数据的实例</param>
+        /// <param name="settings">保存数据的实例</param>
         /// <param name="entryName">设置选项对应的成员的名称</param>
         /// <param name="entryValue">设置选项对应的值</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
         /// <param name="readOnly">选项是否不可修改</param>
-        /// <param name="mode"><see cref="CheckBox"/> 与对应设置数据的绑定模式</param>
+        /// <param name="mode"><see cref="CheckBox"/> 与对应数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="CheckBox"/> 的实例。</returns>
         public static CheckBox CreateBooleanEntry(object settings, string entryName, bool entryValue, string label, string tooltip, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
@@ -88,12 +88,12 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 为可转化为 <see cref="ToggleState"/> 的设置选项创建一个 <see cref="CheckBox"/>
         /// </summary>
-        /// <param name="settings">保存设置数据的实例</param>
+        /// <param name="settings">保存数据的实例</param>
         /// <param name="entry">设置选项对应的依赖属性标识</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
         /// <param name="readOnly">选项是否不可修改</param>
-        /// <param name="mode"><see cref="CheckBox"/> 与对应设置数据的绑定模式</param>
+        /// <param name="mode"><see cref="CheckBox"/> 与对应数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="CheckBox"/> 的实例。</returns>
         public static CheckBox CreateBooleanEntry(DependencyObject settings, DependencyProperty entry, string label, string tooltip, bool readOnly = false, BindingMode mode = BindingMode.TwoWay)
         {
@@ -137,8 +137,8 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 为可转化为 <see cref="float"/> 类型的设置选项创建一个带有输入和滑动两种修改方式的布局
         /// </summary>
-        /// <typeparam name="T">保存设置数据的类型</typeparam>
-        /// <param name="settings">保存设置数据的实例</param>
+        /// <typeparam name="T">保存数据的类型</typeparam>
+        /// <param name="settings">保存数据的实例</param>
         /// <param name="entryName">设置选项对应的成员的名称</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
@@ -147,7 +147,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="decimals">小数部分的位数</param>
         /// <param name="isPercentage">是否以小数形式显示值</param>
         /// <param name="readOnly">输入框是否为只读状态</param>
-        /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
+        /// <param name="mode">设置控件与对应数据的绑定模式</param>
         /// <returns>指定条目对应的带有输入和滑动两种修改方式的布局。</returns>
         public static Grid CreateNumberEntry<T>(T settings, string entryName, string label, string tooltip, float minValue, float maxValue, ushort decimals, bool isPercentage = false, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
@@ -157,7 +157,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 为可转化为 <see cref="float"/> 类型的设置选项创建一个设置控件
         /// </summary>
-        /// <param name="settings">保存设置数据的实例</param>
+        /// <param name="settings">保存数据的实例</param>
         /// <param name="entryName">设置选项对应的成员的名称</param>
         /// <param name="entryValue">设置选项的当前值</param>
         /// <param name="label">选项的标签文字</param>
@@ -167,7 +167,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="decimals">小数部分的位数</param>
         /// <param name="isPercentage">是否以小数形式显示值</param>
         /// <param name="readOnly">输入框是否为只读状态</param>
-        /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
+        /// <param name="mode">设置控件与对应数据的绑定模式</param>
         /// <returns>指定条目对应的设置控件。</returns>
         public static Grid CreateNumberEntry(object settings, string entryName, float entryValue, string label, string tooltip, float minValue, float maxValue, ushort decimals, bool isPercentage = false, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
@@ -231,7 +231,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 为可转化为 <see cref="float"/> 类型的设置选项创建一个设置控件
         /// </summary>
-        /// <param name="settings">保存设置数据的实例</param>
+        /// <param name="settings">保存数据的实例</param>
         /// <param name="entry">设置选项对应的依赖属性标识</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
@@ -240,7 +240,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="decimals">小数部分的位数</param>
         /// <param name="isPercentage">是否以小数形式显示值</param>
         /// <param name="readOnly">输入框是否为只读状态</param>
-        /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
+        /// <param name="mode">设置控件与对应数据的绑定模式</param>
         /// <returns>指定条目对应的设置控件。</returns>
         public static Grid CreateNumberEntry(DependencyObject settings, DependencyProperty entry, string label, string tooltip, float minValue, float maxValue, ushort decimals, bool isPercentage = false, bool readOnly = false, BindingMode mode = BindingMode.TwoWay)
         {
@@ -319,8 +319,8 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 为可转化为 <see cref="string"/> 类型的设置选项创建一个 <see cref="TextBox"/>
         /// </summary>
-        /// <typeparam name="T">保存设置数据的类型</typeparam>
-        /// <param name="settings">保存设置数据的实例</param>
+        /// <typeparam name="T">保存数据的类型</typeparam>
+        /// <param name="settings">保存数据的实例</param>
         /// <param name="entryName">设置选项对应的成员的名称</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
@@ -328,7 +328,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="fontSize">字体尺寸</param>
         /// <param name="inputValidator">输入字符的正则表达式</param>
         /// <param name="readOnly">输入框是否为只读状态</param>
-        /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
+        /// <param name="mode">设置控件与对应数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="TextBox"/>。</returns>
         public static Grid CreateTextEntry<T>(T settings, string entryName, string label, string tooltip, bool wrapText = false, GameFont fontSize = GameFont.Small, Regex inputValidator = null, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
@@ -338,7 +338,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 为可转化为 <see cref="string"/> 类型的设置选项创建一个 <see cref="TextBox"/>
         /// </summary>
-        /// <param name="settings">保存设置数据的实例</param>
+        /// <param name="settings">保存数据的实例</param>
         /// <param name="entryName">设置选项对应的成员的名称</param>
         /// <param name="entryValue">设置选项对应的值</param>
         /// <param name="label">选项的标签文字</param>
@@ -347,7 +347,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="fontSize">字体尺寸</param>
         /// <param name="inputValidator">输入字符的正则表达式</param>
         /// <param name="readOnly">输入框是否为只读状态</param>
-        /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
+        /// <param name="mode">设置控件与对应数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="TextBox"/>。</returns>
         public static Grid CreateTextEntry(object settings, string entryName, string entryValue, string label, string tooltip, bool wrapText = false, GameFont fontSize = GameFont.Small, Regex inputValidator = null, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
@@ -396,7 +396,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <summary>
         /// 为可转化为 <see cref="string"/> 类型的设置选项创建一个 <see cref="TextBox"/>
         /// </summary>
-        /// <param name="settings">保存设置数据的实例</param>
+        /// <param name="settings">保存数据的实例</param>
         /// <param name="entry">设置选项对应的依赖属性标识</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
@@ -404,7 +404,7 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="fontSize">字体尺寸</param>
         /// <param name="inputValidator">输入字符的正则表达式</param>
         /// <param name="readOnly">输入框是否为只读状态</param>
-        /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
+        /// <param name="mode">设置控件与对应数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="TextBox"/>。</returns>
         public static Grid CreateTextEntry(DependencyObject settings, DependencyProperty entry, string label, string tooltip, bool wrapText = false, GameFont fontSize = GameFont.Small, Regex inputValidator = null, bool readOnly = false, BindingMode mode = BindingMode.TwoWay)
         {
@@ -456,10 +456,10 @@ namespace Nebulae.RimWorld.UI.Automation
 
 
         /// <summary>
-        /// 生成一个布局面板，包含所有设置条目。
+        /// 生成一个布局面板，包含所有布局条目
         /// </summary>
-        /// <typeparam name="T">保存设置数据的类型</typeparam>
-        /// <param name="settings">保存设置数据的对象</param>
+        /// <typeparam name="T">保存数据的类型</typeparam>
+        /// <param name="settings">保存数据的对象</param>
         /// <returns>包含所有设置条目的 <see cref="StackPanel"/>。</returns>
         public static StackPanel GenerateLayout<T>(this T settings) where T : class
         {
@@ -468,8 +468,8 @@ namespace Nebulae.RimWorld.UI.Automation
                 throw new ArgumentNullException(nameof(settings));
             }
             var type = typeof(T);
-            var settingAttribute = type.GetCustomAttribute<SettingsAttribute>(false)
-                ?? throw new InvalidOperationException($"Failed to generate layout for type \"{type.FullName}\": a [{typeof(SettingsAttribute)}] is required on the type definition.");
+            var settingAttribute = type.GetCustomAttribute<LayoutModelAttribute>(false)
+                ?? throw new InvalidOperationException($"Failed to generate layout for type \"{type.FullName}\": a [{typeof(LayoutModelAttribute)}] is required on the type definition.");
 
             return new StackPanel { VerticalAlignment = VerticalAlignment.Top }
                 .Set(
@@ -500,21 +500,21 @@ namespace Nebulae.RimWorld.UI.Automation
             return BindingBase.GetDefaultConverter(sourceType, targetType);
         }
 
-        private static IEnumerable<Control> PrecessEntryInfos(IEnumerable<SettingEntryInfo> entryInfos)
+        private static IEnumerable<Control> PrecessEntryInfos(IEnumerable<LayoutModel> entryInfos)
         {
             foreach (var info in entryInfos)
             {
                 switch (info.EntryType)
                 {
-                    case SettingEntryType.Boolean:
-                        yield return CreateBooleanEntry(info.Owner, info.Name, (bool)info.Value, info.Label, info.Tooltip, info.EntryInfo.ReadOnly, info.EntryInfo.BindingMode);
+                    case LayoutEntryType.Boolean:
+                        yield return CreateBooleanEntry(info.Owner, info.Name, (bool)info.Value, info.Label, info.Tooltip, info.Info.ReadOnly, info.Info.BindingMode);
                         break;
-                    case SettingEntryType.Number:
-                        var numberEntry = (NumberSettingEntryAttribute)info.EntryInfo;
-                        yield return CreateNumberEntry(info.Owner, info.Name, (float)info.Value, info.Label, info.Tooltip, numberEntry.MinValue, numberEntry.MaxValue, numberEntry.Decimals, numberEntry.IsPercentage, info.EntryInfo.ReadOnly, numberEntry.BindingMode);
+                    case LayoutEntryType.Number:
+                        var numberEntry = (NumberEntryAttribute)info.Info;
+                        yield return CreateNumberEntry(info.Owner, info.Name, (float)info.Value, info.Label, info.Tooltip, numberEntry.MinValue, numberEntry.MaxValue, numberEntry.Decimals, numberEntry.IsPercentage, info.Info.ReadOnly, numberEntry.BindingMode);
                         break;
-                    case SettingEntryType.String:
-                        var textEntry = (TextSettingEntryAttribute)info.EntryInfo;
+                    case LayoutEntryType.String:
+                        var textEntry = (TextEntryAttribute)info.Info;
                         yield return CreateTextEntry(info.Owner, info.Name, (string)info.Value, info.Label, info.Tooltip, textEntry.WrapText, textEntry.FontSize, null, textEntry.ReadOnly, textEntry.BindingMode);
                         break;
                     default:
@@ -523,7 +523,7 @@ namespace Nebulae.RimWorld.UI.Automation
             }
         }
 
-        private static IEnumerable<SettingEntryInfo> ProcessMembers(object owner, string translationKeyPrefix, Type type)
+        private static IEnumerable<LayoutModel> ProcessMembers(object owner, string translationKeyPrefix, Type type)
         {
             var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
             var count = members.Length;
@@ -533,20 +533,20 @@ namespace Nebulae.RimWorld.UI.Automation
                 yield break;
             }
 
-            SettingEntryInfo.KeyBuilder.Capacity = 64;
+            LayoutModel.KeyBuilder.Capacity = 64;
 
             for (int i = 0; i < count; i++)
             {
                 var member = members[i];
 
-                if (member.GetCustomAttribute(typeof(SettingEntryBaseAttribute)) is SettingEntryBaseAttribute entryInfo)
+                if (member.GetCustomAttribute(typeof(LayoutEntryBaseAttribute)) is LayoutEntryBaseAttribute entryInfo)
                 {
-                    yield return new SettingEntryInfo(translationKeyPrefix, entryInfo, member, owner);
+                    yield return new LayoutModel(translationKeyPrefix, entryInfo, member, owner);
                 }
             }
 
-            SettingEntryInfo.KeyBuilder.Clear();
-            SettingEntryInfo.KeyBuilder.Capacity = 0;
+            LayoutModel.KeyBuilder.Clear();
+            LayoutModel.KeyBuilder.Capacity = 0;
         }
 
         #endregion

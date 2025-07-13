@@ -1,9 +1,9 @@
 ﻿namespace Nebulae.RimWorld.UI.Automation.Attributes
 {
     /// <summary>
-    /// 标识设置条目的类型
+    /// 标识布局条目的类型
     /// </summary>
-    public enum SettingEntryType
+    public enum LayoutEntryType
     {
         /// <summary>
         /// 未定义

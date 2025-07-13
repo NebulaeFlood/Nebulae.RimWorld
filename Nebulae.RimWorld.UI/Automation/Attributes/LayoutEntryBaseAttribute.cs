@@ -5,10 +5,10 @@ using System.Reflection;
 namespace Nebulae.RimWorld.UI.Automation.Attributes
 {
     /// <summary>
-    /// 标记成员为设置条目
+    /// 标记成员为布局条目
     /// </summary>
     [AttributeUsage(AttributeTargets.Field, Inherited = true)]
-    public abstract class SettingEntryBaseAttribute : Attribute
+    public abstract class LayoutEntryBaseAttribute : Attribute
     {
         /// <summary>
         /// 条目数据与生成界面的绑定模式
@@ -16,9 +16,9 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
         public BindingMode BindingMode = BindingMode.OneWay;
 
         /// <summary>
-        /// 该设置条目的类型
+        /// 该布局条目的类型
         /// </summary>
-        public readonly SettingEntryType EntryType;
+        public readonly LayoutEntryType EntryType;
 
         /// <summary>
         /// 条目名称
@@ -42,10 +42,10 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
 
 
         /// <summary>
-        /// 为 <see cref="SettingEntryBaseAttribute"/> 派生类实现基本初始化
+        /// 为 <see cref="LayoutEntryBaseAttribute"/> 派生类实现基本初始化
         /// </summary>
-        /// <param name="entryType">该设置条目的类型</param>
-        protected SettingEntryBaseAttribute(SettingEntryType entryType)
+        /// <param name="entryType">该布局条目的类型</param>
+        protected LayoutEntryBaseAttribute(LayoutEntryType entryType)
         {
             EntryType = entryType;
         }
