@@ -124,7 +124,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var textBox = (TextBox)d;
-            textBox._cache = (string)e.NewValue;
+            textBox._cache = (string)e.NewValue ?? string.Empty;
 
             if (textBox.WrapText)
             {
