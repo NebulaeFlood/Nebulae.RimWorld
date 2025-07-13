@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -18,12 +19,7 @@ namespace Nebulae.RimWorld
 
         internal StaticEventHandler(MethodInfo method)
         {
-            if (!InvocationCache.TryGetValue(method, out _invocation))
-            {
-                _invocation = (Action<TSender, TArgs>)Delegate.CreateDelegate(typeof(Action<TSender, TArgs>), method);
-                InvocationCache[method] = _invocation;
-            }
-
+            _invocation = InvocationCache.GetOrAdd(method, CreateInvocation);
             _method = method;
         }
 
@@ -108,7 +104,13 @@ namespace Nebulae.RimWorld
         #endregion
 
 
-        private static readonly Dictionary<MethodInfo, Action<TSender, TArgs>> InvocationCache = new Dictionary<MethodInfo, Action<TSender, TArgs>>();
+        private static Action<TSender, TArgs> CreateInvocation(MethodInfo method)
+        {
+            return (Action<TSender, TArgs>)Delegate.CreateDelegate(typeof(Action<TSender, TArgs>), method);
+        }
+
+
+        private static readonly ConcurrentDictionary<MethodInfo, Action<TSender, TArgs>> InvocationCache = new ConcurrentDictionary<MethodInfo, Action<TSender, TArgs>>();
 
 
         //------------------------------------------------------
