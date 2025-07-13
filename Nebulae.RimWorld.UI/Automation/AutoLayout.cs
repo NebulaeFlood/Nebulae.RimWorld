@@ -204,24 +204,12 @@ namespace Nebulae.RimWorld.UI.Automation
 
             if (readOnly)
             {
-                numberBox.IsEnabled = false;
                 slider.IsEnabled = false;
             }
             else
             {
-                Binding.Create(
-                    slider,
-                    Slider.ValueProperty,
-                    numberBox,
-                    NumberBox.ValueProperty,
-                    BindingMode.TwoWay);
-
-                Binding.Create(
-                    slider,
-                    Slider.ValueProperty,
-                    settings,
-                    entryName,
-                    mode);
+                Binding.Create(slider, Slider.ValueProperty, numberBox, NumberBox.ValueProperty, BindingMode.TwoWay);
+                Binding.Create(slider, Slider.ValueProperty, settings, entryName, mode);
             }
 
             return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(Grid.Auto, Grid.Remain, 100f).DefineRows(StandardRowHeight)
@@ -288,26 +276,12 @@ namespace Nebulae.RimWorld.UI.Automation
 
             if (readOnly)
             {
-                numberBox.IsEnabled = false;
                 slider.IsEnabled = false;
             }
             else
             {
-                Binding.Create(
-                    slider,
-                    Slider.ValueProperty,
-                    numberBox,
-                    NumberBox.ValueProperty,
-                    BindingMode.TwoWay,
-                    converter);
-
-                Binding.Create(
-                    slider,
-                    Slider.ValueProperty,
-                    settings,
-                    entry,
-                    mode,
-                    converter);
+                Binding.Create(slider, Slider.ValueProperty, numberBox, NumberBox.ValueProperty, BindingMode.TwoWay, converter);
+                Binding.Create(slider, Slider.ValueProperty, settings, entry, mode, converter);
             }
 
             return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(Grid.Auto, Grid.Remain, 100f).DefineRows(StandardRowHeight)
@@ -373,18 +347,9 @@ namespace Nebulae.RimWorld.UI.Automation
                 WrapText = wrapText
             };
 
-            if (readOnly)
+            if (!readOnly)
             {
-                textBox.IsEnabled = false;
-            }
-            else
-            {
-                Binding.Create(
-                textBox,
-                TextBox.TextProperty,
-                settings,
-                entryName,
-                mode);
+                Binding.Create(textBox, TextBox.TextProperty, settings, entryName, mode);
             }
 
             return new Grid { Padding = new Thickness(12f, 4f, 12f, 4f) }
@@ -432,19 +397,9 @@ namespace Nebulae.RimWorld.UI.Automation
                 WrapText = wrapText
             };
 
-            if (readOnly)
+            if (!readOnly)
             {
-                textBox.IsEnabled = false;
-            }
-            else
-            {
-                Binding.Create(
-                    textBox,
-                    TextBox.TextProperty,
-                    settings,
-                    entry,
-                    mode,
-                    converter);
+                Binding.Create(textBox, TextBox.TextProperty, settings, entry, mode, converter);
             }
 
             return new Grid { Padding = new Thickness(12f, 4f, 12f, 4f) }
