@@ -38,11 +38,12 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="entryName">设置选项对应的成员的名称</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
+        /// <param name="readOnly">选项是否不可修改</param>
         /// <param name="mode"><see cref="CheckBox"/> 与对应设置数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="CheckBox"/> 的实例。</returns>
-        public static CheckBox CreateBooleanEntry<T>(T settings, string entryName, string label, string tooltip, BindingMode mode = BindingMode.OneWay)
+        public static CheckBox CreateBooleanEntry<T>(T settings, string entryName, string label, string tooltip, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
-            return CreateBooleanEntry(settings, entryName, typeof(T).GetValue<bool>(entryName), label, tooltip, mode);
+            return CreateBooleanEntry(settings, entryName, typeof(T).GetValue<bool>(entryName), label, tooltip, readOnly, mode);
         }
 
         /// <summary>
@@ -53,9 +54,10 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="entryValue">设置选项对应的值</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
+        /// <param name="readOnly">选项是否不可修改</param>
         /// <param name="mode"><see cref="CheckBox"/> 与对应设置数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="CheckBox"/> 的实例。</returns>
-        public static CheckBox CreateBooleanEntry(object settings, string entryName, bool entryValue, string label, string tooltip, BindingMode mode = BindingMode.OneWay)
+        public static CheckBox CreateBooleanEntry(object settings, string entryName, bool entryValue, string label, string tooltip, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
             var checkBox = new CheckBox
             {
@@ -65,13 +67,20 @@ namespace Nebulae.RimWorld.UI.Automation
                 Tooltip = tooltip
             };
 
-            Binding.Create(
-                checkBox,
-                ToggleButton.StateProperty,
-                settings,
-                entryName,
-                mode,
-                ToggleStateToBoolean.Instance);
+            if (readOnly)
+            {
+                checkBox.IsEnabled = false;
+            }
+            else
+            {
+                Binding.Create(
+                    checkBox,
+                    ToggleButton.StateProperty,
+                    settings,
+                    entryName,
+                    mode,
+                    ToggleStateToBoolean.Instance);
+            }
 
             return checkBox;
         }
@@ -83,9 +92,10 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="entry">设置选项对应的依赖属性标识</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
+        /// <param name="readOnly">选项是否不可修改</param>
         /// <param name="mode"><see cref="CheckBox"/> 与对应设置数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="CheckBox"/> 的实例。</returns>
-        public static CheckBox CreateBooleanEntry(DependencyObject settings, DependencyProperty entry, string label, string tooltip, BindingMode mode = BindingMode.TwoWay)
+        public static CheckBox CreateBooleanEntry(DependencyObject settings, DependencyProperty entry, string label, string tooltip, bool readOnly = false, BindingMode mode = BindingMode.TwoWay)
         {
             var converter = CreateConverter<bool>(entry.ValueType, out bool requireConversion);
             var checkBox = new CheckBox
@@ -98,25 +108,25 @@ namespace Nebulae.RimWorld.UI.Automation
             if (requireConversion)
             {
                 checkBox.State = (ToggleState)converter.ConvertBack(settings.GetValue(entry), typeof(ToggleState), CultureInfo.CurrentCulture);
-
-                Binding.Create(
-                    checkBox,
-                    ToggleButton.StateProperty,
-                    settings,
-                    entry,
-                    mode,
-                    converter);
             }
             else
             {
                 checkBox.State = (ToggleState)settings.GetValue(entry);
+            }
 
+            if (readOnly)
+            {
+                checkBox.IsEnabled = false;
+            }
+            else
+            {
                 Binding.Create(
-                    checkBox,
-                    ToggleButton.StateProperty,
-                    settings,
-                    entry,
-                    mode);
+                checkBox,
+                ToggleButton.StateProperty,
+                settings,
+                entry,
+                mode,
+                converter);
             }
 
             return checkBox;
@@ -136,11 +146,12 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="maxValue">选项的最大值</param>
         /// <param name="decimals">小数部分的位数</param>
         /// <param name="isPercentage">是否以小数形式显示值</param>
+        /// <param name="readOnly">输入框是否为只读状态</param>
         /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
         /// <returns>指定条目对应的带有输入和滑动两种修改方式的布局。</returns>
-        public static Grid CreateNumberEntry<T>(T settings, string entryName, string label, string tooltip, float minValue, float maxValue, ushort decimals, bool isPercentage = false, BindingMode mode = BindingMode.OneWay)
+        public static Grid CreateNumberEntry<T>(T settings, string entryName, string label, string tooltip, float minValue, float maxValue, ushort decimals, bool isPercentage = false, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
-            return CreateNumberEntry(settings, entryName, typeof(T).GetValue<float>(entryName, settings), label, tooltip, minValue, maxValue, decimals, isPercentage, mode);
+            return CreateNumberEntry(settings, entryName, typeof(T).GetValue<float>(entryName, settings), label, tooltip, minValue, maxValue, decimals, isPercentage, readOnly, mode);
         }
 
         /// <summary>
@@ -155,9 +166,10 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="maxValue">选项的最大值</param>
         /// <param name="decimals">小数部分的位数</param>
         /// <param name="isPercentage">是否以小数形式显示值</param>
+        /// <param name="readOnly">输入框是否为只读状态</param>
         /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
         /// <returns>指定条目对应的设置控件。</returns>
-        public static Grid CreateNumberEntry(object settings, string entryName, float entryValue, string label, string tooltip, float minValue, float maxValue, ushort decimals, bool isPercentage = false, BindingMode mode = BindingMode.OneWay)
+        public static Grid CreateNumberEntry(object settings, string entryName, float entryValue, string label, string tooltip, float minValue, float maxValue, ushort decimals, bool isPercentage = false, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
             var entryLabel = new Label
             {
@@ -170,6 +182,7 @@ namespace Nebulae.RimWorld.UI.Automation
             {
                 Decimals = decimals,
                 IsPercentage = isPercentage,
+                IsReadOnly = readOnly,
                 MaxValue = maxValue,
                 MinValue = minValue,
                 Tooltip = tooltip,
@@ -189,19 +202,27 @@ namespace Nebulae.RimWorld.UI.Automation
                 Value = entryValue
             };
 
-            Binding.Create(
-                slider,
-                Slider.ValueProperty,
-                numberBox,
-                NumberBox.ValueProperty,
-                BindingMode.TwoWay);
+            if (readOnly)
+            {
+                numberBox.IsEnabled = false;
+                slider.IsEnabled = false;
+            }
+            else
+            {
+                Binding.Create(
+                    slider,
+                    Slider.ValueProperty,
+                    numberBox,
+                    NumberBox.ValueProperty,
+                    BindingMode.TwoWay);
 
-            Binding.Create(
-                slider,
-                Slider.ValueProperty,
-                settings,
-                entryName,
-                mode);
+                Binding.Create(
+                    slider,
+                    Slider.ValueProperty,
+                    settings,
+                    entryName,
+                    mode);
+            }
 
             return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(Grid.Auto, Grid.Remain, 100f).DefineRows(StandardRowHeight)
                 .Set(entryLabel, slider, numberBox);
@@ -218,9 +239,10 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="maxValue">选项的最大值</param>
         /// <param name="decimals">小数部分的位数</param>
         /// <param name="isPercentage">是否以小数形式显示值</param>
+        /// <param name="readOnly">输入框是否为只读状态</param>
         /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
         /// <returns>指定条目对应的设置控件。</returns>
-        public static Grid CreateNumberEntry(DependencyObject settings, DependencyProperty entry, string label, string tooltip, float minValue, float maxValue, ushort decimals, bool isPercentage = false, BindingMode mode = BindingMode.TwoWay)
+        public static Grid CreateNumberEntry(DependencyObject settings, DependencyProperty entry, string label, string tooltip, float minValue, float maxValue, ushort decimals, bool isPercentage = false, bool readOnly = false, BindingMode mode = BindingMode.TwoWay)
         {
             var entryLabel = new Label
             {
@@ -235,9 +257,10 @@ namespace Nebulae.RimWorld.UI.Automation
             {
                 Decimals = decimals,
                 IsPercentage = isPercentage,
+                IsReadOnly = readOnly,
                 MaxValue = maxValue,
                 MinValue = minValue,
-                Tooltip = tooltip
+                Tooltip = tooltip,
             };
 
             var slider = new Slider
@@ -263,21 +286,29 @@ namespace Nebulae.RimWorld.UI.Automation
                 slider.Value = (float)settings.GetValue(entry);
             }
 
-            Binding.Create(
-                slider,
-                Slider.ValueProperty,
-                numberBox,
-                NumberBox.ValueProperty,
-                BindingMode.TwoWay,
-                converter);
+            if (readOnly)
+            {
+                numberBox.IsEnabled = false;
+                slider.IsEnabled = false;
+            }
+            else
+            {
+                Binding.Create(
+                    slider,
+                    Slider.ValueProperty,
+                    numberBox,
+                    NumberBox.ValueProperty,
+                    BindingMode.TwoWay,
+                    converter);
 
-            Binding.Create(
-                slider,
-                Slider.ValueProperty,
-                settings,
-                entry,
-                mode,
-                converter);
+                Binding.Create(
+                    slider,
+                    Slider.ValueProperty,
+                    settings,
+                    entry,
+                    mode,
+                    converter);
+            }
 
             return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }.DefineColumns(Grid.Auto, Grid.Remain, 100f).DefineRows(StandardRowHeight)
                 .Set(entryLabel, slider, numberBox);
@@ -293,15 +324,15 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="entryName">设置选项对应的成员的名称</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
-        /// <param name="isReadOnly">输入框是否为只读状态</param>
         /// <param name="wrapText">输入框文字是否自动换行</param>
         /// <param name="fontSize">字体尺寸</param>
         /// <param name="inputValidator">输入字符的正则表达式</param>
+        /// <param name="readOnly">输入框是否为只读状态</param>
         /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="TextBox"/>。</returns>
-        public static Grid CreateTextEntry<T>(T settings, string entryName, string label, string tooltip, bool isReadOnly = false, bool wrapText = false, GameFont fontSize = GameFont.Small, Regex inputValidator = null, BindingMode mode = BindingMode.OneWay)
+        public static Grid CreateTextEntry<T>(T settings, string entryName, string label, string tooltip, bool wrapText = false, GameFont fontSize = GameFont.Small, Regex inputValidator = null, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
-            return CreateTextEntry(settings, entryName, typeof(T).GetValue<string>(entryName, settings), label, tooltip, isReadOnly, wrapText, fontSize, inputValidator, mode);
+            return CreateTextEntry(settings, entryName, typeof(T).GetValue<string>(entryName, settings), label, tooltip, wrapText, fontSize, inputValidator, readOnly, mode);
         }
 
         /// <summary>
@@ -312,39 +343,51 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="entryValue">设置选项对应的值</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
-        /// <param name="isReadOnly">输入框是否为只读状态</param>
         /// <param name="wrapText">输入框文字是否自动换行</param>
         /// <param name="fontSize">字体尺寸</param>
         /// <param name="inputValidator">输入字符的正则表达式</param>
+        /// <param name="readOnly">输入框是否为只读状态</param>
         /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="TextBox"/>。</returns>
-        public static Grid CreateTextEntry(object settings, string entryName, string entryValue, string label, string tooltip, bool isReadOnly = false, bool wrapText = false, GameFont fontSize = GameFont.Small, Regex inputValidator = null, BindingMode mode = BindingMode.OneWay)
+        public static Grid CreateTextEntry(object settings, string entryName, string entryValue, string label, string tooltip, bool wrapText = false, GameFont fontSize = GameFont.Small, Regex inputValidator = null, bool readOnly = false, BindingMode mode = BindingMode.OneWay)
         {
             var entryLabel = new Label
             {
                 Anchor = TextAnchor.MiddleLeft,
                 Text = label,
-                Tooltip = tooltip,
+                Tooltip = tooltip
             };
+
+            if (wrapText)
+            {
+                entryLabel.VerticalAlignment = VerticalAlignment.Top;
+            }
 
             var textBox = new TextBox
             {
                 FontSize = fontSize,
                 InputValidator = inputValidator,
-                IsReadOnly = isReadOnly,
+                IsReadOnly = readOnly,
                 Text = entryValue,
                 Tooltip = tooltip,
                 WrapText = wrapText
             };
 
-            Binding.Create(
+            if (readOnly)
+            {
+                textBox.IsEnabled = false;
+            }
+            else
+            {
+                Binding.Create(
                 textBox,
                 TextBox.TextProperty,
                 settings,
                 entryName,
                 mode);
+            }
 
-            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }
+            return new Grid { Padding = new Thickness(12f, 4f, 12f, 4f) }
                 .DefineColumns(Grid.Auto, Grid.Remain, 260f)
                 .DefineRows(Grid.Auto)
                 .Set(entryLabel, null, textBox);
@@ -357,13 +400,13 @@ namespace Nebulae.RimWorld.UI.Automation
         /// <param name="entry">设置选项对应的依赖属性标识</param>
         /// <param name="label">选项的标签文字</param>
         /// <param name="tooltip">选项的提示框文字</param>
-        /// <param name="isReadOnly">输入框是否为只读状态</param>
         /// <param name="wrapText">输入框文字是否自动换行</param>
         /// <param name="fontSize">字体尺寸</param>
         /// <param name="inputValidator">输入字符的正则表达式</param>
+        /// <param name="readOnly">输入框是否为只读状态</param>
         /// <param name="mode">设置控件与对应设置数据的绑定模式</param>
         /// <returns>指定条目对应的 <see cref="TextBox"/>。</returns>
-        public static Grid CreateTextEntry(DependencyObject settings, DependencyProperty entry, string label, string tooltip, bool isReadOnly = false, bool wrapText = false, GameFont fontSize = GameFont.Small, Regex inputValidator = null, BindingMode mode = BindingMode.TwoWay)
+        public static Grid CreateTextEntry(DependencyObject settings, DependencyProperty entry, string label, string tooltip, bool wrapText = false, GameFont fontSize = GameFont.Small, Regex inputValidator = null, bool readOnly = false, BindingMode mode = BindingMode.TwoWay)
         {
             var entryLabel = new Label
             {
@@ -372,27 +415,39 @@ namespace Nebulae.RimWorld.UI.Automation
                 Tooltip = tooltip
             };
 
+            if (wrapText)
+            {
+                entryLabel.VerticalAlignment = VerticalAlignment.Top;
+            }
+
             var converter = CreateConverter<string>(entry.ValueType, out bool convertOperation);
 
             var textBox = new TextBox
             {
                 FontSize = fontSize,
                 InputValidator = inputValidator,
-                IsReadOnly = isReadOnly,
+                IsReadOnly = readOnly,
                 Text = convertOperation ? (string)converter.Convert(settings.GetValue(entry), entry.ValueType, CultureInfo.InvariantCulture) : (string)settings.GetValue(entry),
                 Tooltip = tooltip,
                 WrapText = wrapText
             };
 
-            Binding.Create(
-                textBox,
-                TextBox.TextProperty,
-                settings,
-                entry,
-                mode,
-                converter);
+            if (readOnly)
+            {
+                textBox.IsEnabled = false;
+            }
+            else
+            {
+                Binding.Create(
+                    textBox,
+                    TextBox.TextProperty,
+                    settings,
+                    entry,
+                    mode,
+                    converter);
+            }
 
-            return new Grid { Padding = new Thickness(12f, 0f, 12f, 0f) }
+            return new Grid { Padding = new Thickness(12f, 4f, 12f, 4f) }
                 .DefineColumns(Grid.Auto, Grid.Remain, 260f)
                 .DefineRows(Grid.Auto)
                 .Set(entryLabel, null, textBox);
@@ -452,15 +507,15 @@ namespace Nebulae.RimWorld.UI.Automation
                 switch (info.EntryType)
                 {
                     case SettingEntryType.Boolean:
-                        yield return CreateBooleanEntry(info.Owner, info.Name, (bool)info.Value, info.Label, info.Tooltip, info.EntryInfo.BindingMode);
+                        yield return CreateBooleanEntry(info.Owner, info.Name, (bool)info.Value, info.Label, info.Tooltip, info.EntryInfo.ReadOnly, info.EntryInfo.BindingMode);
                         break;
                     case SettingEntryType.Number:
                         var numberEntry = (NumberSettingEntryAttribute)info.EntryInfo;
-                        yield return CreateNumberEntry(info.Owner, info.Name, (float)info.Value, info.Label, info.Tooltip, numberEntry.MinValue, numberEntry.MaxValue, numberEntry.Decimals, numberEntry.IsPercentage, numberEntry.BindingMode);
+                        yield return CreateNumberEntry(info.Owner, info.Name, (float)info.Value, info.Label, info.Tooltip, numberEntry.MinValue, numberEntry.MaxValue, numberEntry.Decimals, numberEntry.IsPercentage, info.EntryInfo.ReadOnly, numberEntry.BindingMode);
                         break;
                     case SettingEntryType.String:
                         var textEntry = (TextSettingEntryAttribute)info.EntryInfo;
-                        yield return CreateTextEntry(info.Owner, info.Name, (string)info.Value, info.Label, info.Tooltip, textEntry.IsReadOnly, textEntry.WrapText, textEntry.FontSize, null, textEntry.BindingMode);
+                        yield return CreateTextEntry(info.Owner, info.Name, (string)info.Value, info.Label, info.Tooltip, textEntry.WrapText, textEntry.FontSize, null, textEntry.ReadOnly, textEntry.BindingMode);
                         break;
                     default:
                         break;

@@ -124,7 +124,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var textBox = (TextBox)d;
-            textBox._cache = (string)e.NewValue;
+            textBox._cache = (string)e.NewValue ?? string.Empty;
 
             if (textBox.WrapText)
             {
@@ -148,7 +148,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty WrapTextProperty =
             DependencyProperty.Register(nameof(WrapText), typeof(bool), typeof(TextBox),
-                new ControlPropertyMetadata(true, ControlRelation.Measure));
+                new ControlPropertyMetadata(true, UpdateDrawer, ControlRelation.Measure));
         #endregion
 
         #endregion
@@ -258,7 +258,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         #region Private Fields
 
-        private static readonly Action<TextBox, ControlState> DefaultDrawer = CreateDrawer(GameFont.Small, null, false, false);
+        private static readonly Action<TextBox, ControlState> DefaultDrawer = CreateDrawer(GameFont.Small, null, false, true);
 
         private string _cache = string.Empty;
         private Action<TextBox, ControlState> _drawer = DefaultDrawer;

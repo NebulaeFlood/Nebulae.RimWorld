@@ -140,18 +140,24 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             if (states.HasState(ControlState.Disabled))
             {
+                _cache.DrawLabel(RenderRect, TextAnchor.MiddleLeft);
                 GUI.color *= Widgets.InactiveColor;
             }
             else if (states.HasState(ControlState.Pressing))
             {
                 GUI.DrawTexture(RegionRect, TexUI.HighlightSelectedTex);
+                _cache.DrawLabel(RenderRect, TextAnchor.MiddleLeft);
             }
             else if (states.HasState(ControlState.CursorDirectlyOver))
             {
                 GUI.DrawTexture(RegionRect, TexUI.HighlightTex);
+                _cache.DrawLabel(RenderRect, TextAnchor.MiddleLeft);
             }
-
-            _cache.DrawLabel(RenderRect, TextAnchor.MiddleLeft);
+            else
+            {
+                _cache.DrawLabel(RenderRect, TextAnchor.MiddleLeft);
+            }
+            
             GUI.DrawTexture(_iconRect, _icon, ScaleMode.ScaleToFit);
         }
 

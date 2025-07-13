@@ -35,6 +35,11 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
         /// </summary>
         public bool Prompted = true;
 
+        /// <summary>
+        /// 条目是否只读
+        /// </summary>
+        public bool ReadOnly;
+
 
         /// <summary>
         /// 为 <see cref="SettingEntryBaseAttribute"/> 派生类实现基本初始化

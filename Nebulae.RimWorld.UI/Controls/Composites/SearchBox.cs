@@ -144,7 +144,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var searchBox = (SearchBox)d;
-            var text = (string)e.NewValue;
+            var text = (string)e.NewValue ?? string.Empty;
 
             searchBox._cache = text;
             searchBox._filter.Text = text;
