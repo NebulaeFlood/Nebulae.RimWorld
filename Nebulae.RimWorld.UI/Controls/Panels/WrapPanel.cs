@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Core.Data;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -92,7 +93,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 向面板末尾添加一个控件
         /// </summary>
         /// <param name="control">要添加的控件</param>
-        /// <returns>该面板控件</returns>
+        /// <returns>该面板控件。</returns>
         public WrapPanel Append(Control control)
         {
             Children.Add(control);
@@ -103,7 +104,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 清除面板并重新设置面板中的控件
         /// </summary>
         /// <param name="controls">要添加的控件</param>
-        /// <returns>该面板控件</returns>
+        /// <returns>该面板控件。</returns>
         public WrapPanel Set(IEnumerable<Control> controls)
         {
             Children.OverrideCollection(controls);
@@ -114,7 +115,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// 清除面板并重新设置面板中的控件
         /// </summary>
         /// <param name="controls">要添加的控件</param>
-        /// <returns>该面板控件</returns>
+        /// <returns>该面板控件。</returns>
         public WrapPanel Set(params Control[] controls)
         {
             Children.OverrideCollection(controls);
@@ -148,6 +149,28 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         public bool Remove(Control control)
         {
             return Children.Remove(control);
+        }
+
+        /// <summary>
+        /// 使用指定的比较强排序面板中的控件
+        /// </summary>
+        /// <param name="comparison">比较控件时使用的比较器</param>
+        /// <returns>该面板控件。</returns>
+        public WrapPanel Sort(Comparison<Control> comparison)
+        {
+            Children.Sort(comparison);
+            return this;
+        }
+
+        /// <summary>
+        /// 使用指定的比较强排序面板中的控件
+        /// </summary>
+        /// <param name="comparer">比较控件时使用的比较器</param>
+        /// <returns>该面板控件。</returns>
+        public WrapPanel Sort(IComparer<Control> comparer)
+        {
+            Children.Sort(comparer);
+            return this;
         }
 
         #endregion
