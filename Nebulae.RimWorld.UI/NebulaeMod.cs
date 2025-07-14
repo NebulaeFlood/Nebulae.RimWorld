@@ -64,8 +64,6 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         public static void ResetSettingWindow()
         {
-            LogicalTreeUtility.Unbind(_settingWindow.Content);
-
             _settingWindow.Content = _mod.CreateContent();
         }
 

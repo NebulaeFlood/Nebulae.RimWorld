@@ -86,19 +86,5 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             return false;
         }
-
-        /// <summary>
-        /// 解除指定控件及其所有子控件的所有相关的绑定关系
-        /// </summary>
-        /// <param name="control">指定的控件</param>
-        public static void Unbind(this Control control)
-        {
-            Binding.Unbind(control);
-
-            foreach (var child in control.Descendants)
-            {
-                Binding.Unbind(child);
-            }
-        }
     }
 }
