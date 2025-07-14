@@ -1,11 +1,13 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
 using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Core.Data.Bindings;
 using Nebulae.RimWorld.UI.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using Verse;
+using static UnityEngine.GraphicsBuffer;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
@@ -334,6 +336,17 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         #endregion
+
+
+#if DEBUG
+        /// <summary>
+        /// <see cref="Control"/> 的析构函数
+        /// </summary>
+        ~Control()
+        {
+            System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A control of type:{Type} has been collected.");
+        }
+#endif
 
 
         //------------------------------------------------------
