@@ -54,7 +54,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty DecimalsProperty =
             DependencyProperty.Register(nameof(Decimals), typeof(ushort), typeof(NumberBox),
-                new PropertyMetadata(0, CoerceDecimals, OnDecimalsChanged));
+                new PropertyMetadata(new ushort(), CoerceDecimals, OnDecimalsChanged));
 
         private static object CoerceDecimals(DependencyObject d, object baseValue)
         {

@@ -4,10 +4,10 @@ using Verse;
 namespace Nebulae.RimWorld.UI.Automation.Attributes
 {
     /// <summary>
-    /// 标记 <see cref="string"/> 类型的成员为设置条目
+    /// 标记 <see cref="string"/> 类型的成员为布局条目
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    public class TextSettingEntryAttribute : SettingEntryBaseAttribute
+    public class TextEntryAttribute : LayoutEntryBaseAttribute
     {
         /// <summary>
         /// 字体尺寸
@@ -21,8 +21,8 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
 
 
         /// <summary>
-        /// 初始化 <see cref="TextSettingEntryAttribute"/> 的新实例
+        /// 初始化 <see cref="TextEntryAttribute"/> 的新实例
         /// </summary>
-        public TextSettingEntryAttribute() : base(SettingEntryType.String) { }
+        public TextEntryAttribute() : base(LayoutEntryType.String) { }
     }
 }

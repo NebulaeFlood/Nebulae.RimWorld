@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -21,41 +21,19 @@ namespace Nebulae.RimWorld.UI.Core.Events
 
             var key = new Key(method.DeclaringType, argsType);
 
-            if (RoutedEventHandlerCreators.TryGetValue(key, out var creator))
-            {
-                return creator.Invoke(handler.Target, method);
-            }
-
-            if (method.IsStatic)
-            {
-                var targetExp = Expression.Parameter(typeof(object), "target");
-                var methodExp = Expression.Parameter(typeof(MethodInfo), "method");
-
-                creator = Expression.Lambda<Func<object, MethodInfo, IRoutedEventHandler>>(
-                    Expression.New(typeof(StaticRoutedEventHandler<>).MakeGenericType(key.ArgsType).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(MethodInfo) }, null)
-                        , methodExp),
-                    targetExp,
-                    methodExp).Compile();
-            }
-            else
-            {
-                var targetExp = Expression.Parameter(typeof(object), "target");
-                var methodExp = Expression.Parameter(typeof(MethodInfo), "method");
-
-                creator = Expression.Lambda<Func<object, MethodInfo, IRoutedEventHandler>>(
-                    Expression.Call(
-                        typeof(RoutedEventHandler<,>).MakeGenericType(key.OwnerType, key.ArgsType).GetMethod("Create", BindingFlags.NonPublic | BindingFlags.Static),
-                        Expression.Convert(targetExp, key.OwnerType),
-                        methodExp
-                    ),
-                    targetExp,
-                    methodExp).Compile();
-            }
-
-            RoutedEventHandlerCreators[key] = creator;
-            return creator.Invoke(handler.Target, method);
+            return method.IsStatic
+                ? RoutedEventHandlerCreators.GetOrAdd(key, CreateStaticCreator).Invoke(handler.Target, method)
+                : RoutedEventHandlerCreators.GetOrAdd(key, CreateCreator).Invoke(handler.Target, method);
         }
 
+
+        //------------------------------------------------------
+        //
+        //  Private Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Static Methods
 
         private static string ConvertParamaters(ParameterInfo[] parameters)
         {
@@ -83,8 +61,37 @@ namespace Nebulae.RimWorld.UI.Core.Events
             }
         }
 
+        private static Func<object, MethodInfo, IRoutedEventHandler> CreateCreator(Key key)
+        {
+            var targetExp = Expression.Parameter(typeof(object), "target");
+            var methodExp = Expression.Parameter(typeof(MethodInfo), "method");
 
-        private static readonly Dictionary<Key, Func<object, MethodInfo, IRoutedEventHandler>> RoutedEventHandlerCreators = new Dictionary<Key, Func<object, MethodInfo, IRoutedEventHandler>>();
+            return Expression.Lambda<Func<object, MethodInfo, IRoutedEventHandler>>(
+                Expression.Call(
+                    typeof(RoutedEventHandler<,>).MakeGenericType(key.OwnerType, key.ArgsType).GetMethod("Create", BindingFlags.NonPublic | BindingFlags.Static),
+                    Expression.Convert(targetExp, key.OwnerType),
+                    methodExp
+                ),
+                targetExp,
+                methodExp).Compile();
+        }
+
+        private static Func<object, MethodInfo, IRoutedEventHandler> CreateStaticCreator(Key key)
+        {
+            var targetExp = Expression.Parameter(typeof(object), "target");
+            var methodExp = Expression.Parameter(typeof(MethodInfo), "method");
+
+            return Expression.Lambda<Func<object, MethodInfo, IRoutedEventHandler>>(
+                Expression.New(typeof(StaticRoutedEventHandler<>).MakeGenericType(key.ArgsType).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(MethodInfo) }, null)
+                    , methodExp),
+                targetExp,
+                methodExp).Compile();
+        }
+
+        #endregion
+
+
+        private static readonly ConcurrentDictionary<Key, Func<object, MethodInfo, IRoutedEventHandler>> RoutedEventHandlerCreators = new ConcurrentDictionary<Key, Func<object, MethodInfo, IRoutedEventHandler>>();
 
 
         private readonly struct Key : IEquatable<Key>

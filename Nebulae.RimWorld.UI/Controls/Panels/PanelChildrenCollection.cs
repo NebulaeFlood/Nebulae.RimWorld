@@ -291,6 +291,26 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
+        /// 使用指定的比较器排序子控件
+        /// </summary>
+        /// <param name="comparison">比较子控件时使用的比较器</param>
+        public void Sort(Comparison<Control> comparison)
+        {
+            _children.Sort(comparison);
+            _owner.InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// 使用指定的比较器排序子控件
+        /// </summary>
+        /// <param name="comparer">比较子控件时使用的比较器</param>
+        public void Sort(IComparer<Control> comparer)
+        {
+            _children.Sort(comparer);
+            _owner.InvalidateMeasure();
+        }
+
+        /// <summary>
         /// 将集合中的控件复制到新数组
         /// </summary>
         /// <returns>包含集合中的控件副本的数组。</returns>

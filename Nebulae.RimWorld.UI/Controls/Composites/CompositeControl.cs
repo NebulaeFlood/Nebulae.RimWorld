@@ -80,7 +80,6 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
                 throw new InvalidOperationException($"Cannot reset {Type} because it has not been initialized yet. Call {Type}.Initialize() first.");
             }
 
-            LogicalTreeUtility.Unbind(_content);
             Initialize();
         }
 

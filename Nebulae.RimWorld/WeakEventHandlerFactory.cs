@@ -1,6 +1,5 @@
-﻿
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -12,6 +11,14 @@ namespace Nebulae.RimWorld
     /// </summary>
     public static class WeakEventHandlerFactory
     {
+        //------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Methods
+
         /// <summary>
         /// 将指定的事件处理程序转换为弱事件处理程序
         /// </summary>
@@ -51,17 +58,7 @@ namespace Nebulae.RimWorld
             return Create<TSender, TArgs>(handler.Target, method);
         }
 
-
-        internal static void VerifyParameters(MethodInfo method, Type senderType, Type argsType)
-        {
-            var methodParamaters = method.GetParameters();
-
-            if (methodParamaters.Length != 2 || methodParamaters[0].ParameterType != senderType || methodParamaters[1].ParameterType != argsType)
-            {
-                throw new ArgumentException($"Conversion requires a method with exactly two parameters ({senderType} sender, {argsType} args). " +
-                    $"The provided method is ({ConvertParamaters(methodParamaters)}).");
-            }
-        }
+        #endregion
 
 
         //------------------------------------------------------
@@ -105,17 +102,17 @@ namespace Nebulae.RimWorld
                 return new StaticEventHandler<TSender, TArgs>(method);
             }
 
-            var key = new Key(method.DeclaringType, typeof(TSender), typeof(TArgs));
+            return (IWeakEventHandler<TSender, TArgs>)WeakEventHandlerCreators
+                .GetOrAdd(new Key(method.DeclaringType, typeof(TSender), typeof(TArgs)), CreateCreator)
+                .Invoke(owner, method);
+        }
 
-            if (WeakEventHandlerCreators.TryGetValue(key, out var creator))
-            {
-                return (IWeakEventHandler<TSender, TArgs>)creator.Invoke(owner, method);
-            }
-
+        private static Func<object, MethodInfo, object> CreateCreator(Key key)
+        {
             var targetExp = Expression.Parameter(typeof(object), "target");
             var methodExp = Expression.Parameter(typeof(MethodInfo), "method");
 
-            creator = Expression.Lambda<Func<object, MethodInfo, object>>(
+            return Expression.Lambda<Func<object, MethodInfo, object>>(
                 Expression.Call(
                     typeof(WeakEventHandler<,,>).MakeGenericType(key.OwnerType, key.SenderType, key.ArgsType).GetMethod("Create", BindingFlags.NonPublic | BindingFlags.Static),
                     Expression.Convert(targetExp, key.OwnerType),
@@ -123,15 +120,23 @@ namespace Nebulae.RimWorld
                 ),
                 targetExp,
                 methodExp).Compile();
+        }
 
-            WeakEventHandlerCreators[key] = creator;
-            return (IWeakEventHandler<TSender, TArgs>)creator.Invoke(owner, method);
+        private static void VerifyParameters(MethodInfo method, Type senderType, Type argsType)
+        {
+            var methodParamaters = method.GetParameters();
+
+            if (methodParamaters.Length != 2 || methodParamaters[0].ParameterType != senderType || methodParamaters[1].ParameterType != argsType)
+            {
+                throw new ArgumentException($"Conversion requires a method with exactly two parameters ({senderType} sender, {argsType} args). " +
+                    $"The provided method is ({ConvertParamaters(methodParamaters)}).");
+            }
         }
 
         #endregion
 
 
-        private static readonly Dictionary<Key, Func<object, MethodInfo, object>> WeakEventHandlerCreators = new Dictionary<Key, Func<object, MethodInfo, object>>();
+        private static readonly ConcurrentDictionary<Key, Func<object, MethodInfo, object>> WeakEventHandlerCreators = new ConcurrentDictionary<Key, Func<object, MethodInfo, object>>();
 
 
         private readonly struct Key : IEquatable<Key>

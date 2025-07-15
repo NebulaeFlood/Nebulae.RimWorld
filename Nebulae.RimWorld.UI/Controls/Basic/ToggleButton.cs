@@ -157,7 +157,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             {
                 _cache.DrawLabel(RenderRect, TextAnchor.MiddleLeft);
             }
-            
+
             GUI.DrawTexture(_iconRect, _icon, ScaleMode.ScaleToFit);
         }
 

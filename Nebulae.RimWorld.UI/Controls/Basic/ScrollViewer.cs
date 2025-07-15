@@ -316,10 +316,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
                 if (_horizontalMaxOffset > 0f)
                 {
-                    float offsetPercent = _horizontalOffset / _horizontalMaxOffset;
-
                     _horizontalMaxOffset = Mathf.Max(0f, _contentSize.Width - _viewWidth);
-                    _horizontalOffset = Mathf.Clamp((_horizontalMaxOffset * offsetPercent), 0f, _horizontalMaxOffset);
+                    _horizontalOffset = Mathf.Clamp(_horizontalOffset, 0f, _horizontalMaxOffset);
                 }
                 else
                 {
@@ -329,10 +327,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
                 if (_verticalMaxOffset > 0f)
                 {
-                    float offsetPercent = _verticalOffset / _verticalMaxOffset;
-
                     _verticalMaxOffset = Mathf.Max(0f, _contentSize.Height - _viewHeight);
-                    _verticalOffset = Mathf.Clamp((_verticalMaxOffset * offsetPercent), 0f, _verticalMaxOffset);
+                    _verticalOffset = Mathf.Clamp(_verticalOffset, 0f, _verticalMaxOffset);
                 }
                 else
                 {
@@ -519,7 +515,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 return;
             }
 
-            if (_dragScroll && currentEventType is EventType.MouseDrag && IsDragging)
+            if (_dragScroll && currentEventType is EventType.MouseDrag && states.HasState(ControlState.Dragging))
             {
                 var delta = currentEvent.delta;
 
@@ -530,8 +526,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
                 _shouldUpdateSegment = true;
             }
-
-            if (states.HasState(ControlState.CursorOver) && currentEventType is EventType.ScrollWheel)
+            else if (currentEventType is EventType.ScrollWheel && states.HasState(ControlState.CursorOver))
             {
                 var delta = currentEvent.delta;
 

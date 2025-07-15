@@ -6,12 +6,12 @@ using Verse;
 
 namespace Nebulae.RimWorld.UI.Automation
 {
-    internal readonly struct SettingEntryInfo
+    internal readonly struct LayoutModel
     {
         public static readonly StringBuilder KeyBuilder = new StringBuilder(0);
 
-        public readonly SettingEntryBaseAttribute EntryInfo;
-        public readonly SettingEntryType EntryType;
+        public readonly LayoutEntryBaseAttribute Info;
+        public readonly LayoutEntryType EntryType;
 
         public readonly string Label;
         public readonly string Name;
@@ -21,9 +21,9 @@ namespace Nebulae.RimWorld.UI.Automation
         public readonly object Value;
 
 
-        internal SettingEntryInfo(string translationKeyPrefix, SettingEntryBaseAttribute info, MemberInfo member, object owner)
+        internal LayoutModel(string translationKeyPrefix, LayoutEntryBaseAttribute info, MemberInfo member, object owner)
         {
-            EntryInfo = info;
+            Info = info;
             EntryType = info.EntryType;
             Name = member.Name;
             Owner = owner;
@@ -44,13 +44,13 @@ namespace Nebulae.RimWorld.UI.Automation
 
             switch (EntryType)
             {
-                case SettingEntryType.Boolean:
+                case LayoutEntryType.Boolean:
                     Value = member.GetValue<bool>(owner);
                     break;
-                case SettingEntryType.Number:
+                case LayoutEntryType.Number:
                     Value = member.GetValue<float>(owner);
                     break;
-                case SettingEntryType.String:
+                case LayoutEntryType.String:
                     Value = member.GetValue<string>(owner);
                     break;
                 default:

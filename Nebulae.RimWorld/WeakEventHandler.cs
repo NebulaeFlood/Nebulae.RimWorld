@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace Nebulae.RimWorld
@@ -141,18 +141,17 @@ namespace Nebulae.RimWorld
 
         internal static WeakEventHandler<TOwner, TSender, TArgs> Create(TOwner owner, MethodInfo method)
         {
-            if (InvocationCache.TryGetValue(method, out var invocation))
-            {
-                return new WeakEventHandler<TOwner, TSender, TArgs>(owner, invocation, method);
-            }
-
-            invocation = (Action<TOwner, TSender, TArgs>)method.CreateDelegate(typeof(Action<TOwner, TSender, TArgs>));
-            InvocationCache[method] = invocation;
-
-            return new WeakEventHandler<TOwner, TSender, TArgs>(owner, invocation, method);
+            return new WeakEventHandler<TOwner, TSender, TArgs>(owner, InvocationCache.GetOrAdd(method, CreateInvocation), method);
         }
 
-        private static readonly Dictionary<MethodInfo, Action<TOwner, TSender, TArgs>> InvocationCache = new Dictionary<MethodInfo, Action<TOwner, TSender, TArgs>>();
+
+        private static Action<TOwner, TSender, TArgs> CreateInvocation(MethodInfo method)
+        {
+            return (Action<TOwner, TSender, TArgs>)method.CreateDelegate(typeof(Action<TOwner, TSender, TArgs>));
+        }
+
+
+        private static readonly ConcurrentDictionary<MethodInfo, Action<TOwner, TSender, TArgs>> InvocationCache = new ConcurrentDictionary<MethodInfo, Action<TOwner, TSender, TArgs>>();
 
 
         //------------------------------------------------------

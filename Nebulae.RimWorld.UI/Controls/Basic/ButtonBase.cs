@@ -55,20 +55,20 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 new PropertyMetadata());
         #endregion
 
-        #region CursorOverSound
+        #region CursorEnterSound
         /// <summary>
         /// 获取或设置光标进入按钮范围时播放的音效
         /// </summary>
         public SoundDef CursorEnterSound
         {
-            get { return (SoundDef)GetValue(CursorOverSoundProperty); }
-            set { SetValue(CursorOverSoundProperty, value); }
+            get { return (SoundDef)GetValue(CursorEnterSoundProperty); }
+            set { SetValue(CursorEnterSoundProperty, value); }
         }
 
         /// <summary>
         /// 标识 <see cref="CursorEnterSound"/> 依赖属性
         /// </summary>
-        public static readonly DependencyProperty CursorOverSoundProperty =
+        public static readonly DependencyProperty CursorEnterSoundProperty =
             DependencyProperty.Register(nameof(CursorEnterSound), typeof(SoundDef), typeof(ButtonBase),
                 new PropertyMetadata());
         #endregion

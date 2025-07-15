@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace Nebulae.RimWorld.UI.Core.Events
@@ -112,19 +112,17 @@ namespace Nebulae.RimWorld.UI.Core.Events
 
         internal static RoutedEventHandler<TOwner, TArgs> Create(TOwner owner, MethodInfo method)
         {
-            if (InvocationCache.TryGetValue(method, out var invocation))
-            {
-                return new RoutedEventHandler<TOwner, TArgs>(owner, invocation, method);
-            }
-
-            invocation = (Action<TOwner, object, TArgs>)method.CreateDelegate(typeof(Action<TOwner, object, TArgs>));
-            InvocationCache[method] = invocation;
-
-            return new RoutedEventHandler<TOwner, TArgs>(owner, invocation, method);
+            return new RoutedEventHandler<TOwner, TArgs>(owner, InvocationCache.GetOrAdd(method, CreateInvocation), method);
         }
 
 
-        private static readonly Dictionary<MethodInfo, Action<TOwner, object, TArgs>> InvocationCache = new Dictionary<MethodInfo, Action<TOwner, object, TArgs>>();
+        private static Action<TOwner, object, TArgs> CreateInvocation(MethodInfo method)
+        {
+            return (Action<TOwner, object, TArgs>)method.CreateDelegate(typeof(Action<TOwner, object, TArgs>));
+        }
+
+
+        private static readonly ConcurrentDictionary<MethodInfo, Action<TOwner, object, TArgs>> InvocationCache = new ConcurrentDictionary<MethodInfo, Action<TOwner, object, TArgs>>();
 
 
         //------------------------------------------------------

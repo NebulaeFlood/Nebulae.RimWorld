@@ -3,10 +3,10 @@
 namespace Nebulae.RimWorld.UI.Automation.Attributes
 {
     /// <summary>
-    /// 标记数字类型的成员为设置条目
+    /// 标记数字类型的成员为布局条目
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false)]
-    public class NumberSettingEntryAttribute : SettingEntryBaseAttribute
+    public class NumberEntryAttribute : LayoutEntryBaseAttribute
     {
         /// <summary>
         /// 小数部分的位数
@@ -35,11 +35,11 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
 
 
         /// <summary>
-        /// 初始化 <see cref="NumberSettingEntryAttribute"/> 的新实例
+        /// 初始化 <see cref="NumberEntryAttribute"/> 的新实例
         /// </summary>
         /// <param name="min">条目的最小值</param>
         /// <param name="max">条目的最大值</param>
-        public NumberSettingEntryAttribute(float min, float max) : base(SettingEntryType.Number)
+        public NumberEntryAttribute(float min, float max) : base(LayoutEntryType.Number)
         {
             MinValue = min;
             MaxValue = max;

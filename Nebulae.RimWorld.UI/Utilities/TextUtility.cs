@@ -75,6 +75,14 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Calculate Text
+        //
+        //------------------------------------------------------
+
+        #region Calculate Text
+
         /// <summary>
         /// 计算文本在一定长度下排布后的高度
         /// </summary>
@@ -153,6 +161,17 @@ namespace Nebulae.RimWorld.UI.Utilities
             return new Size(availableLength, fontStyle.CalcHeight(ContentCache, availableLength));
         }
 
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Calculate Text Box
+        //
+        //------------------------------------------------------
+
+        #region Calculate Text Box
+
         /// <summary>
         /// 计算文本输入框在一定长度下排布后的高度
         /// </summary>
@@ -195,6 +214,17 @@ namespace Nebulae.RimWorld.UI.Utilities
             return new Size(availableLength, style.CalcHeight(ContentCache, availableLength));
         }
 
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Coerce Font Size
+        //
+        //------------------------------------------------------
+
+        #region Coerce Font Size
+
         /// <summary>
         /// 强制转换字体大小
         /// </summary>
@@ -228,6 +258,9 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             return baseValue;
         }
+
+        #endregion
+
 
         /// <summary>
         /// 设置文本颜色

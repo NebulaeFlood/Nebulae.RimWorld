@@ -36,11 +36,6 @@ namespace Nebulae.RimWorld.UI.Core.Data.Bindings
             _source = source;
             _target = target;
 
-            if (!Bindings.Add(this))
-            {
-                throw new InvalidOperationException($"Binding type:{typeof(Binding)} already exists between {source} and {target}.");
-            }
-
             _sourceValueCache = source.Value;
             _targetValueCache = target.Value;
         }
@@ -276,60 +271,6 @@ namespace Nebulae.RimWorld.UI.Core.Data.Bindings
                 source, target, mode);
         }
 
-        /// <summary>
-        /// 获取与指定对象相关联的所有 <see cref="Binding"/> 的绑定关系
-        /// </summary>
-        /// <param name="obj">要获取绑定关系的对象</param>
-        /// <returns>与指定对象相关联的所有绑定关系。</returns>
-        public static IEnumerable<Binding> GetAll(object obj)
-        {
-            if (obj is null)
-            {
-                return Enumerable.Empty<Binding>();
-            }
-
-            bool IsRelated(Binding binding)
-            {
-                return ReferenceEquals(binding._source.Target, obj)
-                    || ReferenceEquals(binding._target.Target, obj);
-            }
-
-            return Bindings.Where(IsRelated);
-        }
-
-        /// <summary>
-        /// 解除与指定的对象相关联的 <see cref="Binding"/> 的绑定关系
-        /// </summary>
-        /// <param name="obj">要解除绑定关系的对象</param>
-        public static void Unbind(object obj)
-        {
-            if (obj is null)
-            {
-                return;
-            }
-
-            bool UnbindIfRelated(Binding binding)
-            {
-                if (ReferenceEquals(binding._source.Target, obj)
-                    || ReferenceEquals(binding._target.Target, obj))
-                {
-                    binding.Unbind();
-
-                    return true;
-                }
-
-                return false;
-            }
-
-            _globalUnbingind = true;
-
-            Bindings.RemoveWhere(UnbindIfRelated);
-
-            _globalUnbingind = false;
-
-            Bindings.TrimExcess();
-        }
-
         #endregion
 
 
@@ -435,11 +376,6 @@ namespace Nebulae.RimWorld.UI.Core.Data.Bindings
         /// <inheritdoc/>
         protected override void OnUnbind()
         {
-            if (!_globalUnbingind)
-            {
-                Bindings.Remove(this);
-            }
-
             if (_source.Target is DependencyObject dependencySource)
             {
                 dependencySource.PropertyBindings.Remove(this);
@@ -655,10 +591,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Bindings
 
         #region Private Fields
 
-        private static readonly HashSet<Binding> Bindings = new HashSet<Binding>();
         private static readonly CultureInfo CurrentCulture = CultureInfo.InvariantCulture;
-
-        private static bool _globalUnbingind;
 
         private readonly BindingMember _source;
         private readonly BindingMember _target;

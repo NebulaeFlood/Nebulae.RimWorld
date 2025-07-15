@@ -106,14 +106,18 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #endregion
 
 
+        static Button()
+        {
+            ClickSoundProperty.OverrideMetadata(typeof(Button),
+                new PropertyMetadata(SoundDefOf.Click));
+            CursorEnterSoundProperty.OverrideMetadata(typeof(Button),
+                new PropertyMetadata(SoundDefOf.Mouseover_Standard));
+        }
+
         /// <summary>
         /// 初始化 <see cref="Button"/> 的新实例
         /// </summary>
-        public Button()
-        {
-            ClickSound = SoundDefOf.Click;
-            CursorEnterSound = SoundDefOf.Mouseover_Standard;
-        }
+        public Button() { }
 
 
         //------------------------------------------------------

@@ -251,18 +251,14 @@ namespace Nebulae.RimWorld.UI.Utilities
                     return;
                 }
 
-                // Skip _hoveredControl
-                var enteredControls = HitTestUtility.Results.Skip(1).Except(HitTestUtility.PreviousResults);
+                var enteredControls = HitTestUtility.Results.Except(HitTestUtility.PreviousResults);
                 var mouseEnterArgs = new RoutedEventArgs(_hoveredControl, Control.MouseEnterEvent);
 
-                _hoveredControl.ControlStates |= ControlState.CursorDirectlyOver | ControlState.CursorOver;
-                _hoveredControl.RaiseEvent(mouseEnterArgs);
+                _hoveredControl.ControlStates |= ControlState.CursorDirectlyOver;
 
                 if (_anyControlDragging)
                 {
                     var dragEnterArgs = new DragEventArgs(_pressingControl, MouseButton.LeftMouse, _cursorPosition, _hoveredControl, Control.DragEnterEvent);
-
-                    _hoveredControl.RaiseEvent(dragEnterArgs);
 
                     foreach (var control in enteredControls)
                     {
@@ -293,17 +289,14 @@ namespace Nebulae.RimWorld.UI.Utilities
                     return;
                 }
 
-                // Skip _hoveredControl witch cursor is directly leaved 
-                var leavedControls = HitTestUtility.PreviousResults.Skip(1).Except(HitTestUtility.Results);
+                var leavedControls = HitTestUtility.PreviousResults.Except(HitTestUtility.Results);
                 var mouseLeaveArgs = new RoutedEventArgs(_hoveredControl, Control.MouseLeaveEvent);
 
-                _hoveredControl.ControlStates &= ~(ControlState.CursorDirectlyOver | ControlState.CursorOver);
-                _hoveredControl.RaiseEvent(mouseLeaveArgs);
+                _hoveredControl.ControlStates &= ~ControlState.CursorDirectlyOver;
 
                 if (_anyControlDragging)
                 {
                     var dragLeaveArgs = new DragEventArgs(_pressingControl, MouseButton.LeftMouse, _cursorPosition, _hoveredControl, Control.DragLeaveEvent);
-                    _hoveredControl.RaiseEvent(dragLeaveArgs);
 
                     foreach (var control in leavedControls)
                     {
