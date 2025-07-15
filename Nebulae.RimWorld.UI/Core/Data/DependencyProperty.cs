@@ -8,7 +8,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
     /// <summary>
     /// 依赖属性的标识
     /// </summary>
-  //  [DebuggerStepThrough]
+    [DebuggerStepThrough]
     public sealed class DependencyProperty : Singleton<DependencyProperty>
     {
         /// <summary>
@@ -43,7 +43,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
         #endregion
 
 
-        private DependencyProperty(string name, Type ownerType, Type valueType, PropertyMetadata defaultMetadata, ValidateValueCallback validateValueCallback, bool isAttached = false) 
+        private DependencyProperty(string name, Type ownerType, Type valueType, PropertyMetadata defaultMetadata, ValidateValueCallback validateValueCallback, bool isAttached = false)
             : base(name, ownerType)
         {
             _defaultMetadata = defaultMetadata;
