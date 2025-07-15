@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Core.Data.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -7,7 +8,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
     /// <summary>
     /// 依赖属性的标识
     /// </summary>
-    [DebuggerStepThrough]
+  //  [DebuggerStepThrough]
     public sealed class DependencyProperty : Singleton<DependencyProperty>
     {
         /// <summary>
@@ -42,13 +43,8 @@ namespace Nebulae.RimWorld.UI.Core.Data
         #endregion
 
 
-        private DependencyProperty(
-            string name,
-            Type ownerType,
-            Type valueType,
-            PropertyMetadata defaultMetadata,
-            ValidateValueCallback validateValueCallback,
-            bool isAttached = false) : base(name, ownerType)
+        private DependencyProperty(string name, Type ownerType, Type valueType, PropertyMetadata defaultMetadata, ValidateValueCallback validateValueCallback, bool isAttached = false) 
+            : base(name, ownerType)
         {
             _defaultMetadata = defaultMetadata;
             _isAttached = isAttached;
@@ -77,12 +73,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
         /// <exception cref="ArgumentException">当 <paramref name="name"/> 为空时发生。</exception>
         /// <exception cref="ArgumentNullException">当 <paramref name="valueType"/> 或 <paramref name="ownerType"/> 为 <see langword="null"/> 时发生。</exception>
         /// <exception cref="InvalidOperationException">当目标依赖属性已被注册时发生。</exception>
-        public static DependencyProperty Register(
-            string name,
-            Type valueType,
-            Type ownerType,
-            PropertyMetadata defaultMetadata,
-            ValidateValueCallback validateValueCallback = null)
+        public static DependencyProperty Register(string name, Type valueType, Type ownerType, PropertyMetadata defaultMetadata, ValidateValueCallback validateValueCallback = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -119,12 +110,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
         /// <exception cref="ArgumentException">当 <paramref name="name"/> 为空时发生。</exception>
         /// <exception cref="ArgumentNullException">当 <paramref name="valueType"/> 或 <paramref name="ownerType"/> 为 <see langword="null"/> 时发生。</exception>
         /// <exception cref="InvalidOperationException">当目标附加属性已被注册时发生。</exception>
-        public static DependencyProperty RegisterAttached(
-            string name,
-            Type valueType,
-            Type ownerType,
-            PropertyMetadata defaultMetadata,
-            ValidateValueCallback validateValueCallback = null)
+        public static DependencyProperty RegisterAttached(string name, Type valueType, Type ownerType, PropertyMetadata defaultMetadata, ValidateValueCallback validateValueCallback = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -169,7 +155,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
                 ownerType = ownerType.BaseType;
             }
 
-            throw new MissingMemberException($"Cannot find any property named \"{name}\" in {ownerType}.");
+            throw new MissingMemberException($"Cannot find any property named '{name}' in '{ownerType}'.");
         }
 
         #endregion
@@ -336,25 +322,23 @@ namespace Nebulae.RimWorld.UI.Core.Data
         {
             if (ReferenceEquals(UnsetValue, value))
             {
-                exception = new InvalidOperationException("\"UnsetValue\" is not a valid property value.");
+                exception = new InvalidOperationException("'UnsetValue' is not a valid property value.");
                 return false;
             }
             else if (value is null)
             {
-                if (valueType.IsValueType
-                    && (!valueType.IsGenericType || valueType.GetGenericTypeDefinition() != NullableValueType))
+                if (valueType.IsValueType && (!valueType.IsGenericType || valueType.GetGenericTypeDefinition() != NullableValueType))
                 {
-                    exception = new InvalidOperationException($"Value cannot be null for value type {valueType}.");
+                    exception = new InvalidOperationException($"Value cannot be null for value type '{valueType}'.");
                     return false;
                 }
             }
-            else if (!valueType.IsInstanceOfType(value) && !(value is IConvertible))
+            else if (!valueType.IsInstanceOfType(value))
             {
-                exception = new InvalidCastException($"Value '{value}' is not compatible with type {valueType}.");
+                exception = new InvalidCastException($"Value '{value}' of type '{value.GetType()}' is not compatible with type '{valueType}'.");
                 return false;
             }
-            else if (validate != null
-                && !validate(value))
+            else if (validate != null && !validate(value))
             {
                 exception = new ArgumentException($"Value '{value}' failed validation.");
                 return false;
