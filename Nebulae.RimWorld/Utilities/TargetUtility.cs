@@ -284,7 +284,7 @@ namespace Nebulae.RimWorld.Utilities
                 }
                 else if (!message.NullOrEmpty())
                 {
-                    Messages.Message(message, MessageTypeDefOf.RejectInput, historical: false);
+                    Messages.Message(message.Resolve(), MessageTypeDefOf.RejectInput, historical: false);
                 }
 
                 return isValid;
@@ -345,7 +345,7 @@ namespace Nebulae.RimWorld.Utilities
 
                 if (!isValid && !message.NullOrEmpty())
                 {
-                    Messages.Message(message, MessageTypeDefOf.RejectInput, historical: false);
+                    Messages.Message(message.Resolve(), MessageTypeDefOf.RejectInput, historical: false);
                 }
 
                 return isValid;
