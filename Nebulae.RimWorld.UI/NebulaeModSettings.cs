@@ -18,29 +18,18 @@ namespace Nebulae.RimWorld.UI
     public abstract class NebulaeModSettings<T> : ModSettings where T : NebulaeModSettings<T>
     {
         #region Saved
-        private readonly WeakEvent<T, EventArgs> _savedEvent = new WeakEvent<T, EventArgs>();
+        internal readonly WeakEvent<T, EventArgs> savedEvent = new WeakEvent<T, EventArgs>();
 
         /// <summary>
         /// 当设置被保存时触发的事件
         /// </summary>
         public event SettingsSavedEventHandler<T> Saved
         {
-            add { _savedEvent.AddHandler(value); }
-            remove { _savedEvent.RemoveHandler(value); }
+            add { savedEvent.AddHandler(value); }
+            remove { savedEvent.RemoveHandler(value); }
         }
         #endregion
 
-
-        /// <summary>
-        /// 向 <see cref="Scribe"/> 暴露数据
-        /// </summary>
-        public override void ExposeData()
-        {
-            if (Scribe.mode is LoadSaveMode.Saving)
-            {
-                _savedEvent.Invoke((T)this, EventArgs.Empty);
-            }
-        }
 
         /// <summary>
         /// 当检查设置内容完整性时调用

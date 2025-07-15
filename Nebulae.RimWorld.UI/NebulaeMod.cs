@@ -68,6 +68,16 @@ namespace Nebulae.RimWorld.UI
         }
 
 
+        /// <summary>
+        /// 保存设置内容
+        /// </summary>
+        public override void WriteSettings()
+        {
+            base.WriteSettings();
+            _settings.savedEvent.Invoke(_settings, EventArgs.Empty);
+        }
+
+
         /// <inheritdoc/>
         protected internal override sealed ModSettingWindow GetSettingWindow() => _settingWindow;
 
@@ -95,6 +105,7 @@ namespace Nebulae.RimWorld.UI
         /// Mod 设置窗口即将创建时执行的方法
         /// </summary>
         protected virtual void OnInitializing() { }
+
         #endregion
 
 
