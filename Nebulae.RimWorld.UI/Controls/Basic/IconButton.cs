@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using RimWorld;
 using System;
 using UnityEngine;
 using Verse;
@@ -99,6 +100,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 new ControlPropertyMetadata(24f, ControlRelation.Measure));
             HeightProperty.OverrideMetadata(typeof(IconButton),
                 new ControlPropertyMetadata(24f, ControlRelation.Measure));
+
+            ClickSoundProperty.OverrideMetadata(typeof(IconButton),
+                new PropertyMetadata(SoundDefOf.Click));
+            CursorEnterSoundProperty.OverrideMetadata(typeof(IconButton),
+                new PropertyMetadata(SoundDefOf.Mouseover_Standard));
         }
 
         /// <summary>
