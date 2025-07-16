@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
@@ -491,7 +492,7 @@ namespace Nebulae.RimWorld.UI.Automation
                 yield break;
             }
 
-            LayoutModel.KeyBuilder.Capacity = 64;
+            var keyBuilder = new StringBuilder(120);
 
             for (int i = 0; i < count; i++)
             {
@@ -499,12 +500,9 @@ namespace Nebulae.RimWorld.UI.Automation
 
                 if (member.GetCustomAttribute(typeof(LayoutEntryBaseAttribute)) is LayoutEntryBaseAttribute entryInfo)
                 {
-                    yield return new LayoutModel(translationKeyPrefix, entryInfo, member, owner);
+                    yield return new LayoutModel(keyBuilder, translationKeyPrefix, entryInfo, member, owner);
                 }
             }
-
-            LayoutModel.KeyBuilder.Clear();
-            LayoutModel.KeyBuilder.Capacity = 0;
         }
 
         #endregion
