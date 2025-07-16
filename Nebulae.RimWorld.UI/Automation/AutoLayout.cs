@@ -492,15 +492,13 @@ namespace Nebulae.RimWorld.UI.Automation
                 yield break;
             }
 
-            var keyBuilder = new StringBuilder(120);
-
             for (int i = 0; i < count; i++)
             {
                 var member = members[i];
 
                 if (member.GetCustomAttribute(typeof(LayoutEntryBaseAttribute)) is LayoutEntryBaseAttribute entryInfo)
                 {
-                    yield return new LayoutModel(keyBuilder, translationKeyPrefix, entryInfo, member, owner);
+                    yield return new LayoutModel(translationKeyPrefix, entryInfo, member, owner);
                 }
             }
         }

@@ -19,7 +19,7 @@ namespace Nebulae.RimWorld.UI.Automation
         public readonly object Value;
 
 
-        internal LayoutModel(StringBuilder keyBuilder, string translationKeyPrefix, LayoutEntryBaseAttribute info, MemberInfo member, object owner)
+        internal LayoutModel(string translationKeyPrefix, LayoutEntryBaseAttribute info, MemberInfo member, object owner)
         {
             Info = info;
             EntryType = info.EntryType;
@@ -27,13 +27,11 @@ namespace Nebulae.RimWorld.UI.Automation
             Owner = owner;
 
             string key = info.GetLabel(member);
-
-            Label = keyBuilder.Append(translationKeyPrefix).Append('.').Append(key).Append(".Label").ToString().Translate().Resolve();
+            Label = $"{translationKeyPrefix}.{key}.Label".Translate().Resolve();
 
             if (info.Prompted)
             {
-                keyBuilder.Clear();
-                Tooltip = keyBuilder.Append(translationKeyPrefix).Append('.').Append(key).Append(".Tooltip").ToString().Translate().Resolve();
+                Tooltip = $"{translationKeyPrefix}.{key}.Tooltip".Translate().Resolve();
             }
             else
             {
@@ -55,8 +53,6 @@ namespace Nebulae.RimWorld.UI.Automation
                     Value = null;
                     break;
             }
-
-            keyBuilder.Clear();
         }
     }
 }
