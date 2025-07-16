@@ -421,7 +421,7 @@ namespace Nebulae.RimWorld.UI.Automation
         {
             var type = typeof(T);
             var settingAttribute = type.GetCustomAttribute<LayoutModelAttribute>(false)
-                ?? throw new InvalidOperationException($"Failed to generate layout for type \"{type.FullName}\": a [{typeof(LayoutModelAttribute)}] is required on the type definition.");
+                ?? throw new InvalidOperationException($"Failed to generate layout for type '{type}': a [{typeof(LayoutModelAttribute)}] is required on the type definition.");
 
             try
             {
@@ -432,7 +432,7 @@ namespace Nebulae.RimWorld.UI.Automation
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Failed to generate layout for type \"{type.FullName}\".", e);
+                throw new InvalidOperationException($"Failed to generate layout for type '{type}'.", e);
             }
         }
 
