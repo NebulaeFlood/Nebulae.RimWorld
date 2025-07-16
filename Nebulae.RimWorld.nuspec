@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
 	<metadata>
 		<id>Nebulae.RimWorld</id>
-		<version>1.4.4</version>
+		<version>1.5.0</version>
 		<authors>NubulaeFlood</authors>
 		<license type="file">LICENSE.txt</license>
 		<licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
@@ -12,18 +12,18 @@
 		<tags>RimWorld, Mod</tags>
 		<repository type="git" url="https://github.com/NebulaeFlood/Nebulae.RimWorld" />
 		<dependencies>
-			<group targetFramework=".NETFramework4.7.2">
+			<group targetFramework=".NETFramework4.8">
 				<dependency id="Krafs.Rimworld.Ref" version="1.6.4518" exclude="Build,Analyzers" />
 			</group>
 		</dependencies>
 		<frameworkAssemblies>
-			<frameworkAssembly assemblyName="System.Runtime" targetFramework=".NETFramework4.7.2" />
+			<frameworkAssembly assemblyName="System.Runtime" targetFramework=".NETFramework4.8" />
 		</frameworkAssemblies>
 	</metadata>
 	<files>
-		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.dll" target="lib\net472\Nebulae.RimWorld.dll" />
-		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.pdb" target="lib\net472\Nebulae.RimWorld.pdb" />
-		<file src="Nebulae.RimWorld\bin\Release\net472\Nebulae.RimWorld.xml" target="lib\net472\Nebulae.RimWorld.xml" />
+		<file src="Nebulae.RimWorld\bin\Release\net48\Nebulae.RimWorld.dll" target="lib\net48\Nebulae.RimWorld.dll" />
+		<file src="Nebulae.RimWorld\bin\Release\net48\Nebulae.RimWorld.pdb" target="lib\net48\Nebulae.RimWorld.pdb" />
+		<file src="Nebulae.RimWorld\bin\Release\net48\Nebulae.RimWorld.xml" target="lib\net48\Nebulae.RimWorld.xml" />
 
 		<file src="LICENSE.txt" target="LICENSE.txt" />
 		<file src="NEBULAE-RIMWORLD.md" target="README.md" />

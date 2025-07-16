@@ -8,8 +8,6 @@ namespace Nebulae.RimWorld.UI.Automation
 {
     internal readonly struct LayoutModel
     {
-        public static readonly StringBuilder KeyBuilder = new StringBuilder(0);
-
         public readonly LayoutEntryBaseAttribute Info;
         public readonly LayoutEntryType EntryType;
 
@@ -29,13 +27,11 @@ namespace Nebulae.RimWorld.UI.Automation
             Owner = owner;
 
             string key = info.GetLabel(member);
-
-            Label = KeyBuilder.Append(translationKeyPrefix).Append('.').Append(key).Append(".Label").ToString().Translate().Resolve();
+            Label = $"{translationKeyPrefix}.{key}.Label".Translate().Resolve();
 
             if (info.Prompted)
             {
-                KeyBuilder.Clear();
-                Tooltip = KeyBuilder.Append(translationKeyPrefix).Append('.').Append(key).Append(".Tooltip").ToString().Translate().Resolve();
+                Tooltip = $"{translationKeyPrefix}.{key}.Tooltip".Translate().Resolve();
             }
             else
             {
@@ -57,8 +53,6 @@ namespace Nebulae.RimWorld.UI.Automation
                     Value = null;
                     break;
             }
-
-            KeyBuilder.Clear();
         }
     }
 }

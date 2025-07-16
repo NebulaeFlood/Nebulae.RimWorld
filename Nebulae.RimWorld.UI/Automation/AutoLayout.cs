@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
@@ -420,7 +421,7 @@ namespace Nebulae.RimWorld.UI.Automation
         {
             var type = typeof(T);
             var settingAttribute = type.GetCustomAttribute<LayoutModelAttribute>(false)
-                ?? throw new InvalidOperationException($"Failed to generate layout for type \"{type.FullName}\": a [{typeof(LayoutModelAttribute)}] is required on the type definition.");
+                ?? throw new InvalidOperationException($"Failed to generate layout for type '{type}': a [{typeof(LayoutModelAttribute)}] is required on the type definition.");
 
             try
             {
@@ -431,7 +432,7 @@ namespace Nebulae.RimWorld.UI.Automation
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Failed to generate layout for type \"{type.FullName}\".", e);
+                throw new InvalidOperationException($"Failed to generate layout for type '{type}'.", e);
             }
         }
 
@@ -491,8 +492,6 @@ namespace Nebulae.RimWorld.UI.Automation
                 yield break;
             }
 
-            LayoutModel.KeyBuilder.Capacity = 64;
-
             for (int i = 0; i < count; i++)
             {
                 var member = members[i];
@@ -502,9 +501,6 @@ namespace Nebulae.RimWorld.UI.Automation
                     yield return new LayoutModel(translationKeyPrefix, entryInfo, member, owner);
                 }
             }
-
-            LayoutModel.KeyBuilder.Clear();
-            LayoutModel.KeyBuilder.Capacity = 0;
         }
 
         #endregion
