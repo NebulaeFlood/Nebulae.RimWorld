@@ -1,10 +1,12 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
+using Steamworks;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using UnityEngine;
 using Verse;
+using Verse.Sound;
 
 namespace Nebulae.RimWorld.Utilities
 {
@@ -56,6 +58,12 @@ namespace Nebulae.RimWorld.Utilities
     public delegate bool LocalTargetFilter(LocalTargetInfo target);
 
     /// <summary>
+    /// 选中当前地图中的位置时的回调函数
+    /// </summary>
+    /// <param name="target">选中的当前地图中的位置</param>
+    public delegate void LocalTargetSelectedCallback(LocalTargetInfo target);
+
+    /// <summary>
     /// 验证选取的当前地图位置是否可用的方法
     /// </summary>
     /// <param name="target">要验证的当前地图中的位置</param>
@@ -87,7 +95,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="validator">验证位置是否可用的方法</param>
         /// <param name="drawer">选取位置时绘制自定义 UI 的方法</param>
         public static void TargetLocal(
-            Action<LocalTargetInfo> callback,
+            LocalTargetSelectedCallback callback,
             TargetingParameters parameters,
             Texture2D icon = null,
             LocalTargetFilter filter = null,
@@ -104,17 +112,17 @@ namespace Nebulae.RimWorld.Utilities
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            var targetQuest = new LocalTargetQuset(icon, filter, validator, drawer);
+            var targetQuest = new LocalTargetQuset(callback, icon, filter, validator, drawer);
 
             Find.Targeter.BeginTargeting(
                 targetParams: parameters,
-                action: callback,
+                action: targetQuest.OnSelected,
                 highlightAction: null,
                 targetValidator: targetQuest.ValidateTarget,
                 caster: null,
                 actionWhenFinished: null,
                 mouseAttachment: null,
-                playSoundOnAction: true,
+                playSoundOnAction: false,
                 onGuiAction: targetQuest.DrawUI,
                 onUpdateAction: null);
         }
@@ -298,12 +306,14 @@ namespace Nebulae.RimWorld.Utilities
         {
             public readonly Texture2D Icon;
             public readonly LocalTargetFilter Filter;
+            public readonly LocalTargetSelectedCallback Callback;
             public readonly LocalTargetValidator Validator;
             public readonly LocalTargeterUIDrawer Drawer;
 
 
-            public LocalTargetQuset(Texture2D icon, LocalTargetFilter filter, LocalTargetValidator validator, LocalTargeterUIDrawer drawer)
+            public LocalTargetQuset(LocalTargetSelectedCallback callback, Texture2D icon, LocalTargetFilter filter, LocalTargetValidator validator, LocalTargeterUIDrawer drawer)
             {
+                Callback = callback;
                 Icon = icon ?? TexCommand.Attack;
                 Filter = filter;
                 Validator = validator;
@@ -336,6 +346,12 @@ namespace Nebulae.RimWorld.Utilities
             public bool FilterTarget(LocalTargetInfo target)
             {
                 return Filter?.Invoke(target) ?? true;
+            }
+
+            public void OnSelected(LocalTargetInfo target)
+            {
+                Callback(target);
+                SoundDefOf.Tick_High.PlayOneShotOnCamera();
             }
 
             public bool ValidateTarget(LocalTargetInfo target)
