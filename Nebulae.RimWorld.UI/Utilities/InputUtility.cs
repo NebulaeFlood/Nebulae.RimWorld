@@ -134,11 +134,13 @@ namespace Nebulae.RimWorld.UI.Utilities
                     && (window.absorbInputAroundWindow
                         || window.windowRect.Contains(cursorPos)))
                 {
+                    allowIndependentHitTest = false;
                     hoveredWindow = window;
                     return;
                 }
             }
 
+            allowIndependentHitTest = true;
             hoveredWindow = null;
         }
 
@@ -153,6 +155,7 @@ namespace Nebulae.RimWorld.UI.Utilities
 
         #region Internal Static Fields
 
+        internal static bool allowIndependentHitTest;
         internal static Window hoveredWindow;
         internal static bool isHitTesting;
 

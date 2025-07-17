@@ -184,7 +184,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     {
                         HitTestUtility.InputHitTest(_root);
                     }
-                    else if (_isIndependent)
+                    else if (_isIndependent && InputUtility.allowIndependentHitTest)
                     {
                         HitTestUtility.InputHitTestIndependently(_root);
                     }
