@@ -81,7 +81,7 @@ namespace Nebulae.RimWorld
         public static bool IsLoaded(DefInfo<T> info) => info.Loaded;
 
         /// <summary>
-        /// 解析指定的 <see cref="DefInfo{T}"/>，并获取其对应的 <see cref="Def"/> 实例
+        /// 解析指定的 <see cref="DefInfo{T}"/>
         /// </summary>
         /// <param name="info">要解析的实例</param>
         /// <returns>解析后的 <see cref="DefInfo{T}"/> 实例。</returns>
@@ -144,6 +144,23 @@ namespace Nebulae.RimWorld
         public override int GetHashCode()
         {
             return DefName.GetHashCode();
+        }
+
+        /// <summary>
+        /// 解析该 <see cref="DefInfo{T}"/>，并获取其对应的 <see cref="Def"/> 实例
+        /// </summary>
+        /// <returns>解析后的 <see cref="DefInfo{T}"/> 实例。</returns>
+        public DefInfo<T> Resolve()
+        {
+            if (string.IsNullOrEmpty(DefName))
+            {
+                return Empty;
+            }
+
+            Def = DefDatabase<T>.GetNamedSilentFail(DefName);
+            Loaded = Def != null;
+
+            return this;
         }
 
         /// <summary>
