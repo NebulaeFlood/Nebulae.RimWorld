@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace Nebulae.RimWorld
@@ -139,7 +135,7 @@ namespace Nebulae.RimWorld
         /// 获取当前 <see cref="DefInfo{T}"/> 的哈希代码
         /// </summary>
         /// <returns>当前 <see cref="DefInfo{T}"/> 的哈希代码。</returns>
-        public override  int GetHashCode()
+        public override int GetHashCode()
         {
             return _hashCode;
         }
