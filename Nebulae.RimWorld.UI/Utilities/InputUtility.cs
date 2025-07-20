@@ -1,6 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Core;
 using Nebulae.RimWorld.UI.Core.Events;
 using System;
 using System.Collections.Generic;
@@ -513,7 +512,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 {
                     if (!Input.GetKey(node.key))
                     {
-                            OnKeyUp(node.key);
+                        OnKeyUp(node.key);
 
                         var next = node.next;
                         Remove(node);
