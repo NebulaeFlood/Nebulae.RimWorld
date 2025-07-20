@@ -15,6 +15,14 @@ namespace Nebulae.RimWorld
         public static readonly DefInfo<T> Empty = new DefInfo<T>();
 
 
+        //------------------------------------------------------
+        //
+        //  Public Fields
+        //
+        //------------------------------------------------------
+
+        #region Public Fields
+
         /// <summary>
         /// <see cref="Verse.Def"/> 的实例
         /// </summary>
@@ -29,6 +37,8 @@ namespace Nebulae.RimWorld
         /// 包含 <see cref="Def"/> 的 Mod 是否已加载
         /// </summary>
         public bool Loaded;
+
+        #endregion
 
 
         /// <summary>
@@ -45,8 +55,6 @@ namespace Nebulae.RimWorld
             Def = def;
             DefName = def.defName;
             Loaded = true;
-
-            _hashCode = DefName.GetHashCode();
         }
 
 
@@ -107,7 +115,6 @@ namespace Nebulae.RimWorld
         public void ExposeData()
         {
             Scribe_Values.Look(ref DefName, nameof(DefName), defaultValue: null);
-            Scribe_Values.Look(ref _hashCode, nameof(_hashCode), defaultValue: 0);
         }
 
         /// <summary>
@@ -136,7 +143,7 @@ namespace Nebulae.RimWorld
         /// <returns>当前 <see cref="DefInfo{T}"/> 的哈希代码。</returns>
         public override int GetHashCode()
         {
-            return _hashCode;
+            return DefName.GetHashCode();
         }
 
         /// <summary>
@@ -146,8 +153,5 @@ namespace Nebulae.RimWorld
         public override string ToString() => DefName ?? "Empty";
 
         #endregion
-
-
-        private int _hashCode;
     }
 }
