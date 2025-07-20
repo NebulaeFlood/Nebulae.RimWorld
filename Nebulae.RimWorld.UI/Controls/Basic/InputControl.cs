@@ -179,6 +179,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             {
                 states |= ControlState.WillFocus;
             }
+            else if (states.HasState(ControlState.Focused))
+            {
+                states &= ~ControlState.WillLossFocus;
+                ControlStates = states;
+            }
         }
 
 
