@@ -107,7 +107,6 @@ namespace Nebulae.RimWorld
         public void ExposeData()
         {
             Scribe_Values.Look(ref DefName, nameof(DefName), defaultValue: null);
-            Scribe_Values.Look(ref Loaded, nameof(Loaded), defaultValue: false);
             Scribe_Values.Look(ref _hashCode, nameof(_hashCode), defaultValue: 0);
         }
 
