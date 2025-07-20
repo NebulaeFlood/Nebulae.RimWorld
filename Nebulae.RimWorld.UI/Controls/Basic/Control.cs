@@ -731,7 +731,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             GUI.color = color;
             GUI.contentColor = contentColor;
 
-            if (_shouldShowTooltip && !InputUtility.MouseTracker.anyPressing)
+            if (_shouldShowTooltip && !InputUtility.MouseTracker.anyButtonPressing)
             {
                 TooltipHandler.TipRegion(_tooltipRect, _tooltip);
             }

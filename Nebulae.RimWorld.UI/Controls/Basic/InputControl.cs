@@ -121,7 +121,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             {
                 GUI.FocusControl(null);
 
-                _focusedControl = null;
+                focusedControl = null;
 
                 ControlStates = states & ~(ControlState.Focused | ControlState.ForceFocus | ControlState.WillFocus | ControlState.WillLossFocus);
             }
@@ -136,7 +136,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                     GUI.FocusControl(_focusIndex);
                 }
 
-                _focusedControl = this;
+                focusedControl = this;
 
                 ControlStates = (states & ~ControlState.WillFocus) | ControlState.Focused;
             }
@@ -151,8 +151,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            // Focus update before this event, if _focusedControl is not null, means we are forcing system to focus it.
-            if (_focusedControl is null && !ControlStates.HasState(ControlState.Focused))
+            // Focus update before this event, if focusedControl is not null, means we are forcing system to focus it.
+            if (focusedControl is null && !ControlStates.HasState(ControlState.Focused))
             {
                 ControlStates |= ControlState.WillFocus;
             }
@@ -167,7 +167,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         {
             if (_focusIndex == GUI.GetNameOfFocusedControl())
             {
-                _focusedControl = this;
+                focusedControl = this;
 
                 if (states.HasState(ControlState.Disabled)
                     || (Event.current.type is EventType.MouseDown && !states.HasState(ControlState.CursorDirectlyOver | ControlState.ForceFocus)))
@@ -187,7 +187,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
 
-        internal static InputControl _focusedControl;
+        internal static InputControl focusedControl;
 
 
         //------------------------------------------------------

@@ -12,27 +12,23 @@ namespace Nebulae.RimWorld.UI.Patches
         [HarmonyPrefix]
         internal static void WindowStackOnGUIPrefix(List<Window> ___windows)
         {
-            UIUtility.CurrentEvent = Event.current;
-            UIUtility.CurrentEventType = UIUtility.CurrentEvent.type;
-
+            InputUtility.isHitTesting = Event.current.type is EventType.Layout;
             InputUtility.TraceWindow(___windows);
         }
 
         [HarmonyPostfix]
         internal static void WindowStackOnGUIPostfix()
         {
-            InputUtility.TraceKeyBoard();
-
-            if (!InputUtility.isHitTesting)
+            if (InputUtility.isHitTesting)
             {
-                return;
-            }
+                InputUtility.MouseTracker.TraceCursor();
+                InputUtility.LeftButton.Trace();
+                InputUtility.RightButton.Trace();
+                InputUtility.MiddleButton.Trace();
+                HitTestUtility.Results.Clear();
 
-            InputUtility.MouseTracker.TraceCursor();
-            InputUtility.LeftButton.Trace();
-            InputUtility.RightButton.Trace();
-            InputUtility.MiddleButton.Trace();
-            HitTestUtility.Results.Clear();
+                InputUtility.KeyBoard.Trace();
+            }
         }
     }
 }
