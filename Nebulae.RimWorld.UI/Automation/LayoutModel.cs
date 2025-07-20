@@ -1,7 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Attributes;
 using Nebulae.RimWorld.UI.Core.Data.Utilities;
 using System.Reflection;
-using System.Text;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Automation

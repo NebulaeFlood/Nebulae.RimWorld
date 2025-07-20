@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Core.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -37,6 +38,11 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// </summary>
         public static readonly MouseTracker RightButton = new MouseTracker(MouseButton.RightMouse);
 
+        /// <summary>
+        /// 键盘
+        /// </summary>
+        public static readonly KeyBoardTracker KeyBoard = new KeyBoardTracker();
+
         #endregion
 
 
@@ -61,63 +67,13 @@ namespace Nebulae.RimWorld.UI.Utilities
         #endregion
 
 
-        //------------------------------------------------------
-        //
-        //  Internal Static Methods
-        //
-        //------------------------------------------------------
-
-        #region Internal Static Methods
-
-        internal static void TraceKeyBoard()
-        {
-            if ((!_isKeyDown && !_isKeyUp) || _keyCode is KeyCode.None)
-            {
-                return;
-            }
-
-            if (InputControl._focusedControl is null || InputControl._focusedControl.ControlStates.HasState(ControlState.WillLossFocus))
-            {
-                if (_protentialFocusControl is null)
-                {
-                    return;
-                }
-
-                if (_isKeyDown)
-                {
-                    _protentialFocusControl.RaiseEvent(new KeyEventArgs(_keyCode, _protentialFocusControl, Control.KeyDownEvent));
-                }
-                else
-                {
-                    _protentialFocusControl.RaiseEvent(new KeyEventArgs(_keyCode, _protentialFocusControl, Control.KeyUpEvent));
-                }
-            }
-            else
-            {
-                if (_isKeyDown)
-                {
-                    InputControl._focusedControl.RaiseEvent(new KeyEventArgs(_keyCode, InputControl._focusedControl, Control.KeyDownEvent));
-                }
-                else
-                {
-                    InputControl._focusedControl.RaiseEvent(new KeyEventArgs(_keyCode, InputControl._focusedControl, Control.KeyUpEvent));
-                }
-            }
-        }
-
         internal static void TraceWindow(List<Window> windowStack)
         {
-            isHitTesting = UIUtility.CurrentEventType is EventType.Layout;
-
             var cursorPos = Input.mousePosition / Prefs.UIScale;
             cursorPos.y = Verse.UI.screenHeight - cursorPos.y;
 
             _cursorPosition = cursorPos;
             _screenRect = new Rect(0f, 0f, Verse.UI.screenWidth, Verse.UI.screenHeight);
-
-            _isKeyDown = UIUtility.CurrentEventType is EventType.KeyDown;
-            _isKeyUp = UIUtility.CurrentEventType is EventType.KeyUp;
-            _keyCode = UIUtility.CurrentEvent.keyCode;
 
             if (!isHitTesting)
             {
@@ -134,15 +90,15 @@ namespace Nebulae.RimWorld.UI.Utilities
                     && (window.absorbInputAroundWindow
                         || window.windowRect.Contains(cursorPos)))
                 {
+                    allowIndependentHitTest = false;
                     hoveredWindow = window;
                     return;
                 }
             }
 
+            allowIndependentHitTest = true;
             hoveredWindow = null;
         }
-
-        #endregion
 
 
         //------------------------------------------------------
@@ -153,6 +109,7 @@ namespace Nebulae.RimWorld.UI.Utilities
 
         #region Internal Static Fields
 
+        internal static bool allowIndependentHitTest;
         internal static Window hoveredWindow;
         internal static bool isHitTesting;
 
@@ -174,12 +131,6 @@ namespace Nebulae.RimWorld.UI.Utilities
         // Mouse
 
         private static Vector2 _cursorPosition;
-
-        // KeyBoard
-
-        private static bool _isKeyDown;
-        private static bool _isKeyUp;
-        private static KeyCode _keyCode;
 
         #endregion
 
@@ -205,7 +156,7 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             internal static void TraceCursor()
             {
-                anyPressing = false;
+                anyButtonPressing = false;
                 var currentHoveredControl = HitTestUtility.Results.HoveredControl;
 
                 if (ReferenceEquals(_hoveredControl, currentHoveredControl))
@@ -396,10 +347,10 @@ namespace Nebulae.RimWorld.UI.Utilities
 
             private void TracePressing()
             {
+                anyButtonPressing = true;
+
                 if (_pressing)
                 {
-                    anyPressing = true;
-
                     if (!_isLeftButton)
                     {
                         return;
@@ -461,7 +412,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             #endregion
 
 
-            internal static bool anyPressing;
+            internal static bool anyButtonPressing;
 
 
             //------------------------------------------------------
@@ -503,6 +454,245 @@ namespace Nebulae.RimWorld.UI.Utilities
             private Vector2 _pressingStartPos;
 
             #endregion
+        }
+
+
+        /// <summary>
+        /// 键盘状态追踪器
+        /// </summary>
+        public sealed class KeyBoardTracker
+        {
+            /// <summary>
+            /// <see cref="KeyCode"/> 记录的所有按键代码
+            /// </summary>
+            public static readonly KeyCode[] KeyCodes = Enum.GetValues(typeof(KeyCode)).Cast<KeyCode>().ToArray();
+
+
+            internal KeyBoardTracker()
+            {
+                _nodePool = new Node[3];
+
+                for (int i = 0; i < 3; i++)
+                {
+                    _nodePool[i] = new Node();
+                }
+
+                _nodeIndex = 0;
+            }
+
+
+            //------------------------------------------------------
+            //
+            //  Internal Methods
+            //
+            //------------------------------------------------------
+
+            #region Internal Methods
+
+            internal void Trace()
+            {
+                for (int i = KeyCodes.Length - 1; i >= 0; i--)
+                {
+                    var code = KeyCodes[i];
+
+                    if (Input.GetKey(code))
+                    {
+                        Trace(code);
+                    }
+                }
+
+                if (_isEmpty)
+                {
+                    return;
+                }
+
+                var node = _head;
+
+                while (node != null)
+                {
+                    if (!Input.GetKey(node.key))
+                    {
+                        OnKeyUp(node.key);
+
+                        var next = node.next;
+                        Remove(node);
+                        node = next;
+                    }
+                    else
+                    {
+                        node = node.next;
+                    }
+                }
+            }
+
+            internal void Trace(KeyCode keyCode)
+            {
+                if (Contains(keyCode))
+                {
+                    return;
+                }
+
+                OnKeyDown(keyCode);
+
+                Node node;
+
+                if (_nodeIndex < 3)
+                {
+                    node = _nodePool[_nodeIndex++];
+                }
+                else
+                {
+                    node = new Node();
+                }
+
+                node.key = keyCode;
+
+                AddLast(node);
+            }
+
+            #endregion
+
+
+            //------------------------------------------------------
+            //
+            //  Private Static Methods
+            //
+            //------------------------------------------------------
+
+            #region Private Static Methods
+
+            private static void OnKeyDown(KeyCode code)
+            {
+                if (InputControl.focusedControl is null || InputControl.focusedControl.ControlStates.HasState(ControlState.WillLossFocus))
+                {
+                    _protentialFocusControl?.RaiseEvent(new KeyEventArgs(code, _protentialFocusControl, Control.KeyDownEvent));
+                }
+                else
+                {
+                    InputControl.focusedControl.RaiseEvent(new KeyEventArgs(code, InputControl.focusedControl, Control.KeyDownEvent));
+                }
+            }
+
+            private static void OnKeyUp(KeyCode code)
+            {
+                if (InputControl.focusedControl is null || InputControl.focusedControl.ControlStates.HasState(ControlState.WillLossFocus))
+                {
+                    _protentialFocusControl?.RaiseEvent(new KeyEventArgs(code, _protentialFocusControl, Control.KeyUpEvent));
+                }
+                else
+                {
+                    InputControl.focusedControl.RaiseEvent(new KeyEventArgs(code, InputControl.focusedControl, Control.KeyUpEvent));
+                }
+            }
+
+            #endregion
+
+
+            //------------------------------------------------------
+            //
+            //  Private Methods
+            //
+            //------------------------------------------------------
+
+            #region Private Methods
+
+            private void AddLast(Node node)
+            {
+                if (_head is null)
+                {
+                    _head = _tail = node;
+                    _isEmpty = false;
+                }
+                else
+                {
+                    _tail.next = node;
+                    node.prev = _tail;
+                    _tail = node;
+                }
+            }
+
+            private bool Contains(KeyCode keyCode)
+            {
+                if (_isEmpty)
+                {
+                    return false;
+                }
+
+                var node = _tail;
+
+                while (node != null)
+                {
+                    if (node.key == keyCode)
+                    {
+                        return true;
+                    }
+
+                    node = node.prev;
+                }
+
+                return false;
+            }
+
+            private void Remove(Node node)
+            {
+                if (node.prev != null)
+                {
+                    node.prev.next = node.next;
+                }
+                else
+                {
+                    _head = node.next;
+                }
+
+                if (node.next != null)
+                {
+                    node.next.prev = node.prev;
+                }
+                else
+                {
+                    _tail = node.prev;
+                }
+
+                node.prev = null;
+                node.next = null;
+
+                _isEmpty = _head is null;
+
+                if (_nodeIndex > 0)
+                {
+                    _nodePool[--_nodeIndex] = node;
+                }
+            }
+
+            #endregion
+
+
+            //------------------------------------------------------
+            //
+            //  Private Fields
+            //
+            //------------------------------------------------------
+
+            #region Private Fields
+
+            private Node _head;
+            private Node _tail;
+
+            private bool _isEmpty;
+
+            private readonly Node[] _nodePool;
+            private int _nodeIndex;
+
+            #endregion
+
+
+            private sealed class Node
+            {
+                public KeyCode key;
+
+                public Node prev;
+                public Node next;
+            }
         }
     }
 }

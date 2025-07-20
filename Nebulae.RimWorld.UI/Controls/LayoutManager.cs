@@ -89,6 +89,18 @@ namespace Nebulae.RimWorld.UI.Controls
         public LayoutManager()
         {
             _isIndependent = true;
+            _layer = WindowLayer.GameUI;
+            UIPatch.ScaleChanged += OnScaleChanged;
+        }
+
+        /// <summary>
+        /// 初始化 <see cref="LayoutManager"/> 的新实例
+        /// </summary>
+        /// <param name="layer">管理器所在的层</param>
+        public LayoutManager(WindowLayer layer)
+        {
+            _isIndependent = true;
+            _layer = layer;
             UIPatch.ScaleChanged += OnScaleChanged;
         }
 
@@ -184,7 +196,7 @@ namespace Nebulae.RimWorld.UI.Controls
                     {
                         HitTestUtility.InputHitTest(_root);
                     }
-                    else if (_isIndependent)
+                    else if (_isIndependent && (InputUtility.allowIndependentHitTest || _layer >= InputUtility.hoveredWindow.layer))
                     {
                         HitTestUtility.InputHitTestIndependently(_root);
                     }
@@ -435,6 +447,7 @@ namespace Nebulae.RimWorld.UI.Controls
         private readonly Window _owner;
         private Control _root;
 
+        private WindowLayer _layer;
         private LayoutInfo _layoutInfo;
 
         private bool _drawDebugButtons = true;

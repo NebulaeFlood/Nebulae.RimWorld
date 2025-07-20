@@ -1,6 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Core.Data;
-using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -104,7 +103,29 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         protected override sealed SegmentResult SegmentCore(Rect visiableRect) => _content.Segment(visiableRect);
 
         /// <inheritdoc/>
-        protected override sealed HitTestResult HitTestCore(Vector2 hitPoint) => _content.HitTest(hitPoint);
+        protected override sealed HitTestResult HitTestCore(Vector2 hitPoint)
+        {
+            var result = HitTestResult.HitTest(this, hitPoint);
+
+            if (!result.IsHit)
+            {
+                return result;
+            }
+
+            if (_content is null)
+            {
+                throw new LogicalTreeException($"Cannot perform hit test on {Type} because it has not been initialized. Remember to call {Type}.Initialize().", this);
+            }
+
+            var childResult = _content.HitTest(hitPoint);
+
+            if (childResult.IsHit)
+            {
+                return childResult;
+            }
+
+            return result;
+        }
 
         /// <inheritdoc/>
         protected override sealed void DrawCore(ControlState states) => _content.Draw();

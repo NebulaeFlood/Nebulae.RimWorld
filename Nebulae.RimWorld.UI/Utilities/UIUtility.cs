@@ -501,19 +501,5 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Internal Fields
-        //
-        //------------------------------------------------------
-
-        #region Internal Fields
-
-        internal static Event CurrentEvent;
-        internal static EventType CurrentEventType;
-
-        #endregion
     }
 }

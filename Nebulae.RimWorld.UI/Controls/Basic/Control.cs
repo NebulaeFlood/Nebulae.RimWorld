@@ -1,13 +1,11 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
 using Nebulae.RimWorld.UI.Core.Data;
-using Nebulae.RimWorld.UI.Core.Data.Bindings;
 using Nebulae.RimWorld.UI.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using Verse;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Nebulae.RimWorld.UI.Controls.Basic
 {
@@ -731,7 +729,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             GUI.color = color;
             GUI.contentColor = contentColor;
 
-            if (_shouldShowTooltip && !InputUtility.MouseTracker.anyPressing)
+            if (_shouldShowTooltip && !InputUtility.MouseTracker.anyButtonPressing)
             {
                 TooltipHandler.TipRegion(_tooltipRect, _tooltip);
             }

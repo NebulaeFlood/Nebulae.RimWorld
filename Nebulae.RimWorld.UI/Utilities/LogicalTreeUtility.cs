@@ -1,5 +1,4 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
-using Nebulae.RimWorld.UI.Core.Data.Bindings;
 
 namespace Nebulae.RimWorld.UI.Utilities
 {
