@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace Nebulae.RimWorld
@@ -19,6 +15,14 @@ namespace Nebulae.RimWorld
         public static readonly DefInfo<T> Empty = new DefInfo<T>();
 
 
+        //------------------------------------------------------
+        //
+        //  Public Fields
+        //
+        //------------------------------------------------------
+
+        #region Public Fields
+
         /// <summary>
         /// <see cref="Verse.Def"/> 的实例
         /// </summary>
@@ -33,6 +37,8 @@ namespace Nebulae.RimWorld
         /// 包含 <see cref="Def"/> 的 Mod 是否已加载
         /// </summary>
         public bool Loaded;
+
+        #endregion
 
 
         /// <summary>
@@ -49,8 +55,6 @@ namespace Nebulae.RimWorld
             Def = def;
             DefName = def.defName;
             Loaded = true;
-
-            _hashCode = DefName.GetHashCode();
         }
 
 
@@ -77,12 +81,17 @@ namespace Nebulae.RimWorld
         public static bool IsLoaded(DefInfo<T> info) => info.Loaded;
 
         /// <summary>
-        /// 解析指定的 <see cref="DefInfo{T}"/>，并获取其对应的 <see cref="Def"/> 实例
+        /// 解析指定的 <see cref="DefInfo{T}"/>
         /// </summary>
         /// <param name="info">要解析的实例</param>
         /// <returns>解析后的 <see cref="DefInfo{T}"/> 实例。</returns>
         public static DefInfo<T> Resolve(DefInfo<T> info)
         {
+            if (info.Loaded)
+            {
+                return info;
+            }
+
             if (string.IsNullOrEmpty(info.DefName))
             {
                 return Empty;
@@ -111,8 +120,6 @@ namespace Nebulae.RimWorld
         public void ExposeData()
         {
             Scribe_Values.Look(ref DefName, nameof(DefName), defaultValue: null);
-            Scribe_Values.Look(ref Loaded, nameof(Loaded), defaultValue: false);
-            Scribe_Values.Look(ref _hashCode, nameof(_hashCode), defaultValue: 0);
         }
 
         /// <summary>
@@ -139,9 +146,31 @@ namespace Nebulae.RimWorld
         /// 获取当前 <see cref="DefInfo{T}"/> 的哈希代码
         /// </summary>
         /// <returns>当前 <see cref="DefInfo{T}"/> 的哈希代码。</returns>
-        public override  int GetHashCode()
+        public override int GetHashCode()
         {
-            return _hashCode;
+            return DefName.GetHashCode();
+        }
+
+        /// <summary>
+        /// 解析该 <see cref="DefInfo{T}"/>，并获取其对应的 <see cref="Def"/> 实例
+        /// </summary>
+        /// <returns>解析后的 <see cref="DefInfo{T}"/> 实例。</returns>
+        public DefInfo<T> Resolve()
+        {
+            if (Loaded)
+            {
+                return this;
+            }
+
+            if (string.IsNullOrEmpty(DefName))
+            {
+                return Empty;
+            }
+
+            Def = DefDatabase<T>.GetNamedSilentFail(DefName);
+            Loaded = Def != null;
+
+            return this;
         }
 
         /// <summary>
@@ -151,8 +180,5 @@ namespace Nebulae.RimWorld
         public override string ToString() => DefName ?? "Empty";
 
         #endregion
-
-
-        private int _hashCode;
     }
 }
