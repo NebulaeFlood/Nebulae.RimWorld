@@ -87,6 +87,11 @@ namespace Nebulae.RimWorld
         /// <returns>解析后的 <see cref="DefInfo{T}"/> 实例。</returns>
         public static DefInfo<T> Resolve(DefInfo<T> info)
         {
+            if (info.Loaded)
+            {
+                return info;
+            }
+
             if (string.IsNullOrEmpty(info.DefName))
             {
                 return Empty;
@@ -152,6 +157,11 @@ namespace Nebulae.RimWorld
         /// <returns>解析后的 <see cref="DefInfo{T}"/> 实例。</returns>
         public DefInfo<T> Resolve()
         {
+            if (Loaded)
+            {
+                return this;
+            }
+
             if (string.IsNullOrEmpty(DefName))
             {
                 return Empty;
