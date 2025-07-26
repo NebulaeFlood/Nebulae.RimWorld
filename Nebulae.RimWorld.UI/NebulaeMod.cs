@@ -20,6 +20,11 @@ namespace Nebulae.RimWorld.UI
         #region Public Static Properties
 
         /// <summary>
+        /// 获取当前 Mod 的内容
+        /// </summary>
+        public static ModContentPack ContentPack => _mod.Content;
+
+        /// <summary>
         /// 获取当前 Mod 的设置内容
         /// </summary>
         public static T Settings => _settings;
