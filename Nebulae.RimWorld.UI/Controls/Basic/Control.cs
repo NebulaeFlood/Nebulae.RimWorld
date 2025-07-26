@@ -3,6 +3,7 @@ using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Ports;
 using System.Linq;
 using UnityEngine;
 using Verse;
@@ -856,6 +857,27 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         /// <param name="states">当前的状态</param>
         protected abstract void DrawCore(ControlState states);
+
+        /// <summary>
+        /// 绘制 <see cref="Control"/> 的拖动效果
+        /// </summary>
+        /// <param name="cursorPos">光标位置</param>
+        protected internal virtual void DrawDragEffect(Vector2 cursorPos)
+        {
+            float x = DesiredRect.x;
+            float y = DesiredRect.y;
+
+            float width = Mathf.Abs(x) + DesiredSize.Width;
+            float height = Mathf.Abs(y) + DesiredSize.Height;
+
+            GUI.BeginClip(new Rect(cursorPos.x + 16f - DesiredSize.Width * 0.5f, cursorPos.y + 16f - DesiredSize.Height * 0.5f, DesiredSize.Width, DesiredSize.Height));
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            DrawLightly(0.4f);
+
+            GUI.EndGroup();
+            GUI.EndClip();
+        }
 
         /// <inheritdoc/>
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args)

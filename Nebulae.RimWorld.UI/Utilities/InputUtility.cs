@@ -358,6 +358,8 @@ namespace Nebulae.RimWorld.UI.Utilities
 
                     if (_anyControlDragging)
                     {
+                        _pressingControl.DrawDragEffect(_cursorPosition);
+
                         if (_anyControlHovered && !ReferenceEquals(_pressingControl, _hoveredControl))
                         {
                             _hoveredControl.RaiseEvent(new DragEventArgs(_pressingControl, MouseButton.LeftMouse, _cursorPosition, _pressingControl, Control.DragOverEvent));

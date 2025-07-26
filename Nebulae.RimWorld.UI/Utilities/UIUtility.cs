@@ -68,6 +68,106 @@ namespace Nebulae.RimWorld.UI.Utilities
 
         //------------------------------------------------------
         //
+        //  Draw Copy
+        //
+        //------------------------------------------------------
+
+        #region Draw Copy
+
+        /// <summary>
+        /// 在一个新位置绘制控件的副本
+        /// </summary>
+        /// <param name="control">要绘制的控件</param>
+        /// <param name="renderPos">绘制副本的位置</param>
+        /// <param name="opacity">副本的不透明度</param>
+        public static void DrawAt(this Control control, Vector2 renderPos, float opacity = 1f)
+        {
+            float x = control.DesiredRect.x;
+            float y = control.DesiredRect.y;
+
+            float width = Mathf.Abs(x) + control.DesiredSize.Width;
+            float height = Mathf.Abs(y) + control.DesiredSize.Height;
+
+            GUI.BeginClip(new Rect(renderPos.x, renderPos.y, control.DesiredSize.Width, control.DesiredSize.Height));
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            control.DrawLightly(opacity);
+
+            GUI.EndGroup();
+            GUI.EndClip();
+        }
+
+        /// <summary>
+        /// 在一个新区域绘制控件的副本
+        /// </summary>
+        /// <param name="control">要绘制的控件</param>
+        /// <param name="renderPos">绘制副本的区域</param>
+        /// <param name="opacity">副本的不透明度</param>
+        public static void DrawAt(this FrameworkControl control, Vector2 renderPos, float opacity = 1f)
+        {
+            float x = control.RenderRect.x;
+            float y = control.RenderRect.y;
+            float width = Mathf.Abs(x) + control.RenderSize.Width;
+            float height = Mathf.Abs(y) + control.RenderSize.Height;
+
+            GUI.BeginClip(new Rect(renderPos.x, renderPos.y, control.RenderSize.Width, control.RenderSize.Height));
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            control.DrawLightly(opacity);
+
+            GUI.EndGroup();
+            GUI.EndClip();
+        }
+
+        /// <summary>
+        /// 在一个新位置绘制控件的副本
+        /// </summary>
+        /// <param name="control">要绘制的控件</param>
+        /// <param name="renderRect">绘制副本的位置</param>
+        /// <param name="opacity">副本的不透明度</param>
+        public static void DrawAt(this Control control, Rect renderRect, float opacity = 1f)
+        {
+            float x = control.DesiredRect.x;
+            float y = control.DesiredRect.y;
+            float width = Mathf.Abs(x) + renderRect.width;
+            float height = Mathf.Abs(y) + renderRect.height;
+
+            GUI.BeginClip(renderRect);
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            control.DrawLightly(opacity);
+
+            GUI.EndGroup();
+            GUI.EndClip();
+        }
+
+        /// <summary>
+        /// 在一个新区域绘制控件的副本
+        /// </summary>
+        /// <param name="control">要绘制的控件</param>
+        /// <param name="renderRect">绘制副本的区域</param>
+        /// <param name="opacity">副本的不透明度</param>
+        public static void DrawAt(this FrameworkControl control, Rect renderRect, float opacity = 1f)
+        {
+            float x = control.RenderRect.x;
+            float y = control.RenderRect.y;
+            float width = Mathf.Abs(x) + renderRect.width;
+            float height = Mathf.Abs(y) + renderRect.height;
+
+            GUI.BeginClip(renderRect);
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            control.DrawLightly(opacity);
+
+            GUI.EndGroup();
+            GUI.EndClip();
+        }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
         //  Draw Geometry
         //
         //------------------------------------------------------

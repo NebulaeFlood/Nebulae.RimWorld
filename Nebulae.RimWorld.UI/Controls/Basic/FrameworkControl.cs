@@ -357,6 +357,24 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override SegmentResult SegmentCore(Rect visiableRect) => visiableRect.IntersectWith(RenderRect);
 
+        /// <inheritdoc/>
+        protected internal override void DrawDragEffect(Vector2 cursorPos)
+        {
+            float x = RenderRect.x;
+            float y = RenderRect.y;
+
+            float width = Mathf.Abs(x) + RenderSize.Width;
+            float height = Mathf.Abs(y) + RenderSize.Height;
+
+            GUI.BeginClip(new Rect(cursorPos.x + 16f - RenderSize.Width * 0.5f, cursorPos.y + 16f - RenderSize.Height * 0.5f, RenderSize.Width, RenderSize.Height));
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            DrawLightly(0.4f);
+
+            GUI.EndGroup();
+            GUI.EndClip();
+        }
+
         #endregion
 
 
