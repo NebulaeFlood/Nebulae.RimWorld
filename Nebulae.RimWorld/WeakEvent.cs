@@ -74,6 +74,21 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
+        /// 添加事件处理器
+        /// </summary>
+        /// <param name="handler">要添加的处理器</param>
+        /// <remarks>该方法在转换事件处理器时不检查处理器参数。</remarks>
+        public void AddHandlerUnsafe(Delegate handler)
+        {
+            if (handler is null)
+            {
+                return;
+            }
+
+            _handlers.AddLast(WeakEventHandlerFactory.ConvertUnsafe<TSender, TArgs>(handler));
+        }
+
+        /// <summary>
         /// 移除所有事件处理器
         /// </summary>
         public void Clear() => _handlers.Clear();
