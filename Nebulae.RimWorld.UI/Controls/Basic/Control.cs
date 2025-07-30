@@ -3,7 +3,6 @@ using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO.Ports;
 using System.Linq;
 using UnityEngine;
 using Verse;
