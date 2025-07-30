@@ -880,7 +880,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <inheritdoc/>
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args)
+        protected override void OnDependencyPropertyChanged(DependencyPropertyChangedEventArgs args)
         {
             if (args.Metadata is ControlPropertyMetadata metadata)
             {
