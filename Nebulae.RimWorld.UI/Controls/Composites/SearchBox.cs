@@ -34,7 +34,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// </summary>
         public event SearchEventHandler Search
         {
-            add { _searchEvent.AddHandler(value); }
+            add { _searchEvent.AddHandlerUnsafe(value); }
             remove { _searchEvent.RemoveHandler(value); }
         }
         #endregion

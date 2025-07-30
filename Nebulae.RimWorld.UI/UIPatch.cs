@@ -24,8 +24,8 @@ namespace Nebulae.RimWorld.UI
         /// </summary>
         public static event ScaleChangedEventHandler ScaleChanged
         {
-            add => ScaleChangedEvent.AddHandler(value);
-            remove => ScaleChangedEvent.RemoveHandler(value);
+            add { ScaleChangedEvent.AddHandlerUnsafe(value); }
+            remove { ScaleChangedEvent.RemoveHandler(value); }
         }
         #endregion
 

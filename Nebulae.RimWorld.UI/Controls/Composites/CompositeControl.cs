@@ -94,13 +94,13 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         #region Protected Methods
 
         /// <inheritdoc/>
-        protected override sealed Rect ArrangeOverride(Rect availableRect) => _content.Arrange(availableRect);
+        protected override sealed Rect ArrangeOverride(Rect availableRect) => _content?.Arrange(availableRect) ?? throw new LogicalTreeException($"Cannot layout a control of type '{Type}' before calling {Type}.Initialize()", this);
 
         /// <inheritdoc/>
-        protected override sealed Size MeasureOverride(Size availableSize) => _content.Measure(availableSize);
+        protected override sealed Size MeasureOverride(Size availableSize) => _content?.Measure(availableSize) ?? throw new LogicalTreeException($"Cannot layout a control of type '{Type}' before calling {Type}.Initialize()", this);
 
         /// <inheritdoc/>
-        protected override sealed SegmentResult SegmentCore(Rect visiableRect) => _content.Segment(visiableRect);
+        protected override sealed SegmentResult SegmentCore(Rect visiableRect) => _content?.Segment(visiableRect) ?? throw new LogicalTreeException($"Cannot layout a control of type '{Type}' before calling {Type}.Initialize()", this);
 
         /// <inheritdoc/>
         protected override sealed HitTestResult HitTestCore(Vector2 hitPoint)
