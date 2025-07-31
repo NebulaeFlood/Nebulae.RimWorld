@@ -380,12 +380,17 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         internal override sealed void DrawDebugContent()
         {
-            if (DebugContent.HasFlag(DebugContent.RenderRect) && RenderSize != Size.Empty)
+            base.DrawDebugContent();
+
+            if (DebugRegionRect && RegionSize != Size.Empty)
+            {
+                UIUtility.DrawBorder(RegionRect, BrushUtility.RegionRectBorderBrush);
+            }
+
+            if (DebugRenderRect && RenderSize != Size.Empty)
             {
                 UIUtility.DrawBorder(RenderRect, BrushUtility.RederRectBorderBrush);
             }
-
-            base.DrawDebugContent();
         }
 
 

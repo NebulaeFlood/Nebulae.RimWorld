@@ -33,7 +33,7 @@ namespace Nebulae.RimWorld.UI.Automation.Diagnostics.Views
                 Background = BrushUtility.DarkerGrey,
                 BorderBrush = BrushUtility.LighterGrey,
                 BorderThickness = 1f,
-                Content = new StackPanel().Set(_debugControlRect, _debugDesiredRect, _debugRenderRect, _debugRegionRect, _debugVisibleRect)
+                Content = new StackPanel().Set(_debugControlRect, _debugDesiredRect, _debugRegionRect, _debugRenderRect, _debugVisibleRect)
             };
 
             var memberDebugPanel = new Border
@@ -63,15 +63,27 @@ namespace Nebulae.RimWorld.UI.Automation.Diagnostics.Views
 
             _debugControlRect.State = control.DebugControlRect ? ToggleState.On : ToggleState.Off;
             _debugDesiredRect.State = control.DebugDesiredRect ? ToggleState.On : ToggleState.Off;
-            _debugRenderRect.State = control.DebugRenderRect ? ToggleState.On : ToggleState.Off;
             _debugRegionRect.State = control.DebugRegionRect ? ToggleState.On : ToggleState.Off;
+            _debugRenderRect.State = control.DebugRenderRect ? ToggleState.On : ToggleState.Off;
             _debugVisibleRect.State = control.DebugVisibleRect ? ToggleState.On : ToggleState.Off;
 
             _debugControlRectBinding = Binding.Create(_debugControlRect, ToggleButton.StateProperty, control, nameof(DebugControlRect), BindingMode.OneWay);
             _debugDesiredRectBinding = Binding.Create(_debugDesiredRect, ToggleButton.StateProperty, control, nameof(DebugDesiredRect), BindingMode.OneWay);
-            _debugRenderRectBinding = Binding.Create(_debugRenderRect, ToggleButton.StateProperty, control, nameof(DebugRenderRect), BindingMode.OneWay);
-            _debugRegionRectBinding = Binding.Create(_debugRegionRect, ToggleButton.StateProperty, control, nameof(DebugRenderRect), BindingMode.OneWay);
             _debugVisibleRectBinding = Binding.Create(_debugVisibleRect, ToggleButton.StateProperty, control, nameof(DebugVisibleRect), BindingMode.OneWay);
+
+            if (control is FrameworkControl)
+            {
+                _debugRegionRect.IsEnabled = true;
+                _debugRenderRect.IsEnabled = true;
+
+                _debugRegionRectBinding = Binding.Create(_debugRegionRect, ToggleButton.StateProperty, control, nameof(DebugRegionRect), BindingMode.OneWay);
+                _debugRenderRectBinding = Binding.Create(_debugRenderRect, ToggleButton.StateProperty, control, nameof(DebugRenderRect), BindingMode.OneWay);
+            }
+            else
+            {
+                _debugRegionRect.IsEnabled = false;
+                _debugRenderRect.IsEnabled = false;
+            }
 
             if (!TryCreateDebugMembers(control, out _debugMembers))
             {
@@ -88,8 +100,8 @@ namespace Nebulae.RimWorld.UI.Automation.Diagnostics.Views
             {
                 _debugControlRectBinding.Unbind();
                 _debugDesiredRectBinding.Unbind();
-                _debugRenderRectBinding.Unbind();
-                _debugRegionRectBinding.Unbind();
+                _debugRegionRectBinding?.Unbind();
+                _debugRenderRectBinding?.Unbind();
                 _debugVisibleRectBinding.Unbind();
 
                 _debugControlRectBinding = null;
