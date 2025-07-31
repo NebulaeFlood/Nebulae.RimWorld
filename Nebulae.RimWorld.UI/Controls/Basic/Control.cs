@@ -882,9 +882,9 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         protected internal virtual Rect CalculateDragEffectRect(Vector2 cursorPos)
         {
             return new Rect(
-                cursorPos.x - DesiredSize.Width * 0.5f, 
-                cursorPos.y - DesiredSize.Height * 0.5f, 
-                DesiredSize.Width, 
+                cursorPos.x - DesiredSize.Width * 0.5f,
+                cursorPos.y - DesiredSize.Height * 0.5f,
+                DesiredSize.Width,
                 DesiredSize.Height);
         }
 

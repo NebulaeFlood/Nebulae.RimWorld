@@ -166,11 +166,11 @@ namespace Nebulae.RimWorld.UI.Utilities
                 if (_anyControlDragging)
                 {
                     Find.WindowStack.ImmediateWindow(
-                        int.MaxValue, 
-                        _pressingControl.CalculateDragEffectRect(_cursorPosition), 
-                        WindowLayer.Super, 
-                        _pressingControl.DrawDragEffect, 
-                        doBackground: false, 
+                        int.MaxValue,
+                        _pressingControl.CalculateDragEffectRect(_cursorPosition),
+                        WindowLayer.Super,
+                        _pressingControl.DrawDragEffect,
+                        doBackground: false,
                         shadowAlpha: 0f);
                 }
             }
