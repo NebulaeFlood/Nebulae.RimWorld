@@ -203,15 +203,23 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             }
             else
             {
-                _children.RemoveAt(j);
-
-                if (j < i)
+                if (j > i)
                 {
-                    _children.Insert(i - 1, control);
+                    _children.RemoveAt(j);
+                    _children.Insert(i, control);
                 }
                 else
                 {
-                    _children.Insert(i, control);
+                    if (i == _children.Count - 1)
+                    {
+                        _children.RemoveAt(j);
+                        _children.Add(control);
+                    }
+                    else
+                    {
+                        _children.RemoveAt(j);
+                        _children.Insert(i, control);
+                    }
                 }
             }
 
