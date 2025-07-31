@@ -200,12 +200,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #endregion
 
 
-        static NumberBox()
-        {
-            HeightProperty.OverrideMetadata(typeof(NumberBox),
-                new ControlPropertyMetadata(34f, ControlRelation.Measure));
-        }
-
         /// <summary>
         /// 初始化 <see cref="NumberBox"/> 的新实例
         /// </summary>

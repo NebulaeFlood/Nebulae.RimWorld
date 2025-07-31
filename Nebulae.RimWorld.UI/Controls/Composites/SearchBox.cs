@@ -155,12 +155,6 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         #endregion
 
 
-        static SearchBox()
-        {
-            HeightProperty.OverrideMetadata(typeof(SearchBox),
-                new ControlPropertyMetadata(34f, ControlRelation.Measure));
-        }
-
         /// <summary>
         /// 初始化 <see cref="SearchBox"/> 的新实例
         /// </summary>
