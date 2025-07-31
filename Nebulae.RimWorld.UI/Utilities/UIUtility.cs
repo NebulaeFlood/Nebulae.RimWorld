@@ -193,7 +193,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             // Right
             GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), borderBrush);
             // Bottom
-            GUI.DrawTexture(new Rect(x, y + height, width, 1f), borderBrush);
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), borderBrush);
         }
 
         /// <summary>
@@ -218,7 +218,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             // Right
             GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), BaseContent.WhiteTex);
             // Bottom
-            GUI.DrawTexture(new Rect(x, y + height, width, 1f), BaseContent.WhiteTex);
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
 
             GUI.color = color;
         }
@@ -245,7 +245,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 // Right
                 GUI.DrawTexture(new Rect(x + width - borderThickness.Right, y, borderThickness.Right, height), borderBrush);
                 // Bottom
-                GUI.DrawTexture(new Rect(x, y + height, width, borderThickness.Bottom), borderBrush);
+                GUI.DrawTexture(new Rect(x, y + height - 1f, width, borderThickness.Bottom), borderBrush);
             }
         }
 
@@ -274,7 +274,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 // Right
                 GUI.DrawTexture(new Rect(x + width - borderThickness.Right, y, borderThickness.Right, height), BaseContent.WhiteTex);
                 // Bottom
-                GUI.DrawTexture(new Rect(x, y + height, width, borderThickness.Bottom), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x, y + height - 1f, width, borderThickness.Bottom), BaseContent.WhiteTex);
             }
 
             GUI.color = color;
@@ -363,7 +363,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             // Right
             GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), borderBrush);
             // Bottom
-            GUI.DrawTexture(new Rect(x, y + height, width, 1f), borderBrush);
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), borderBrush);
         }
 
         /// <summary>
@@ -391,7 +391,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             // Right
             GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), BaseContent.WhiteTex);
             // Bottom
-            GUI.DrawTexture(new Rect(x, y + height, width, 1f), BaseContent.WhiteTex);
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
 
             GUI.color = color;
         }
@@ -423,7 +423,7 @@ namespace Nebulae.RimWorld.UI.Utilities
             // Right
             GUI.DrawTexture(new Rect(x + width - 1f, y, 1f, height), BaseContent.WhiteTex);
             // Bottom
-            GUI.DrawTexture(new Rect(x, y + height, width, 1f), BaseContent.WhiteTex);
+            GUI.DrawTexture(new Rect(x, y + height - 1f, width, 1f), BaseContent.WhiteTex);
 
             GUI.color = color;
         }
@@ -453,7 +453,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 // Right
                 GUI.DrawTexture(new Rect(x + width - borderThickness.Right, y, borderThickness.Right, height), borderBrush);
                 // Bottom
-                GUI.DrawTexture(new Rect(x, y + height, width, borderThickness.Bottom), borderBrush);
+                GUI.DrawTexture(new Rect(x, y + height - 1f, width, borderThickness.Bottom), borderBrush);
             }
         }
 
@@ -487,7 +487,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 // Right
                 GUI.DrawTexture(new Rect(x + width - borderThickness.Right, y, borderThickness.Right, height), BaseContent.WhiteTex);
                 // Bottom
-                GUI.DrawTexture(new Rect(x, y + height, width, borderThickness.Bottom), BaseContent.WhiteTex);
+                GUI.DrawTexture(new Rect(x, y + height - 1f, width, borderThickness.Bottom), BaseContent.WhiteTex);
             }
 
             GUI.color = color;
