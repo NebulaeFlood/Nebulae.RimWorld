@@ -21,12 +21,27 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// 暗灰色画刷
         /// </summary>
-        public static readonly Texture2D DarkGrey = SolidColorMaterials.NewSolidColorTexture(new Color(0.2f, 0.2f, 0.2f, 1f));
+        public static readonly Texture2D DarkerGrey = SolidColorMaterials.NewSolidColorTexture(GenColor.FromHex("333333"));
+
+        /// <summary>
+        /// 深灰色画刷
+        /// </summary>
+        public static readonly Texture2D DarkGrey = SolidColorMaterials.NewSolidColorTexture(GenColor.FromHex("555555"));
+
+        /// <summary>
+        /// 亮灰色画刷
+        /// </summary>
+        public static readonly Texture2D LighterGrey = SolidColorMaterials.NewSolidColorTexture(GenColor.FromHex("CCCCCC"));
+
+        /// <summary>
+        /// 浅灰色画刷
+        /// </summary>
+        public static readonly Texture2D LightGrey = SolidColorMaterials.NewSolidColorTexture(GenColor.FromHex("999999"));
 
         /// <summary>
         /// 灰色画刷
         /// </summary>
-        public static readonly Texture2D Grey = SolidColorMaterials.NewSolidColorTexture(ColorLibrary.Grey);
+        public static readonly Texture2D Grey = SolidColorMaterials.NewSolidColorTexture(GenColor.FromHex("777777"));
 
         /// <summary>
         /// 透明画刷
@@ -52,22 +67,27 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <summary>
         /// <see cref="Control.ControlRect"/> 边框颜色
         /// </summary>
-        public static readonly Texture2D ControlRectBorderBrush = SolidColorMaterials.NewSolidColorTexture(new Color(0f, 0f, 1f, 1f));
+        public static readonly Texture2D ControlRectBorderBrush = SolidColorMaterials.NewSolidColorTexture(new Color(0f, 0f, 1f));
 
         /// <summary>
         /// <see cref="Control.DesiredRect"/> 边框颜色
         /// </summary>
-        public static readonly Texture2D DesiredRectBorderBrush = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 0.9215686f, 0.0156862f, 1f));
+        public static readonly Texture2D DesiredRectBorderBrush = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 0.9215686f, 0.0156862f));
 
         /// <summary>
         /// <see cref="FrameworkControl.RenderRect"/> 边框颜色
         /// </summary>
-        public static readonly Texture2D RederRectBorderBrush = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 1f, 1f, 1f));
+        public static readonly Texture2D RederRectBorderBrush = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 1f, 1f));
+
+        /// <summary>
+        /// <see cref="FrameworkControl.RegionRect"/> 边框颜色
+        /// </summary>
+        public static readonly Texture2D RegionRectBorderBrush = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 0.4235294f, 0f));
 
         /// <summary>
         /// <see cref="Control.VisibleRect"/> 边框颜色
         /// </summary>
-        public static readonly Texture2D VisibleRectBorderBrush = SolidColorMaterials.NewSolidColorTexture(new Color(0f, 1f, 0f, 1f));
+        public static readonly Texture2D VisibleRectBorderBrush = SolidColorMaterials.NewSolidColorTexture(new Color(0f, 1f, 0f));
 
         #endregion
 

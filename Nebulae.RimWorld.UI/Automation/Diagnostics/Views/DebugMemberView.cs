@@ -30,16 +30,16 @@ namespace Nebulae.RimWorld.UI.Automation.Diagnostics.Views
         {
             var rectDebugPanel = new Border
             {
-                Background = BrushUtility.DarkGrey,
-                BorderBrush = BrushUtility.Grey,
+                Background = BrushUtility.DarkerGrey,
+                BorderBrush = BrushUtility.LighterGrey,
                 BorderThickness = 1f,
                 Content = new StackPanel().Set(_debugControlRect, _debugDesiredRect, _debugRenderRect, _debugRegionRect, _debugVisibleRect)
             };
 
             var memberDebugPanel = new Border
             {
-                Background = BrushUtility.DarkGrey,
-                BorderBrush = BrushUtility.Grey,
+                Background = BrushUtility.DarkerGrey,
+                BorderBrush = BrushUtility.LighterGrey,
                 BorderThickness = 1f,
                 Content = new ScrollViewer { Content = _textBlock }
             };
