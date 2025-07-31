@@ -38,9 +38,9 @@ namespace Nebulae.RimWorld.UI.Utilities
                 {
                     if (windowStack[i] is PopupWindow window)
                     {
-                        if (window._stayOpen)
+                        if (window.stayOpen)
                         {
-                            window._stayOpen = false;
+                            window.stayOpen = false;
                         }
                         else
                         {

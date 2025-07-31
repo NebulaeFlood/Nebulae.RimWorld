@@ -36,7 +36,7 @@ namespace Nebulae.RimWorld.UI.Windows
                 return;
             }
 
-            _stayOpen = false;
+            stayOpen = false;
             Find.WindowStack.TryRemove(this, doCloseSound);
         }
 
@@ -48,12 +48,12 @@ namespace Nebulae.RimWorld.UI.Windows
         {
             if (_popuped)
             {
-                _stayOpen = true;
+                stayOpen = true;
             }
             else
             {
                 _popuped = true;
-                _stayOpen = true;
+                stayOpen = true;
                 PopupWindowUtility.Manage(this);
                 Find.WindowStack.Add(this);
             }
@@ -68,7 +68,7 @@ namespace Nebulae.RimWorld.UI.Windows
         }
 
 
-        internal bool _stayOpen;
+        internal bool stayOpen;
 
         private bool _popuped;
     }
