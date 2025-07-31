@@ -29,6 +29,10 @@ namespace Nebulae.RimWorld.UI.Patches
 
                 InputUtility.KeyBoard.Trace();
             }
+            else
+            {
+                InputUtility.MouseTracker.DrawEffect();
+            }
         }
     }
 }

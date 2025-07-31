@@ -86,9 +86,8 @@ namespace Nebulae.RimWorld.UI.Utilities
             {
                 window = windowStack[i];
 
-                if (window.ID >= 0  // ImmediateWindow's ID < 0
-                    && (window.absorbInputAroundWindow
-                        || window.windowRect.Contains(cursorPos)))
+                if (window.ID > 0  // ImmediateWindow's ID < 0
+                    && (window.absorbInputAroundWindow || window.windowRect.Contains(cursorPos)))
                 {
                     allowIndependentHitTest = false;
                     hoveredWindow = window;
@@ -154,6 +153,28 @@ namespace Nebulae.RimWorld.UI.Utilities
             }
 
 
+            //------------------------------------------------------
+            //
+            //  Internal Static Methods
+            //
+            //------------------------------------------------------
+
+            #region Internal Static Methods
+
+            internal static void DrawEffect()
+            {
+                if (_anyControlDragging)
+                {
+                    Find.WindowStack.ImmediateWindow(
+                        int.MaxValue, 
+                        _pressingControl.CalculateDragEffectRect(_cursorPosition), 
+                        WindowLayer.Super, 
+                        _pressingControl.DrawDragEffect, 
+                        doBackground: false, 
+                        shadowAlpha: 0f);
+                }
+            }
+
             internal static void TraceCursor()
             {
                 anyButtonPressing = false;
@@ -172,6 +193,8 @@ namespace Nebulae.RimWorld.UI.Utilities
                 CursorEnter();
                 HitTestUtility.Results.TransferTo(HitTestUtility.PreviousResults);
             }
+
+            #endregion
 
 
             internal void Trace()
@@ -218,7 +241,11 @@ namespace Nebulae.RimWorld.UI.Utilities
                         dragEnterArgs.Handled = false;
 
                         control.RaiseEvent(mouseEnterArgs);
-                        control.RaiseEvent(dragEnterArgs);
+
+                        if (!ReferenceEquals(_pressingControl, control))
+                        {
+                            control.RaiseEvent(dragEnterArgs);
+                        }
                     }
                 }
                 else
@@ -257,7 +284,11 @@ namespace Nebulae.RimWorld.UI.Utilities
                         dragLeaveArgs.Handled = false;
 
                         control.RaiseEvent(mouseLeaveArgs);
-                        control.RaiseEvent(dragLeaveArgs);
+
+                        if (!ReferenceEquals(control, _pressingControl))
+                        {
+                            control.RaiseEvent(dragLeaveArgs);
+                        }
                     }
                 }
                 else
@@ -318,6 +349,7 @@ namespace Nebulae.RimWorld.UI.Utilities
                 if (_anyControlDragging)
                 {
                     _anyControlDragging = false;
+                    _anyControlPressing = false;
 
                     _pressingControl.RaiseEvent(new DragEventArgs(_pressingControl, MouseButton.LeftMouse, _cursorPosition, _pressingControl, Control.DragStopEvent));
 
@@ -358,8 +390,6 @@ namespace Nebulae.RimWorld.UI.Utilities
 
                     if (_anyControlDragging)
                     {
-                        _pressingControl.DrawDragEffect(_cursorPosition);
-
                         if (_anyControlHovered && !ReferenceEquals(_pressingControl, _hoveredControl))
                         {
                             _hoveredControl.RaiseEvent(new DragEventArgs(_pressingControl, MouseButton.LeftMouse, _cursorPosition, _pressingControl, Control.DragOverEvent));
