@@ -321,7 +321,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 float logicalWidth = Width;
 
                 renderWidth = logicalWidth > 1f
-                    ? logicalWidth
+                    ? Mathf.Min(availableSize.Width, logicalWidth)
                     : availableSize.Width * logicalWidth;
             }
 
@@ -336,7 +336,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 float logicalHeight = Height;
 
                 renderHeight = logicalHeight > 1f
-                    ? logicalHeight
+                    ? Mathf.Min(availableSize.Height, logicalHeight)
                     : availableSize.Height * logicalHeight;
             }
 
@@ -357,17 +357,50 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override SegmentResult SegmentCore(Rect visiableRect) => visiableRect.IntersectWith(RenderRect);
 
+        /// <inheritdoc/>
+        protected internal override Rect CalculateDragEffectRect(Vector2 cursorPos)
+        {
+            return new Rect(
+                Mathf.Floor(cursorPos.x - RenderSize.Width * 0.5f),
+                Mathf.Floor(cursorPos.y - RenderSize.Height * 0.5f),
+                RenderSize.Width,
+                RenderSize.Height);
+        }
+
+        /// <inheritdoc/>
+        protected internal override void DrawDragEffectCore()
+        {
+            float x = RenderRect.x;
+            float y = RenderRect.y;
+
+            float width = Mathf.Abs(x) + RenderSize.Width;
+            float height = Mathf.Abs(y) + RenderSize.Height;
+
+            GUI.BeginClip(new Rect(0f, 0f, RenderSize.Width, RenderSize.Height));
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            DrawLightly(DragOpacity);
+
+            GUI.EndGroup();
+            GUI.EndClip();
+        }
+
         #endregion
 
 
         internal override sealed void DrawDebugContent()
         {
-            if (DebugContent.HasFlag(DebugContent.RenderRect) && RenderSize != Size.Empty)
+            base.DrawDebugContent();
+
+            if (DebugRegionRect && RegionSize != Size.Empty)
+            {
+                UIUtility.DrawBorder(RegionRect, BrushUtility.RegionRectBorderBrush);
+            }
+
+            if (DebugRenderRect && RenderSize != Size.Empty)
             {
                 UIUtility.DrawBorder(RenderRect, BrushUtility.RederRectBorderBrush);
             }
-
-            base.DrawDebugContent();
         }
 
 

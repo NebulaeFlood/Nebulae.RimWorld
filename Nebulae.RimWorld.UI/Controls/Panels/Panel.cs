@@ -60,6 +60,25 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         protected PanelChildrenCollection Children => _children;
 
         /// <summary>
+        /// 获取 <see cref="Panel"/> 将要绘制的控件
+        /// </summary>
+        protected Control[] DrawableChildren
+        {
+            get
+            {
+                if (_isDrawableChildrenValid)
+                {
+                    return _drawableChildren;
+                }
+
+                _drawableChildren = FindDrawableChildren().ToArray();
+                _isDrawableChildrenValid = true;
+
+                return _drawableChildren;
+            }
+        }
+
+        /// <summary>
         /// 获取 <see cref="Panel"/> 由 <see cref="Filter"/> 过滤后的子控件
         /// </summary>
         protected Control[] FilteredChildren
@@ -73,6 +92,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
                 _filteredChildren = FindFilteredChildren();
                 _isFilteredChildrenValid = true;
+
                 return _filteredChildren;
             }
         }
@@ -208,17 +228,14 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <inheritdoc/>
-        protected override sealed void DrawCore(ControlState states)
+        protected override void DrawCore(ControlState states)
         {
-            if (!_isDrawableChildrenValid)
-            {
-                _drawableChildren = FindDrawableChildren().ToArray();
-                _isDrawableChildrenValid = true;
-            }
+            var children = DrawableChildren;
+            var count = children.Length;
 
-            for (int i = 0; i < _drawableChildren.Length; i++)
+            for (int i = 0; i < count; i++)
             {
-                _drawableChildren[i].Draw();
+                children[i].Draw();
             }
         }
 

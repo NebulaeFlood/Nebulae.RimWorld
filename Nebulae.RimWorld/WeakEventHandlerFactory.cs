@@ -58,6 +58,24 @@ namespace Nebulae.RimWorld
             return Create<TSender, TArgs>(handler.Target, method);
         }
 
+        /// <summary>
+        /// 将指定的事件处理程序转换为弱事件处理程序
+        /// </summary>
+        /// <typeparam name="TSender">处理器的 senderType 参数类型</typeparam>
+        /// <typeparam name="TArgs">处理器的 argsType 参数类型</typeparam>
+        /// <param name="handler">要转换的事件处理器</param>
+        /// <returns>由 <paramref name="handler"/> 转换成的弱事件处理器。</returns>
+        /// <remarks>该方法不对事件处理器的参数做任何检查，必须将处理器的参数设置为 (<typeparamref name="TSender"/> senderType, <typeparamref name="TArgs"/> argsType)。</remarks>
+        public static IWeakEventHandler<TSender, TArgs> ConvertUnsafe<TSender, TArgs>(Delegate handler) where TArgs : EventArgs
+        {
+            if (handler is null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            return Create<TSender, TArgs>(handler.Target, handler.Method);
+        }
+
         #endregion
 
 

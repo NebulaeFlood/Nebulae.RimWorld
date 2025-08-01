@@ -154,12 +154,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         #endregion
 
 
-        static TextBox()
-        {
-            HeightProperty.OverrideMetadata(typeof(TextBox),
-                new ControlPropertyMetadata(34f, ControlRelation.Measure));
-        }
-
         /// <summary>
         /// 初始化 <see cref="TextBox"/> 的新实例
         /// </summary>

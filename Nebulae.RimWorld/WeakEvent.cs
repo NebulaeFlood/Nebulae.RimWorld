@@ -12,7 +12,7 @@ namespace Nebulae.RimWorld
     public sealed class WeakEvent<TSender, TArgs> where TArgs : EventArgs
     {
         /// <summary>
-        /// 获取当前事件处理程序的数量
+        /// 获取当前事件处理器的数量
         /// </summary>
         public int Count => _handlers.Count;
 
@@ -32,9 +32,9 @@ namespace Nebulae.RimWorld
         #region Public Methods
 
         /// <summary>
-        /// 添加事件处理程序
+        /// 添加事件处理器
         /// </summary>
-        /// <param name="handler">要添加的处理程序</param>
+        /// <param name="handler">要添加的处理器</param>
         public void AddHandler(Delegate handler)
         {
             if (handler is null)
@@ -46,9 +46,9 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 添加事件处理程序
+        /// 添加事件处理器
         /// </summary>
-        /// <param name="handler">要添加的处理程序</param>
+        /// <param name="handler">要添加的处理器</param>
         public void AddHandler(Action<TSender, TArgs> handler)
         {
             if (handler is null)
@@ -60,9 +60,9 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 添加事件处理程序
+        /// 添加事件处理器
         /// </summary>
-        /// <param name="handler">要添加的处理程序</param>
+        /// <param name="handler">要添加的处理器</param>
         public void AddHandler(IWeakEventHandler<TSender, TArgs> handler)
         {
             if (handler is null)
@@ -74,12 +74,27 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 移除所有事件处理程序
+        /// 添加事件处理器
+        /// </summary>
+        /// <param name="handler">要添加的处理器</param>
+        /// <remarks>该方法在转换事件处理器时不检查处理器参数。</remarks>
+        public void AddHandlerUnsafe(Delegate handler)
+        {
+            if (handler is null)
+            {
+                return;
+            }
+
+            _handlers.AddLast(WeakEventHandlerFactory.ConvertUnsafe<TSender, TArgs>(handler));
+        }
+
+        /// <summary>
+        /// 移除所有事件处理器
         /// </summary>
         public void Clear() => _handlers.Clear();
 
         /// <summary>
-        /// 调用所有事件处理程序
+        /// 调用所有事件处理器
         /// </summary>
         /// <param name="sender">事件源</param>
         /// <param name="args">包含事件数据的对象</param>
@@ -100,7 +115,7 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 清除所有已过期的事件处理程序
+        /// 清除所有已过期的事件处理器
         /// </summary>
         public void Purge()
         {
@@ -125,9 +140,9 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 移除事件处理程序
+        /// 移除事件处理器
         /// </summary>
-        /// <param name="handler">要移除的处理程序</param>
+        /// <param name="handler">要移除的处理器</param>
         /// <returns>若成功移除，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool RemoveHandler(Delegate handler)
         {
@@ -153,9 +168,9 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 移除事件处理程序
+        /// 移除事件处理器
         /// </summary>
-        /// <param name="handler">要移除的处理程序</param>
+        /// <param name="handler">要移除的处理器</param>
         /// <returns>若成功移除，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool RemoveHandler(IWeakEventHandler<TSender, TArgs> handler)
         {

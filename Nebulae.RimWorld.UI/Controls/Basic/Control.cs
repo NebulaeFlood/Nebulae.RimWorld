@@ -154,6 +154,15 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
+        /// 获取或设置 <see cref="Control"/> 的拖动效果透明度
+        /// </summary>
+        public float DragOpacity
+        {
+            get => _dragOpacity;
+            set => _dragOpacity = value;
+        }
+
+        /// <summary>
         /// 获取一个值，该值指示 <see cref="Control"/> 是否正在被拖动
         /// </summary>
         [DebugMember(int.MinValue + 8)]
@@ -767,19 +776,27 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         internal virtual void DrawDebugContent()
         {
-            if (_debugContent.HasFlag(DebugContent.VisibleRect) && VisibleSize != Size.Empty)
+            if (DebugVisibleRect && VisibleSize != Size.Empty)
             {
                 UIUtility.DrawBorder(VisibleRect, BrushUtility.VisibleRectBorderBrush);
             }
 
-            if (_debugContent.HasFlag(DebugContent.DesiredRect) && DesiredSize != Size.Empty)
+            if (DebugDesiredRect && DesiredSize != Size.Empty)
             {
                 UIUtility.DrawBorder(DesiredRect, BrushUtility.DesiredRectBorderBrush);
             }
 
-            if (_debugContent.HasFlag(DebugContent.ControlRect) && ControlSize != Size.Empty)
+            if (DebugControlRect && ControlSize != Size.Empty)
             {
                 UIUtility.DrawBorder(ControlRect, BrushUtility.ControlRectBorderBrush);
+            }
+        }
+
+        internal void DrawDragEffect()
+        {
+            if (_controlStates.HasState(ControlState.Dragging))
+            {
+                DrawDragEffectCore();
             }
         }
 
@@ -857,8 +874,42 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <param name="states">当前的状态</param>
         protected abstract void DrawCore(ControlState states);
 
+        /// <summary>
+        /// 计算 <see cref="Control"/> 拖动效果的绘制区域
+        /// </summary>
+        /// <param name="cursorPos">光标位置</param>
+        /// <returns><see cref="Control"/> 拖动效果的绘制区域。</returns>
+        protected internal virtual Rect CalculateDragEffectRect(Vector2 cursorPos)
+        {
+            return new Rect(
+                cursorPos.x - DesiredSize.Width * 0.5f,
+                cursorPos.y - DesiredSize.Height * 0.5f,
+                DesiredSize.Width,
+                DesiredSize.Height);
+        }
+
+        /// <summary>
+        /// 绘制 <see cref="Control"/> 的拖动效果
+        /// </summary>
+        protected internal virtual void DrawDragEffectCore()
+        {
+            float x = DesiredRect.x;
+            float y = DesiredRect.y;
+
+            float width = Mathf.Abs(x) + DesiredSize.Width;
+            float height = Mathf.Abs(y) + DesiredSize.Height;
+
+            GUI.BeginClip(new Rect(0f, 0f, DesiredSize.Width, DesiredSize.Height));
+            GUI.BeginGroup(new Rect(-x, -y, width, height));
+
+            DrawLightly(_dragOpacity);
+
+            GUI.EndGroup();
+            GUI.EndClip();
+        }
+
         /// <inheritdoc/>
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args)
+        protected override void OnDependencyPropertyChanged(DependencyPropertyChangedEventArgs args)
         {
             if (args.Metadata is ControlPropertyMetadata metadata)
             {
@@ -895,6 +946,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private ControlState _controlStates = ControlState.Normal;
         private DebugContent _debugContent = DebugContent.Empty;
+
+        private float _dragOpacity = 1f;
 
         private LayoutManager _layoutManager;
 

@@ -34,7 +34,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
         /// </summary>
         public event SearchEventHandler Search
         {
-            add { _searchEvent.AddHandler(value); }
+            add { _searchEvent.AddHandlerUnsafe(value); }
             remove { _searchEvent.RemoveHandler(value); }
         }
         #endregion
@@ -154,12 +154,6 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
 
         #endregion
 
-
-        static SearchBox()
-        {
-            HeightProperty.OverrideMetadata(typeof(SearchBox),
-                new ControlPropertyMetadata(34f, ControlRelation.Measure));
-        }
 
         /// <summary>
         /// 初始化 <see cref="SearchBox"/> 的新实例

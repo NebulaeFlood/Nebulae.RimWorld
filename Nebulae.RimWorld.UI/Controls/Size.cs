@@ -268,8 +268,15 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 将 <see cref="Vector2"/> 隐式转换为 <see cref="Size"/>
         /// </summary>
         /// <param name="vector"><see cref="Vector2"/> 对象</param>
-        /// <returns>返回一个新的 <see cref="Size"/> 对象，宽度和高度分别为 <see cref="Vector2"/> 的 x 和 y。</returns>
+        /// <returns>返回一个新的 <see cref="Size"/> 对象，宽度和高度分别为元组的第一、第二个参数。</returns>
         public static implicit operator Size(Vector2 vector) => new Size(vector.x, vector.y);
+
+        /// <summary>
+        /// 将元组隐式转换为 <see cref="Size"/>
+        /// </summary>
+        /// <param name="size">元组对象</param>
+        /// <returns>返回一个新的 <see cref="Size"/> 对象，宽度和高度分别为 <see cref="Vector2"/> 的 x 和 y。</returns>
+        public static implicit operator Size((float Width, float Height) size) => new Size(size.Width, size.Height);
 
         /// <summary>
         /// 将 <see cref="Size"/> 隐式转换为 <see cref="Vector2"/>

@@ -132,7 +132,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         /// <summary>
-        /// 将控件插入或移动到面板中的指定控件之前
+        /// 将控件按照视觉效果插入或移动到面板中的指定控件之前或之后
         /// </summary>
         /// <param name="control">要插入的控件</param>
         /// <param name="index">被挤开的控件</param>

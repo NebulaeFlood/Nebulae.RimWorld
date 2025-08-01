@@ -1,9 +1,11 @@
-﻿namespace Nebulae.RimWorld.UI.Core.Data
+﻿using System;
+
+namespace Nebulae.RimWorld.UI.Core.Data
 {
     /// <summary>
     /// 依赖属性的值更改后的事件数据
     /// </summary>
-    public readonly struct DependencyPropertyChangedEventArgs
+    public sealed class DependencyPropertyChangedEventArgs : EventArgs
     {
         //------------------------------------------------------
         //

@@ -143,7 +143,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 // Right
                 GUI.DrawTexture(new Rect(x + width - _borderThickness.Right, y, _borderThickness.Right, height), _borderBrush, ScaleMode.StretchToFill);
                 // Bottom
-                GUI.DrawTexture(new Rect(x, y + height, width, _borderThickness.Bottom), _borderBrush, ScaleMode.StretchToFill);
+                GUI.DrawTexture(new Rect(x, y + height - 1f, width, _borderThickness.Bottom), _borderBrush, ScaleMode.StretchToFill);
             }
 
             base.DrawCore(states);

@@ -167,6 +167,13 @@ namespace Nebulae.RimWorld.UI.Controls
         public static implicit operator Thickness(float uniformLength) => new Thickness(uniformLength);
 
         /// <summary>
+        /// 将元组隐式转换为 <see cref="Thickness"/>
+        /// </summary>
+        /// <param name="thickness">元组对象</param>
+        /// <returns>返回一个新的 <see cref="Thickness"/> 对象，四个边的值按照构造函数的参数顺序对应元组的四个值。</returns>
+        public static implicit operator Thickness((float Left, float Top, float Right, float Bottom) thickness) => new Thickness(thickness.Left, thickness.Top, thickness.Right, thickness.Bottom);
+
+        /// <summary>
         /// 判断 <see cref="Thickness"/> 对象的四个边是否等于指定的统一长度
         /// </summary>
         /// <param name="thickness"><see cref="Thickness"/> 对象</param>
