@@ -425,9 +425,7 @@ namespace Nebulae.RimWorld.UI.Automation
             try
             {
                 return new StackPanel { VerticalAlignment = VerticalAlignment.Top }
-                    .Set(
-                        PrecessEntryInfos(
-                            ProcessMembers(model, settingAttribute.TraslationKeyPrefix, type)));
+                    .Set(ProcessMembers(model, settingAttribute.TraslationKeyPrefix, type));
             }
             catch (Exception e)
             {
@@ -458,30 +456,7 @@ namespace Nebulae.RimWorld.UI.Automation
             return BindingBase.GetDefaultConverter(sourceType, targetType);
         }
 
-        private static IEnumerable<Control> PrecessEntryInfos(IEnumerable<LayoutModel> entryInfos)
-        {
-            foreach (var info in entryInfos)
-            {
-                switch (info.EntryType)
-                {
-                    case LayoutEntryType.Boolean:
-                        yield return CreateBooleanEntry(info.Owner, info.Name, (bool)info.Value, info.Label, info.Tooltip, info.Info.ReadOnly, info.Info.BindingMode);
-                        break;
-                    case LayoutEntryType.Number:
-                        var numberEntry = (NumberEntryAttribute)info.Info;
-                        yield return CreateNumberEntry(info.Owner, info.Name, (float)info.Value, info.Label, info.Tooltip, numberEntry.MinValue, numberEntry.MaxValue, numberEntry.Decimals, numberEntry.IsPercentage, info.Info.ReadOnly, numberEntry.BindingMode);
-                        break;
-                    case LayoutEntryType.String:
-                        var textEntry = (TextEntryAttribute)info.Info;
-                        yield return CreateTextEntry(info.Owner, info.Name, (string)info.Value, info.Label, info.Tooltip, textEntry.WrapText, textEntry.FontSize, null, textEntry.ReadOnly, textEntry.BindingMode);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        private static IEnumerable<LayoutModel> ProcessMembers(object owner, string translationKeyPrefix, Type type)
+        private static IEnumerable<Control> ProcessMembers(object owner, string translationKeyPrefix, Type type)
         {
             var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
             var count = members.Length;
@@ -497,7 +472,24 @@ namespace Nebulae.RimWorld.UI.Automation
 
                 if (member.GetCustomAttribute(typeof(LayoutEntryBaseAttribute)) is LayoutEntryBaseAttribute entryInfo)
                 {
-                    yield return new LayoutModel(translationKeyPrefix, entryInfo, member, owner);
+                    var model = new LayoutModel(translationKeyPrefix, entryInfo, member, owner);
+
+                    switch (model.EntryType)
+                    {
+                        case LayoutEntryType.Boolean:
+                            yield return CreateBooleanEntry(model.Owner, model.Name, (bool)model.Value, model.Label, model.Tooltip, model.Info.ReadOnly, model.Info.BindingMode);
+                            break;
+                        case LayoutEntryType.Number:
+                            var numberEntry = (NumberEntryAttribute)model.Info;
+                            yield return CreateNumberEntry(model.Owner, model.Name, (float)model.Value, model.Label, model.Tooltip, numberEntry.MinValue, numberEntry.MaxValue, numberEntry.Decimals, numberEntry.IsPercentage, model.Info.ReadOnly, numberEntry.BindingMode);
+                            break;
+                        case LayoutEntryType.String:
+                            var textEntry = (TextEntryAttribute)model.Info;
+                            yield return CreateTextEntry(model.Owner, model.Name, (string)model.Value, model.Label, model.Tooltip, textEntry.WrapText, textEntry.FontSize, null, textEntry.ReadOnly, textEntry.BindingMode);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
