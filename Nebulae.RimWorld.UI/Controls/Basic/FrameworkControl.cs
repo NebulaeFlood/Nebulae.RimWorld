@@ -159,7 +159,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceMaxWidth(DependencyObject d, object basevalue)
         {
-            return MathF.Max((float)basevalue, (float)d.GetValue(MinWidthProperty));
+            return MathF.Max(UIUtility.Format((float)basevalue), (float)d.GetValue(MinWidthProperty));
         }
         #endregion
 
@@ -182,7 +182,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceMaxHeight(DependencyObject d, object basevalue)
         {
-            return MathF.Max((float)basevalue, (float)d.GetValue(MinHeightProperty));
+            return MathF.Max(UIUtility.Format((float)basevalue), (float)d.GetValue(MinHeightProperty));
         }
         #endregion
 
@@ -205,7 +205,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceMinWidth(DependencyObject d, object basevalue)
         {
-            return Mathf.Clamp((float)basevalue, 0f, (float)d.GetValue(MaxWidthProperty));
+            return MathF.Min(UIUtility.Format((float)basevalue), (float)d.GetValue(MaxWidthProperty));
         }
         #endregion
 
@@ -228,7 +228,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceMinHeight(DependencyObject d, object basevalue)
         {
-            return Mathf.Clamp((float)basevalue, 0f, (float)d.GetValue(MaxHeightProperty));
+            return MathF.Min(UIUtility.Format((float)basevalue), (float)d.GetValue(MaxHeightProperty));
         }
         #endregion
 
@@ -435,12 +435,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceSize(DependencyObject d, object baseValue)
         {
-            return MathF.Max((float)baseValue, 0f);
+            return UIUtility.Format((float)baseValue);
         }
 
         private static object CoerceThickness(DependencyObject d, object baseValue)
         {
-            return ((Thickness)baseValue).Normalize();
+            return ((Thickness)baseValue).Format();
         }
 
         #endregion

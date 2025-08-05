@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
 using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Basic;
+using RimWorld;
 using System;
 using System.Diagnostics;
 using UnityEngine;
@@ -556,6 +557,16 @@ namespace Nebulae.RimWorld.UI.Utilities
             }
 
             return new Rect(x, y, width, height);
+        }
+
+        /// <summary>
+        /// 规范化 <see cref="float"/> 以使其可作为有效的布局尺寸
+        /// </summary>
+        /// <param name="value">要规范的值</param>
+        /// <returns>规范后的 <paramref name="value"/>。</returns>
+        public static float Format(this float value)
+        {
+            return (value < 1f || float.IsPositiveInfinity(value) || float.IsNaN(value)) ? 0f : MathF.Round(value);
         }
 
         /// <summary>

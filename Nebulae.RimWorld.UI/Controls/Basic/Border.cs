@@ -58,7 +58,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             get => _borderThickness;
             set
             {
-                value = value.Normalize();
+                value = value.Format();
 
                 if (_borderThickness != value)
                 {
