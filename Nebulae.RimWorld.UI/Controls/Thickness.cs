@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Diagnostics;
 using UnityEngine;
 
@@ -113,8 +114,16 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>如果指定的对象等于此 <see cref="Thickness"/> ，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public override bool Equals(object obj)
         {
-            return obj is Thickness other
-                && this == other;
+            return obj is Thickness other && this == other;
+        }
+
+        /// <summary>
+        /// 规范化此 <see cref="Thickness"/>
+        /// </summary>
+        /// <returns>规范后的该 <see cref="Thickness"/>。</returns>
+        public Thickness Format()
+        {
+            return new Thickness(Left.Format(), Top.Format(), Right.Format(), Bottom.Format());
         }
 
         /// <summary>
@@ -124,19 +133,6 @@ namespace Nebulae.RimWorld.UI.Controls
         public override int GetHashCode()
         {
             return Left.GetHashCode() ^ Top.GetHashCode() ^ Right.GetHashCode() ^ Bottom.GetHashCode();
-        }
-
-        /// <summary>
-        /// 规范化此 <see cref="Thickness"/>
-        /// </summary>
-        /// <returns>规范后的该 <see cref="Thickness"/>。</returns>
-        public Thickness Normalize()
-        {
-            return new Thickness(
-                Left > 0 ? Mathf.Round(Left) : 0f,
-                Top > 0 ? Mathf.Round(Top) : 0f,
-                Right > 0 ? Mathf.Round(Right) : 0f,
-                Bottom > 0 ? Mathf.Round(Bottom) : 0f);
         }
 
         /// <summary>
