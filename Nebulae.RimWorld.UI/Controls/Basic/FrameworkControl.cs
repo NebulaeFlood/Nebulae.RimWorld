@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Diagnostics;
 using UnityEngine;
 using Verse;
@@ -154,7 +155,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty MaxWidthProperty =
             DependencyProperty.Register(nameof(MaxWidth), typeof(float), typeof(FrameworkControl),
-                new ControlPropertyMetadata(float.MaxValue, CoerceSize, ControlRelation.Measure));
+                new ControlPropertyMetadata(float.MaxValue, CoerceMaxWidth, ControlRelation.Measure));
+
+        private static object CoerceMaxWidth(DependencyObject d, object basevalue)
+        {
+            return MathF.Max((float)basevalue, (float)d.GetValue(MinWidthProperty));
+        }
         #endregion
 
         #region MaxHeight
@@ -172,7 +178,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty MaxHeightProperty =
             DependencyProperty.Register(nameof(MaxHeight), typeof(float), typeof(FrameworkControl),
-                new ControlPropertyMetadata(float.MaxValue, CoerceSize, ControlRelation.Measure));
+                new ControlPropertyMetadata(float.MaxValue, CoerceMaxHeight, ControlRelation.Measure));
+
+        private static object CoerceMaxHeight(DependencyObject d, object basevalue)
+        {
+            return MathF.Max((float)basevalue, (float)d.GetValue(MinHeightProperty));
+        }
         #endregion
 
         #region MinWidth
@@ -190,7 +201,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty MinWidthProperty =
             DependencyProperty.Register(nameof(MinWidth), typeof(float), typeof(FrameworkControl),
-                new ControlPropertyMetadata(0f, CoerceSize, ControlRelation.Measure));
+                new ControlPropertyMetadata(0f, CoerceMinWidth, ControlRelation.Measure));
+
+        private static object CoerceMinWidth(DependencyObject d, object basevalue)
+        {
+            return Mathf.Clamp((float)basevalue, 0f, (float)d.GetValue(MaxWidthProperty));
+        }
         #endregion
 
         #region MinHeight
@@ -208,7 +224,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty MinHeightProperty =
             DependencyProperty.Register(nameof(MinHeight), typeof(float), typeof(FrameworkControl),
-                new ControlPropertyMetadata(0f, CoerceSize, ControlRelation.Measure));
+                new ControlPropertyMetadata(0f, CoerceMinHeight, ControlRelation.Measure));
+
+        private static object CoerceMinHeight(DependencyObject d, object basevalue)
+        {
+            return Mathf.Clamp((float)basevalue, 0f, (float)d.GetValue(MaxHeightProperty));
+        }
         #endregion
 
         #region Padding
@@ -312,7 +333,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             float renderWidth, renderHeight;
 
-            if (HorizontalAlignment is HorizontalAlignment.Stretch)
+            if (GetValue(HorizontalAlignmentProperty) is HorizontalAlignment.Stretch)
             {
                 renderWidth = availableSize.Width;
             }
@@ -321,13 +342,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 float logicalWidth = Width;
 
                 renderWidth = logicalWidth > 1f
-                    ? Mathf.Min(logicalWidth, availableSize.Width)
+                    ? (logicalWidth < availableSize.Width ? logicalWidth : availableSize.Width)
                     : logicalWidth * availableSize.Width;
             }
 
             renderWidth = Mathf.Clamp(renderWidth, (float)GetValue(MinWidthProperty), (float)GetValue(MaxWidthProperty));
 
-            if (VerticalAlignment is VerticalAlignment.Stretch)
+            if (GetValue(VerticalAlignmentProperty) is VerticalAlignment.Stretch)
             {
                 renderHeight = availableSize.Height;
             }
@@ -336,13 +357,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 float logicalHeight = Height;
 
                 renderHeight = logicalHeight > 1f
-                    ? Mathf.Min(logicalHeight, availableSize.Height)
+                    ? (logicalHeight < availableSize.Height) ? logicalHeight : availableSize.Height
                     : logicalHeight * availableSize.Height;
             }
 
             renderHeight = Mathf.Clamp(renderHeight, (float)GetValue(MinHeightProperty), (float)GetValue(MaxHeightProperty));
 
-            RenderSize = MeasureOverride(new Size(renderWidth, renderHeight)).Round();
+            RenderSize = MeasureOverride(new Size(renderWidth, renderHeight)).Format();
             RegionSize = RenderSize + padding;
             return RegionSize + margin;
         }
@@ -361,8 +382,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         protected internal override Rect CalculateDragEffectRect(Vector2 cursorPos)
         {
             return new Rect(
-                Mathf.Floor(cursorPos.x - RenderSize.Width * 0.5f),
-                Mathf.Floor(cursorPos.y - RenderSize.Height * 0.5f),
+                MathF.Floor(cursorPos.x - RenderSize.Width * 0.5f),
+                MathF.Floor(cursorPos.y - RenderSize.Height * 0.5f),
                 RenderSize.Width,
                 RenderSize.Height);
         }
@@ -373,8 +394,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             float x = RenderRect.x;
             float y = RenderRect.y;
 
-            float width = Mathf.Abs(x) + RenderSize.Width;
-            float height = Mathf.Abs(y) + RenderSize.Height;
+            float width = MathF.Abs(x) + RenderSize.Width;
+            float height = MathF.Abs(y) + RenderSize.Height;
 
             GUI.BeginClip(new Rect(0f, 0f, RenderSize.Width, RenderSize.Height));
             GUI.BeginGroup(new Rect(-x, -y, width, height));
@@ -414,7 +435,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceSize(DependencyObject d, object baseValue)
         {
-            return Mathf.Max((float)baseValue, 0f);
+            return MathF.Max((float)baseValue, 0f);
         }
 
         private static object CoerceThickness(DependencyObject d, object baseValue)
