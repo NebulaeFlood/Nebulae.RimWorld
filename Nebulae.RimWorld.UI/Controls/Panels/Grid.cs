@@ -388,7 +388,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
                                 if (!cache.IsValid)
                                 {
-                                    cache = new SizeCache(children[j].Measure(new Size(float.PositiveInfinity)));
+                                    cache = new SizeCache(children[j].Measure(new Size(float.NaN)));
                                 }
 
                                 column.Size = Mathf.Max(column.Size, cache.Size.Width);

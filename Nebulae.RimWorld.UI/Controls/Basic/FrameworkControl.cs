@@ -321,8 +321,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 float logicalWidth = Width;
 
                 renderWidth = logicalWidth > 1f
-                    ? Mathf.Min(availableSize.Width, logicalWidth)
-                    : availableSize.Width * logicalWidth;
+                    ? Mathf.Min(logicalWidth, availableSize.Width)
+                    : logicalWidth * availableSize.Width;
             }
 
             renderWidth = Mathf.Clamp(renderWidth, (float)GetValue(MinWidthProperty), (float)GetValue(MaxWidthProperty));
@@ -336,8 +336,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 float logicalHeight = Height;
 
                 renderHeight = logicalHeight > 1f
-                    ? Mathf.Min(availableSize.Height, logicalHeight)
-                    : availableSize.Height * logicalHeight;
+                    ? Mathf.Min(logicalHeight, availableSize.Height)
+                    : logicalHeight * availableSize.Height;
             }
 
             renderHeight = Mathf.Clamp(renderHeight, (float)GetValue(MinHeightProperty), (float)GetValue(MaxHeightProperty));

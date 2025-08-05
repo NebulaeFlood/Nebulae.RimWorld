@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls
@@ -123,14 +124,23 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 按照“四舍六进五成双”的规则将此 <see cref="Size"/> 的 <see cref="Width"/> 和 <see cref="Height"/> 精确到整数
+        /// 格式化此 <see cref="Size"/> 到可用状态
         /// </summary>
-        /// <returns>精确到整数后的此 <see cref="Size"/> 。</returns>
-        public Size Round()
+        /// <returns>格式化后的此 <see cref="Size"/>。</returns>
+        public Size Format()
         {
             return new Size(
-                Mathf.Round(Width),
-                Mathf.Round(Height));
+                (Width < 1f || float.IsPositiveInfinity(Width) || float.IsNaN(Width)) ? 0f : MathF.Round(Width),
+                (Height < 1f || float.IsPositiveInfinity(Height) || float.IsNaN(Height)) ? 0f : MathF.Round(Height));
+        }
+
+        /// <summary>
+        /// 按照“四舍六进五成双”的规则将此 <see cref="Size"/> 的 <see cref="Width"/> 和 <see cref="Height"/> 精确到整数
+        /// </summary>
+        /// <returns>精确到整数后的此 <see cref="Size"/>。</returns>
+        public Size Round()
+        {
+            return new Size(MathF.Round(Width), MathF.Round(Height));
         }
 
         /// <summary>
@@ -140,8 +150,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>如果指定的对象等于此 <see cref="Size"/> ，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public override bool Equals(object obj)
         {
-            return obj is Size other
-                && this == other;
+            return obj is Size other && this == other;
         }
 
         /// <summary>
@@ -161,17 +170,6 @@ namespace Nebulae.RimWorld.UI.Controls
         public override int GetHashCode()
         {
             return Width.GetHashCode() ^ Height.GetHashCode();
-        }
-
-        /// <summary>
-        /// 规范化此 <see cref="Size"/>
-        /// </summary>
-        /// <returns>规范后的该 <see cref="Size"/>。</returns>
-        public Size Normalize()
-        {
-            return new Size(
-                Width > 0f ? Width : 0f,
-                Height > 0f ? Height : 0f);
         }
 
         /// <summary>
@@ -219,9 +217,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>缩放后的 <see cref="Size"/> 结构。</returns>
         public Size Scale(float scale)
         {
-            return new Size(
-                Width * scale,
-                Height * scale);
+            return new Size(Width * scale, Height * scale);
         }
 
         /// <summary>
@@ -232,9 +228,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>缩放后的 <see cref="Size"/> 结构。</returns>
         public Size Scale(float widthScale, float heightScale)
         {
-            return new Size(
-                Width * widthScale,
-                Height * heightScale);
+            return new Size(Width * widthScale, Height * heightScale);
         }
 
         /// <summary>

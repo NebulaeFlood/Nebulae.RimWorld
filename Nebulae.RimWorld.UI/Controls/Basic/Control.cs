@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -636,7 +637,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             _isMeasureValid = true;
 
             DesiredSize = _allowOccupy
-                ? MeasureCore(FormatSize(availableSize)).Round()
+                ? MeasureCore(availableSize).Format()
                 : Size.Empty;
 
             return DesiredSize;
@@ -816,13 +817,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             DrawCore(ControlState.Normal);
             GUI.color = color;
             GUI.contentColor = contentColor;
-        }
-
-        internal static Size FormatSize(Size size)
-        {
-            return new Size(
-                (size.Width < 1f || float.IsPositiveInfinity(size.Width) || float.IsNaN(size.Width)) ? 0f : size.Width,
-                (size.Height < 1f || float.IsPositiveInfinity(size.Height) || float.IsNaN(size.Height)) ? 0f : size.Height);
         }
 
         internal Control GetSolidParent() => (!_isChild || _parent._isSolid) ? _parent : _parent.GetSolidParent();
