@@ -367,8 +367,8 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static readonly Action<NumberBox, ControlState> DefaultDrawer = CreateDrawer(GameFont.Small, false, false);
         private static readonly Func<float, string> DefaultFormatter = CreateFormatter("{0:F0}", isPercentage: false);
-        private static readonly Regex DefaultPercentageValidator = new Regex(@"^-?[0-9]{0,41}?$");
-        private static readonly Regex DefaultValidator = new Regex(@"^-?[0-9]{0,39}?$");
+        private static readonly Regex DefaultPercentageValidator = new Regex(@"^-?[0-9]{0,41}?$", RegexOptions.Compiled);
+        private static readonly Regex DefaultValidator = new Regex(@"^-?[0-9]{0,39}?$", RegexOptions.Compiled);
 
         private string _cache = "0";
         private Func<float, string> _valueProcesser = DefaultFormatter;

@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using Nebulae.RimWorld.UI.Controls;
+﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Core.Data.Utilities;
 using System;
@@ -8,8 +7,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using UnityEngine.Rendering.VirtualTexturing;
-using UnityEngine.UIElements;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Utilities
@@ -735,8 +732,8 @@ namespace Nebulae.RimWorld.UI.Utilities
 
                 return ColonistCountRegexGetter().Replace(
                     CurrencyRegexGetter().Replace(
-                        result, 
-                        "$&".Colorize(ColoredText.CurrencyColor)), 
+                        result,
+                        "$&".Colorize(ColoredText.CurrencyColor)),
                     "$&".Colorize(ColoredText.ColonistCountColor));
             }
 

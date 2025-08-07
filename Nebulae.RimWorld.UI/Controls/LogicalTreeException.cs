@@ -23,13 +23,10 @@ namespace Nebulae.RimWorld.UI.Controls
 
             if (!string.IsNullOrEmpty(control.Name))
             {
-                sb.Append("named: ")
-                    .Append(control.Name)
-                    .Append(' ');
+                sb.Append("named: ").Append(control.Name).Append(' ');
             }
 
-            sb.Append("raised a logical tree error: ")
-              .Append(message);
+            sb.Append("raised a logical tree error: ").Append(message);
 
             if (hasInnerException)
             {

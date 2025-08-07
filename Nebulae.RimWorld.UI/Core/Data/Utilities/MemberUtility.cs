@@ -83,7 +83,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <param name="method">目标方法</param>
         /// <param name="target">目标对象</param>
         /// <returns>由 <paramref name="method"/> 创建的委托。</returns>
-        public static T CreateDelegate<T>(this MethodInfo method, object target)  where T : Delegate
+        public static T CreateDelegate<T>(this MethodInfo method, object target) where T : Delegate
         {
             return (T)method.CreateDelegate(typeof(T), target);
         }
