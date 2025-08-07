@@ -1,10 +1,15 @@
-﻿using Nebulae.RimWorld.UI.Controls;
+﻿using HarmonyLib;
+using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Core.Data.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.Rendering.VirtualTexturing;
+using UnityEngine.UIElements;
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Utilities
@@ -392,6 +397,24 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
+        /// 解析 <see cref="TaggedString"/>
+        /// </summary>
+        /// <param name="str">要解析的 <see cref="TaggedString"/></param>
+        /// <returns>解析结果。</returns>
+        /// <remarks>该方法线程安全。</remarks>
+        public static string ResolveSafe(this TaggedString str)
+        {
+            string rawStr = str.RawText;
+
+            if (string.IsNullOrEmpty(rawStr))
+            {
+                return null;
+            }
+
+            return TaggedStringResolver.IsValid ? new TaggedStringResolver(rawStr).Resolve() : rawStr;
+        }
+
+        /// <summary>
         /// 根据允许的长度截断字符串，被截断的部分将设置为省略号
         /// </summary>
         /// <param name="rawStr">要截断的字符串</param>
@@ -585,10 +608,162 @@ namespace Nebulae.RimWorld.UI.Utilities
         private static readonly GUIContent ContentCache = new GUIContent();
         private static readonly GUIStyle[] InputBoxStyles = new GUIStyle[12];
 
-        private static readonly Regex XmlRegex = new Regex(@"<[^>]*?[^\s>][^>]*>");
-        private static readonly Regex TagRegex = new Regex(@"\([\*\/][^\)]*\)");
-        private static readonly Regex TagNameRegex = new Regex(@"<([\w]+)");
+        private static readonly Regex XmlRegex = new Regex(@"<[^>]*?[^\s>][^>]*>", RegexOptions.Compiled);
+        private static readonly Regex TagRegex = new Regex(@"\([\*\/][^\)]*\)", RegexOptions.Compiled);
+        private static readonly Regex TagNameRegex = new Regex(@"<([\w]+)", RegexOptions.Compiled);
 
         #endregion
+
+
+        private readonly struct TaggedStringResolver
+        {
+            public static readonly bool IsValid;
+
+            public readonly int Length;
+            public readonly string RawStr;
+            public readonly bool Resoved;
+            public readonly StringBuilder Result;
+
+
+            static TaggedStringResolver()
+            {
+                var type = typeof(ColoredText);
+
+                SwapTagWithColor = type.GetMethod("SwapTagWithColor", BindingFlags.Static | BindingFlags.NonPublic).CreateDelegate<Func<string, string, string, string>>(null);
+
+                ColonistCountRegexGetter = type.CreateStaticFieldAccessor<Regex>("ColonistCountRegex");
+                CurrencyRegexGetter = type.CreateStaticFieldAccessor<Regex>("CurrencyRegex");
+                DateTimeRegexesGetter = type.CreateStaticFieldAccessor<List<Regex>>("DateTimeRegexes");
+
+                IsValid = SwapTagWithColor != null && ColonistCountRegexGetter != null && CurrencyRegexGetter != null && DateTimeRegexesGetter != null;
+            }
+
+            public TaggedStringResolver(string rawStr)
+            {
+                Length = rawStr.Length;
+                RawStr = rawStr;
+                Resoved = RawStr.IndexOf("(*", StringComparison.Ordinal) < 0;
+                Result = Resoved ? null : new StringBuilder(Length + (Length >> 2));
+            }
+
+
+            public string Resolve()
+            {
+                if (Resoved)
+                {
+                    return RawStr;
+                }
+
+                for (int i = 0; i < Length; i++)
+                {
+                    char currentChar = RawStr[i];
+
+                    if (currentChar == '(' && i < Length - 1 && RawStr[i + 1] == '*' && RawStr.IndexOf(')', i) > i + 1)
+                    {
+                        bool isClosingTag = false;
+
+                        int tagStartPosition = i;
+                        var tagBuffer = new StringBuilder();
+                        var argBuffer = new StringBuilder();
+                        var captureStage = CaptureStage.Tag;
+
+                        i += 2;
+
+                        while (i < Length)
+                        {
+                            char tagChar = RawStr[i];
+
+                            if (tagChar is ')')
+                            {
+                                captureStage = CaptureStage.Result;
+
+                                if (isClosingTag)
+                                {
+                                    var fullTag = RawStr.Substring(tagStartPosition, i - tagStartPosition + 1);
+                                    var convertedTag = SwapTagWithColor(fullTag, tagBuffer.ToString(), argBuffer.ToString());
+
+                                    Result.Append(convertedTag);
+                                    break;
+                                }
+                            }
+                            else if (tagChar is '/')
+                            {
+                                isClosingTag = true;
+                            }
+
+                            if (captureStage is CaptureStage.Arg)
+                            {
+                                argBuffer.Append(tagChar);
+                            }
+
+                            if (!isClosingTag && tagChar is '=')
+                            {
+                                captureStage = CaptureStage.Arg;
+                            }
+
+                            if (captureStage is CaptureStage.Tag)
+                            {
+                                tagBuffer.Append(tagChar);
+                            }
+
+                            i++;
+                        }
+
+                        if (!isClosingTag)
+                        {
+                            Result.Append('(');
+                            i = tagStartPosition + 1;
+                        }
+                    }
+                    else
+                    {
+                        Result.Append(currentChar);
+                    }
+                }
+
+                string result = Result.ToString();
+
+                var dateTimeRegexes = DateTimeRegexesGetter();
+
+                for (int i = 0; i < dateTimeRegexes.Count; i++)
+                {
+                    result = dateTimeRegexes[i].Replace(result, "$&".Colorize(ColoredText.DateTimeColor));
+                }
+
+                result = CurrencyRegexGetter().Replace(result, "$&".Colorize(ColoredText.CurrencyColor));
+                result = ColonistCountRegexGetter().Replace(result, "$&".Colorize(ColoredText.ColonistCountColor));
+
+                return ColonistCountRegexGetter().Replace(
+                    CurrencyRegexGetter().Replace(
+                        result, 
+                        "$&".Colorize(ColoredText.CurrencyColor)), 
+                    "$&".Colorize(ColoredText.ColonistCountColor));
+            }
+
+
+            //------------------------------------------------------
+            //
+            //  Private Static Fields
+            //
+            //------------------------------------------------------
+
+            #region Private Static Fields
+
+            private static readonly Func<string, string, string, string> SwapTagWithColor;
+
+            private static readonly FieldAccessor<Regex> ColonistCountRegexGetter;
+            private static readonly FieldAccessor<Regex> CurrencyRegexGetter;
+            private static readonly FieldAccessor<List<Regex>> DateTimeRegexesGetter;
+
+            #endregion
+
+
+            private enum CaptureStage : byte
+            {
+                Tag,
+                Arg,
+                Result
+            }
+        }
     }
 }
