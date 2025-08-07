@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using UnityEngine;
@@ -129,9 +130,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>格式化后的此 <see cref="Size"/>。</returns>
         public Size Format()
         {
-            return new Size(
-                (Width < 1f || float.IsPositiveInfinity(Width) || float.IsNaN(Width)) ? 0f : MathF.Round(Width),
-                (Height < 1f || float.IsPositiveInfinity(Height) || float.IsNaN(Height)) ? 0f : MathF.Round(Height));
+            return new Size(UIUtility.Format(Width), UIUtility.Format(Height));
         }
 
         /// <summary>
@@ -176,12 +175,16 @@ namespace Nebulae.RimWorld.UI.Controls
         /// 解析此 <see cref="Size"/> 最终的实际尺寸
         /// </summary>
         /// <param name="availableSize">可用的尺寸</param>
-        /// <returns>规范后的该 <see cref="Size"/>。</returns>
+        /// <returns>解析后的该 <see cref="Size"/>。</returns>
         public Size Resolve(Size availableSize)
         {
             float width, height;
 
-            if (Width < 0f)
+            if (float.IsNaN(Width))
+            {
+                width = float.NaN;
+            }
+            else if (Width < 0f)
             {
                 width = 0f;
             }
@@ -194,7 +197,11 @@ namespace Nebulae.RimWorld.UI.Controls
                 width = Width * availableSize.Width;
             }
 
-            if (Height < 0f)
+            if (float.IsNaN(Width))
+            {
+                height = float.NaN;
+            }
+            else if (Height < 0f)
             {
                 height = 0f;
             }

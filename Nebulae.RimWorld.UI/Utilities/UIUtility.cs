@@ -570,6 +570,16 @@ namespace Nebulae.RimWorld.UI.Utilities
         }
 
         /// <summary>
+        /// 规范化 <see cref="float"/> 以使其可作为有效的布局尺寸或比例
+        /// </summary>
+        /// <param name="value">要规范的值</param>
+        /// <returns>规范后的 <paramref name="value"/>。</returns>
+        public static float FormatProportion(this float value)
+        {
+            return (value > 1f && !float.IsPositiveInfinity(value)) || (value > 0f && !float.IsNaN(value)) ? value : 0f;
+        }
+
+        /// <summary>
         /// 计算两个矩形相交的区域
         /// </summary>
         /// <param name="rect">第一个矩形</param>
