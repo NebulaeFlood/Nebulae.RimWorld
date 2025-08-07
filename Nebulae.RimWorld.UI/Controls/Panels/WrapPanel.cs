@@ -1,23 +1,25 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
 {
     /// <summary>
-    /// 一个将子控件排列成数行或数列的面板
+    /// 将子控件排列成数行或数列的面板
     /// </summary>
     public class WrapPanel : Panel
     {
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Dependency Properties
         //
         //------------------------------------------------------
 
-        #region Public Properties
+        #region Dependency Properties
 
         #region ItemHeight
         /// <summary>
@@ -34,7 +36,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty ItemHeightProperty =
             DependencyProperty.Register(nameof(ItemHeight), typeof(float), typeof(WrapPanel),
-                new ControlPropertyMetadata(40f, ControlRelation.Measure));
+                new ControlPropertyMetadata(40f, CoerceItemSize, ControlRelation.Measure));
         #endregion
 
         #region ItemWidth
@@ -52,7 +54,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty ItemWidthProperty =
             DependencyProperty.Register(nameof(ItemWidth), typeof(float), typeof(WrapPanel),
-                new ControlPropertyMetadata(200f, ControlRelation.Measure));
+                new ControlPropertyMetadata(200f, CoerceItemSize, ControlRelation.Measure));
         #endregion
 
         #region Orientation
@@ -71,6 +73,29 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         public static readonly DependencyProperty OrientationProperty =
             DependencyProperty.Register(nameof(Orientation), typeof(Orientation), typeof(WrapPanel),
                 new ControlPropertyMetadata(Orientation.Vertical, ControlRelation.Measure));
+        #endregion
+
+        #region Spacing
+        /// <summary>
+        /// 获取或设置 <see cref="WrapPanel"/> 子控件的统一间距
+        /// </summary>
+        public float Spacing
+        {
+            get { return (float)GetValue(SpacingProperty); }
+            set { SetValue(SpacingProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Spacing"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty SpacingProperty =
+            DependencyProperty.Register(nameof(Spacing), typeof(float), typeof(WrapPanel),
+                new ControlPropertyMetadata(4f, CoerceSpacing, ControlRelation.Measure));
+
+        private static object CoerceSpacing(DependencyObject d, object baseValue)
+        {
+            return UIUtility.Format((float)baseValue);
+        }
         #endregion
 
         #endregion
@@ -187,61 +212,19 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Rect ArrangeOverride(Rect availableRect, Control[] children)
         {
-            float currentX = availableRect.x;
-            float currentY = availableRect.y;
+            float x = availableRect.x;
+            float y = availableRect.y;
 
-            if (Orientation is Orientation.Horizontal)
+            if (GetValue(OrientationProperty) is Orientation.Horizontal)
             {
-                int columnIndex = 0;
-
-                for (int i = 0; i < children.Length; i++)
-                {
-                    var child = children[i];
-
-                ArrangeStart:
-                    if (columnIndex < _columnCount)
-                    {
-                        child.Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
-                        columnIndex++;
-                        currentX += _childWidth;
-                    }
-                    else
-                    {
-                        currentX = availableRect.x;
-                        currentY += _childHeight;   // 换行
-                        columnIndex = 0;
-
-                        goto ArrangeStart;  // 重新排列该控件
-                    }
-                }
+                ArrangeHorizontal(x, y, children, (float)GetValue(SpacingProperty));
             }
             else
             {
-                int rowIndex = 0;
-
-                for (int i = 0; i < children.Length; i++)
-                {
-                    var child = children[i];
-
-                ArrangeStart:
-                    if (rowIndex < _rowCount)
-                    {
-                        child.Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
-                        currentY += _childHeight;
-                        rowIndex++;
-                    }
-                    else
-                    {
-                        currentY = availableRect.y;
-                        currentX += _childWidth;    // 换列
-                        rowIndex = 0;
-
-                        goto ArrangeStart;  // 重新排列该控件
-                    }
-                }
+                ArrangeVertical(x, y, children, (float)GetValue(SpacingProperty));
             }
 
-            return new Rect(availableRect.x, availableRect.y, RenderSize.Width, RenderSize.Height);
+            return new Rect(x, y, RenderSize.Width, RenderSize.Height);
         }
 
         /// <inheritdoc/>
@@ -250,60 +233,312 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             _childWidth = (float)GetValue(ItemWidthProperty);
             _childHeight = (float)GetValue(ItemHeightProperty);
 
-            if (_childWidth <= 0 || _childHeight <= 0)
+            if (_childWidth is 0f || _childHeight is 0f)
             {
                 return Size.Empty;
             }
 
-            int count = children.Length;
+            return GetValue(OrientationProperty) is Orientation.Horizontal
+                ? MeasureHorizontal(availableSize, children, (float)GetValue(SpacingProperty))
+                : MeasureVertical(availableSize, children, (float)GetValue(SpacingProperty));
+        }
 
-            if (Orientation is Orientation.Horizontal)
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Static Methods
+
+        private static bool AllowStack(float childSize, float availableSize, float spacing)
+        {
+            return childSize <= availableSize / 2f - spacing;
+        }
+
+        private static object CoerceItemSize(DependencyObject d, object baseValue)
+        {
+            return UIUtility.FormatProportion((float)baseValue);
+        }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Methods
+
+        private void ArrangeHorizontal(float x, float y, Control[] children, float spacing)
+        {
+            int childrenCount = children.Length;
+
+            float currentX = x;
+            float currentY = y;
+
+            if (spacing > 0f)
             {
-                // 限制子控件最大宽度不超过面板宽度
-                _childWidth = _childWidth > 1f
-                    ? Mathf.Min(_childWidth, availableSize.Width)
-                    : _childWidth * availableSize.Width;
-
-                _childHeight = _childHeight > 1f
-                        ? _childHeight
-                        : _childHeight * availableSize.Height;
-
-                _columnCount = Mathf.FloorToInt(availableSize.Width / _childWidth);
-                _rowCount = count / _columnCount;
-
-                if (count % _columnCount > 0)
+                if (_columnCount > 1)
                 {
-                    _rowCount++;
+                    int columnIndex = 0;
+
+                    for (int i = 0; i < childrenCount; i++)
+                    {
+                        if (columnIndex >= _columnCount)
+                        {
+                            currentX = x;
+                            currentY += _childHeight + spacing; // 换行
+                            columnIndex = 0;
+                        }
+
+                        children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
+
+                        columnIndex++;
+                        currentX += _childWidth + spacing;
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < childrenCount; i++)
+                    {
+                        children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
+                        currentX += _childWidth + spacing;
+                    }
                 }
             }
             else
             {
-                _childWidth = _childWidth > 1f
-                    ? _childWidth
-                    : _childWidth * availableSize.Width;
+                if (_columnCount > 1)
+                {
+                    int columnIndex = 0;
 
-                // 限制子控件最大高度不超过面板高度
-                _childHeight = _childHeight > 1f
-                    ? Mathf.Min(_childHeight, availableSize.Height)
-                    : _childHeight * availableSize.Height;
+                    for (int i = 0; i < childrenCount; i++)
+                    {
+                        if (columnIndex >= _columnCount)
+                        {
+                            currentX = x;
+                            currentY += _childHeight; // 换行
+                            columnIndex = 0;
+                        }
 
-                _rowCount = Mathf.FloorToInt(availableSize.Height / _childHeight);
-                _columnCount = count / _rowCount;
+                        children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
 
-                if (count % _rowCount > 0)
+                        columnIndex++;
+                        currentX += _childWidth;
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < childrenCount; i++)
+                    {
+                        children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
+                        currentX += _childWidth;
+                    }
+                }
+            }
+        }
+
+        private void ArrangeVertical(float x, float y, Control[] children, float spacing)
+        {
+            int childrenCount = children.Length;
+
+            float currentX = x;
+            float currentY = y;
+
+            if (spacing > 0f)
+            {
+                if (_rowCount > 1)
+                {
+                    int rowIndex = 0;
+
+                    for (int i = 0; i < childrenCount; i++)
+                    {
+                        if (rowIndex >= _rowCount)
+                        {
+                            currentY = y;
+                            currentX += _childWidth + spacing;  // 换列
+                            rowIndex = 0;
+                        }
+
+                        children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
+
+                        currentY += _childHeight + spacing;
+                        rowIndex++;
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < childrenCount; i++)
+                    {
+                        children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
+                        currentY += _childHeight + spacing;
+                    }
+                }
+            }
+            else
+            {
+                if (_rowCount > 1)
+                {
+                    int rowIndex = 0;
+
+                    for (int i = 0; i < children.Length; i++)
+                    {
+                        if (rowIndex >= _rowCount)
+                        {
+                            currentY = y;
+                            currentX += _childWidth;  // 换列
+                            rowIndex = 0;
+                        }
+
+                        children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
+
+                        currentY += _childHeight;
+                        rowIndex++;
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < children.Length; i++)
+                    {
+                        children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
+                        currentY += _childHeight;
+                    }
+                }
+            }
+        }
+
+        private Size MeasureHorizontal(Size availableSize, Control[] children, float spacing)
+        {
+            int childrenCount = children.Length;
+            bool allowSpace = spacing > 0f && childrenCount > 1;
+
+            // 限制子控件最大宽度不超过面板宽度
+            _childWidth = _childWidth > 1f
+                ? MathF.Min(_childWidth, availableSize.Width)
+                : _childWidth * availableSize.Width;
+
+            _childHeight = _childHeight > 1f
+                ? _childHeight
+                : _childHeight * availableSize.Height;
+
+            float renderWidth, renderHeight;
+
+            if (allowSpace)
+            {
+                if (AllowStack(_childWidth, availableSize.Width, spacing))
+                {
+                    _columnCount = 1 + (int)MathF.Floor((availableSize.Width - _childWidth) / (_childWidth + spacing));
+                    _rowCount = childrenCount / _columnCount;
+
+                    if (childrenCount % _columnCount > 0)
+                    {
+                        _rowCount++;
+                    }
+
+                    renderWidth = (_childWidth + spacing) * _columnCount - spacing;
+                    renderHeight = (_childHeight + spacing) * _rowCount - spacing;
+                }
+                else
+                {
+                    _columnCount = 1;
+                    _rowCount = childrenCount;
+
+                    renderWidth = _childWidth;
+                    renderHeight = (_childHeight + spacing) * _rowCount - spacing;
+                }
+            }
+            else
+            {
+                _columnCount = (int)MathF.Floor(availableSize.Width / _childWidth);
+                _rowCount = childrenCount / _columnCount;
+
+                if (childrenCount % _columnCount > 0)
+                {
+                    _rowCount++;
+                }
+
+                renderWidth = _childWidth * _columnCount;
+                renderHeight = _childHeight * _rowCount;
+            }
+
+            var childAvailableSize = new Size(_childWidth, _childHeight);
+
+            for (int i = childrenCount - 1; i >= 0; i--)
+            {
+                children[i].Measure(childAvailableSize);
+            }
+
+            return new Size(renderWidth, renderHeight);
+        }
+
+        private Size MeasureVertical(Size availableSize, Control[] children, float spacing)
+        {
+            int childrenCount = children.Length;
+            bool allowSpace = spacing > 0f && childrenCount > 1;
+
+            _childWidth = _childWidth > 1f
+                ? _childWidth
+                : _childWidth * availableSize.Width;
+
+            // 限制子控件最大高度不超过面板高度
+            _childHeight = _childHeight > 1f
+                ? MathF.Min(_childHeight, availableSize.Height)
+                : _childHeight * availableSize.Height;
+
+            float renderWidth, renderHeight;
+
+            if (allowSpace)
+            {
+                if (AllowStack(_childHeight, availableSize.Height, spacing))
+                {
+                    _rowCount = 1 + (int)MathF.Floor((availableSize.Height - _childHeight) / (_childHeight + spacing));
+                    _columnCount = childrenCount / _rowCount;
+
+                    if (childrenCount % _rowCount > 0)
+                    {
+                        _columnCount++;
+                    }
+
+                    renderWidth = (_childWidth + spacing) * _columnCount - spacing;
+                    renderHeight = (_childHeight + spacing) * _rowCount - spacing;
+                }
+                else
+                {
+                    _rowCount = 1;
+                    _columnCount = childrenCount;
+
+                    renderWidth = (_childWidth + spacing) * _columnCount - spacing;
+                    renderHeight = _childHeight;
+                }
+            }
+            else
+            {
+                _rowCount = (int)MathF.Floor(availableSize.Height / _childHeight);
+                _columnCount = childrenCount / _rowCount;
+
+                if (childrenCount % _rowCount > 0)
                 {
                     _columnCount++;
                 }
+
+                renderWidth = _childWidth * _columnCount;
+                renderHeight = _childHeight * _rowCount;
             }
 
-            var childSize = new Size(_childWidth, _childHeight);
+            var childAvailableSize = new Size(_childWidth, _childHeight);
 
-            for (int i = 0; i < children.Length; i++)
+            for (int i = childrenCount - 1; i >= 0; i--)
             {
-                children[i].Measure(childSize);
+                children[i].Measure(childAvailableSize);
             }
 
-            return new Size(_childWidth * _columnCount, _childHeight * _rowCount);
+            return new Size(renderWidth, renderHeight);
         }
 
         #endregion

@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
 using Nebulae.RimWorld.UI.Core.Data;
+using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +8,7 @@ using UnityEngine;
 namespace Nebulae.RimWorld.UI.Controls.Panels
 {
     /// <summary>
-    /// 一个按照垂直或者水平方向排列子控件的面板
+    /// 按照垂直或者水平方向排列子控件的面板
     /// </summary>
     public class StackPanel : Panel
     {
@@ -34,7 +35,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty ItemWidthProperty =
             DependencyProperty.Register(nameof(ItemWidth), typeof(float), typeof(StackPanel),
-                new ControlPropertyMetadata(1f, ControlRelation.Measure));
+                new ControlPropertyMetadata(1f, CoerceItemSize, ControlRelation.Measure));
         #endregion
 
         #region ItemHeight
@@ -52,7 +53,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </summary>
         public static readonly DependencyProperty ItemHeightProperty =
             DependencyProperty.Register(nameof(ItemHeight), typeof(float), typeof(StackPanel),
-                new ControlPropertyMetadata(34f, ControlRelation.Measure));
+                new ControlPropertyMetadata(34f, CoerceItemSize, ControlRelation.Measure));
         #endregion
 
         #region Orientation
@@ -71,6 +72,29 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         public static readonly DependencyProperty OrientationProperty =
             DependencyProperty.Register(nameof(Orientation), typeof(Orientation), typeof(StackPanel),
                 new ControlPropertyMetadata(Orientation.Vertical, ControlRelation.Measure));
+        #endregion
+
+        #region Spacing
+        /// <summary>
+        /// 获取或设置 <see cref="StackPanel"/> 子控件的统一间距
+        /// </summary>
+        public float Spacing
+        {
+            get { return (float)GetValue(SpacingProperty); }
+            set { SetValue(SpacingProperty, value); }
+        }
+
+        /// <summary>
+        /// 标识 <see cref="Spacing"/> 依赖属性
+        /// </summary>
+        public static readonly DependencyProperty SpacingProperty =
+            DependencyProperty.Register(nameof(Spacing), typeof(float), typeof(StackPanel),
+                new ControlPropertyMetadata(0f, CoerceSpacing, ControlRelation.Measure));
+
+        private static object CoerceSpacing(DependencyObject d, object baseValue)
+        {
+            return UIUtility.Format((float)baseValue);
+        }
         #endregion
 
         #endregion
@@ -191,7 +215,9 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             float currentX = availableRect.x;
             float currentY = availableRect.y;
 
-            if (Orientation is Orientation.Horizontal)
+            float spacing = (float)GetValue(SpacingProperty);
+
+            if (GetValue(OrientationProperty) is Orientation.Horizontal)
             {
                 for (int i = 0; i < children.Length; i++)
                 {
@@ -203,7 +229,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         child.DesiredSize.Width,
                         RenderSize.Height));
 
-                    currentX += child.DesiredSize.Width;
+                    currentX += child.DesiredSize.Width + spacing;
                 }
             }
             else
@@ -218,27 +244,25 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                         RenderSize.Width,
                         child.DesiredSize.Height));
 
-                    currentY += child.DesiredSize.Height;
+                    currentY += child.DesiredSize.Height + spacing;
                 }
             }
 
-            return new Rect(
-                availableRect.x,
-                availableRect.y,
-                RenderSize.Width,
-                RenderSize.Height);
+            return new Rect(availableRect.x, availableRect.y, RenderSize.Width, RenderSize.Height);
         }
 
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize, Control[] children)
         {
-            float childrenWidth = 0f;
-            float childrenHeight = 0f;
+            int childrenCount = children.Length;
+
+            float renderWidth = 0f;
+            float renderHeight = 0f;
 
             float childWidth = (float)GetValue(ItemWidthProperty);
             float childHeight = (float)GetValue(ItemHeightProperty);
 
-            if (childWidth <= 0f || childHeight <= 0f)
+            if (childWidth is 0f || childHeight is 0f)
             {
                 return Size.Empty;
             }
@@ -249,28 +273,43 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             Size childSize = new Size(childWidth, childHeight);
             Size childDesiredSize;
 
-            if (Orientation is Orientation.Horizontal)
+            if (GetValue(OrientationProperty) is Orientation.Horizontal)
             {
-                for (int i = 0; i < children.Length; i++)
+                for (int i = 0; i < childrenCount; i++)
                 {
                     childDesiredSize = children[i].Measure(childSize);
-                    childrenWidth += childDesiredSize.Width;
-                    childrenHeight = Mathf.Max(childrenHeight, childDesiredSize.Height);
+
+                    renderWidth += childDesiredSize.Width;
+                    renderHeight = Mathf.Max(renderHeight, childDesiredSize.Height);
                 }
             }
             else
             {
-                for (int i = 0; i < children.Length; i++)
+                for (int i = 0; i < childrenCount; i++)
                 {
                     childDesiredSize = children[i].Measure(childSize);
-                    childrenHeight += childDesiredSize.Height;
-                    childrenWidth = Mathf.Max(childrenWidth, childDesiredSize.Width);
+
+                    renderHeight += childDesiredSize.Height;
+                    renderWidth = Mathf.Max(renderWidth, childDesiredSize.Width);
                 }
             }
 
-            return new Size(childrenWidth, childrenHeight);
+            float spacing = (float)GetValue(SpacingProperty);
+
+            if (spacing > 0f && childrenCount > 1)
+            {
+                renderHeight += spacing * (childrenCount - 1);
+            }
+
+            return new Size(renderWidth, renderHeight);
         }
 
         #endregion
+
+
+        private static object CoerceItemSize(DependencyObject d, object baseValue)
+        {
+            return UIUtility.FormatProportion((float)baseValue);
+        }
     }
 }
