@@ -134,25 +134,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 获取一个值，该值指示 <see cref="Control"/> 的排布是否有效
         /// </summary>
         [DebugMember(int.MinValue + 9)]
-        public bool IsArrangeValid
-        {
-            get
-            {
-                if (!_isArrangeValid)
-                {
-                    return false;
-                }
-
-                if (LayoutManager?.IsArrangeValid(this) ?? true)
-                {
-                    _isArrangeValid = false;
-
-                    return false;
-                }
-
-                return true;
-            }
-        }
+        public bool IsArrangeValid => _isArrangeValid && (LayoutManager?.IsArrangeValid(this) ?? true);
 
         /// <summary>
         /// 获取或设置 <see cref="Control"/> 的拖动效果透明度
@@ -190,49 +172,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 获取一个值，该值指示 <see cref="Control"/> 的测量是否有效
         /// </summary>
         [DebugMember(int.MinValue + 10)]
-        public bool IsMeasureValid
-        {
-            get
-            {
-                if (!_isMeasureValid)
-                {
-                    return false;
-                }
-
-                if (LayoutManager?.IsMeasureValid(this) ?? true)
-                {
-                    _isMeasureValid = false;
-
-                    return false;
-                }
-
-                return true;
-            }
-        }
+        public bool IsMeasureValid => _isMeasureValid && (LayoutManager?.IsMeasureValid(this) ?? true);
 
         /// <summary>
         /// 获取一个值，该值指示 <see cref="Control"/> 的分割是否有效
         /// </summary>
         [DebugMember(int.MinValue + 11)]
-        public bool IsSegmentValid
-        {
-            get
-            {
-                if (!_isSegmentValid)
-                {
-                    return false;
-                }
-
-                if (LayoutManager?.IsSegmentValid(this) ?? true)
-                {
-                    _isSegmentValid = false;
-
-                    return false;
-                }
-
-                return true;
-            }
-        }
+        public bool IsSegmentValid => _isSegmentValid && (LayoutManager?.IsSegmentValid(this) ?? true);
 
         /// <summary>
         /// 获取或设置一个值，该值指示子控件是否可影响 <see cref="Control"/> 的布局
