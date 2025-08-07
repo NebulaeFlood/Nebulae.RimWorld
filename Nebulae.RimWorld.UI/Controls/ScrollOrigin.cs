@@ -5,7 +5,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// <see cref="ScrollViewer"/> 水平方向初始滚动位置
     /// </summary>
-    public enum HorizontalScrollOrigin
+    public enum HorizontalScrollOrigin : byte
     {
         /// <summary>
         /// 从左侧开始
@@ -21,7 +21,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// <see cref="ScrollViewer"/> 垂直方向初始滚动位置
     /// </summary>
-    public enum VerticalScrollOrigin
+    public enum VerticalScrollOrigin : byte
     {
         /// <summary>
         /// 从顶部开始

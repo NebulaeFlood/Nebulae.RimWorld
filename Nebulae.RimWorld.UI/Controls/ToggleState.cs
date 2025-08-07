@@ -5,7 +5,7 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 指示 <see cref="ToggleButton"/> 的状态
     /// </summary>
-    public enum ToggleState : short
+    public enum ToggleState : sbyte
     {
         /// <summary>
         /// 已开启

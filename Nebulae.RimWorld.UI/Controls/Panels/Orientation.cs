@@ -1,7 +1,7 @@
 ﻿namespace Nebulae.RimWorld.UI.Controls.Panels
 {
     /// <summary>
-    /// 指定控件的布局方向
+    /// 指定子控件的布局方向
     /// </summary>
     public enum Orientation
     {

@@ -6,20 +6,20 @@ namespace Nebulae.RimWorld.UI.Controls
     /// <summary>
     /// 属性与控件布局的关系
     /// </summary>
-    public enum ControlRelation : int
+    public enum ControlRelation : byte
     {
         /// <summary>
         /// 无标记
         /// </summary>
-        None = 0x00000000,
+        None = 0b00,
         /// <summary>
         /// 与控件排布关联
         /// </summary>
-        Arrange = 0x00000001,
+        Arrange = 0b01,
         /// <summary>
         /// 与控件度量关联
         /// </summary>
-        Measure = 0x00000002
+        Measure = 0b11
     }
 
     /// <summary>
