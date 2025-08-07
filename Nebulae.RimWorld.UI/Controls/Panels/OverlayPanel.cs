@@ -118,6 +118,32 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             return availableSize;
         }
 
+        /// <inheritdoc/>
+        protected override HitTestResult HitTestCore(Vector2 hitPoint)
+        {
+            var result = HitTestResult.HitTest(this, hitPoint);
+
+            if (!result.IsHit)
+            {
+                return HitTestResult.Empty;
+            }
+
+            var children = DrawableChildren;
+            var count = children.Length;
+
+            for (int i = 0; i < count - 1; i++)
+            {
+                var childResult = children[i].HitTest(hitPoint);
+
+                if (childResult.IsHit)
+                {
+                    result = childResult;
+                }
+            }
+
+            return result;
+        }
+
         #endregion
     }
 }

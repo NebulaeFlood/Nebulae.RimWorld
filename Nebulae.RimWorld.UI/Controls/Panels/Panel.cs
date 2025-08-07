@@ -209,22 +209,26 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override HitTestResult HitTestCore(Vector2 hitPoint)
         {
-            if (!ControlRect.Contains(hitPoint))
+            var result = HitTestResult.HitTest(this, hitPoint);
+
+            if (!result.IsHit)
             {
                 return HitTestResult.Empty;
             }
 
-            for (int i = _filteredChildren.Length - 1; i >= 0; i--)
+            var children = DrawableChildren;
+            
+            for (int i = children.Length - 1; i >= 0; i--)
             {
-                var result = _filteredChildren[i].HitTest(hitPoint);
+                var childResult = children[i].HitTest(hitPoint);
 
-                if (result.IsHit)
+                if (childResult.IsHit)
                 {
-                    return result;
+                    return childResult;
                 }
             }
 
-            return HitTestResult.HitTest(this, true);
+            return result;
         }
 
         /// <inheritdoc/>
