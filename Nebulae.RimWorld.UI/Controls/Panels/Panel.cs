@@ -217,7 +217,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             }
 
             var children = DrawableChildren;
-            
+
             for (int i = children.Length - 1; i >= 0; i--)
             {
                 var childResult = children[i].HitTest(hitPoint);

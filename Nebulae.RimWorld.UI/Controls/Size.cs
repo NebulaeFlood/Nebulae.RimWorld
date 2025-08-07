@@ -1,7 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using UnityEngine;
 
 namespace Nebulae.RimWorld.UI.Controls

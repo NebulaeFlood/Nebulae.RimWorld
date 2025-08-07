@@ -19,7 +19,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         public const float Auto = Definition.Auto;
 
         /// <summary>
-        /// 表示自动尺寸
+        /// 表示剩余尺寸
         /// </summary>
         public const float Remain = float.PositiveInfinity;
 

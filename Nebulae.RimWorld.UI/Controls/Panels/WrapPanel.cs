@@ -4,7 +4,6 @@ using Nebulae.RimWorld.UI.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Verse;
 
 namespace Nebulae.RimWorld.UI.Controls.Panels
 {
