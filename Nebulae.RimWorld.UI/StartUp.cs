@@ -22,6 +22,14 @@ namespace Nebulae.RimWorld.UI
         public const string Lib = "NebulaeFlood's Lib";
 
 
+#if DEBUG
+        static StartUp()
+        {
+            Utilities.UIUtility.DebugMode = true;
+        }
+#endif
+
+
         //------------------------------------------------------
         //
         //  Public Static Methods
