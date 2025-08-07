@@ -12,7 +12,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// 初始化 <see cref="OverlayPanel"/> 的新实例
         /// </summary>
-        public OverlayPanel() { }
+        public OverlayPanel()
+        {
+            IsSolid = true;
+        }
 
 
         //------------------------------------------------------
