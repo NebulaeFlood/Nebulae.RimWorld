@@ -435,7 +435,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceSize(DependencyObject d, object baseValue)
         {
-            return UIUtility.Format((float)baseValue);
+            return UIUtility.FormatProportion((float)baseValue);
         }
 
         private static object CoerceThickness(DependencyObject d, object baseValue)

@@ -575,7 +575,7 @@ namespace Nebulae.RimWorld.UI.Utilities
         /// <returns>规范后的 <paramref name="value"/>。</returns>
         public static float FormatProportion(this float value)
         {
-            return (value > 1f && !float.IsPositiveInfinity(value)) || (value > 0f && !float.IsNaN(value)) ? value : 0f;
+            return value > 0f && !float.IsPositiveInfinity(value) ? value : 0f;
         }
 
         /// <summary>
