@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using Nebulae.RimWorld.UI.Controls.Composites;
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
@@ -118,6 +119,25 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Methods
+
+        /// <summary>
+        /// 将 <see cref="SearchBox"/> 设置为该 <see cref="Panel"/> 的子控件过滤器
+        /// </summary>
+        /// <param name="searchBox">要设置为过滤器的 <see cref="SearchBox"/></param>
+        /// <remarks>默认使用控件名作为过滤条件。</remarks>
+        public void Bind(SearchBox searchBox)
+        {
+            searchBox.Search += delegate { InvalidateFilter(); };
+            Filter = control => searchBox.Matches(control.Name);
+        }
+
         /// <summary>
         /// 要求 <see cref="Panel"/> 在下次绘制控件之前重新过滤子控件
         /// </summary>
@@ -131,6 +151,8 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                 InvalidateMeasure();
             }
         }
+
+        #endregion
 
 
         internal void ClearInternal()
