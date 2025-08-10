@@ -278,13 +278,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置 <see cref="Control"/> 的工具提示内容
         /// </summary>
-        public TipSignal Tooltip
+        public string Tooltip
         {
-            get => _tooltip;
+            get => _tooltip.text;
             set
             {
-                _shouldShowTooltip = !string.IsNullOrEmpty(
-                    string.IsNullOrEmpty(value.text) ? value.textGetter?.Invoke() : value.text);
+                _shouldShowTooltip = !string.IsNullOrEmpty(value);
                 _tooltip = value;
             }
         }
