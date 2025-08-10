@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
 
@@ -19,11 +18,7 @@ namespace Nebulae.RimWorld.UI.Patches
 
             foreach (var code in instructions)
             {
-                if (patched)
-                {
-                    yield return code;
-                }
-                else if (code.opcode == OpCodes.Callvirt && (MethodInfo)code.operand == method)
+                if (!patched && code.Calls(method))
                 {
                     yield return new CodeInstruction(OpCodes.Ldloc_S, 4);
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Dialog_Options_Patch), nameof(ReplaceModSettingWindow)));

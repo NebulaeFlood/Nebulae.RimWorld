@@ -9,6 +9,12 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
     public static class MemberUtility
     {
         /// <summary>
+        /// 默认的成员搜索方式
+        /// </summary>
+        public const BindingFlags DefaultFlags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+
+        /// <summary>
         /// 判断 <see cref="Convert"/> 类型能否将 <paramref name="sourceType"/> 类型转化为 <paramref name="targetType"/> 类型
         /// </summary>
         /// <param name="sourceType">源类型</param>
@@ -60,6 +66,29 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         }
 
         /// <summary>
+        /// 从方法创建指定类型的委托
+        /// </summary>
+        /// <typeparam name="T">委托类型</typeparam>
+        /// <param name="method">目标方法</param>
+        /// <returns>由 <paramref name="method"/> 创建的委托。</returns>
+        public static T CreateDelegate<T>(this MethodInfo method) where T : Delegate
+        {
+            return (T)method.CreateDelegate(typeof(T));
+        }
+
+        /// <summary>
+        /// 从方法创建指定类型的委托
+        /// </summary>
+        /// <typeparam name="T">委托类型</typeparam>
+        /// <param name="method">目标方法</param>
+        /// <param name="target">目标对象</param>
+        /// <returns>由 <paramref name="method"/> 创建的委托。</returns>
+        public static T CreateDelegate<T>(this MethodInfo method, object target) where T : Delegate
+        {
+            return (T)method.CreateDelegate(typeof(T), target);
+        }
+
+        /// <summary>
         /// 尝试使用 <see cref="Convert"/> 将值转化为指定类型
         /// </summary>
         /// <typeparam name="TSource">值的原类型</typeparam>
@@ -99,11 +128,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <param name="flags">搜索成员的方式</param>
         /// <returns>转化为 <typeparamref name="T"/> 类型的字段值或属性值。</returns>
         /// <exception cref="MissingMemberException">当无法在 <paramref name="obj"/> 中找到名为 <paramref name="name"/> 的字段或属性时发生。</exception>
-        public static T GetValue<T>(
-            this Type type,
-            string name,
-            object obj,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static T GetValue<T>(this Type type, string name, object obj, BindingFlags flags = DefaultFlags)
         {
             var members = type.GetMember(name, MemberTypes.Field | MemberTypes.Property, flags);
 
@@ -156,10 +181,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <param name="flags">搜索成员的方式</param>
         /// <returns>转化为 <typeparamref name="TValue"/> 类型的字段值或属性值。</returns>
         /// <exception cref="MissingMemberException">当无法在 <paramref name="obj"/> 中找到名为 <paramref name="name"/> 的字段或属性时发生。</exception>
-        public static TValue GetValue<TClass, TValue>(
-            TClass obj,
-            string name,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static TValue GetValue<TClass, TValue>(TClass obj, string name, BindingFlags flags = DefaultFlags)
         {
             var type = typeof(TClass);
             var members = type.GetMember(name, MemberTypes.Field | MemberTypes.Property, flags);

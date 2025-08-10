@@ -58,7 +58,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             get => _borderThickness;
             set
             {
-                value = value.Normalize();
+                value = value.Format();
 
                 if (_borderThickness != value)
                 {
@@ -105,7 +105,20 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                 return availableSize;
             }
 
-            return Content.Measure(availableSize - _borderThickness) + _borderThickness;
+            var content = Content;
+
+            if (_borderThickness.IsEmpty)
+            {
+                return content.Measure(availableSize);
+            }
+            else if (float.IsNaN(availableSize.Width) || float.IsNaN(availableSize.Height))
+            {
+                return content.Measure(availableSize) + _borderThickness;
+            }
+            else
+            {
+                return content.Measure(availableSize - _borderThickness) + _borderThickness;
+            }
         }
 
         /// <inheritdoc/>

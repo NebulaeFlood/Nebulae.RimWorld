@@ -50,6 +50,14 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Public Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Static Methods
+
         /// <summary>
         /// 使用 <see cref="Control.ControlRect"/> 和 <paramref name="hitPoint"/> 判断是否命中指定的 <see cref="Basic.Control"/>
         /// </summary>
@@ -91,5 +99,7 @@ namespace Nebulae.RimWorld.UI.Controls
 
             return new HitTestResult(control, true);
         }
+
+        #endregion
     }
 }

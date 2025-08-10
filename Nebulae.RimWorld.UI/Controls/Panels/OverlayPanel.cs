@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Controls.Basic;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,7 +13,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <summary>
         /// 初始化 <see cref="OverlayPanel"/> 的新实例
         /// </summary>
-        public OverlayPanel() { }
+        public OverlayPanel()
+        {
+            IsSolid = true;
+        }
 
 
         //------------------------------------------------------
@@ -110,12 +114,97 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize, Control[] children)
         {
+            bool autoWidth = float.IsNaN(availableSize.Width);
+            bool autoHeight = float.IsNaN(availableSize.Height);
+
+            float renderWidth, renderHeight;
+
+            if (autoWidth)
+            {
+                if (autoHeight)
+                {
+                    renderWidth = 0f;
+                    renderHeight = 0f;
+
+                    var autoSize = new Size(float.NaN);
+
+                    for (int i = children.Length - 1; i >= 0; i--)
+                    {
+                        var childDesiredSize = children[i].Measure(autoSize);
+
+                        renderWidth = MathF.Max(renderWidth, childDesiredSize.Width);
+                        renderHeight = MathF.Max(renderHeight, childDesiredSize.Height);
+                    }
+                }
+                else
+                {
+                    renderWidth = 0f;
+                    renderHeight = availableSize.Height;
+
+                    var childSize = new Size(float.NaN, renderHeight);
+
+                    for (int i = children.Length - 1; i >= 0; i--)
+                    {
+                        var childDesiredSize = children[i].Measure(childSize);
+
+                        renderWidth = MathF.Max(renderWidth, childDesiredSize.Width);
+                    }
+                }
+            }
+            else if (autoHeight)
+            {
+                renderWidth = availableSize.Width;
+                renderHeight = 0f;
+
+                var childSize = new Size(renderWidth, float.NaN);
+
+                for (int i = children.Length - 1; i >= 0; i--)
+                {
+                    var childDesiredSize = children[i].Measure(childSize);
+
+                    renderHeight = MathF.Max(renderHeight, childDesiredSize.Height);
+                }
+            }
+            else
+            {
+                renderWidth = availableSize.Width;
+                renderHeight = availableSize.Height;
+            }
+
+            availableSize = new Size(renderWidth, renderHeight);
+
             for (int i = children.Length - 1; i >= 0; i--)
             {
                 children[i].Measure(availableSize);
             }
 
             return availableSize;
+        }
+
+        /// <inheritdoc/>
+        protected override HitTestResult HitTestCore(Vector2 hitPoint)
+        {
+            var result = HitTestResult.HitTest(this, hitPoint);
+
+            if (!result.IsHit)
+            {
+                return HitTestResult.Empty;
+            }
+
+            var children = DrawableChildren;
+            var count = children.Length;
+
+            for (int i = 0; i < count - 1; i++)
+            {
+                var childResult = children[i].HitTest(hitPoint);
+
+                if (childResult.IsHit)
+                {
+                    result = childResult;
+                }
+            }
+
+            return result;
         }
 
         #endregion

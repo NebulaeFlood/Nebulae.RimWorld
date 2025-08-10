@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Nebulae.RimWorld.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using static RimWorld.SectionLayer_GravshipHull;
 
 namespace Nebulae.RimWorld.UI.Core.Data
 {
@@ -204,9 +206,9 @@ namespace Nebulae.RimWorld.UI.Core.Data
                 throw new InvalidOperationException("Metadata has been sealed by another dependency property.");
             }
 
-            if (!ValidateValue(metadata.DefaultValue, out var exception))
+            if (!ValidateValue(metadata.defaultValue, out var exception))
             {
-                throw exception;
+                throw new InvalidOperationException($"Deafult value '{metadata.defaultValue.AsLog()}' of type '{metadata.defaultValue.GetType()}' is not valid for '{OwnerType}.{Name}'.", exception);
             }
 
             if (!OwnerType.IsAssignableFrom(ownerType))
@@ -306,12 +308,12 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
             if (Exist(name, ownerType))
             {
-                throw new InvalidOperationException($"Property \"{ownerType}.{name}\" has already been registered.");
+                throw new InvalidOperationException($"Property '{ownerType}.{name}' has already been registered.");
             }
 
             if (!ValidateValueCore(valueType, defaultMetadata.defaultValue, validateValueCallback, out var exception))
             {
-                throw exception;
+                throw new InvalidOperationException($"Faild to register property '{ownerType}.{name}'", exception);
             }
 
             return new DependencyProperty(name, ownerType, valueType, defaultMetadata, validateValueCallback, isAttached);
@@ -334,12 +336,12 @@ namespace Nebulae.RimWorld.UI.Core.Data
             }
             else if (!valueType.IsInstanceOfType(value))
             {
-                exception = new InvalidCastException($"Value '{value}' of type '{value.GetType()}' is not compatible with type '{valueType}'.");
+                exception = new InvalidCastException($"Value '{value.AsLog()}' of type '{value.GetType()}' is not compatible with type '{valueType}'.");
                 return false;
             }
             else if (validate != null && !validate(value))
             {
-                exception = new ArgumentException($"Value '{value}' failed validation.");
+                exception = new ArgumentException($"Value '{value.AsLog()}' is not a valid value.");
                 return false;
             }
 

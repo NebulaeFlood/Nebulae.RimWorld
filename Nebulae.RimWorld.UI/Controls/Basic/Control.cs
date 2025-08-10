@@ -1,6 +1,7 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -133,25 +134,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 获取一个值，该值指示 <see cref="Control"/> 的排布是否有效
         /// </summary>
         [DebugMember(int.MinValue + 9)]
-        public bool IsArrangeValid
-        {
-            get
-            {
-                if (!_isArrangeValid)
-                {
-                    return false;
-                }
-
-                if (LayoutManager?.IsArrangeValid(this) ?? true)
-                {
-                    _isArrangeValid = false;
-
-                    return false;
-                }
-
-                return true;
-            }
-        }
+        public bool IsArrangeValid => _isArrangeValid && (LayoutManager?.IsArrangeValid(this) ?? true);
 
         /// <summary>
         /// 获取或设置 <see cref="Control"/> 的拖动效果透明度
@@ -189,49 +172,13 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// 获取一个值，该值指示 <see cref="Control"/> 的测量是否有效
         /// </summary>
         [DebugMember(int.MinValue + 10)]
-        public bool IsMeasureValid
-        {
-            get
-            {
-                if (!_isMeasureValid)
-                {
-                    return false;
-                }
-
-                if (LayoutManager?.IsMeasureValid(this) ?? true)
-                {
-                    _isMeasureValid = false;
-
-                    return false;
-                }
-
-                return true;
-            }
-        }
+        public bool IsMeasureValid => _isMeasureValid && (LayoutManager?.IsMeasureValid(this) ?? true);
 
         /// <summary>
         /// 获取一个值，该值指示 <see cref="Control"/> 的分割是否有效
         /// </summary>
         [DebugMember(int.MinValue + 11)]
-        public bool IsSegmentValid
-        {
-            get
-            {
-                if (!_isSegmentValid)
-                {
-                    return false;
-                }
-
-                if (LayoutManager?.IsSegmentValid(this) ?? true)
-                {
-                    _isSegmentValid = false;
-
-                    return false;
-                }
-
-                return true;
-            }
-        }
+        public bool IsSegmentValid => _isSegmentValid && (LayoutManager?.IsSegmentValid(this) ?? true);
 
         /// <summary>
         /// 获取或设置一个值，该值指示子控件是否可影响 <see cref="Control"/> 的布局
@@ -331,13 +278,12 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <summary>
         /// 获取或设置 <see cref="Control"/> 的工具提示内容
         /// </summary>
-        public TipSignal Tooltip
+        public string Tooltip
         {
-            get => _tooltip;
+            get => _tooltip.text;
             set
             {
-                _shouldShowTooltip = !string.IsNullOrEmpty(
-                    string.IsNullOrEmpty(value.text) ? value.textGetter?.Invoke() : value.text);
+                _shouldShowTooltip = !string.IsNullOrEmpty(value);
                 _tooltip = value;
             }
         }
@@ -636,7 +582,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             _isMeasureValid = true;
 
             DesiredSize = _allowOccupy
-                ? MeasureCore(FormatSize(availableSize)).Round()
+                ? MeasureCore(availableSize).Format()
                 : Size.Empty;
 
             return DesiredSize;
@@ -750,6 +696,16 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
+        /// 设置 <see cref="Control"/> 的工具提示内容
+        /// </summary>
+        /// <param name="tipSignal"></param>
+        public void SetTooltip(TipSignal tipSignal)
+        {
+            _shouldShowTooltip = string.IsNullOrEmpty(string.IsNullOrEmpty(tipSignal.text) ? tipSignal.textGetter?.Invoke() : tipSignal.text);
+            _tooltip = tipSignal;
+        }
+
+        /// <summary>
         /// 获取表示该 <see cref="Control"/> 的字符串
         /// </summary>
         /// <returns>表示该 <see cref="Control"/> 的字符串。</returns>
@@ -816,13 +772,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             DrawCore(ControlState.Normal);
             GUI.color = color;
             GUI.contentColor = contentColor;
-        }
-
-        internal static Size FormatSize(Size size)
-        {
-            return new Size(
-                (size.Width < 1f || float.IsPositiveInfinity(size.Width) || float.IsNaN(size.Width)) ? 0f : size.Width,
-                (size.Height < 1f || float.IsPositiveInfinity(size.Height) || float.IsNaN(size.Height)) ? 0f : size.Height);
         }
 
         internal Control GetSolidParent() => (!_isChild || _parent._isSolid) ? _parent : _parent.GetSolidParent();

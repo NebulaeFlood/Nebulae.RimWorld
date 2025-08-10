@@ -3,7 +3,7 @@
     /// <summary>
     /// 指示控件的显示状态
     /// </summary>
-    public enum Visibility
+    public enum Visibility : byte
     {
         /// <summary>
         /// 显示控件

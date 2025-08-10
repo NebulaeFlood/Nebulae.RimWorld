@@ -299,7 +299,7 @@ namespace Nebulae.RimWorld.UI.Controls.Composites
             _labelButton.Measure(new Size(hearderWidth, HeaderHeight));
 
             var desiredHeight = IsExpanded
-                ? Content.Measure(new Size(hearderWidth, HeaderHeight)).Height + HeaderHeight
+                ? Content.Measure(new Size(hearderWidth, float.NaN)).Height + HeaderHeight
                 : HeaderHeight;
 
             return new Size(availableSize.Width, desiredHeight);

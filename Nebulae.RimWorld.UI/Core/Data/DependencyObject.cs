@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
 using Nebulae.RimWorld.UI.Core.Data.Bindings;
+using Nebulae.RimWorld.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -285,7 +286,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
         {
             if (!property.ValidateValue(value, out var exception))
             {
-                throw exception;
+                throw new InvalidOperationException($"Value '{value.AsLog()}' of type '{value.GetType()}' is not valid for '{property.OwnerType}.{property.Name}'.", exception);
             }
 
             metadata = property.GetMetadata(DependencyType);
@@ -299,7 +300,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
             if (!coercedValue.Equals(value) && !property.ValidateValue(coercedValue, out exception))
             {
-                throw new InvalidOperationException($"Coerced value \"{coercedValue}\" is not valid for {property.OwnerType}.{property.Name}.", exception);
+                throw new InvalidOperationException($"Coerced value '{coercedValue.AsLog()}' of type '{coercedValue.GetType()}' is not valid for '{property.OwnerType}.{property.Name}'.", exception);
             }
 
             return coercedValue;

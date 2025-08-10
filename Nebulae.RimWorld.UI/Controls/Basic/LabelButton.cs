@@ -125,7 +125,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
             var width = text.CalculateLength(fontSize);
 
             // Usually means grid is calculating auto size
-            if (availableSize.Width is 0f)
+            if (float.IsNaN(availableSize.Width))
             {
                 _cache = text;
             }

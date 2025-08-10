@@ -42,13 +42,19 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
     /// </summary>
     public static class FieldUtility
     {
+        /// <summary>
+        /// 默认的成员搜索方式
+        /// </summary>
+        public const BindingFlags DefaultFlags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+
         //------------------------------------------------------
         //
-        //  Create Accesor
+        //  Create Accessor
         //
         //------------------------------------------------------
 
-        #region Create Accesor
+        #region Create Accessor
 
         /// <summary>
         /// 创建一个获取字段值的委托
@@ -61,9 +67,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <exception cref="MissingFieldException">当无法在 <typeparamref name="TClass"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
         /// <exception cref="InvalidOperationException">字段为静态字段时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法将字段的类型转化为 <typeparamref name="TValue"/> 类型时发生。</exception>
-        public static FieldAccessor<TClass, TValue> CreateFieldAccessor<TClass, TValue>(
-            string name,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static FieldAccessor<TClass, TValue> CreateFieldAccessor<TClass, TValue>(string name, BindingFlags flags = DefaultFlags)
         {
             Type type = typeof(TClass);
 
@@ -98,7 +102,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
             }
             else
             {
-                throw new MissingFieldException(type.Name, name);
+                throw new MissingFieldException(type.FullName, name);
             }
         }
 
@@ -113,10 +117,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <exception cref="MissingFieldException">当无法在 <paramref name="type"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
         /// <exception cref="InvalidOperationException">字段不是静态字段时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法将 <typeparamref name="T"/> 类型转化为字段的类型时发生。</exception>
-        public static FieldAccessor<T> CreateStaticFieldAccessor<T>(
-            this Type type,
-            string name,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static FieldAccessor<T> CreateStaticFieldAccessor<T>(this Type type, string name, BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
         {
             if (type.GetField(name, flags) is FieldInfo field)
             {
@@ -145,7 +146,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
             }
             else
             {
-                throw new MissingFieldException(type.Name, name);
+                throw new MissingFieldException(type.FullName, name);
             }
         }
 
@@ -171,9 +172,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <exception cref="MissingFieldException">当无法在 <typeparamref name="TClass"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
         /// <exception cref="InvalidOperationException">当字段为 <see langword="readonly"/> 时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法 <typeparamref name="TValue"/> 类型转化为将字段的类型时发生。</exception>
-        public static FieldModifier<TClass, TValue> CreateFieldModifier<TClass, TValue>(
-            string name,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static FieldModifier<TClass, TValue> CreateFieldModifier<TClass, TValue>(string name, BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic)
         {
             Type type = typeof(TClass);
 
@@ -211,7 +210,55 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
             }
             else
             {
-                throw new MissingFieldException(type.Name, name);
+                throw new MissingFieldException(type.FullName, name);
+            }
+        }
+
+        /// <summary>
+        /// 创建一个修改静态字段值的委托
+        /// </summary>
+        /// <typeparam name="T">将给字段赋的值的类型</typeparam>
+        /// <param name="type">拥有字段的类型</param>
+        /// <param name="name">字段名称</param>
+        /// <param name="flags">搜索成员的方式</param>
+        /// <returns>修改字段值的委托。</returns>
+        /// <exception cref="MissingFieldException">当无法在 <paramref name="type"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
+        /// <exception cref="InvalidOperationException">当字段为 <see langword="readonly"/> 时发生。</exception>
+        /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法 <typeparamref name="T"/> 类型转化为将字段的类型时发生。</exception>
+        public static FieldModifier<T> CreateStaticFieldModifier<T>(this Type type, string name, BindingFlags flags = BindingFlags.Static | BindingFlags.NonPublic)
+        {
+            if (type.GetField(name, flags) is FieldInfo field)
+            {
+                if (field.IsInitOnly)
+                {
+                    throw new InvalidOperationException($"Cannot create modifier for {type}.{field.Name} - it is read only.");
+                }
+
+                Type fieldType = field.FieldType;
+                Type valueType = typeof(T);
+
+                if (!MemberUtility.CanConvert(valueType, fieldType, out var convertOperation))
+                {
+                    throw new InvalidCastException($"Cannot cast type: {valueType} to type: {fieldType}.");
+                }
+
+                ParameterExpression valueExp = Expression.Parameter(valueType, "value");
+                MemberExpression fieldExp = Expression.Field(null, field);
+
+                if (convertOperation)
+                {
+                    return Expression.Lambda<FieldModifier<T>>(
+                        Expression.Assign(fieldExp, Expression.Convert(valueExp, fieldType)),
+                        valueExp).Compile();
+                }
+
+                return Expression.Lambda<FieldModifier<T>>(
+                    Expression.Assign(fieldExp, valueExp),
+                    valueExp).Compile();
+            }
+            else
+            {
+                throw new MissingFieldException(type.FullName, name);
             }
         }
 
@@ -237,11 +284,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <returns>转化为 <typeparamref name="T"/> 类型的字段值。</returns>
         /// <exception cref="MissingFieldException">当无法在 <paramref name="obj"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法将字段值转化为 <typeparamref name="T"/> 类型时发生。</exception>
-        public static T GetFieldValue<T>(
-            this Type type,
-            string name,
-            object obj,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static T GetFieldValue<T>(this Type type, string name, object obj, BindingFlags flags = DefaultFlags)
         {
             if (type.GetField(name, flags) is FieldInfo field)
             {
@@ -249,7 +292,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
             }
             else
             {
-                throw new MissingFieldException(type.Name, name);
+                throw new MissingFieldException(type.FullName, name);
             }
         }
 
@@ -264,10 +307,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <returns>转化为 <typeparamref name="TValue"/> 类型的字段值。</returns>
         /// <exception cref="MissingFieldException">当无法在 <paramref name="obj"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法将字段值转化为 <typeparamref name="TValue"/> 类型时发生。</exception>
-        public static TValue GetFieldValue<TClass, TValue>(
-            TClass obj,
-            string name,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static TValue GetFieldValue<TClass, TValue>(TClass obj, string name, BindingFlags flags = DefaultFlags)
         {
             Type classType = typeof(TClass);
 
@@ -277,7 +317,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
             }
             else
             {
-                throw new MissingFieldException(classType.Name, name);
+                throw new MissingFieldException(classType.FullName, name);
             }
         }
 
@@ -329,12 +369,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <param name="flags">搜索成员的方式</param>
         /// <returns>转化为 <typeparamref name="T"/> 类型的字段值。</returns>
         /// <exception cref="MissingFieldException">当无法在 <paramref name="obj"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
-        public static void SetFieldValue<T>(
-            this Type type,
-            string name,
-            object obj,
-            T value,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static void SetFieldValue<T>(this Type type, string name, object obj, T value, BindingFlags flags = DefaultFlags)
         {
             if (type.GetField(name, flags) is FieldInfo field)
             {
@@ -356,11 +391,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <param name="value">要设置的值</param>
         /// <param name="flags">搜索成员的方式</param>
         /// <exception cref="MissingFieldException">当无法在 <typeparamref name="TClass"/> 中找到名为 <paramref name="name"/> 的字段时发生。</exception>
-        public static void SetFieldValue<TClass, TValue>(
-            TClass obj,
-            string name,
-            TValue value,
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static void SetFieldValue<TClass, TValue>(TClass obj, string name, TValue value, BindingFlags flags = DefaultFlags)
         {
             Type classType = typeof(TClass);
 

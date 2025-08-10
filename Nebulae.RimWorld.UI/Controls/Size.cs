@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Utilities;
+using System;
 using System.Diagnostics;
 using UnityEngine;
 
@@ -123,14 +124,21 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
+        /// 格式化此 <see cref="Size"/> 到可用状态
+        /// </summary>
+        /// <returns>格式化后的此 <see cref="Size"/>。</returns>
+        public Size Format()
+        {
+            return new Size(UIUtility.Format(Width), UIUtility.Format(Height));
+        }
+
+        /// <summary>
         /// 按照“四舍六进五成双”的规则将此 <see cref="Size"/> 的 <see cref="Width"/> 和 <see cref="Height"/> 精确到整数
         /// </summary>
-        /// <returns>精确到整数后的此 <see cref="Size"/> 。</returns>
+        /// <returns>精确到整数后的此 <see cref="Size"/>。</returns>
         public Size Round()
         {
-            return new Size(
-                Mathf.Round(Width),
-                Mathf.Round(Height));
+            return new Size(MathF.Round(Width), MathF.Round(Height));
         }
 
         /// <summary>
@@ -140,8 +148,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>如果指定的对象等于此 <see cref="Size"/> ，则返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public override bool Equals(object obj)
         {
-            return obj is Size other
-                && this == other;
+            return obj is Size other && this == other;
         }
 
         /// <summary>
@@ -164,26 +171,19 @@ namespace Nebulae.RimWorld.UI.Controls
         }
 
         /// <summary>
-        /// 规范化此 <see cref="Size"/>
-        /// </summary>
-        /// <returns>规范后的该 <see cref="Size"/>。</returns>
-        public Size Normalize()
-        {
-            return new Size(
-                Width > 0f ? Width : 0f,
-                Height > 0f ? Height : 0f);
-        }
-
-        /// <summary>
         /// 解析此 <see cref="Size"/> 最终的实际尺寸
         /// </summary>
         /// <param name="availableSize">可用的尺寸</param>
-        /// <returns>规范后的该 <see cref="Size"/>。</returns>
+        /// <returns>解析后的该 <see cref="Size"/>。</returns>
         public Size Resolve(Size availableSize)
         {
             float width, height;
 
-            if (Width < 0f)
+            if (float.IsNaN(Width))
+            {
+                width = float.NaN;
+            }
+            else if (Width < 0f)
             {
                 width = 0f;
             }
@@ -196,7 +196,11 @@ namespace Nebulae.RimWorld.UI.Controls
                 width = Width * availableSize.Width;
             }
 
-            if (Height < 0f)
+            if (float.IsNaN(Width))
+            {
+                height = float.NaN;
+            }
+            else if (Height < 0f)
             {
                 height = 0f;
             }
@@ -219,9 +223,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>缩放后的 <see cref="Size"/> 结构。</returns>
         public Size Scale(float scale)
         {
-            return new Size(
-                Width * scale,
-                Height * scale);
+            return new Size(Width * scale, Height * scale);
         }
 
         /// <summary>
@@ -232,9 +234,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <returns>缩放后的 <see cref="Size"/> 结构。</returns>
         public Size Scale(float widthScale, float heightScale)
         {
-            return new Size(
-                Width * widthScale,
-                Height * heightScale);
+            return new Size(Width * widthScale, Height * heightScale);
         }
 
         /// <summary>
