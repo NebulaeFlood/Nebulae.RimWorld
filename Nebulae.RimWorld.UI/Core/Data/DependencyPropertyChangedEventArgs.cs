@@ -68,7 +68,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
             Metadata = metadata;
             Property = property;
 
-            OldEntry = new EffectiveValueEntry(metadata.DefaultValue);
+            OldEntry = new EffectiveValueEntry(metadata.defaultValue);
             NewEntry = newEntry;
         }
 

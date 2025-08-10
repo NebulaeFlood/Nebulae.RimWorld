@@ -91,7 +91,7 @@ namespace Nebulae.RimWorld.UI.Core.Events
 
             if (Exist(name, ownerType))
             {
-                throw new InvalidOperationException($"The event \"{ownerType}.{name}\" has already been registered.");
+                throw new InvalidOperationException($"The event '{ownerType}.{name}' has already been registered.");
             }
 
             return new RoutedEvent(name, strategy, ownerType, argType);
@@ -121,12 +121,12 @@ namespace Nebulae.RimWorld.UI.Core.Events
 
             if (!method.IsStatic)
             {
-                throw new ArgumentException($"Class handler for \"{OwnerType}.{Name}\" of ownerType \"{ownerType}\" must be static.", nameof(handler));
+                throw new ArgumentException($"Class handler for '{OwnerType}.{Name}' of ownerType '{ownerType}' must be static.", nameof(handler));
             }
 
             if (!_classHandlers.TryAdd(ownerType, RoutedEventHandlerFactory.Convert(handler, ArgType)))
             {
-                throw new InvalidOperationException($"Class handler for \"{OwnerType}.{Name}\" of ownerType \"{ownerType}\" has been registered.");
+                throw new InvalidOperationException($"Class handler for '{OwnerType}.{Name}' of ownerType '{ownerType}' has been registered.");
             }
 
             _classHandlersMap.Clear();
