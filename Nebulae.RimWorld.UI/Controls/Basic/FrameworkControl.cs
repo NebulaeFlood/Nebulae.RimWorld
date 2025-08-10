@@ -13,7 +13,6 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
     /// <summary>
     /// 可控制布局属性的控件
     /// </summary>
-    [DebuggerStepThrough]
     public abstract class FrameworkControl : Control
     {
         //------------------------------------------------------
@@ -159,7 +158,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceMaxWidth(DependencyObject d, object basevalue)
         {
-            return MathF.Max(UIUtility.Format((float)basevalue), (float)d.GetValue(MinWidthProperty));
+            return MathF.Max(FormatSizeBounds((float)basevalue), (float)d.GetValue(MinWidthProperty));
         }
         #endregion
 
@@ -182,7 +181,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceMaxHeight(DependencyObject d, object basevalue)
         {
-            return MathF.Max(UIUtility.Format((float)basevalue), (float)d.GetValue(MinHeightProperty));
+            return MathF.Max(FormatSizeBounds((float)basevalue), (float)d.GetValue(MinHeightProperty));
         }
         #endregion
 
@@ -205,7 +204,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceMinWidth(DependencyObject d, object basevalue)
         {
-            return MathF.Min(UIUtility.Format((float)basevalue), (float)d.GetValue(MaxWidthProperty));
+            return MathF.Min(FormatSizeBounds((float)basevalue), (float)d.GetValue(MaxWidthProperty));
         }
         #endregion
 
@@ -228,7 +227,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         private static object CoerceMinHeight(DependencyObject d, object basevalue)
         {
-            return MathF.Min(UIUtility.Format((float)basevalue), (float)d.GetValue(MaxHeightProperty));
+            return MathF.Min(FormatSizeBounds((float)basevalue), (float)d.GetValue(MaxHeightProperty));
         }
         #endregion
 
@@ -436,6 +435,11 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         private static object CoerceSize(DependencyObject d, object baseValue)
         {
             return UIUtility.FormatProportion((float)baseValue);
+        }
+
+        private static float FormatSizeBounds(float value)
+        {
+            return value < 0f || float.IsNaN(value) ? 0 : value;
         }
 
         private static object CoerceThickness(DependencyObject d, object baseValue)

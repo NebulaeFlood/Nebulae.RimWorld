@@ -307,7 +307,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     for (int i = 0; i < childrenCount; i++)
                     {
                         children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
-                        currentX += _childWidth + spacing;
+                        currentY += _childHeight + spacing;
                     }
                 }
             }
@@ -337,7 +337,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     for (int i = 0; i < childrenCount; i++)
                     {
                         children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
-                        currentX += _childWidth;
+                        currentY += _childHeight;
                     }
                 }
             }
@@ -376,7 +376,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     for (int i = 0; i < childrenCount; i++)
                     {
                         children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
-                        currentY += _childHeight + spacing;
+                        currentX += _childWidth + spacing;
                     }
                 }
             }
@@ -406,7 +406,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                     for (int i = 0; i < children.Length; i++)
                     {
                         children[i].Arrange(new Rect(currentX, currentY, _childWidth, _childHeight));
-                        currentY += _childHeight;
+                        currentX += _childWidth;
                     }
                 }
             }
