@@ -331,12 +331,12 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
             float x = availableRect.x;
             float y = availableRect.y;
 
-            for (int i = 0; i < children.Length; i++)
+            for (int i = children.Length - 1; i >= 0; i--)
             {
                 children[i].Arrange(_unitInfos[i].Rect.Offset(x, y));
             }
 
-            return new Rect(availableRect.x, availableRect.y, RenderSize.Width, RenderSize.Height);
+            return new Rect(x, y, RenderSize.Width, RenderSize.Height);
         }
 
         /// <inheritdoc/>
@@ -388,10 +388,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
                                 if (!cache.IsValid)
                                 {
-                                    cache = new SizeCache(children[j].Measure(new Size(float.NaN)));
+                                    cache = new SizeCache(children[j].Measure(new Size(Auto)));
                                 }
 
-                                column.Size = Mathf.Max(column.Size, cache.Size.Width);
+                                column.Size = MathF.Max(column.Size, cache.Size.Width);
                             }
                         }
                     }
@@ -425,11 +425,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
                                 if (!cache.IsValid)
                                 {
                                     cache = new SizeCache(children[j].Measure(
-                                        new Size(_columnDefinitions[GetColumn(children[j])].Size,
-                                            float.PositiveInfinity)));
+                                        new Size(_columnDefinitions[GetColumn(children[j])].Size, Auto)));
                                 }
 
-                                row.Size = Mathf.Max(row.Size, cache.Size.Height);
+                                row.Size = MathF.Max(row.Size, cache.Size.Height);
                             }
                         }
                     }
@@ -484,7 +483,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             if (_columnsUseRemain.Count > 0)
             {
-                float remainWidth = Mathf.Max(0f, availableSize.Width - width);
+                float remainWidth = MathF.Max(0f, availableSize.Width - width);
 
                 if (remainWidth > 0f)
                 {
@@ -500,7 +499,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
 
             if (_rowsUseRemain.Count > 0)
             {
-                float remainHeight = Mathf.Max(0f, availableSize.Height - height);
+                float remainHeight = MathF.Max(0f, availableSize.Height - height);
 
                 if (remainHeight > 0f)
                 {

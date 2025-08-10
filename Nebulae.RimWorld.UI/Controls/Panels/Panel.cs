@@ -104,10 +104,10 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         static Panel()
         {
             HorizontalAlignmentProperty.OverrideMetadata(typeof(Panel),
-                new ControlPropertyMetadata(HorizontalAlignment.Stretch, ControlRelation.Measure));
+                new PropertyMetadata(HorizontalAlignment.Stretch));
 
             VerticalAlignmentProperty.OverrideMetadata(typeof(Panel),
-                new ControlPropertyMetadata(VerticalAlignment.Stretch, ControlRelation.Measure));
+                new PropertyMetadata(VerticalAlignment.Stretch));
         }
 
         /// <summary>
