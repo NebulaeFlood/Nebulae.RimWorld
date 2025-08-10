@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Controls;
 using Nebulae.RimWorld.UI.Controls.Converters;
+using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Core.Data.Bindings;
 using Nebulae.RimWorld.Utilities;
 using System;
@@ -20,14 +21,6 @@ namespace Nebulae.RimWorld.UI
         /// 此动态链接库的名称
         /// </summary>
         public const string Lib = "NebulaeFlood's Lib";
-
-
-#if DEBUG
-        static StartUp()
-        {
-            Utilities.UIUtility.DebugMode = true;
-        }
-#endif
 
 
         //------------------------------------------------------
@@ -139,6 +132,22 @@ namespace Nebulae.RimWorld.UI
 
             _startUpQuests.Clear();
             _startUpQuests = null;
+
+#if DEBUG
+            Utilities.UIUtility.DebugMode = true;
+
+            foreach (var type in GenTypes.AllSubclasses(typeof(DependencyObject)))
+            {
+                try
+                {
+                    System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
+                }
+                catch (Exception e)
+                {
+                    throw new TypeInitializationException(type.FullName, e);
+                }
+            }
+#endif
         }
 
 
