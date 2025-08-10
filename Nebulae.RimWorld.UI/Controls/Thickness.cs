@@ -24,24 +24,32 @@ namespace Nebulae.RimWorld.UI.Controls
 
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Public Fields
         //
         //------------------------------------------------------
 
-        #region Public Properties
+        #region Public Fields
+
+        /// <summary>
+        /// 获取一个值，表示该 <see cref="Thickness"/> 结构的边距是否为空
+        /// </summary>
+        public readonly bool IsEmpty;
 
         /// <summary>
         /// 获取此 <see cref="Thickness"/> 结构的左边距
         /// </summary>
         public readonly float Left;
+
         /// <summary>
         /// 获取此 <see cref="Thickness"/> 结构的上边距
         /// </summary>
         public readonly float Top;
+
         /// <summary>
         /// 获取此 <see cref="Thickness"/> 结构的右边距
         /// </summary>
         public readonly float Right;
+
         /// <summary>
         /// 获取此 <see cref="Thickness"/> 结构的下边距
         /// </summary>
@@ -65,7 +73,11 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <remarks>此结构的各边框使用统一尺寸。</remarks>
         public Thickness(float uniformLength)
         {
-            Left = Top = Right = Bottom = uniformLength;
+            IsEmpty = uniformLength <= 0f;
+            Left = uniformLength;
+            Top = uniformLength;
+            Right = uniformLength;
+            Bottom = uniformLength;
         }
 
         /// <summary>
@@ -77,6 +89,7 @@ namespace Nebulae.RimWorld.UI.Controls
         /// <param name="bottom">下边框尺寸</param>
         public Thickness(float left, float top, float right, float bottom)
         {
+            IsEmpty = !(left > 0f || top > 0f || right > 0f || bottom > 0f);
             Left = left;
             Top = top;
             Right = right;
