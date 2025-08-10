@@ -696,6 +696,16 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         }
 
         /// <summary>
+        /// 设置 <see cref="Control"/> 的工具提示内容
+        /// </summary>
+        /// <param name="tipSignal"></param>
+        public void SetTooltip(TipSignal tipSignal)
+        {
+            _shouldShowTooltip = string.IsNullOrEmpty(string.IsNullOrEmpty(tipSignal.text) ? tipSignal.textGetter?.Invoke() : tipSignal.text);
+            _tooltip = tipSignal;
+        }
+
+        /// <summary>
         /// 获取表示该 <see cref="Control"/> 的字符串
         /// </summary>
         /// <returns>表示该 <see cref="Control"/> 的字符串。</returns>
