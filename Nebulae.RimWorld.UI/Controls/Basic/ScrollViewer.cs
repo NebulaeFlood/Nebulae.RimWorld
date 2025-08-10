@@ -1,5 +1,6 @@
 ﻿using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
+using System;
 using UnityEngine;
 using Verse;
 using Verse.Steam;
@@ -236,11 +237,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Rect ArrangeOverride(Rect availableRect)
         {
-            Content?.Arrange(new Rect(
-                    0f,
-                    0f,
-                    Mathf.Max(_viewWidth, _contentSize.Width),
-                    Mathf.Max(_viewHeight, _contentSize.Height)));
+            Content?.Arrange(new Rect(0f, 0f, MathF.Max(_viewWidth, _contentSize.Width), MathF.Max(_viewHeight, _contentSize.Height)));
 
             return availableRect;
         }
@@ -248,98 +245,31 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            _shouldDrawHorizontalScrollBar = HorizontalScrollBarVisibility is ScrollBarVisibility.Visible;
-            _shouldDrawVerticalScrollBar = VerticalScrollBarVisibility is ScrollBarVisibility.Visible;
-
             if (IsEmpty)
             {
-                _horizontalOffset = 0f;
-                _horizontalMaxOffset = 0f;
+                return MeasureEmpty(availableSize);
+            }
 
-                _verticalOffset = 0f;
-                _verticalMaxOffset = 0f;
+            bool autoWidth = float.IsNaN(availableSize.Width);
+            bool autoHeight = float.IsNaN(availableSize.Height);
 
-                _viewHeight = _shouldDrawHorizontalScrollBar
-                    ? availableSize.Height - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top
-                    : availableSize.Height;
+            if (autoWidth)
+            {
+                if (autoHeight)
+                {
+                    return MeasureAuto(availableSize, Content);
+                }
 
-                _viewWidth = _shouldDrawVerticalScrollBar
-                    ? availableSize.Width - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right
-                    : availableSize.Width;
+                return MeasureAutoWidth(availableSize, Content);
+            }
+            else if (autoHeight)
+            {
+                return MeasureAutoHeight(availableSize, Content);
             }
             else
             {
-                var content = Content;
-
-                float contentAvailableHeight = availableSize.Height;
-                float contentAvailableWidth = availableSize.Width;
-
-                if (_shouldDrawHorizontalScrollBar)
-                {
-                    contentAvailableHeight = contentAvailableHeight - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top;
-                }
-
-                if (_shouldDrawVerticalScrollBar)
-                {
-                    contentAvailableWidth = contentAvailableWidth - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right;
-                }
-
-                _contentSize = content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
-
-                bool shouldMeasureAgain = false;
-
-                if (!_shouldDrawHorizontalScrollBar
-                    && HorizontalScrollBarVisibility != ScrollBarVisibility.Hidden
-                    && _contentSize.Width > contentAvailableWidth)
-                {
-                    contentAvailableHeight = contentAvailableHeight - GUI.skin.horizontalScrollbar.margin.bottom - GUI.skin.horizontalScrollbar.fixedHeight - GUI.skin.horizontalScrollbar.margin.top;
-                    shouldMeasureAgain = true;
-                    _shouldDrawHorizontalScrollBar = true;
-                }
-
-                if (!_shouldDrawVerticalScrollBar
-                    && VerticalScrollBarVisibility != ScrollBarVisibility.Hidden
-                    && _contentSize.Height > contentAvailableHeight)
-                {
-                    contentAvailableWidth = contentAvailableWidth - GUI.skin.verticalScrollbar.margin.left - GUI.skin.verticalScrollbar.fixedWidth - GUI.skin.verticalScrollbar.margin.right;
-                    shouldMeasureAgain = true;
-                    _shouldDrawVerticalScrollBar = true;
-                }
-
-                _viewHeight = contentAvailableHeight;
-                _viewWidth = contentAvailableWidth;
-
-                if (shouldMeasureAgain)
-                {
-                    _contentSize = content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
-                }
-
-                if (_horizontalMaxOffset > 0f)
-                {
-                    _horizontalMaxOffset = Mathf.Max(0f, _contentSize.Width - _viewWidth);
-                    _horizontalOffset = Mathf.Clamp(_horizontalOffset, 0f, _horizontalMaxOffset);
-                }
-                else
-                {
-                    _horizontalMaxOffset = Mathf.Max(0f, _contentSize.Width - _viewWidth);
-                    _horizontalOffset = HorizontalScrollOrigin is HorizontalScrollOrigin.Left ? 0f : _horizontalMaxOffset;
-                }
-
-                if (_verticalMaxOffset > 0f)
-                {
-                    _verticalMaxOffset = Mathf.Max(0f, _contentSize.Height - _viewHeight);
-                    _verticalOffset = Mathf.Clamp(_verticalOffset, 0f, _verticalMaxOffset);
-                }
-                else
-                {
-                    _verticalMaxOffset = Mathf.Max(0f, _contentSize.Height - _viewHeight);
-                    _verticalOffset = VerticalScrollOrigin is VerticalScrollOrigin.Top ? 0f : _verticalMaxOffset;
-                }
+                return Measure(availableSize, Content);
             }
-
-            _canScroll = _horizontalMaxOffset > 0f || _verticalMaxOffset > 0f;
-
-            return availableSize;
         }
 
         /// <inheritdoc/>
@@ -456,7 +386,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                         _horizontalOffset,
                         _viewWidth,
                         0f,
-                        Mathf.Max(content.DesiredSize.Width, _viewWidth),
+                        MathF.Max(content.DesiredSize.Width, _viewWidth),
                         isHorizontal: true);
 
                     _shouldUpdateSegment = _shouldUpdateSegment || _horizontalOffset != horizontalOffset;
@@ -474,7 +404,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
                         _verticalOffset,
                         _viewHeight,
                         0f,
-                        Mathf.Max(content.DesiredSize.Height, _viewHeight),
+                        MathF.Max(content.DesiredSize.Height, _viewHeight),
                         isHorizontal: false);
 
                     _shouldUpdateSegment = _shouldUpdateSegment || _verticalOffset != verticalOffset;
@@ -560,13 +490,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         #region Private Methods
 
-        private static float DrawScrollBar(
-            Rect renderRect,
-            float value,
-            float size,
-            float minValue,
-            float maxValue,
-            bool isHorizontal)
+        private static float DrawScrollBar(Rect renderRect, float value, float size, float minValue, float maxValue, bool isHorizontal)
         {
             GUIStyle sliderStyle;
             GUIStyle thumbStyle;
@@ -612,6 +536,213 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             _horizontalOffset = scrollPosition.x;
             _verticalOffset = scrollPosition.y;
+        }
+
+        private Size Measure(Size availableSize, Control content)
+        {
+            var horizontalScrollBarVisibility = (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty);
+            var verticalScrollBarVisibility = (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty);
+
+            _shouldDrawHorizontalScrollBar = horizontalScrollBarVisibility is ScrollBarVisibility.Visible;
+            _shouldDrawVerticalScrollBar = verticalScrollBarVisibility is ScrollBarVisibility.Visible;
+
+            float contentAvailableWidth = _shouldDrawVerticalScrollBar ? availableSize.Width - VerticalScrollBarWidth : availableSize.Width;
+            float contentAvailableHeight = _shouldDrawHorizontalScrollBar ? availableSize.Height - HorizontalScrollBarHeight : availableSize.Height;
+
+            _contentSize = content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
+
+            bool shouldMeasureAgain = false;
+
+            if (!_shouldDrawHorizontalScrollBar && horizontalScrollBarVisibility is ScrollBarVisibility.Auto && _contentSize.Width > contentAvailableWidth)
+            {
+                contentAvailableHeight -= HorizontalScrollBarHeight;
+                shouldMeasureAgain = true;
+                _shouldDrawHorizontalScrollBar = true;
+            }
+
+            if (!_shouldDrawVerticalScrollBar && verticalScrollBarVisibility is ScrollBarVisibility.Auto && _contentSize.Height > contentAvailableHeight)
+            {
+                contentAvailableWidth -= VerticalScrollBarWidth;
+                shouldMeasureAgain = true;
+                _shouldDrawVerticalScrollBar = true;
+            }
+
+            _viewHeight = contentAvailableHeight;
+            _viewWidth = contentAvailableWidth;
+
+            if (shouldMeasureAgain)
+            {
+                _contentSize = content.Measure(new Size(contentAvailableWidth, contentAvailableHeight));
+            }
+
+            if (_horizontalMaxOffset > 0f)
+            {
+                _horizontalMaxOffset = MathF.Max(0f, _contentSize.Width - _viewWidth);
+                _horizontalOffset = Mathf.Clamp(_horizontalOffset, 0f, _horizontalMaxOffset);
+            }
+            else
+            {
+                _horizontalMaxOffset = MathF.Max(0f, _contentSize.Width - _viewWidth);
+                _horizontalOffset = HorizontalScrollOrigin is HorizontalScrollOrigin.Left ? 0f : _horizontalMaxOffset;
+            }
+
+            if (_verticalMaxOffset > 0f)
+            {
+                _verticalMaxOffset = MathF.Max(0f, _contentSize.Height - _viewHeight);
+                _verticalOffset = Mathf.Clamp(_verticalOffset, 0f, _verticalMaxOffset);
+            }
+            else
+            {
+                _verticalMaxOffset = MathF.Max(0f, _contentSize.Height - _viewHeight);
+                _verticalOffset = VerticalScrollOrigin is VerticalScrollOrigin.Top ? 0f : _verticalMaxOffset;
+            }
+
+            _canScroll = _horizontalMaxOffset > 0f || _verticalMaxOffset > 0f;
+
+            return availableSize;
+        }
+
+        private Size MeasureEmpty(Size availableSize)
+        {
+            _shouldDrawHorizontalScrollBar = GetValue(HorizontalScrollBarVisibilityProperty) is ScrollBarVisibility.Visible;
+            _shouldDrawVerticalScrollBar = GetValue(VerticalScrollBarVisibilityProperty) is ScrollBarVisibility.Visible;
+
+            _horizontalOffset = 0f;
+            _horizontalMaxOffset = 0f;
+
+            _verticalOffset = 0f;
+            _verticalMaxOffset = 0f;
+
+            _viewHeight = _shouldDrawHorizontalScrollBar
+                ? availableSize.Height - HorizontalScrollBarHeight
+                : availableSize.Height;
+
+            _viewWidth = _shouldDrawVerticalScrollBar
+                ? availableSize.Width - VerticalScrollBarWidth
+                : availableSize.Width;
+
+            // 测量完成后尺寸会被格式化，所以这里不判断是否为负数
+            return availableSize;
+        }
+
+        private Size MeasureAuto(Size availableSize, Control content)
+        {
+            _contentSize = content.Measure(availableSize);
+
+            _shouldDrawHorizontalScrollBar = GetValue(HorizontalScrollBarVisibilityProperty) is ScrollBarVisibility.Visible;
+            _shouldDrawVerticalScrollBar = GetValue(VerticalScrollBarVisibilityProperty) is ScrollBarVisibility.Visible;
+
+            _viewWidth = _contentSize.Width;
+            _viewHeight = _contentSize.Height;
+
+            _horizontalOffset = 0f;
+            _horizontalMaxOffset = 0f;
+
+            _verticalOffset = 0f;
+            _verticalMaxOffset = 0f;
+
+            _canScroll = false;
+
+            return new Size(
+                _shouldDrawVerticalScrollBar ? _contentSize.Width + VerticalScrollBarWidth : _contentSize.Width,
+                _shouldDrawHorizontalScrollBar ? _contentSize.Height + HorizontalScrollBarHeight : _contentSize.Height);
+        }
+
+        private Size MeasureAutoHeight(Size availableSize, Control content)
+        {
+            _contentSize = content.Measure(availableSize);
+
+            var horizontalScrollBarVisibility = (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty);
+            _shouldDrawHorizontalScrollBar = horizontalScrollBarVisibility is ScrollBarVisibility.Visible
+                || (horizontalScrollBarVisibility is ScrollBarVisibility.Auto && _contentSize.Width > availableSize.Width);
+
+            _shouldDrawVerticalScrollBar = GetValue(VerticalScrollBarVisibilityProperty) is ScrollBarVisibility.Visible;
+
+            _viewWidth = availableSize.Width;
+            _viewHeight = _contentSize.Height;
+
+            if (_horizontalMaxOffset > 0f)
+            {
+                _horizontalMaxOffset = MathF.Max(0f, _contentSize.Width - _viewWidth);
+                _horizontalOffset = Mathf.Clamp(_horizontalOffset, 0f, _horizontalMaxOffset);
+            }
+            else
+            {
+                _horizontalMaxOffset = MathF.Max(0f, _contentSize.Width - _viewWidth);
+                _horizontalOffset = HorizontalScrollOrigin is HorizontalScrollOrigin.Left ? 0f : _horizontalMaxOffset;
+            }
+
+            _verticalOffset = 0f;
+            _verticalMaxOffset = 0f;
+
+            _canScroll = _horizontalMaxOffset > 0f;
+
+            return new Size(
+                _shouldDrawVerticalScrollBar ? _contentSize.Width + VerticalScrollBarWidth : _contentSize.Width,
+                _shouldDrawHorizontalScrollBar ? _contentSize.Height + HorizontalScrollBarHeight : _contentSize.Height);
+        }
+
+        private Size MeasureAutoWidth(Size availableSize, Control content)
+        {
+            _contentSize = content.Measure(availableSize);
+
+            _shouldDrawHorizontalScrollBar = GetValue(HorizontalScrollBarVisibilityProperty) is ScrollBarVisibility.Visible;
+
+            var verticalScrollBarVisibility = (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty);
+            _shouldDrawVerticalScrollBar = verticalScrollBarVisibility is ScrollBarVisibility.Visible
+                || (verticalScrollBarVisibility is ScrollBarVisibility.Auto && _contentSize.Height > availableSize.Height);
+
+            _viewWidth = _contentSize.Width;
+            _viewHeight = availableSize.Height;
+
+            _horizontalOffset = 0f;
+            _horizontalMaxOffset = 0f;
+
+            if (_verticalMaxOffset > 0f)
+            {
+                _verticalMaxOffset = MathF.Max(0f, _contentSize.Height - _viewHeight);
+                _verticalOffset = Mathf.Clamp(_verticalOffset, 0f, _verticalMaxOffset);
+            }
+            else
+            {
+                _verticalMaxOffset = MathF.Max(0f, _contentSize.Height - _viewHeight);
+                _verticalOffset = VerticalScrollOrigin is VerticalScrollOrigin.Top ? 0f : _verticalMaxOffset;
+            }
+
+            _canScroll = _verticalMaxOffset > 0f;
+
+            return new Size(
+                _shouldDrawVerticalScrollBar ? _contentSize.Width + VerticalScrollBarWidth : _contentSize.Width,
+                _shouldDrawHorizontalScrollBar ? _contentSize.Height + HorizontalScrollBarHeight : _contentSize.Height);
+        }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Properties
+        //
+        //------------------------------------------------------
+
+        #region Private Properties
+
+        private float HorizontalScrollBarHeight
+        {
+            get
+            {
+                var skin = GUI.skin.horizontalScrollbar;
+                return skin.margin.top + skin.fixedHeight + skin.margin.bottom;
+            }
+        }
+
+        private float VerticalScrollBarWidth
+        {
+            get
+            {
+                var skin = GUI.skin.verticalScrollbar;
+                return skin.margin.left + skin.fixedWidth + skin.margin.right;
+            }
         }
 
         #endregion

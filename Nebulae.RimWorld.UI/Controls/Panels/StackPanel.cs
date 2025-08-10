@@ -254,47 +254,146 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize, Control[] children)
         {
-            int childrenCount = children.Length;
+            float itemWidth = (float)GetValue(ItemWidthProperty);
+            float itemHeight = (float)GetValue(ItemHeightProperty);
 
-            float renderWidth = 0f;
-            float renderHeight = 0f;
-
-            float childWidth = (float)GetValue(ItemWidthProperty);
-            float childHeight = (float)GetValue(ItemHeightProperty);
-
-            if (childWidth is 0f || childHeight is 0f)
+            if (itemWidth is 0f || itemHeight is 0f)
             {
                 return Size.Empty;
             }
 
-            childWidth = childWidth > 1f ? childWidth : childWidth * availableSize.Width;
-            childHeight = childHeight > 1f ? childHeight : childHeight * availableSize.Height;
-
-            Size childSize = new Size(childWidth, childHeight);
-            Size childDesiredSize;
+            itemWidth = itemWidth > 1f ? itemWidth : itemWidth * availableSize.Width;
+            itemHeight = itemHeight > 1f ? itemHeight : itemHeight * availableSize.Height;
 
             if (GetValue(OrientationProperty) is Orientation.Horizontal)
             {
-                for (int i = 0; i < childrenCount; i++)
-                {
-                    childDesiredSize = children[i].Measure(childSize);
-
-                    renderWidth += childDesiredSize.Width;
-                    renderHeight = Mathf.Max(renderHeight, childDesiredSize.Height);
-                }
+                return float.IsNaN(itemHeight)
+                    ? MeasureAutoHeightHorizontal(itemWidth, children, (float)GetValue(SpacingProperty))
+                    : MeasureHorizontal(itemWidth, itemHeight, children, (float)GetValue(SpacingProperty));
             }
             else
             {
-                for (int i = 0; i < childrenCount; i++)
-                {
-                    childDesiredSize = children[i].Measure(childSize);
+                return float.IsNaN(itemWidth)
+                    ? MeasureAutoWidthVertical(itemHeight, children, (float)GetValue(SpacingProperty))
+                    : MeasureVertical(itemWidth, itemHeight, children, (float)GetValue(SpacingProperty));
+            }
+        }
 
-                    renderHeight += childDesiredSize.Height;
-                    renderWidth = Mathf.Max(renderWidth, childDesiredSize.Width);
-                }
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Static Methods
+
+        private static object CoerceItemSize(DependencyObject d, object baseValue)
+        {
+            return UIUtility.FormatProportion((float)baseValue);
+        }
+
+        private static Size MeasureAutoHeightHorizontal(float itemWidth, Control[] children, float spacing)
+        {
+            int childrenCount = children.Length;
+
+            var childAvailableSize = new Size(itemWidth, float.NaN);
+
+            float renderWidth = 0f;
+            float renderHeight = 0f;
+
+            for (int i = childrenCount - 1; i >= 0; i--)
+            {
+                renderHeight = MathF.Max(renderHeight, children[i].Measure(childAvailableSize).Height);
             }
 
-            float spacing = (float)GetValue(SpacingProperty);
+            childAvailableSize = new Size(itemWidth, renderHeight);
+
+            for (int i = childrenCount - 1; i >= 0; i--)
+            {
+                renderWidth += children[i].Measure(childAvailableSize).Width;
+            }
+
+            if (spacing > 0f && childrenCount > 1)
+            {
+                renderWidth += spacing * (childrenCount - 1);
+            }
+
+            return new Size(renderWidth, renderHeight);
+        }
+
+        private static Size MeasureAutoWidthVertical(float itemHeight, Control[] children, float spacing)
+        {
+            int childrenCount = children.Length;
+
+            var childAvailableSize = new Size(float.NaN, itemHeight);
+
+            float renderWidth = 0f;
+            float renderHeight = 0f;
+
+            for (int i = childrenCount - 1; i >= 0; i--)
+            {
+                renderWidth = MathF.Max(renderWidth, children[i].Measure(childAvailableSize).Width);
+            }
+
+            childAvailableSize = new Size(renderWidth, itemHeight);
+
+            for (int i = childrenCount - 1; i >= 0; i--)
+            {
+                renderHeight += children[i].Measure(childAvailableSize).Height;
+            }
+
+            if (spacing > 0f && childrenCount > 1)
+            {
+                renderHeight += spacing * (childrenCount - 1);
+            }
+
+            return new Size(renderWidth, renderHeight);
+        }
+
+        private static Size MeasureHorizontal(float itemWidth, float itemHeight, Control[] children, float spacing)
+        {
+            int childrenCount = children.Length;
+
+            var childAvailableSize = new Size(itemWidth, itemHeight);
+
+            float renderWidth = 0f;
+            float renderHeight = 0f;
+
+            for (int i = childrenCount - 1; i >= 0; i--)
+            {
+                var childDesiredSize = children[i].Measure(childAvailableSize);
+
+                renderWidth += childDesiredSize.Width;
+                renderHeight = MathF.Max(renderHeight, childDesiredSize.Height);
+            }
+
+            if (spacing > 0f && childrenCount > 1)
+            {
+                renderWidth += spacing * (childrenCount - 1);
+            }
+
+            return new Size(renderWidth, renderHeight);
+        }
+
+        private static Size MeasureVertical(float itemWidth, float itemHeight, Control[] children, float spacing)
+        {
+            int childrenCount = children.Length;
+
+            var childAvailableSize = new Size(itemWidth, itemHeight);
+
+            float renderWidth = 0f;
+            float renderHeight = 0f;
+
+            for (int i = childrenCount - 1; i >= 0; i--)
+            {
+                var childDesiredSize = children[i].Measure(childAvailableSize);
+
+                renderWidth = MathF.Max(renderWidth, childDesiredSize.Width);
+                renderHeight += childDesiredSize.Height;
+            }
 
             if (spacing > 0f && childrenCount > 1)
             {
@@ -305,11 +404,5 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         }
 
         #endregion
-
-
-        private static object CoerceItemSize(DependencyObject d, object baseValue)
-        {
-            return UIUtility.FormatProportion((float)baseValue);
-        }
     }
 }
