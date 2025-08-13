@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using static RimWorld.SectionLayer_GravshipHull;
 
 namespace Nebulae.RimWorld.UI.Core.Data
 {

@@ -6,7 +6,7 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
     /// 标记数字类型的成员为布局条目
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false)]
-    public class NumberEntryAttribute : LayoutEntryBaseAttribute
+    public sealed class NumberEntryAttribute : LayoutEntryBaseAttribute
     {
         /// <summary>
         /// 小数部分的位数

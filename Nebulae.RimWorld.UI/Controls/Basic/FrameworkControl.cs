@@ -2,7 +2,6 @@
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Utilities;
 using System;
-using System.Diagnostics;
 using UnityEngine;
 using Verse;
 

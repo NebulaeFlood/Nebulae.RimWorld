@@ -10,7 +10,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
     /// <summary>
     /// 按照垂直或者水平方向排列子控件的面板
     /// </summary>
-    public class StackPanel : Panel
+    public sealed class StackPanel : Panel
     {
         //------------------------------------------------------
         //

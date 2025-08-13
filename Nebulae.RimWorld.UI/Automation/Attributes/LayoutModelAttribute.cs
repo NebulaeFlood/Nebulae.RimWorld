@@ -6,7 +6,7 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
     /// 标记类型为布局模板
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-    public class LayoutModelAttribute : Attribute
+    public sealed class LayoutModelAttribute : Attribute
     {
         /// <summary>
         /// 类型成员的翻译键前缀

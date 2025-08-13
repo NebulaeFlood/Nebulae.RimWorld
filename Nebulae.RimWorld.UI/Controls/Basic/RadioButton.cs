@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
     /// <summary>
     /// 单选按钮
     /// </summary>
-    public sealed class RadioButton : ToggleButton
+    public class RadioButton : ToggleButton
     {
         /// <summary>
         /// 获取或设置 <see cref="RadioButton"/> 所在的组

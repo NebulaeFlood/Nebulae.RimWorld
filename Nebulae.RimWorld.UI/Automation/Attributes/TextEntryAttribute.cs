@@ -7,7 +7,7 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
     /// 标记 <see cref="string"/> 类型的成员为布局条目
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    public class TextEntryAttribute : LayoutEntryBaseAttribute
+    public sealed class TextEntryAttribute : LayoutEntryBaseAttribute
     {
         /// <summary>
         /// 字体尺寸

@@ -10,7 +10,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
     /// <summary>
     /// 按钮控件
     /// </summary>
-    public sealed class Button : ButtonBase
+    public class Button : ButtonBase
     {
         //------------------------------------------------------
         //
