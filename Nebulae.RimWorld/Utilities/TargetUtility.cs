@@ -195,7 +195,7 @@ namespace Nebulae.RimWorld.Utilities
 
         private static void TargetWorldInternal(GlobalTargetSelectedCallback callback, PlanetTile startTile, Texture2D icon, GlobalTargetFilter filter, GlobalTargetValidator validator, Action drawer, bool closeMap)
         {
-            var targetQuest = new WorldTargetQuest(callback, icon, filter, validator);
+            var targetQuest = new WorldTargetQuest(callback, icon, filter, validator, closeMap);
 
             Find.DesignatorManager.Deselect();
 
@@ -206,7 +206,7 @@ namespace Nebulae.RimWorld.Utilities
                     action: targetQuest.ValidateTarget,
                     canTargetTiles: true,
                     mouseAttachment: icon,
-                    closeWorldTabWhenFinished: closeMap,
+                    closeWorldTabWhenFinished: false,
                     onUpdate: drawer,
                     extraLabelGetter: targetQuest.GetAttachedLabel,
                     canSelectTarget: targetQuest.FilterTarget,
@@ -220,7 +220,7 @@ namespace Nebulae.RimWorld.Utilities
                     action: targetQuest.ValidateTarget,
                     canTargetTiles: true,
                     mouseAttachment: icon,
-                    closeWorldTabWhenFinished: closeMap,
+                    closeWorldTabWhenFinished: false,
                     onUpdate: drawer,
                     extraLabelGetter: targetQuest.GetAttachedLabel,
                     canSelectTarget: targetQuest.FilterTarget,
@@ -237,6 +237,8 @@ namespace Nebulae.RimWorld.Utilities
             public readonly GlobalTargetFilter Filter;
             public readonly GlobalTargetValidator Validator;
 
+            public readonly bool CloseWorldMap;
+
 
             static WorldTargetQuest()
             {
@@ -252,12 +254,14 @@ namespace Nebulae.RimWorld.Utilities
                     .Compile();
             }
 
-            public WorldTargetQuest(GlobalTargetSelectedCallback callback, Texture2D icon, GlobalTargetFilter filter, GlobalTargetValidator validator)
+            public WorldTargetQuest(GlobalTargetSelectedCallback callback, Texture2D icon, GlobalTargetFilter filter, GlobalTargetValidator validator, bool closeMap)
             {
                 Callback = callback;
                 Icon = icon ?? TexCommand.Attack;
                 Filter = filter;
                 Validator = validator;
+
+                CloseWorldMap = closeMap;
             }
 
 
@@ -292,6 +296,16 @@ namespace Nebulae.RimWorld.Utilities
 
                 if (isValid)
                 {
+                    if (CloseWorldMap)
+                    {
+                        CameraJumper.TryHideWorld();
+                        
+                        if (target.WorldObject is MapParent mapParent && mapParent.Map != null)
+                        {
+                            Current.Game.CurrentMap = mapParent.Map;
+                        }
+                    }
+
                     Callback(target);
                 }
                 else if (!message.NullOrEmpty())
