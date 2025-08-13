@@ -85,6 +85,30 @@ namespace Nebulae.RimWorld.Utilities
     public static class TargetUtility
     {
         /// <summary>
+        /// 获取在世界地图中的位置
+        /// </summary>
+        /// <param name="thing">要获取位置的对象</param>
+        /// <returns><paramref name="thing"/> 在世界地图中的位置。</returns>
+        public static PlanetTile GetPlanetTile(this Thing thing)
+        {
+            var map = thing.MapHeld;
+
+            if (map != null)
+            {
+                return map.Tile;
+            }
+
+            var caravan = thing.GetCaravan();
+
+            if (caravan != null)
+            {
+                return caravan.Tile;
+            }
+
+            return PlanetTile.Invalid;
+        }
+
+        /// <summary>
         /// 开始选取当前地图中的位置
         /// </summary>
         /// <param name="callback">成功选取位置时的回调函数</param>
@@ -93,13 +117,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="filter">过滤地图位置的方法</param>
         /// <param name="validator">验证位置是否可用的方法</param>
         /// <param name="drawer">选取位置时绘制自定义 UI 的方法</param>
-        public static void TargetLocal(
-            LocalTargetSelectedCallback callback,
-            TargetingParameters parameters,
-            Texture2D icon = null,
-            LocalTargetFilter filter = null,
-            LocalTargetValidator validator = null,
-            LocalTargeterUIDrawer drawer = null)
+        public static void TargetLocal(LocalTargetSelectedCallback callback, TargetingParameters parameters, Texture2D icon = null, LocalTargetFilter filter = null, LocalTargetValidator validator = null, LocalTargeterUIDrawer drawer = null)
         {
             if (callback is null)
             {
@@ -135,13 +153,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="validator">验证位置是否可用的方法</param>
         /// <param name="drawer">选取位置时绘制自定义 UI 的方法</param>
         /// <param name="closeMap">结束选取时是否关闭世界地图</param>
-        public static void TargetWorld(
-            GlobalTargetSelectedCallback callback,
-            Texture2D icon = null,
-            GlobalTargetFilter filter = null,
-            GlobalTargetValidator validator = null,
-            Action drawer = null,
-            bool closeMap = true)
+        public static void TargetWorld(GlobalTargetSelectedCallback callback, Texture2D icon = null, GlobalTargetFilter filter = null, GlobalTargetValidator validator = null, Action drawer = null, bool closeMap = true)
         {
             if (callback is null)
             {
@@ -170,14 +182,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="validator">验证位置是否可用的方法</param>
         /// <param name="drawer">选取位置时绘制自定义 UI 的方法</param>
         /// <param name="closeMap">结束选取时是否关闭世界地图</param>
-        public static void TargetWorld(
-            GlobalTargetSelectedCallback callback,
-            PlanetTile startTile,
-            Texture2D icon = null,
-            GlobalTargetFilter filter = null,
-            GlobalTargetValidator validator = null,
-            Action drawer = null,
-            bool closeMap = false)
+        public static void TargetWorld(GlobalTargetSelectedCallback callback, PlanetTile startTile, Texture2D icon = null, GlobalTargetFilter filter = null, GlobalTargetValidator validator = null, Action drawer = null, bool closeMap = false)
         {
             if (callback is null)
             {
