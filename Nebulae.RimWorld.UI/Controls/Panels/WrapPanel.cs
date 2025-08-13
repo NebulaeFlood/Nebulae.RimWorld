@@ -10,7 +10,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
     /// <summary>
     /// 将子控件排列成数行或数列的面板
     /// </summary>
-    public class WrapPanel : Panel
+    public sealed class WrapPanel : Panel
     {
         //------------------------------------------------------
         //

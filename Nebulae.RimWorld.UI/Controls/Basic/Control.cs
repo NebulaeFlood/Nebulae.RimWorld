@@ -701,7 +701,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// <param name="tipSignal"></param>
         public void SetTooltip(TipSignal tipSignal)
         {
-            _shouldShowTooltip = string.IsNullOrEmpty(string.IsNullOrEmpty(tipSignal.text) ? tipSignal.textGetter?.Invoke() : tipSignal.text);
+            _shouldShowTooltip = !string.IsNullOrEmpty(string.IsNullOrEmpty(tipSignal.text) ? tipSignal.textGetter?.Invoke() : tipSignal.text);
             _tooltip = tipSignal;
         }
 
