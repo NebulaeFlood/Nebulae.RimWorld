@@ -14,7 +14,7 @@
 		<dependencies>
 			<group targetFramework=".NETFramework4.8">
 				<dependency id="Lib.Harmony" version="2.3.6" exclude="Build,Analyzers" />
-				<dependency id="Nebulae.RimWorld" version="1.5.6" exclude="Build,Analyzers" />
+				<dependency id="Nebulae.RimWorld" version="1.5.8" exclude="Build,Analyzers" />
 			</group>
 		</dependencies>
 		<frameworkAssemblies>
