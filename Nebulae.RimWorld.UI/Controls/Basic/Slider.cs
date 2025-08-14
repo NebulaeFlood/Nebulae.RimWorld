@@ -167,7 +167,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
         static Slider()
         {
-            MarginProperty.OverrideMetadata(typeof(Slider),
+            PaddingProperty.OverrideMetadata(typeof(Slider),
                 new ControlPropertyMetadata(new Thickness(6f, 0f, 6f, 0f), ControlRelation.Measure));
         }
 
