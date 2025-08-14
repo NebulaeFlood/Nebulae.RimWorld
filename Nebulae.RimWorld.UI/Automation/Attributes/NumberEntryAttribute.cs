@@ -28,11 +28,6 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
         /// </summary>
         public readonly float MinValue;
 
-        /// <summary>
-        /// 最小的相邻可选值的差值
-        /// </summary>
-        public float SliderStep = 1f;
-
 
         /// <summary>
         /// 初始化 <see cref="NumberEntryAttribute"/> 的新实例
