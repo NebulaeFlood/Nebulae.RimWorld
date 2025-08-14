@@ -192,6 +192,7 @@ namespace Nebulae.RimWorld.Utilities
             Find.DesignatorManager.Deselect();
             Find.Selector.ClearSelection();
             Find.WorldSelector.ClearSelection();
+            Find.Targeter.StopTargeting();
 
             if (startTile.Valid)
             {
