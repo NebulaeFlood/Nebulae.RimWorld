@@ -85,27 +85,19 @@ namespace Nebulae.RimWorld.Utilities
     public static class TargetUtility
     {
         /// <summary>
-        /// 获取在世界地图中的位置
+        /// 将视角转移到指定地图
         /// </summary>
-        /// <param name="thing">要获取位置的对象</param>
-        /// <returns><paramref name="thing"/> 在世界地图中的位置。</returns>
-        public static PlanetTile GetPlanetTile(this Thing thing)
+        /// <param name="map">视角要转移到的地图</param>
+        public static void Show(Map map)
         {
-            var map = thing.MapHeld;
+            CameraJumper.TryHideWorld();
 
-            if (map != null)
+            if (map is null)
             {
-                return map.Tile;
+                return;
             }
 
-            var caravan = thing.GetCaravan();
-
-            if (caravan != null)
-            {
-                return caravan.Tile;
-            }
-
-            return PlanetTile.Invalid;
+            Current.Game.CurrentMap = map;
         }
 
         /// <summary>
@@ -195,9 +187,12 @@ namespace Nebulae.RimWorld.Utilities
 
         private static void TargetWorldInternal(GlobalTargetSelectedCallback callback, PlanetTile startTile, Texture2D icon, GlobalTargetFilter filter, GlobalTargetValidator validator, Action drawer, bool closeMap)
         {
-            var targetQuest = new WorldTargetQuest(callback, icon, filter, validator);
+            var targetQuest = new WorldTargetQuest(callback, icon, filter, validator, closeMap);
 
             Find.DesignatorManager.Deselect();
+            Find.Selector.ClearSelection();
+            Find.WorldSelector.ClearSelection();
+            Find.Targeter.StopTargeting();
 
             if (startTile.Valid)
             {
@@ -206,7 +201,7 @@ namespace Nebulae.RimWorld.Utilities
                     action: targetQuest.ValidateTarget,
                     canTargetTiles: true,
                     mouseAttachment: icon,
-                    closeWorldTabWhenFinished: closeMap,
+                    closeWorldTabWhenFinished: false,
                     onUpdate: drawer,
                     extraLabelGetter: targetQuest.GetAttachedLabel,
                     canSelectTarget: targetQuest.FilterTarget,
@@ -220,7 +215,7 @@ namespace Nebulae.RimWorld.Utilities
                     action: targetQuest.ValidateTarget,
                     canTargetTiles: true,
                     mouseAttachment: icon,
-                    closeWorldTabWhenFinished: closeMap,
+                    closeWorldTabWhenFinished: false,
                     onUpdate: drawer,
                     extraLabelGetter: targetQuest.GetAttachedLabel,
                     canSelectTarget: targetQuest.FilterTarget,
@@ -237,6 +232,8 @@ namespace Nebulae.RimWorld.Utilities
             public readonly GlobalTargetFilter Filter;
             public readonly GlobalTargetValidator Validator;
 
+            public readonly bool CloseWorldMap;
+
 
             static WorldTargetQuest()
             {
@@ -252,12 +249,14 @@ namespace Nebulae.RimWorld.Utilities
                     .Compile();
             }
 
-            public WorldTargetQuest(GlobalTargetSelectedCallback callback, Texture2D icon, GlobalTargetFilter filter, GlobalTargetValidator validator)
+            public WorldTargetQuest(GlobalTargetSelectedCallback callback, Texture2D icon, GlobalTargetFilter filter, GlobalTargetValidator validator, bool closeMap)
             {
                 Callback = callback;
                 Icon = icon ?? TexCommand.Attack;
                 Filter = filter;
                 Validator = validator;
+
+                CloseWorldMap = closeMap;
             }
 
 
@@ -292,6 +291,16 @@ namespace Nebulae.RimWorld.Utilities
 
                 if (isValid)
                 {
+                    if (CloseWorldMap)
+                    {
+                        CameraJumper.TryHideWorld();
+                        
+                        if (target.WorldObject is MapParent mapParent && mapParent.Map != null)
+                        {
+                            Current.Game.CurrentMap = mapParent.Map;
+                        }
+                    }
+
                     Callback(target);
                 }
                 else if (!message.NullOrEmpty())
