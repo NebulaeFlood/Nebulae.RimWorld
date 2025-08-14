@@ -85,27 +85,19 @@ namespace Nebulae.RimWorld.Utilities
     public static class TargetUtility
     {
         /// <summary>
-        /// 获取在世界地图中的位置
+        /// 将视角转移到指定地图
         /// </summary>
-        /// <param name="thing">要获取位置的对象</param>
-        /// <returns><paramref name="thing"/> 在世界地图中的位置。</returns>
-        public static PlanetTile GetPlanetTile(this Thing thing)
+        /// <param name="map">视角要转移到的地图</param>
+        public static void Show(Map map)
         {
-            var map = thing.MapHeld;
+            CameraJumper.TryHideWorld();
 
-            if (map != null)
+            if (map is null)
             {
-                return map.Tile;
+                return;
             }
 
-            var caravan = thing.GetCaravan();
-
-            if (caravan != null)
-            {
-                return caravan.Tile;
-            }
-
-            return PlanetTile.Invalid;
+            Current.Game.CurrentMap = map;
         }
 
         /// <summary>
