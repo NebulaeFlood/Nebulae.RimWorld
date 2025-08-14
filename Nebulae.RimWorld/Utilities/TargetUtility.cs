@@ -190,6 +190,8 @@ namespace Nebulae.RimWorld.Utilities
             var targetQuest = new WorldTargetQuest(callback, icon, filter, validator, closeMap);
 
             Find.DesignatorManager.Deselect();
+            Find.Selector.ClearSelection();
+            Find.WorldSelector.ClearSelection();
 
             if (startTile.Valid)
             {
