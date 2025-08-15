@@ -280,7 +280,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// </remarks>
         public Grid Set(params Control[] controls)
         {
-            Children.OverrideCollection(controls.Where(x => x != null).Distinct());
+            Children.Override(controls.Where(x => x != null).Distinct());
 
             var children = FilteredChildren;
 

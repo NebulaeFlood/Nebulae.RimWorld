@@ -131,7 +131,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <returns>该面板控件。</returns>
         public WrapPanel Set(IEnumerable<Control> controls)
         {
-            Children.OverrideCollection(controls);
+            Children.Override(controls);
             return this;
         }
 
@@ -142,7 +142,7 @@ namespace Nebulae.RimWorld.UI.Controls.Panels
         /// <returns>该面板控件。</returns>
         public WrapPanel Set(params Control[] controls)
         {
-            Children.OverrideCollection(controls);
+            Children.Override(controls);
             return this;
         }
 
