@@ -428,7 +428,7 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
 
             if (_shouldUpdateSegment)
             {
-                content.InvalidateSegment();
+                content.Segment(new Rect(_horizontalOffset, _verticalOffset, _viewWidth, _viewHeight));
                 _shouldUpdateSegment = false;
             }
 
