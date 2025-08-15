@@ -1,4 +1,5 @@
 ﻿using Nebulae.RimWorld.UI.Core.Data.Bindings;
+using Nebulae.RimWorld.Utilities;
 using System;
 using System.Reflection;
 using System.Text;
@@ -20,22 +21,9 @@ namespace Nebulae.RimWorld.UI.Automation.Diagnostics
             get
             {
                 StringBuilder.Clear();
-
-                var value = Member.Value?.ToString();
-
-                if (value is null)
-                {
-                    value = "{Null}";
-                }
-                else if (value.Length == 0)
-                {
-                    value = "{String.Empty}";
-                }
-
                 return StringBuilder
                     .Append(Name)
-                    .Append(value)
-                    .Append('\n')
+                    .AppendLine(Member.Value.AsLog())
                     .ToString();
             }
         }
@@ -49,7 +37,7 @@ namespace Nebulae.RimWorld.UI.Automation.Diagnostics
             Name = StringBuilder
                 .Append("<color=yellow>")
                 .Append(name)
-                .Append("</color>:\n")
+                .AppendLine("</color>:")
                 .ToString();
             Priority = priority;
         }
