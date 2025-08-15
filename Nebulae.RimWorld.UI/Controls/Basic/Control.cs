@@ -411,12 +411,34 @@ namespace Nebulae.RimWorld.UI.Controls.Basic
         /// </summary>
         public static readonly DependencyProperty VisibilityProperty =
             DependencyProperty.Register(nameof(Visibility), typeof(Visibility), typeof(Control),
-                new ControlPropertyMetadata(Visibility.Visible, CoerceVisibility, ControlRelation.Measure));
+                new ControlPropertyMetadata(Visibility.Visible, CoerceVisibility, OnVisibilityChanged, ControlRelation.Measure));
 
         private static object CoerceVisibility(DependencyObject d, object baseValue)
         {
             var value = (Visibility)baseValue;
             return value < Visibility.Visible || value > Visibility.Collapsed ? Visibility.Collapsed : baseValue;
+        }
+
+        private static void OnVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var visual = (Control)d;
+
+            switch ((Visibility)e.NewValue)
+            {
+                case Visibility.Visible:
+                    visual._allowOccupy = true;
+                    visual._allowDraw = visual.Opacity > 0f;
+                    break;
+                case Visibility.Collapsed:
+                    visual._allowOccupy = false;
+                    visual._allowDraw = false;
+                    visual.InvalidateMeasure();
+                    break;
+                default:    // Visibility.Hidden
+                    visual._allowOccupy = true;
+                    visual._allowDraw = false;
+                    break;
+            }
         }
         #endregion
 
