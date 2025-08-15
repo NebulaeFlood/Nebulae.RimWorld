@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nebulae.RimWorld.UI.Controls.Panels
+namespace Nebulae.RimWorld.UI.Controls
 {
     /// <summary>
     /// 定义一个尺寸
