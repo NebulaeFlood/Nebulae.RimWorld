@@ -20,7 +20,7 @@ namespace Nebulae.RimWorld
         #region Public Methods
 
         /// <summary>
-        /// 将指定的事件处理程序转换为弱事件处理程序
+        /// 将指定的事件处理器转换为弱事件处理器
         /// </summary>
         /// <typeparam name="TSender">处理器的 senderType 参数类型</typeparam>
         /// <typeparam name="TArgs">处理器的 argsType 参数类型</typeparam>
@@ -38,7 +38,7 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 将指定的事件处理程序转换为弱事件处理程序
+        /// 将指定的事件处理器转换为弱事件处理器
         /// </summary>
         /// <typeparam name="TSender">处理器的 senderType 参数类型</typeparam>
         /// <typeparam name="TArgs">处理器的 argsType 参数类型</typeparam>
@@ -59,7 +59,7 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 将指定的事件处理程序转换为弱事件处理程序
+        /// 将指定的事件处理器转换为弱事件处理器
         /// </summary>
         /// <typeparam name="TSender">处理器的 senderType 参数类型</typeparam>
         /// <typeparam name="TArgs">处理器的 argsType 参数类型</typeparam>

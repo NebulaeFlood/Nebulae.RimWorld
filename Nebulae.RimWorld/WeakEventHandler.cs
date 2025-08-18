@@ -5,7 +5,7 @@ using System.Reflection;
 namespace Nebulae.RimWorld
 {
     /// <summary>
-    /// 弱事件处理程序
+    /// 弱事件处理器
     /// </summary>
     /// <typeparam name="TOwner">拥有源事件处理器的类型</typeparam>
     /// <typeparam name="TSender">处理器的 sender 参数类型</typeparam>

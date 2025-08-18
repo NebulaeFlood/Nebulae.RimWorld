@@ -5,7 +5,7 @@ using System.Reflection;
 namespace Nebulae.RimWorld
 {
     /// <summary>
-    /// 静态事件处理程序
+    /// 静态事件处理器
     /// </summary>
     /// <typeparam name="TSender">处理器的 sender 参数类型</typeparam>
     /// <typeparam name="TArgs">处理器的 args 参数类型</typeparam>
