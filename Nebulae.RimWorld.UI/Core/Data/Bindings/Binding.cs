@@ -24,7 +24,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Bindings
         /// </summary>
         ~Binding()
         {
-            System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A {Mode} binding of type:Nebulae.RimWorld.UI.Core.Data.Bindings.Binding from <{_source.GetHashCode()}>{_source} to <{_target.GetHashCode()}>{_target} has been collected.");
+            System.Diagnostics.Debug.WriteLine($"[NebulaeFlood's Lib] A {Mode} binding of type:Nebulae.RimWorld.UI.Core.Model.Bindings.Binding from <{_source.GetHashCode()}>{_source} to <{_target.GetHashCode()}>{_target} has been collected.");
         }
 #endif
 

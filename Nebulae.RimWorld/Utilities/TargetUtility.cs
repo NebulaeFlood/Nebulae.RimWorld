@@ -294,7 +294,7 @@ namespace Nebulae.RimWorld.Utilities
                     if (CloseWorldMap)
                     {
                         CameraJumper.TryHideWorld();
-                        
+
                         if (target.WorldObject is MapParent mapParent && mapParent.Map != null)
                         {
                             Current.Game.CurrentMap = mapParent.Map;

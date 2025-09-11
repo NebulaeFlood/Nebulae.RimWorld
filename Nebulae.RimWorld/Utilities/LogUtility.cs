@@ -1,4 +1,6 @@
-﻿using Verse;
+﻿using System;
+using System.Linq;
+using Verse;
 
 namespace Nebulae.RimWorld.Utilities
 {
@@ -11,20 +13,101 @@ namespace Nebulae.RimWorld.Utilities
         /// 将 <paramref name="obj"/> 转化为日志字符
         /// </summary>
         /// <param name="obj">要转化为字符的对象</param>
-        /// <returns>由  <paramref name="obj"/> 转化后的字符。</returns>
+        /// <returns>由 <paramref name="obj"/> 转化后的字符。</returns>
         public static string AsLog(this object obj)
         {
             if (obj is null)
             {
-                return "null";
+                return $"{typeof(object)}.Null";
             }
 
             if (obj is string str && str.Length < 1)
             {
-                return $"{typeof(string)}.{nameof(string.Empty)}";
+                return $"{typeof(string)}.Empty";
+            }
+
+            if (obj is Type type)
+            {
+                return type.AsLog(type.Namespace);
             }
 
             return obj.ToString();
+        }
+
+        /// <summary>
+        /// 将 <paramref name="type"/> 转化为日志字符
+        /// </summary>
+        /// <param name="type">要转化为字符的对象</param>
+        /// <returns>由 <paramref name="type"/> 转化后的字符。</returns>
+        public static string AsLog(this Type type)
+        {
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            return type.AsLog(type.Namespace);
+        }
+
+        private static string AsLog(this Type type, string @namespace)
+        {
+            if (type.IsArray)
+            {
+                var rank = type.GetArrayRank();
+
+                return type.GetElementType().AsLog(@namespace) + (rank is 1 ? "[]" : $"[{new string(',', rank - 1)}]");
+            }
+
+            if (type.IsByRef)
+            {
+                return type.GetElementType().AsLog(@namespace) + '&';
+            }
+
+            if (type.IsPointer)
+            {
+                return type.GetElementType().AsLog(@namespace) + '*';
+            }
+
+            if (!type.IsGenericType)
+            {
+                return $"{@namespace}.{type.Format(@namespace)}";
+            }
+
+            if (type.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+            {
+                return $"{Nullable.GetUnderlyingType(type).AsLog(@namespace)}?";
+            }
+
+            return $"{@namespace}.{type.Format(@namespace).TrimEnd(new char[] { '`', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' })}<{string.Join(", ", type.GetGenericArguments().Select(x => x.AsLog(x.Namespace)))}>";
+        }
+
+        private static string Format(this Type type)
+        {
+            if (type.DeclaringType is null)
+            {
+                return type.Name;
+            }
+
+            return $"{type.DeclaringType.Format()}+{type.Name}";
+        }
+
+        private static string Format(this Type type, string @namespace)
+        {
+            var typeNamespace = type.Namespace;
+
+            if (string.IsNullOrEmpty(@namespace))
+            {
+                return string.IsNullOrEmpty(typeNamespace)
+                    ? type.Format()
+                    : $"{typeNamespace}.{type.Format()}";
+            }
+
+            if (string.IsNullOrEmpty(typeNamespace) || @namespace.Equals(typeNamespace))
+            {
+                return type.Format();
+            }
+
+            return $"{typeNamespace}.{type.Format()}";
         }
 
         /// <summary>

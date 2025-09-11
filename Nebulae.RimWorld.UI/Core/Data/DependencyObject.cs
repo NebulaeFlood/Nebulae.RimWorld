@@ -13,16 +13,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
     [DebuggerStepThrough]
     public abstract class DependencyObject
     {
-        /// <summary>
-        /// 当 <see cref="DependencyObject"/> 的依赖属性发送变化时发生
-        /// </summary>
-        public event DependencyPropertyChangedEventHandler DependencyPropertyChanged
-        {
-            add { _dependencyPropertyChanged.AddHandlerUnsafe(value); }
-            remove { _dependencyPropertyChanged.RemoveHandler(value); }
-        }
-
-
         //------------------------------------------------------
         //
         //  Construstor
@@ -342,7 +332,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
             OnDependencyPropertyChanged(args);
             PropertyBindings.Update(this, args);
-            _dependencyPropertyChanged.Invoke(this, args);
         }
 
         #endregion
@@ -368,7 +357,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
 
         private readonly Dictionary<DependencyProperty, EffectiveValueEntry> _effectiveValues = new Dictionary<DependencyProperty, EffectiveValueEntry>();
-        private readonly WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs> _dependencyPropertyChanged = new WeakEvent<DependencyObject, DependencyPropertyChangedEventArgs>();
 
         #endregion
 

@@ -4,43 +4,23 @@ using System.Collections.Generic;
 
 namespace Nebulae.RimWorld.UI.Core
 {
-    internal abstract class LinkedListThin<T> : IEnumerable<T> where T : class
+    internal class LinkedListThin<T> : IEnumerable<T> where T : class
     {
         //------------------------------------------------------
         //
-        //  Internal Properties
+        //  Public Properties
         //
         //------------------------------------------------------
 
-        #region Internal Properties
+        #region Public Properties
 
-        internal int Count => count;
-        internal bool IsEmpty => count is 0;
-        internal Node Head => head;
-        internal Node Tail => tail;
+        public int Count => count;
 
-        #endregion
+        public bool IsEmpty => count is 0;
 
+        public Node Head => head;
 
-        //------------------------------------------------------
-        //
-        //  Constructors
-        //
-        //------------------------------------------------------
-
-        #region Constructors
-
-        protected LinkedListThin()
-        {
-            count = 0;
-        }
-
-        protected LinkedListThin(T value)
-        {
-            count = 1;
-
-            head = tail = new Node(value);
-        }
+        public Node Tail => tail;
 
         #endregion
 
@@ -83,7 +63,29 @@ namespace Nebulae.RimWorld.UI.Core
             return false;
         }
 
-        public IEnumerator<T> GetEnumerator()
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  IEnumerable
+        //
+        //------------------------------------------------------
+
+        #region IEnumerable
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            var node = head;
+
+            while (node != null)
+            {
+                yield return node.Data;
+                node = node.next;
+            }
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             var node = head;
 
@@ -95,9 +97,6 @@ namespace Nebulae.RimWorld.UI.Core
         }
 
         #endregion
-
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 
         //------------------------------------------------------
@@ -199,12 +198,12 @@ namespace Nebulae.RimWorld.UI.Core
         #endregion
 
 
-        internal sealed class Node
+        public sealed class Node
         {
-            internal readonly T Data;
+            public readonly T Data;
 
-            internal Node prev;
-            internal Node next;
+            public Node prev;
+            public Node next;
 
 
             //------------------------------------------------------

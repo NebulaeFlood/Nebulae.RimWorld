@@ -1,0 +1,21 @@
+﻿namespace Nebulae.RimWorld.UI.Controls.Basic
+{
+    /// <summary>
+    /// 指示 <see cref="ToggleButton"/> 的状态
+    /// </summary>
+    public enum ToggleState : sbyte
+    {
+        /// <summary>
+        /// 已开启
+        /// </summary>
+        Off = -1,
+        /// <summary>
+        /// 已关闭
+        /// </summary>
+        On = 1,
+        /// <summary>
+        /// 未确定
+        /// </summary>
+        Indeterminate = 0
+    }
+}

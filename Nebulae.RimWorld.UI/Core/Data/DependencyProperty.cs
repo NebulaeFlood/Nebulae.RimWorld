@@ -227,12 +227,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
         }
 
         /// <summary>
-        /// 返回依赖属性的名称
-        /// </summary>
-        /// <returns>依赖属性的名称。</returns>
-        public override string ToString() => Name;
-
-        /// <summary>
         /// 验证要设置给依赖属性的值
         /// </summary>
         /// <param name="value">要验证的值</param>
@@ -302,17 +296,28 @@ namespace Nebulae.RimWorld.UI.Core.Data
         {
             if (defaultMetadata.isSealed)
             {
-                throw new InvalidOperationException("Metadata has been sealed by another dependency property.");
+                throw new InvalidOperationException(
+                    $"Faild to register property '{ownerType}.{name}'", 
+                    new ArgumentException("Metadata has been sealed by another dependency property."));
+            }
+
+            if (ownerType.IsGenericTypeDefinition)
+            {
+                throw new InvalidOperationException(
+                    $"Faild to register property '{ownerType}.{name}'",
+                    new ArgumentException("OwnerType cannot be a generic type definition."));
             }
 
             if (Exist(name, ownerType))
             {
-                throw new InvalidOperationException($"Property '{ownerType}.{name}' has already been registered.");
+                throw new InvalidOperationException(
+                    $"Faild to register property '{ownerType}.{name}'",
+                    new ArgumentException($"Property '{ownerType}.{name}' has already been registered."));
             }
 
             if (!ValidateValueCore(valueType, defaultMetadata.defaultValue, validateValueCallback, out var exception))
             {
-                throw new InvalidOperationException($"Faild to register property '{ownerType}.{name}'", exception);
+                throw new InvalidOperationException($"Faild to register property '{ownerType}.{name}'.", exception);
             }
 
             return new DependencyProperty(name, ownerType, valueType, defaultMetadata, validateValueCallback, isAttached);
@@ -325,7 +330,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
                 exception = new InvalidOperationException("'UnsetValue' is not a valid property value.");
                 return false;
             }
-            else if (value is null)
+            else if (value == null)
             {
                 if (valueType.IsValueType && (!valueType.IsGenericType || valueType.GetGenericTypeDefinition() != NullableValueType))
                 {
@@ -377,7 +382,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
 
         [DebuggerDisplay("DependencyProperty.UnsetObject")]
-        private class UnsetObject
+        private sealed class UnsetObject
         {
             public override int GetHashCode() => "DependencyProperty.UnsetObject".GetHashCode();
 

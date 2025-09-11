@@ -7,7 +7,7 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
     /// <summary>
     /// 标记成员为布局条目
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public abstract class LayoutEntryBaseAttribute : Attribute
     {
         /// <summary>
@@ -23,12 +23,12 @@ namespace Nebulae.RimWorld.UI.Automation.Attributes
         /// <summary>
         /// 条目名称
         /// </summary>
-        public string Label = string.Empty;
+        public string Label;
 
         /// <summary>
         /// 条目次序
         /// </summary>
-        public int Order = 0;
+        public int Order;
 
         /// <summary>
         /// 条目是否拥有提示框

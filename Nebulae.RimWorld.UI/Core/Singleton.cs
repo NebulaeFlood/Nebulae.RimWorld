@@ -9,6 +9,10 @@ namespace Nebulae.RimWorld.UI.Core
     /// 表示一个独一无二的对象
     /// </summary>
     /// <typeparam name="T">对象类型</typeparam>
+    /// <remarks>
+    /// 用于保证成员在 <see cref="OwnerType"/> 及其子类型中唯一。<para/>
+    /// 子类型需要在创建实例前使用 <see cref="Exist"/> 方法判断是否已经存在相同对象。
+    /// </remarks>
     [DebuggerStepThrough]
     public abstract class Singleton<T> : IEquatable<Singleton<T>> where T : Singleton<T>
     {
@@ -34,20 +38,26 @@ namespace Nebulae.RimWorld.UI.Core
 
 
         /// <summary>
+        /// 获取创建的 <typeparamref name="T"/> 数量
+        /// </summary>
+        public static int Count => _globalIndex;
+
+
+        /// <summary>
         /// 为 <see cref="Singleton{T}"/> 派生类实现基本初始化
         /// </summary>
         /// <param name="name">对象名称</param>
         /// <param name="ownerType">拥有对象的类型</param>
         protected Singleton(string name, Type ownerType)
         {
-            _id = _globalIndex;
-
             Name = name;
             OwnerType = ownerType;
 
-            Interlocked.Increment(ref _globalIndex);
+            var key = new SingletonKey(name, ownerType);
+            _hashCode = key.GetHashCode();
 
-            Singletons[new SingletonKey(name, ownerType)] = (T)this;
+            Interlocked.Increment(ref _globalIndex);
+            Singletons[key] = (T)this;
         }
 
 
@@ -92,9 +102,9 @@ namespace Nebulae.RimWorld.UI.Core
         /// </summary>
         /// <param name="obj">要与当前对象进行比较的对象</param>
         /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public override bool Equals(object obj)
+        public override sealed bool Equals(object obj)
         {
-            return obj is Singleton<T> other && _id == other._id;
+            return obj is Singleton<T> other && _hashCode == other._hashCode;
         }
 
         /// <summary>
@@ -104,14 +114,20 @@ namespace Nebulae.RimWorld.UI.Core
         /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(Singleton<T> other)
         {
-            return _id == other._id;
+            return _hashCode == other._hashCode;
         }
 
         /// <summary>
         /// 默认的哈希函数
         /// </summary>
         /// <returns>该实例的哈希代码。</returns>
-        public override int GetHashCode() => _id;
+        public override sealed int GetHashCode() => _hashCode;
+
+        /// <summary>
+        /// 获取表示当前对象的字符串
+        /// </summary>
+        /// <returns>表示当前对象的字符串。</returns>
+        public override sealed string ToString() => $"{OwnerType}.{Name}";
 
         #endregion
 
@@ -127,7 +143,7 @@ namespace Nebulae.RimWorld.UI.Core
         private static readonly ConcurrentDictionary<SingletonKey, T> Singletons = new ConcurrentDictionary<SingletonKey, T>();
         private static int _globalIndex = 0;
 
-        private readonly int _id;
+        private readonly int _hashCode;
 
         #endregion
 
@@ -137,14 +153,30 @@ namespace Nebulae.RimWorld.UI.Core
         /// </summary>
         private readonly struct SingletonKey : IEquatable<SingletonKey>
         {
+            //------------------------------------------------------
+            //
+            //  Public Fields
+            //
+            //------------------------------------------------------
+
+            #region Public Fields
+
             /// <summary>
-            /// 对象名
+            /// 哈希值
+            /// </summary>
+            public readonly int HashCode;
+
+            /// <summary>
+            /// 对象名称
             /// </summary>
             public readonly string Name;
+
             /// <summary>
             /// 拥有对象的类型
             /// </summary>
             public readonly Type OwnerType;
+
+            #endregion
 
 
             /// <summary>
@@ -154,12 +186,19 @@ namespace Nebulae.RimWorld.UI.Core
             /// <param name="ownerType">拥有对象的类型</param>
             public SingletonKey(string name, Type ownerType)
             {
-                _hashCode = name.GetHashCode() ^ ownerType.GetHashCode();
-
+                HashCode = name.GetHashCode() ^ ownerType.GetHashCode();
                 Name = name;
                 OwnerType = ownerType;
             }
 
+
+            //------------------------------------------------------
+            //
+            //  Public Methods
+            //
+            //------------------------------------------------------
+
+            #region Public Methods
 
             /// <summary>
             /// 判断指定对象是否等于当前对象
@@ -189,13 +228,18 @@ namespace Nebulae.RimWorld.UI.Core
             }
 
             /// <summary>
-            /// 默认的哈希函数
+            /// 获取实例的哈希代码
             /// </summary>
             /// <returns>该实例的哈希代码。</returns>
-            public override int GetHashCode() => _hashCode;
+            public override int GetHashCode() => HashCode;
 
+            /// <summary>
+            /// 获取表示当前对象的字符串
+            /// </summary>
+            /// <returns>表示当前对象的字符串。</returns>
+            public override string ToString() => $"{OwnerType}.{Name}";
 
-            private readonly int _hashCode;
+            #endregion
         }
     }
 }

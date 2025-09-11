@@ -40,12 +40,6 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
     /// </summary>
     public static class PropertyUtility
     {
-        /// <summary>
-        /// 默认的成员搜索方式
-        /// </summary>
-        public const BindingFlags DefaultFlags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-
         //------------------------------------------------------
         //
         //  Create Accessor
@@ -65,7 +59,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <exception cref="MissingMemberException">当无法在 <typeparamref name="TClass"/> 中找到名为 <paramref name="name"/> 的属性时发生。</exception>
         /// <exception cref="InvalidOperationException">当属性没有 <see langword="get"/> 访问器或属性为静态属性时发生。</exception>
         /// <exception cref="InvalidCastException">当属性类型不是 <typeparamref name="TValue"/> 时发生。</exception>
-        public static PropertyAccessor<TClass, TValue> CreatePropertyAccessor<TClass, TValue>(string name, BindingFlags flags = DefaultFlags)
+        public static PropertyAccessor<TClass, TValue> CreatePropertyAccessor<TClass, TValue>(string name, BindingFlags flags = MemberUtility.DefaultFlags)
         {
             Type type = typeof(TClass);
 
@@ -164,7 +158,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <exception cref="MissingMemberException">当无法在 <typeparamref name="TClass"/> 中找到名为 <paramref name="name"/> 的属性时发生。</exception>
         /// <exception cref="InvalidOperationException">当属性没有 set 访问器或属性为静态属性时发生。</exception>
         /// <exception cref="InvalidCastException">当 <typeparamref name="TValue"/> 不是属性的类型时发生。</exception>
-        public static PropertyModifier<TClass, TValue> CreatePropertyModifier<TClass, TValue>(string name, BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static PropertyModifier<TClass, TValue> CreatePropertyModifier<TClass, TValue>(string name, BindingFlags flags = MemberUtility.DefaultFlags)
         {
             Type type = typeof(TClass);
 
@@ -209,7 +203,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <exception cref="MissingMemberException">当无法在 <paramref name="type"/> 中找到名为 <paramref name="name"/> 的属性时发生。</exception>
         /// <exception cref="InvalidOperationException">当属性没有 set 访问器或属性不是静态属性时发生。</exception>
         /// <exception cref="InvalidCastException">当 <typeparamref name="T"/> 不是属性的类型时发生。</exception>
-        public static PropertyModifier<T> CreateStaticPropertyModifier<T>(this Type type, string name, BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        public static PropertyModifier<T> CreateStaticPropertyModifier<T>(this Type type, string name, BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
         {
             if (type.GetProperty(name, flags) is PropertyInfo property)
             {
@@ -263,7 +257,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <returns>转化为 <typeparamref name="T"/> 类型的属性值。</returns>
         /// <exception cref="MissingFieldException">当无法在 <paramref name="obj"/> 中找到名为 <paramref name="name"/> 的属性时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法将属性值转化为 <typeparamref name="T"/> 类型时发生。</exception>
-        public static T GetPropertyValue<T>(this Type type, string name, object obj, BindingFlags flags = DefaultFlags)
+        public static T GetPropertyValue<T>(this Type type, string name, object obj, BindingFlags flags = MemberUtility.DefaultFlags)
         {
             if (type.GetProperty(name, flags) is PropertyInfo property)
             {
@@ -286,7 +280,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <returns>转化为 <typeparamref name="TValue"/> 类型的属性值。</returns>
         /// <exception cref="MissingMemberException">当无法在 <typeparamref name="TClass"/> 中找到名为 <paramref name="name"/> 的属性时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法将属性值转化为 <typeparamref name="TValue"/> 时发生。</exception>
-        public static TValue GetPropertyValue<TClass, TValue>(TClass obj, string name, BindingFlags flags = DefaultFlags)
+        public static TValue GetPropertyValue<TClass, TValue>(TClass obj, string name, BindingFlags flags = MemberUtility.DefaultFlags)
         {
             Type type = typeof(TClass);
 
@@ -331,7 +325,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
 
         //------------------------------------------------------
         //
-        //  Set Value
+        //  SetCore Value
         //
         //------------------------------------------------------
 
@@ -348,7 +342,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <param name="flags">搜索属性的方式</param>
         /// <exception cref="MissingMemberException">当无法在 <paramref name="type"/> 中找到名为 <paramref name="name"/> 的属性时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法将 <paramref name="value"/> 转化为属性的类型时发生。</exception>
-        public static void SetPropertyValue<T>(this Type type, string name, object obj, T value, BindingFlags flags = DefaultFlags)
+        public static void SetPropertyValue<T>(this Type type, string name, object obj, T value, BindingFlags flags = MemberUtility.DefaultFlags)
         {
             if (type.GetProperty(name, flags) is PropertyInfo property)
             {
@@ -371,7 +365,7 @@ namespace Nebulae.RimWorld.UI.Core.Data.Utilities
         /// <param name="flags">搜索成员的方式</param>
         /// <exception cref="MissingMemberException">当无法在 <typeparamref name="TClass"/> 中找到名为 <paramref name="name"/> 的属性时发生。</exception>
         /// <exception cref="InvalidCastException">当 <see cref="Convert"/> 无法将 <paramref name="value"/> 转化为属性的类型时发生。</exception>
-        public static void SetPropertyValue<TClass, TValue>(this TClass obj, string name, TValue value, BindingFlags flags = DefaultFlags)
+        public static void SetPropertyValue<TClass, TValue>(this TClass obj, string name, TValue value, BindingFlags flags = MemberUtility.DefaultFlags)
         {
             Type type = typeof(TClass);
 
