@@ -1,14 +1,14 @@
 ﻿using Nebulae.RimWorld.Utilities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Nebulae.RimWorld.UI.Core.Data
 {
     /// <summary>
-    /// 依赖属性的标识
+    /// 依赖属性标识
     /// </summary>
-    [DebuggerStepThrough]
     public sealed class DependencyProperty : Singleton<DependencyProperty>
     {
         /// <summary>
@@ -19,37 +19,54 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
         //------------------------------------------------------
         //
-        //  Public Properties
+        //  Public Fields
         //
         //------------------------------------------------------
 
-        #region Public Properties
+        #region Public Fields
 
         /// <summary>
         /// 依赖属性的默认元数据
         /// </summary>
-        public PropertyMetadata DefaultMetadata => _defaultMetadata;
+        public readonly PropertyMetadata DefaultMetadata;
 
         /// <summary>
-        /// 依赖属性的值的验证回调
+        /// 依赖属性值的验证回调
         /// </summary>
-        public ValidateValueCallback ValidateValueCallback => _validateValueCallback;
+        public readonly ValidateValueCallback ValidateValueCallback;
 
         /// <summary>
-        /// 依赖属性的值的类型
+        /// 依赖属性值的类型
         /// </summary>
-        public Type ValueType => _valueType;
+        public readonly Type ValueType;
 
         #endregion
 
 
-        private DependencyProperty(string name, Type ownerType, Type valueType, PropertyMetadata defaultMetadata, ValidateValueCallback validateValueCallback, bool isAttached = false)
+        private DependencyProperty(string name, Type ownerType, Type valueType, PropertyMetadata defaultMetadata, ValidateValueCallback validateValueCallback, bool isAttachedProperty = false)
             : base(name, ownerType)
         {
-            _defaultMetadata = defaultMetadata;
-            _isAttached = isAttached;
-            _valueType = valueType;
-            _validateValueCallback = validateValueCallback;
+            DefaultMetadata = defaultMetadata;
+
+            ValueType = valueType;
+            ValidateValueCallback = validateValueCallback;
+
+            if (isAttachedProperty)
+            {
+                _states |= Flags.IsAttachedProperty;
+            }
+
+            if (defaultMetadata.Inherits)
+            {
+                _states |= Flags.IsPotentiallyInherited;
+            }
+
+            if (valueType == typeof(string) || valueType.IsValueType)
+            {
+                _states |= Flags.IsStringOrStructType;
+            }
+
+            DefaultMetadata.ApplyTo(this);
         }
 
 
@@ -77,7 +94,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("Property Name cannot be null or whitespace.", nameof(name));
+                throw new ArgumentException("Dependency property name cannot be null or whitespace.", nameof(name));
             }
 
             if (valueType is null)
@@ -114,7 +131,7 @@ namespace Nebulae.RimWorld.UI.Core.Data
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("Property Name cannot be null or whitespace.", nameof(name));
+                throw new ArgumentException("Dependency property name cannot be null or whitespace.", nameof(name));
             }
 
             if (valueType is null)
@@ -135,27 +152,43 @@ namespace Nebulae.RimWorld.UI.Core.Data
             return RegisterCommon(name, valueType, ownerType, defaultMetadata, validateValueCallback, true);
         }
 
-
         /// <summary>
         /// 搜索依赖属性标识
         /// </summary>
         /// <param name="name">依赖属性的名称</param>
         /// <param name="ownerType">拥有依赖属性的类型</param>
         /// <returns>对应的依赖属性标识。</returns>
-        /// <exception cref="MissingMemberException">当无法在 <paramref name="ownerType"/> 中找到名为 <paramref name="name"/> 的依赖属性时发生。</exception>
+        /// <remarks>当找不到符合条件的依赖属性时，返回 <see langword="null"/>。</remarks>
         public static DependencyProperty Search(string name, Type ownerType)
         {
-            while (DependencyObjectType.RootType.IsAssignableFrom(ownerType))
+            if (string.IsNullOrWhiteSpace(name))
             {
-                if (TryGetSingleton(name, ownerType, out var property))
+                throw new ArgumentException("Dependency property name must not be null or whitespace.", nameof(name));
+            }
+
+            if (ownerType is null)
+            {
+                throw new ArgumentNullException(nameof(ownerType));
+            }
+
+            if (!typeof(DependencyObject).IsAssignableFrom(ownerType))
+            {
+                throw new ArgumentException($"Owner type of a dependency property must be a subclass of '{typeof(DependencyObject).AsLog()}'.", nameof(ownerType));
+            }
+
+            var dType = DependencyObjectType.FromSystemTypeUnsafe(ownerType);
+
+            while (dType != null)
+            {
+                if (TryGet(name, dType.Type, out var property))
                 {
                     return property;
                 }
 
-                ownerType = ownerType.BaseType;
+                dType = dType.BaseType;
             }
 
-            throw new MissingMemberException($"Cannot find any property named '{name}' in '{ownerType}'.");
+            return null;
         }
 
         #endregion
@@ -170,19 +203,10 @@ namespace Nebulae.RimWorld.UI.Core.Data
         #region Public Methods
 
         /// <summary>
-        /// 获取依赖属性与指定对象对应的元数据
-        /// </summary>
-        /// <param name="target">与要获取的元数据对应的对象。</param>
-        /// <returns>依赖属性的元数据。</returns>
-        public PropertyMetadata GetMetadata(DependencyObject target) => GetMetadata(target.DependencyType);
-
-        /// <summary>
         /// 重写依赖属性的元数据
         /// </summary>
         /// <param name="ownerType">拥有依赖属性的对象的类型</param>
         /// <param name="metadata">新的元数据</param>
-        /// <exception cref="ArgumentNullException">当任意参数为 <see langword="null"/> 时发生。</exception>
-        /// <exception cref="InvalidOperationException">当 <paramref name="ownerType"/> 不拥有该依赖属性时发生。</exception>
         public void OverrideMetadata(Type ownerType, PropertyMetadata metadata)
         {
             if (ownerType is null)
@@ -195,35 +219,58 @@ namespace Nebulae.RimWorld.UI.Core.Data
                 throw new ArgumentNullException(nameof(metadata));
             }
 
-            if (_isAttached)
+            if ((_states & Flags.IsAttachedProperty) != 0)
             {
-                throw new InvalidOperationException($"Unable to override the _metadata of the attached property {OwnerType}.{Name}.");
+                throw new InvalidOperationException($"Unable to override the metadata since '{OwnerType.AsLog()}.{Name}' is an attached property.");
             }
 
-            if (metadata.isSealed)
+            if (metadata.IsSealed)
             {
-                throw new InvalidOperationException("Metadata has been sealed by another dependency property.");
+                throw new InvalidOperationException($"Unable to override the metadata of '{OwnerType.AsLog()}.{Name}' since the new metadata '{metadata.DefaultValue.AsLog()}' already applied to another dependency property.");
             }
 
-            if (!ValidateValue(metadata.defaultValue, out var exception))
+            if (!ValidateValue(metadata.DefaultValue, out var exception))
             {
-                throw new InvalidOperationException($"Deafult value '{metadata.defaultValue.AsLog()}' of type '{metadata.defaultValue.GetType()}' is not valid for '{OwnerType}.{Name}'.", exception);
+                throw new InvalidOperationException($"Unable to override the metadata of '{OwnerType.AsLog()}.{Name}' since the deafult value '{metadata.DefaultValue.AsLog()}' of type '{metadata.DefaultValue.GetType().AsLog()}' is not valid.", exception);
             }
 
             if (!OwnerType.IsAssignableFrom(ownerType))
             {
-                throw new InvalidOperationException($"The type {ownerType} must inherit {OwnerType} to override the _metadata of {OwnerType}.{Name}.");
+                throw new InvalidOperationException($"Unable to override the metadata of '{OwnerType.AsLog()}.{Name}' since the owner type '{ownerType.AsLog()} is not a subclass of '{OwnerType.AsLog()}'.");
             }
 
-            _isMetadataOverridden = true;
+            var dType = DependencyObjectType.FromSystemTypeUnsafe(ownerType);
+            var baseMetadata = this[dType];
 
-            var dType = DependencyObjectType.From(ownerType);
-            metadata.Merge(GetMetadata(dType));
+            if (!baseMetadata.GetType().IsAssignableFrom(metadata.GetType()))
+            {
+                throw new InvalidOperationException($"Unable to override the metadata of '{OwnerType.AsLog()}.{Name}' since the new metadata '{metadata.DefaultValue.AsLog()}' is not compatible with the base metadata of type '{baseMetadata.GetType().AsLog()}'.");
+            }
 
-            metadata.isSealed = true;
-            _metadatas[dType] = metadata;
+            metadata.ApplyTo(this, baseMetadata);
 
-            _metadataMap.Clear();
+            if (metadata.Inherits)
+            {
+                _states |= Flags.IsPotentiallyInherited;
+            }
+
+            if ((_states & Flags.IsStringOrStructType) != 0)
+            {
+                if (!Equals(DefaultMetadata.DefaultValue, metadata.DefaultValue))
+                {
+                    _states |= Flags.IsDefaultValueChanged;
+                }
+            }
+            else
+            {
+                if (!ReferenceEquals(DefaultMetadata.DefaultValue, metadata.DefaultValue))
+                {
+                    _states |= Flags.IsDefaultValueChanged;
+                }
+            }
+
+            _metadataMaps.Clear();
+            _metadataSets[dType] = metadata;
         }
 
         /// <summary>
@@ -231,54 +278,10 @@ namespace Nebulae.RimWorld.UI.Core.Data
         /// </summary>
         /// <param name="value">要验证的值</param>
         /// <param name="exception">验证失败时的错误信息</param>
-        /// <returns>如果验证成功，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        /// <returns>若验证通过，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool ValidateValue(object value, out Exception exception)
         {
-            return ValidateValueCore(_valueType, value, _validateValueCallback, out exception);
-        }
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Internal Methods
-        //
-        //------------------------------------------------------
-
-        #region Internal Methods
-
-        internal PropertyMetadata GetMetadata(DependencyObjectType dType)
-        {
-            if (_isAttached || !_isMetadataOverridden || OwnerType == dType.Type)
-            {
-                return _defaultMetadata;
-            }
-
-            if (_metadataMap.TryGetValue(dType, out var metadata))
-            {
-                return metadata;
-            }
-
-            metadata = GetMetadataInHierarchy(dType);
-            _metadataMap[dType] = metadata;
-
-            return metadata;
-        }
-
-        internal PropertyMetadata GetMetadataInHierarchy(DependencyObjectType dType)
-        {
-            while (dType != null)
-            {
-                if (_metadatas.TryGetValue(dType, out var metadata))
-                {
-                    return metadata;
-                }
-
-                dType = dType.Base;
-            }
-
-            return _defaultMetadata;
+            return ValidateValueCore(ValueType, value, ValidateValueCallback, out exception);
         }
 
         #endregion
@@ -292,55 +295,55 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
         #region Private Static Method
 
-        private static DependencyProperty RegisterCommon(string name, Type valueType, Type ownerType, PropertyMetadata defaultMetadata, ValidateValueCallback validateValueCallback = null, bool isAttached = false)
+        private static DependencyProperty RegisterCommon(string name, Type valueType, Type ownerType, PropertyMetadata defaultMetadata, ValidateValueCallback validateValueCallback, bool isAttachedProperty)
         {
-            if (defaultMetadata.isSealed)
+            if (defaultMetadata.IsSealed)
             {
                 throw new InvalidOperationException(
-                    $"Faild to register property '{ownerType}.{name}'", 
+                    $"Faild to register dependency property '{ownerType.AsLog()}.{name}'",
                     new ArgumentException("Metadata has been sealed by another dependency property."));
             }
 
             if (ownerType.IsGenericTypeDefinition)
             {
                 throw new InvalidOperationException(
-                    $"Faild to register property '{ownerType}.{name}'",
-                    new ArgumentException("OwnerType cannot be a generic type definition."));
+                    $"Faild to register dependency property '{ownerType.AsLog()}.{name}'",
+                    new ArgumentException("Owner type of a dependency property cannot be a generic type definition."));
             }
 
             if (Exist(name, ownerType))
             {
                 throw new InvalidOperationException(
-                    $"Faild to register property '{ownerType}.{name}'",
-                    new ArgumentException($"Property '{ownerType}.{name}' has already been registered."));
+                    $"Faild to register dependency property '{ownerType.AsLog()}.{name}'",
+                    new ArgumentException($"Dependency property '{ownerType.AsLog()}.{name}' has already been registered."));
             }
 
-            if (!ValidateValueCore(valueType, defaultMetadata.defaultValue, validateValueCallback, out var exception))
+            if (!ValidateValueCore(valueType, defaultMetadata.DefaultValue, validateValueCallback, out var exception))
             {
-                throw new InvalidOperationException($"Faild to register property '{ownerType}.{name}'.", exception);
+                throw new InvalidOperationException($"Faild to register dependency property '{ownerType.AsLog()}.{name}'.", exception);
             }
 
-            return new DependencyProperty(name, ownerType, valueType, defaultMetadata, validateValueCallback, isAttached);
+            return new DependencyProperty(name, ownerType, valueType, defaultMetadata, validateValueCallback, isAttachedProperty);
         }
 
         private static bool ValidateValueCore(Type valueType, object value, ValidateValueCallback validate, out Exception exception)
         {
             if (ReferenceEquals(UnsetValue, value))
             {
-                exception = new InvalidOperationException("'UnsetValue' is not a valid property value.");
+                exception = new InvalidOperationException("'UnsetValue' is not a valid dependency property value.");
                 return false;
             }
             else if (value == null)
             {
-                if (valueType.IsValueType && (!valueType.IsGenericType || valueType.GetGenericTypeDefinition() != NullableValueType))
+                if (valueType.IsValueType && (!valueType.IsGenericType || valueType.GetGenericTypeDefinition() != typeof(Nullable<>)))
                 {
-                    exception = new InvalidOperationException($"Value cannot be null for value type '{valueType}'.");
+                    exception = new InvalidOperationException($"Value cannot be null for value type '{valueType.AsLog()}'.");
                     return false;
                 }
             }
             else if (!valueType.IsInstanceOfType(value))
             {
-                exception = new InvalidCastException($"Value '{value.AsLog()}' of type '{value.GetType()}' is not compatible with type '{valueType}'.");
+                exception = new InvalidCastException($"Value '{value.AsLog()}' of type '{value.GetType()}' is not compatible with type '{valueType.AsLog()}'.");
                 return false;
             }
             else if (validate != null && !validate(value))
@@ -356,6 +359,48 @@ namespace Nebulae.RimWorld.UI.Core.Data
         #endregion
 
 
+        private PropertyMetadata GetMetadata(DependencyObjectType dType)
+        {
+            while (dType != null)
+            {
+                if (_metadataSets.TryGetValue(dType, out var metadata))
+                {
+                    return metadata;
+                }
+
+                dType = dType.BaseType;
+            }
+
+            return DefaultMetadata;
+        }
+
+
+        //------------------------------------------------------
+        //
+        //  Internal Properties
+        //
+        //------------------------------------------------------
+
+        #region Internal Properties
+
+        internal bool IsPotentiallyInherited => (_states & Flags.IsPotentiallyInherited) != 0;
+
+        internal PropertyMetadata this[DependencyObjectType index]
+        {
+            get
+            {
+                if (OwnerType == index.Type || (_states & Flags.IsDefaultValueChanged) is 0)
+                {
+                    return DefaultMetadata;
+                }
+
+                return _metadataMaps.GetOrAdd(index, GetMetadata);
+            }
+        }
+
+        #endregion
+
+
         //------------------------------------------------------
         //
         //  Private Fields
@@ -364,21 +409,22 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
         #region Private Fields
 
-        private static readonly Type NullableValueType = typeof(Nullable<>);
+        private readonly ConcurrentDictionary<DependencyObjectType, PropertyMetadata> _metadataMaps = new ConcurrentDictionary<DependencyObjectType, PropertyMetadata>();
+        private readonly Dictionary<DependencyObjectType, PropertyMetadata> _metadataSets = new Dictionary<DependencyObjectType, PropertyMetadata>();
 
-        private readonly PropertyMetadata _defaultMetadata;
-        private readonly Dictionary<DependencyObjectType, PropertyMetadata> _metadatas = new Dictionary<DependencyObjectType, PropertyMetadata>();
-        private readonly Dictionary<DependencyObjectType, PropertyMetadata> _metadataMap = new Dictionary<DependencyObjectType, PropertyMetadata>();
-        private readonly ValidateValueCallback _validateValueCallback;
-
-        private readonly bool _isAttached;
-
-        private readonly Type _valueType;
-
-        private bool _isMetadataOverridden;
+        private Flags _states;
 
         #endregion
 
+
+        [Flags]
+        private enum Flags : byte
+        {
+            IsAttachedProperty = 0b0001,
+            IsDefaultValueChanged = 0b0010,
+            IsPotentiallyInherited = 0b0100,
+            IsStringOrStructType = 0b1000
+        }
 
 
         [DebuggerDisplay("DependencyProperty.UnsetObject")]
