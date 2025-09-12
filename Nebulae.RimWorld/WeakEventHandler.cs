@@ -37,7 +37,7 @@ namespace Nebulae.RimWorld
         /// <summary>
         /// 判断当前 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 是否与指定的对象等效
         /// </summary>
-        /// <param name="obj">要判断的对象</param>
+        /// <param name="obj">要比较的对象</param>
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public override bool Equals(object obj)
         {
@@ -67,7 +67,7 @@ namespace Nebulae.RimWorld
         /// <summary>
         /// 判断当前 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 是否与指定的委托等效
         /// </summary>
-        /// <param name="other">要判断的委托</param>
+        /// <param name="other">要比较的委托</param>
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(Delegate other)
         {
@@ -87,7 +87,7 @@ namespace Nebulae.RimWorld
         /// <summary>
         /// 判断当前 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 是否与指定的 <see cref="MethodInfo"/> 等效
         /// </summary>
-        /// <param name="other">要判断的 <see cref="MethodInfo"/></param>
+        /// <param name="other">要比较 <see cref="MethodInfo"/></param>
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(MethodInfo other)
         {
@@ -97,7 +97,7 @@ namespace Nebulae.RimWorld
         /// <summary>
         /// 判断当前 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 是否与指定的 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 等效
         /// </summary>
-        /// <param name="other">要判断的 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/></param>
+        /// <param name="other">要比较 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/></param>
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(WeakEventHandler<TOwner, TSender, TArgs> other)
         {

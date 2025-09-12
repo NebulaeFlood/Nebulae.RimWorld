@@ -135,6 +135,17 @@ namespace Nebulae.RimWorld.Utilities
         }
 
         /// <summary>
+        /// 以 <paramref name="logLabel"/> 为主语，提交错误
+        /// </summary>
+        /// <param name="logLabel">主语</param>
+        /// <param name="exception">错误内容</param>
+        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Error(this string logLabel, Exception exception, string color = "3F48CCFF")
+        {
+            Log.Error($"<color=#{color}>[{logLabel}]</color> {exception}");
+        }
+
+        /// <summary>
         /// 以 <paramref name="logLabel"/> 为主语，提交日志
         /// </summary>
         /// <param name="logLabel">主语</param>
