@@ -1,9 +1,14 @@
-﻿using System;
+﻿using Nebulae.RimWorld.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Nebulae.RimWorld.UI.Core.Data
 {
     /// <summary>
-    /// 依赖属性元数据
+    /// 依赖属性的元数据
     /// </summary>
     public class PropertyMetadata
     {
@@ -16,61 +21,80 @@ namespace Nebulae.RimWorld.UI.Core.Data
         #region Public Properties
 
         /// <summary>
-        /// 获取或设置对此元数据中所指定 <see cref="Data.CoerceValueCallback"/> 实现的引用
-        /// </summary>
-        public CoerceValueCallback CoerceValueCallback
-        {
-            get => coerceValueCallback;
-            set
-            {
-                if (isSealed)
-                {
-                    throw new InvalidOperationException("Cannot modify metadata after it has been used by a dependency property.");
-                }
-
-                coerceValueCallback = value;
-            }
-        }
-
-        /// <summary>
         /// 获取或设置依赖属性的默认值
         /// </summary>
         public object DefaultValue
         {
-            get => defaultValue;
+            get => _defaultValue;
             set
             {
-                if (isSealed)
+                if ((_options & PropertyMetadataOptions.Sealed) != 0)
                 {
                     throw new InvalidOperationException("Cannot modify metadata after it has been used by a dependency property.");
                 }
 
-                defaultValue = value;
+                _defaultValue = value;
             }
         }
 
         /// <summary>
-        /// 此元数据是否不可变
+        /// 获取或设置处理设置给依赖属性的值的回调函数
         /// </summary>
-        /// <remarks>该值确定是否已通过某种方式将元数据应用于依赖属性</remarks>
-        public bool IsSealed => isSealed;
+        public CoerceValueCallback CoerceValueCallback
+        {
+            get => _coerceValueCallback;
+            set
+            {
+                if ((_options & PropertyMetadataOptions.Sealed) != 0)
+                {
+                    throw new InvalidOperationException("Cannot modify metadata after it has been used by a dependency property.");
+                }
+
+                _coerceValueCallback = value;
+            }
+        }
 
         /// <summary>
-        /// 获取或设置对此元数据中所指定 <see cref="Data.PropertyChangedCallback"/> 实现的引用
+        /// 获取或设置依赖属性有效值更改时的回调函数
         /// </summary>
         public PropertyChangedCallback PropertyChangedCallback
         {
-            get => propertyChangedCallback;
+            get => _propertyChangedCallback;
             set
             {
-                if (isSealed)
+                if ((_options & PropertyMetadataOptions.Sealed) != 0)
                 {
-                    throw new InvalidOperationException("Cannot modify metadata after it has been used by a dependency property.");
+                    throw new InvalidOperationException("Cannot modify metadata after it has been applied to a dependency property.");
                 }
 
-                propertyChangedCallback = value;
+                _propertyChangedCallback = value;
             }
         }
+
+        /// <summary>
+        /// 获取一个值，该值指示依赖属性是否影响控件排布
+        /// </summary>
+        public bool AffectsArrange => (_options & PropertyMetadataOptions.AffectsArrange) != 0;
+
+        /// <summary>
+        /// 获取一个值，该值指示依赖属性是否影响控件测量
+        /// </summary>
+        public bool AffectsMeasure => (_options & PropertyMetadataOptions.AffectsMeasure) > PropertyMetadataOptions.AffectsArrange;
+
+        /// <summary>
+        /// 获取一个值，该值指示依赖属性是否影响控件渲染
+        /// </summary>
+        public bool AffectsRender => (_options & PropertyMetadataOptions.AffectsRender) != 0;
+
+        /// <summary>
+        /// 获取一个值，该值指示依赖属性值是否可以被子元素继承
+        /// </summary>
+        public bool Inherits => (_options & PropertyMetadataOptions.Inherits) != 0;
+
+        /// <summary>
+        /// 获取一个值，该值指示该元数据是否已应用到某一依赖属性
+        /// </summary>
+        public bool IsSealed => (_options & PropertyMetadataOptions.Sealed) != 0;
 
         #endregion
 
@@ -86,62 +110,105 @@ namespace Nebulae.RimWorld.UI.Core.Data
         /// <summary>
         /// 初始化 <see cref="PropertyMetadata"/> 的新实例
         /// </summary>
-        public PropertyMetadata()
+        /// <param name="options">指定依赖属性行为的选项</param>
+        public PropertyMetadata(PropertyMetadataOptions options = PropertyMetadataOptions.None)
         {
-            defaultValue = null;
+            _options = options;
         }
 
         /// <summary>
         /// 初始化 <see cref="PropertyMetadata"/> 的新实例
         /// </summary>
-        /// <param name="defaultValue">属性默认值</param>
-        public PropertyMetadata(object defaultValue)
+        /// <param name="defaultValue">依赖属性默认值</param>
+        /// <param name="options">指定依赖属性行为的选项</param>
+        public PropertyMetadata(object defaultValue, PropertyMetadataOptions options = PropertyMetadataOptions.None)
         {
-            this.defaultValue = defaultValue;
+            _defaultValue = defaultValue;
+
+            _options = options;
         }
 
         /// <summary>
         /// 初始化 <see cref="PropertyMetadata"/> 的新实例
         /// </summary>
-        /// <param name="defaultValue">属性默认值</param>
-        /// <param name="propertyChangedCallback">属性更改回调函数</param>
-        public PropertyMetadata(
-            object defaultValue,
-            PropertyChangedCallback propertyChangedCallback)
+        /// <param name="coerceValueCallback">属性值处理回调</param>
+        /// <param name="options">指定依赖属性行为的选项</param>
+        public PropertyMetadata(CoerceValueCallback coerceValueCallback, PropertyMetadataOptions options = PropertyMetadataOptions.None)
         {
-            this.defaultValue = defaultValue;
-            this.propertyChangedCallback = propertyChangedCallback;
+            _coerceValueCallback = coerceValueCallback;
+
+            _options = options;
         }
 
         /// <summary>
         /// 初始化 <see cref="PropertyMetadata"/> 的新实例
         /// </summary>
-        /// <param name="defaultValue">属性默认值</param>
-        /// <param name="coerceValueCallback">强制转换回调函数</param>
-        public PropertyMetadata(
-            object defaultValue,
-            CoerceValueCallback coerceValueCallback)
+        /// <param name="defaultValue">依赖属性默认值</param>
+        /// <param name="coerceValueCallback">属性值处理回调</param>
+        /// <param name="options">指定依赖属性行为的选项</param>
+        public PropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, PropertyMetadataOptions options = PropertyMetadataOptions.None)
         {
-            this.defaultValue = defaultValue;
+            _defaultValue = defaultValue;
+            _coerceValueCallback = coerceValueCallback;
 
-            this.coerceValueCallback = coerceValueCallback;
+            _options = options;
         }
 
         /// <summary>
         /// 初始化 <see cref="PropertyMetadata"/> 的新实例
         /// </summary>
-        /// <param name="defaultValue">属性默认值</param>
-        /// <param name="coerceValueCallback">强制转换回调函数</param>
-        /// <param name="propertyChangedCallback">属性更改回调函数</param>
-        public PropertyMetadata(
-            object defaultValue,
-            CoerceValueCallback coerceValueCallback,
-            PropertyChangedCallback propertyChangedCallback)
+        /// <param name="propertyChangedCallback">属性更改回调</param>
+        /// <param name="options">指定依赖属性行为的选项</param>
+        public PropertyMetadata(PropertyChangedCallback propertyChangedCallback, PropertyMetadataOptions options = PropertyMetadataOptions.None)
         {
-            this.defaultValue = defaultValue;
+            _propertyChangedCallback = propertyChangedCallback;
 
-            this.coerceValueCallback = coerceValueCallback;
-            this.propertyChangedCallback = propertyChangedCallback;
+            _options = options;
+        }
+
+        /// <summary>
+        /// 初始化 <see cref="PropertyMetadata"/> 的新实例
+        /// </summary>
+        /// <param name="defaultValue">依赖属性默认值</param>
+        /// <param name="propertyChangedCallback">属性更改回调</param>
+        /// <param name="options">指定依赖属性行为的选项</param>
+        public PropertyMetadata(object defaultValue, PropertyChangedCallback propertyChangedCallback, PropertyMetadataOptions options = PropertyMetadataOptions.None)
+        {
+            _defaultValue = defaultValue;
+            _propertyChangedCallback = propertyChangedCallback;
+
+            _options = options;
+        }
+
+        /// <summary>
+        /// 初始化 <see cref="PropertyMetadata"/> 的新实例
+        /// </summary>
+        /// <param name="coerceValueCallback">属性值处理回调</param>
+        /// <param name="propertyChangedCallback">属性更改回调</param>
+        /// <param name="options">指定依赖属性行为的选项</param>
+        public PropertyMetadata(CoerceValueCallback coerceValueCallback, PropertyChangedCallback propertyChangedCallback, PropertyMetadataOptions options = PropertyMetadataOptions.None)
+        {
+            _coerceValueCallback = coerceValueCallback;
+            _propertyChangedCallback = propertyChangedCallback;
+
+            _options = options;
+        }
+
+        /// <summary>
+        /// 初始化 <see cref="PropertyMetadata"/> 的新实例
+        /// </summary>
+        /// <param name="defaultValue">依赖属性默认值</param>
+        /// <param name="coerceValueCallback">属性值处理回调</param>
+        /// <param name="propertyChangedCallback">属性更改回调</param>
+        /// <param name="options">指定依赖属性行为的选项</param>
+        public PropertyMetadata(object defaultValue, CoerceValueCallback coerceValueCallback, PropertyChangedCallback propertyChangedCallback, PropertyMetadataOptions options = PropertyMetadataOptions.None)
+        {
+            _defaultValue = defaultValue;
+
+            _coerceValueCallback = coerceValueCallback;
+            _propertyChangedCallback = propertyChangedCallback;
+
+            _options = options;
         }
 
         #endregion
@@ -149,37 +216,67 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
         //------------------------------------------------------
         //
-        //  Public Method
+        //  Protected Methods
         //
         //------------------------------------------------------
 
-        #region Public Method
+        #region Protected Methods
 
         /// <summary>
-        /// 合并元数据
+        /// 与元数据 <paramref name="baseMetadata"/> 合并
         /// </summary>
-        /// <param name="metadata">被合并的元数据</param>
-        public virtual void Merge(PropertyMetadata metadata)
+        /// <param name="baseMetadata">将合并的元数据</param>
+        /// <param name="property">要应用此元数据的依赖属性</param>
+        protected virtual void Merge(PropertyMetadata baseMetadata, DependencyProperty property)
         {
-            if (defaultValue is null)
+            if (_defaultValue is null)
             {
-                defaultValue = metadata.defaultValue;
+                _defaultValue = baseMetadata._defaultValue;
             }
 
-            if (coerceValueCallback is null)
+            _propertyChangedCallback = (PropertyChangedCallback)
+                Delegate.Combine(baseMetadata._propertyChangedCallback, _propertyChangedCallback);
+
+            if (_coerceValueCallback is null)
             {
-                coerceValueCallback = metadata.coerceValueCallback;
+                _coerceValueCallback = baseMetadata._coerceValueCallback;
+            }
+        }
+
+        /// <summary>
+        /// 当此元数据应用到指定依赖属性时调用
+        /// </summary>
+        /// <param name="property">应用此元数据的依赖属性</param>
+        protected virtual void OnApply(DependencyProperty property) { }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Internal Methods
+        //
+        //------------------------------------------------------
+
+        #region Internal Methods
+
+        internal void ApplyTo(DependencyProperty property)
+        {
+            OnApply(property);
+            _options |= PropertyMetadataOptions.Sealed;
+        }
+
+        internal void ApplyTo(DependencyProperty property, PropertyMetadata baseMetadata)
+        {
+            if ((_options & PropertyMetadataOptions.Sealed) != 0)
+            {
+                throw new InvalidOperationException($"Metadata '{baseMetadata._defaultValue.AsLog()}' already applied to another dependency property '{property}'.");
             }
 
-            if (propertyChangedCallback is null)
-            {
-                propertyChangedCallback = metadata.propertyChangedCallback;
-            }
-            else if (metadata.propertyChangedCallback != null)
-            {
-                propertyChangedCallback = (PropertyChangedCallback)Delegate.Combine(
-                    metadata.propertyChangedCallback, propertyChangedCallback);
-            }
+            Merge(baseMetadata, property);
+            OnApply(property);
+
+            _options |= PropertyMetadataOptions.Sealed;
         }
 
         #endregion
@@ -187,18 +284,18 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
         //------------------------------------------------------
         //
-        //  Internal Fields
+        //  Private Methods
         //
         //------------------------------------------------------
 
-        #region Internal Fields
+        #region Private Methods
 
-        internal object defaultValue;
+        private PropertyMetadataOptions _options;
 
-        internal CoerceValueCallback coerceValueCallback;
-        internal PropertyChangedCallback propertyChangedCallback;
+        private object _defaultValue;
 
-        internal bool isSealed;
+        private CoerceValueCallback _coerceValueCallback;
+        private PropertyChangedCallback _propertyChangedCallback;
 
         #endregion
     }

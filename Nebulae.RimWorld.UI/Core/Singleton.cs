@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.Utilities;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
@@ -25,6 +26,11 @@ namespace Nebulae.RimWorld.UI.Core
         #region Public Fields
 
         /// <summary>
+        /// <see cref="Singleton{T}"/> 的唯一标识
+        /// </summary>
+        public readonly int Id;
+
+        /// <summary>
         /// <see cref="Singleton{T}"/> 的名称
         /// </summary>
         public readonly string Name;
@@ -38,9 +44,9 @@ namespace Nebulae.RimWorld.UI.Core
 
 
         /// <summary>
-        /// 获取创建的 <typeparamref name="T"/> 数量
+        /// 获取创建的 <typeparamref name="T"/> 的数量
         /// </summary>
-        public static int Count => _globalIndex;
+        public static int Count => _count;
 
 
         /// <summary>
@@ -53,11 +59,8 @@ namespace Nebulae.RimWorld.UI.Core
             Name = name;
             OwnerType = ownerType;
 
-            var key = new SingletonKey(name, ownerType);
-            _hashCode = key.GetHashCode();
-
-            Interlocked.Increment(ref _globalIndex);
-            Singletons[key] = (T)this;
+            Id = Interlocked.Increment(ref _count);
+            Singletons[new SingletonKey(name, ownerType)] = (T)this;
         }
 
 
@@ -70,7 +73,7 @@ namespace Nebulae.RimWorld.UI.Core
         #region Public Static Methods
 
         /// <summary>
-        /// 判断目标对象是否已经存在
+        /// 判断符合要求的对象是否已经存在
         /// </summary>
         /// <param name="name">对象名</param>
         /// <param name="ownerType">拥有对象的类型</param>
@@ -78,13 +81,13 @@ namespace Nebulae.RimWorld.UI.Core
         public static bool Exist(string name, Type ownerType) => Singletons.ContainsKey(new SingletonKey(name, ownerType));
 
         /// <summary>
-        /// 尝试获取目标对象
+        /// 尝试获取符合要求的对象
         /// </summary>
         /// <param name="name">对象名</param>
         /// <param name="ownerType">拥有对象的类型</param>
         /// <param name="singleton">符合要求的对象</param>
         /// <returns>若存在符合要求的对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public static bool TryGetSingleton(string name, Type ownerType, out T singleton) => Singletons.TryGetValue(new SingletonKey(name, ownerType), out singleton);
+        public static bool TryGet(string name, Type ownerType, out T singleton) => Singletons.TryGetValue(new SingletonKey(name, ownerType), out singleton);
 
         #endregion
 
@@ -100,34 +103,34 @@ namespace Nebulae.RimWorld.UI.Core
         /// <summary>
         /// 判断指定对象是否等于当前对象
         /// </summary>
-        /// <param name="obj">要与当前对象进行比较的对象</param>
+        /// <param name="obj">要比较的对象</param>
         /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public override sealed bool Equals(object obj)
         {
-            return obj is Singleton<T> other && _hashCode == other._hashCode;
+            return obj is Singleton<T> other && Id == other.Id;
         }
 
         /// <summary>
         /// 判断指定对象是否等于当前对象
         /// </summary>
-        /// <param name="other">要与当前对象进行比较的对象</param>
+        /// <param name="other">要比较的对象</param>
         /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(Singleton<T> other)
         {
-            return _hashCode == other._hashCode;
+            return Id == other.Id;
         }
 
         /// <summary>
-        /// 默认的哈希函数
+        /// 获取当前对象的哈希代码
         /// </summary>
-        /// <returns>该实例的哈希代码。</returns>
-        public override sealed int GetHashCode() => _hashCode;
+        /// <returns>当前对象的哈希代码。</returns>
+        public override sealed int GetHashCode() => Id;
 
         /// <summary>
         /// 获取表示当前对象的字符串
         /// </summary>
         /// <returns>表示当前对象的字符串。</returns>
-        public override sealed string ToString() => $"{OwnerType}.{Name}";
+        public override sealed string ToString() => $"{OwnerType.AsLog()}.{Name}";
 
         #endregion
 
@@ -141,9 +144,7 @@ namespace Nebulae.RimWorld.UI.Core
         #region Private Feilds
 
         private static readonly ConcurrentDictionary<SingletonKey, T> Singletons = new ConcurrentDictionary<SingletonKey, T>();
-        private static int _globalIndex = 0;
-
-        private readonly int _hashCode;
+        private static int _count;
 
         #endregion
 
@@ -209,9 +210,7 @@ namespace Nebulae.RimWorld.UI.Core
             {
                 return obj is SingletonKey other
                     && Name == other.Name
-                    && (OwnerType == other.OwnerType
-                        || OwnerType.IsSubclassOf(other.OwnerType)
-                        || other.OwnerType.IsSubclassOf(OwnerType));
+                    && OwnerType == other.OwnerType;
             }
 
             /// <summary>
@@ -222,9 +221,7 @@ namespace Nebulae.RimWorld.UI.Core
             public bool Equals(SingletonKey other)
             {
                 return Name == other.Name
-                    && (OwnerType == other.OwnerType
-                        || OwnerType.IsSubclassOf(other.OwnerType)
-                        || other.OwnerType.IsSubclassOf(OwnerType));
+                    && OwnerType == other.OwnerType;
             }
 
             /// <summary>

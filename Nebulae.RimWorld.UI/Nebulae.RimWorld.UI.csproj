@@ -5,16 +5,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Markup\**" />
 	  <Compile Remove="Windows\**" />
-	  <EmbeddedResource Remove="Markup\**" />
 	  <EmbeddedResource Remove="Windows\**" />
-	  <None Remove="Markup\**" />
 	  <None Remove="Windows\**" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Remove="Core\Data\LinkedHashCollection.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
