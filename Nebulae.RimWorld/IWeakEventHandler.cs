@@ -4,7 +4,7 @@ using System.Reflection;
 namespace Nebulae.RimWorld
 {
     /// <summary>
-    /// 定义一个弱事件处理器
+    /// 定义弱事件处理器
     /// </summary>
     /// <typeparam name="TSender">处理器的 sender 参数类型</typeparam>
     /// <typeparam name="TArgs">处理器的 args 参数类型</typeparam>

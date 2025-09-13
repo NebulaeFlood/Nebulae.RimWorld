@@ -1,7 +1,7 @@
 ﻿namespace Nebulae.RimWorld
 {
     /// <summary>
-    /// 定义一个通过弱引用管理对象的集合
+    /// 定义通过弱引用管理对象的集合
     /// </summary>
     public interface IWeakCollection
     {
