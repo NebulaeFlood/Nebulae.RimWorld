@@ -4,25 +4,26 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Nebulae.RimWorld
+namespace Nebulae.RimWorld.Collections
 {
     /// <summary>
-    /// 弱引用集合，其中的对象不会重复
+    /// 弱引用集合，其中的元素不会重复
     /// </summary>
-    /// <typeparam name="T">存储的对象类型</typeparam>
-    /// <remarks>无法存放为 <see langword="null"/> 的对象。</remarks>
+    /// <typeparam name="T">存储的元素类型</typeparam>
+    /// <remarks>不允许存储为 <see langword="null"/> 的元素。</remarks>
     public class WeakSet<T> : IEnumerable<T>, IWeakCollection where T : class
     {
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        private readonly HashSet<Entry> _items;
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly WeakReference _obsoletedItem = new WeakReference(new object());
+        //------------------------------------------------------
+        //
+        //  Public Properties
+        //
+        //------------------------------------------------------
 
+        #region Public Properties
 
         /// <summary>
-        /// 集合中实际的对象个数
+        /// 获取该集合中包含元素的数量
         /// </summary>
-        /// <remarks>每次访问都会遍历一次集合，不建议频繁访问。</remarks>
         public int Count
         {
             get
@@ -32,6 +33,13 @@ namespace Nebulae.RimWorld
                 return _items.Count;
             }
         }
+
+        // <summary>
+        // 获取一个值，该值指示此集合是否为只读集合
+        // </summary>
+        // public bool IsReadOnly => false;
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -65,10 +73,9 @@ namespace Nebulae.RimWorld
         /// <param name="items">集合的初始元素</param>
         public WeakSet(IEnumerable<T> items)
         {
-            _items = new HashSet<Entry>(
-                from item in items
-                where item != null
-                select new Entry(item));
+            _items = new HashSet<Entry>(items
+                .Where(x => x != null)
+                .Select(x => new Entry(x)));
         }
 
         #endregion
@@ -83,23 +90,21 @@ namespace Nebulae.RimWorld
         #region Public Methods
 
         /// <summary>
-        /// 将指定对象添加到集合
+        /// 将指定元素添加到集合
         /// </summary>
-        /// <param name="item">要添加的对象</param>
-        public void Add(T item)
+        /// <param name="item">要添加的元素</param>
+        public bool Add(T item)
         {
-            PrivatePurge();
-
             if (item is null)
             {
-                return;
+                return false;
             }
 
-            _items.Add(new Entry(item));
+            return _items.Add(new Entry(item));
         }
 
         /// <summary>
-        /// 移除集合中的所有对象
+        /// 移除集合中的所有元素
         /// </summary>
         public void Clear()
         {
@@ -107,14 +112,12 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 判断集合内是否含有指定对象
+        /// 判断集合内是否含有指定元素
         /// </summary>
-        /// <param name="item">要判断的集合是否拥有的对象</param>
-        /// <returns>若集合中存在对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        /// <param name="item">要判断的集合是否拥有的元素</param>
+        /// <returns>若集合中存在元素，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Contains(T item)
         {
-            PrivatePurge();
-
             if (item is null)
             {
                 return false;
@@ -128,14 +131,11 @@ namespace Nebulae.RimWorld
         /// 获取循环访问集合的枚举器
         /// </summary>
         /// <returns>用于循环访问集合的枚举器</returns>
-        /// <remarks>此方法设计用于方便对集合内容进行访问，使用时注意不要破坏当前引用关系，</remarks>
         public IEnumerator<T> GetEnumerator()
         {
-            Purge();
-
             foreach (var item in _items)
             {
-                if (item.TryGetTarget(out T target))
+                if (item.TryGetValue(out T target))
                 {
                     yield return target;
                 }
@@ -143,25 +143,20 @@ namespace Nebulae.RimWorld
         }
 
         /// <summary>
-        /// 清理集合内已经被回收的对象
+        /// 清理集合内已经被回收的元素
         /// </summary>
         public void Purge()
         {
-            if (_items.RemoveWhere(x => !x.TryGetTarget(out _)) > 0)
-            {
-                _items.TrimExcess();
-            }
+            _items.RemoveWhere(x => !x.TryGetValue(out _));
         }
 
         /// <summary>
-        /// 移除集合内的指定对象
+        /// 移除集合内的指定元素
         /// </summary>
-        /// <param name="item">要移除的对象</param>
-        /// <returns>若从集合中移除了对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        /// <param name="item">要移除的元素</param>
+        /// <returns>若从集合中移除了元素，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Remove(T item)
         {
-            PrivatePurge();
-
             if (item is null)
             {
                 return false;
@@ -177,24 +172,20 @@ namespace Nebulae.RimWorld
         /// 获取循环访问集合的枚举器
         /// </summary>
         /// <returns>用于循环访问集合的枚举器</returns>
-        /// <remarks>此方法设计用于方便对集合内容进行访问，使用时注意不要破坏当前引用关系，</remarks>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
-        }
-
-
-        private void PrivatePurge()
-        {
-            if (_obsoletedItem.IsAlive)
+            foreach (var item in _items)
             {
-                return;
+                if (item.TryGetValue(out T target))
+                {
+                    yield return target;
+                }
             }
-
-            Purge();
-
-            _obsoletedItem.Target = new object();
         }
+
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        private readonly HashSet<Entry> _items;
 
 
         /// <summary>
@@ -202,15 +193,6 @@ namespace Nebulae.RimWorld
         /// </summary>
         private readonly struct Entry : IEquatable<Entry>
         {
-            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-            private readonly int _hashCode;
-            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-            private readonly WeakReference<T> _reference;
-
-            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-            internal T Value => _reference.TryGetTarget(out T target) ? target : null;
-
-
             /// <summary>
             /// 初始化 <see cref="Entry"/> 的新实例
             /// </summary>
@@ -228,6 +210,7 @@ namespace Nebulae.RimWorld
                 {
                     return ReferenceEquals(targetA, targetB);
                 }
+
                 return !_reference.TryGetTarget(out T _) && !other._reference.TryGetTarget(out T _);
             }
 
@@ -239,18 +222,29 @@ namespace Nebulae.RimWorld
                     {
                         return ReferenceEquals(targetA, targetB);
                     }
+
                     return !_reference.TryGetTarget(out T _) && !other._reference.TryGetTarget(out T _);
                 }
+
                 return false;
             }
 
             public override int GetHashCode() => _hashCode;
 
 
-            public bool TryGetTarget(out T target)
+            public bool TryGetValue(out T value)
             {
-                return _reference.TryGetTarget(out target);
+                return _reference.TryGetTarget(out value);
             }
+
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            internal T Value => _reference.TryGetTarget(out T target) ? target : null;
+
+            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+            private readonly int _hashCode;
+            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+            private readonly WeakReference<T> _reference;
         }
     }
 }

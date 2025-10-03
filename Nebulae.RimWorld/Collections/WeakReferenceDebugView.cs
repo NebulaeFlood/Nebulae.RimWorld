@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Nebulae.RimWorld
+namespace Nebulae.RimWorld.Collections
 {
     internal sealed class WeakReferenceDebugView<T> where T : class
     {

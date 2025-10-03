@@ -4,21 +4,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Nebulae.RimWorld
+namespace Nebulae.RimWorld.Collections
 {
     /// <summary>
     /// 弱引用集合
     /// </summary>
     /// <typeparam name="T">存储的对象类型</typeparam>
-    /// <remarks>无法存放为 <see langword="null"/> 的对象。</remarks>
+    /// <remarks>不允许存储为 <see langword="null"/> 的元素。</remarks>
     public class WeakList<T> : IEnumerable<T>, IWeakCollection where T : class
     {
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        private readonly List<WeakReference<T>> _items;
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly WeakReference _obsoletedItem = new WeakReference(new object());
-
-
         /// <summary>
         /// 集合中实际的对象个数
         /// </summary>
@@ -65,10 +59,9 @@ namespace Nebulae.RimWorld
         /// <param name="items">集合的初始元素</param>
         public WeakList(IEnumerable<T> items)
         {
-            _items = new List<WeakReference<T>>(
-                from item in items
-                where item != null
-                select new WeakReference<T>(item));
+            _items = new List<WeakReference<T>>(items
+                .Where(x => x != null)
+                .Select(x => new WeakReference<T>(x)));
         }
 
         #endregion
@@ -88,8 +81,6 @@ namespace Nebulae.RimWorld
         /// <param name="item">要添加的对象</param>
         public void Add(T item)
         {
-            PrivatePurge();
-
             if (item is null)
             {
                 return;
@@ -113,16 +104,12 @@ namespace Nebulae.RimWorld
         /// <returns>若集合中存在对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Contains(T item)
         {
-            PrivatePurge();
-
             if (item is null)
             {
                 return false;
             }
 
-            return _items.FindIndex(x =>
-                x.TryGetTarget(out T target)
-                && ReferenceEquals(target, item)) >= 0;
+            return _items.FindIndex(x => x.TryGetTarget(out T target) && ReferenceEquals(target, item)) >= 0;
         }
 
         /// <summary>
@@ -131,8 +118,6 @@ namespace Nebulae.RimWorld
         /// <param name="action">要执行的操作</param>
         public void ForEach(Action<T> action)
         {
-            PrivatePurge();
-
             if (action is null)
             {
                 return;
@@ -155,8 +140,6 @@ namespace Nebulae.RimWorld
         /// <remarks>此方法设计用于方便对集合内容进行访问，使用时注意不要破坏当前引用关系，</remarks>
         public IEnumerator<T> GetEnumerator()
         {
-            bool anyDead = false;
-
             for (int i = _items.Count - 1; i >= 0; i--)
             {
                 if (_items[i].TryGetTarget(out T target))
@@ -166,14 +149,7 @@ namespace Nebulae.RimWorld
                 else
                 {
                     _items.RemoveAt(i);
-
-                    anyDead = true;
                 }
-            }
-
-            if (anyDead)
-            {
-                _items.TrimExcess();
             }
         }
 
@@ -182,10 +158,7 @@ namespace Nebulae.RimWorld
         /// </summary>
         public void Purge()
         {
-            if (_items.RemoveAll(x => !x.TryGetTarget(out _)) > 0)
-            {
-                _items.TrimExcess();
-            }
+            _items.RemoveAll(x => !x.TryGetTarget(out _));
         }
 
         /// <summary>
@@ -195,16 +168,12 @@ namespace Nebulae.RimWorld
         /// <returns>若从集合中移除了对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Remove(T item)
         {
-            PrivatePurge();
-
             if (item is null)
             {
                 return false;
             }
 
-            int index = _items.FindIndex(x =>
-                x.TryGetTarget(out T target)
-                && ReferenceEquals(target, item));
+            int index = _items.FindIndex(x => x.TryGetTarget(out T target) && ReferenceEquals(target, item));
 
             if (index < 0)
             {
@@ -223,23 +192,13 @@ namespace Nebulae.RimWorld
         /// 获取循环访问集合的枚举器
         /// </summary>
         /// <returns>用于循环访问集合的枚举器</returns>
-        /// <remarks>此方法设计用于方便对集合内容进行访问，使用时注意不要破坏当前引用关系，</remarks>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
 
 
-        private void PrivatePurge()
-        {
-            if (_obsoletedItem.IsAlive)
-            {
-                return;
-            }
-
-            Purge();
-
-            _obsoletedItem.Target = new object();
-        }
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        private readonly List<WeakReference<T>> _items;
     }
 }
