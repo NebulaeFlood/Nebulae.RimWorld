@@ -33,11 +33,10 @@ namespace Nebulae.RimWorld
         {
             if (handler is null)
             {
-                return;
+                throw new ArgumentNullException(nameof(handler));
             }
 
-            count++;
-            InsertLast(WeakEventHandlerFactory.Convert<TSender, TArgs>(handler));
+            InsertHandler(WeakEventHandlerFactory.Convert<TSender, TArgs>(handler));
         }
 
         /// <summary>
@@ -48,11 +47,10 @@ namespace Nebulae.RimWorld
         {
             if (handler is null)
             {
-                return;
+                throw new ArgumentNullException(nameof(handler));
             }
 
-            count++;
-            InsertLast(WeakEventHandlerFactory.Convert(handler));
+            InsertHandler(WeakEventHandlerFactory.Convert(handler));
         }
 
         /// <summary>
@@ -63,11 +61,10 @@ namespace Nebulae.RimWorld
         {
             if (handler is null)
             {
-                return;
+                throw new ArgumentNullException(nameof(handler));
             }
 
-            count++;
-            InsertLast(handler);
+            InsertHandler(handler);
         }
 
         /// <summary>
@@ -79,11 +76,10 @@ namespace Nebulae.RimWorld
         {
             if (handler is null)
             {
-                return;
+                throw new ArgumentNullException(nameof(handler));
             }
 
-            count++;
-            InsertLast(WeakEventHandlerFactory.ConvertUnsafe<TSender, TArgs>(handler));
+            InsertHandler(WeakEventHandlerFactory.ConvertUnsafe<TSender, TArgs>(handler));
         }
 
         /// <summary>
@@ -192,6 +188,121 @@ namespace Nebulae.RimWorld
             return false;
         }
 
+        #endregion
+
+
+        private void InsertHandler(IWeakEventHandler<TSender, TArgs> handler)
+        {
+            count++;
+            InsertLast(handler);
+        }
+
+
+        //------------------------------------------------------
+        //
+        //  Operators
+        //
+        //------------------------------------------------------
+
+        #region Operators
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        public static WeakEvent<TSender, TArgs> operator +(WeakEvent<TSender, TArgs> left, Delegate right)
+        {
+            if (left is null)
+            {
+                throw new ArgumentNullException(nameof(left));
+            }
+
+            if (right is null)
+            {
+                throw new ArgumentNullException(nameof(right));
+            }
+
+            left.InsertHandler(WeakEventHandlerFactory.Convert<TSender, TArgs>(right));
+            return left;
+        }
+
+        public static WeakEvent<TSender, TArgs> operator +(WeakEvent<TSender, TArgs> left, Action<TSender, TArgs> right)
+        {
+            if (left is null)
+            {
+                throw new ArgumentNullException(nameof(left));
+            }
+
+            if (right is null)
+            {
+                throw new ArgumentNullException(nameof(right));
+            }
+
+            left.InsertHandler(WeakEventHandlerFactory.Convert(right));
+            return left;
+        }
+
+        public static WeakEvent<TSender, TArgs> operator +(WeakEvent<TSender, TArgs> left, IWeakEventHandler<TSender, TArgs> right)
+        {
+            if (left is null)
+            {
+                throw new ArgumentNullException(nameof(left));
+            }
+
+            if (right is null)
+            {
+                throw new ArgumentNullException(nameof(right));
+            }
+
+            left.InsertHandler(right);
+            return left;
+        }
+
+        public static WeakEvent<TSender, TArgs> operator -(WeakEvent<TSender, TArgs> left, Delegate right)
+        {
+            if (left is null)
+            {
+                throw new ArgumentNullException(nameof(left));
+            }
+
+            if (right is null)
+            {
+                throw new ArgumentNullException(nameof(right));
+            }
+
+            left.RemoveHandler(right);
+            return left;
+        }
+
+        public static WeakEvent<TSender, TArgs> operator -(WeakEvent<TSender, TArgs> left, Action<TSender, TArgs> right)
+        {
+            if (left is null)
+            {
+                throw new ArgumentNullException(nameof(left));
+            }
+
+            if (right is null)
+            {
+                throw new ArgumentNullException(nameof(right));
+            }
+
+            left.RemoveHandler(right);
+            return left;
+        }
+
+        public static WeakEvent<TSender, TArgs> operator -(WeakEvent<TSender, TArgs> left, IWeakEventHandler<TSender, TArgs> right)
+        {
+            if (left is null)
+            {
+                throw new ArgumentNullException(nameof(left));
+            }
+
+            if (right is null)
+            {
+                throw new ArgumentNullException(nameof(right));
+            }
+
+            left.RemoveHandler(right);
+            return left;
+        }
+
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
         #endregion
     }
 }
