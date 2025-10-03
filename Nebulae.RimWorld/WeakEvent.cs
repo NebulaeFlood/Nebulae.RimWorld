@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Nebulae.RimWorld.Collections;
+using System;
 
 namespace Nebulae.RimWorld
 {
@@ -9,14 +9,8 @@ namespace Nebulae.RimWorld
     /// <typeparam name="TSender">处理器的 sender 参数类型</typeparam>
     /// <typeparam name="TArgs">事件数据的类型</typeparam>
     /// <remarks>保存订阅者的弱引用，使订阅者在订阅此事件时可被释放。</remarks>
-    public sealed class WeakEvent<TSender, TArgs> where TArgs : EventArgs
+    public sealed class WeakEvent<TSender, TArgs> : RoughLinkedListBase<IWeakEventHandler<TSender, TArgs>> where TArgs : EventArgs
     {
-        /// <summary>
-        /// 获取当前事件处理器的数量
-        /// </summary>
-        public int Count => _handlers.Count;
-
-
         /// <summary>
         /// 初始化 <see cref="WeakEvent{TSender, TArgs}"/> 的新实例
         /// </summary>
@@ -42,7 +36,8 @@ namespace Nebulae.RimWorld
                 return;
             }
 
-            _handlers.AddLast(WeakEventHandlerFactory.Convert<TSender, TArgs>(handler));
+            count++;
+            InsertLast(WeakEventHandlerFactory.Convert<TSender, TArgs>(handler));
         }
 
         /// <summary>
@@ -56,7 +51,8 @@ namespace Nebulae.RimWorld
                 return;
             }
 
-            _handlers.AddLast(WeakEventHandlerFactory.Convert(handler));
+            count++;
+            InsertLast(WeakEventHandlerFactory.Convert(handler));
         }
 
         /// <summary>
@@ -70,7 +66,8 @@ namespace Nebulae.RimWorld
                 return;
             }
 
-            _handlers.AddLast(handler);
+            count++;
+            InsertLast(handler);
         }
 
         /// <summary>
@@ -85,13 +82,20 @@ namespace Nebulae.RimWorld
                 return;
             }
 
-            _handlers.AddLast(WeakEventHandlerFactory.ConvertUnsafe<TSender, TArgs>(handler));
+            count++;
+            InsertLast(WeakEventHandlerFactory.ConvertUnsafe<TSender, TArgs>(handler));
         }
 
         /// <summary>
         /// 移除所有事件处理器
         /// </summary>
-        public void Clear() => _handlers.Clear();
+        public void Clear()
+        {
+            head = null;
+            tail = null;
+
+            count = 0;
+        }
 
         /// <summary>
         /// 调用所有事件处理器
@@ -100,16 +104,11 @@ namespace Nebulae.RimWorld
         /// <param name="args">包含事件数据的对象</param>
         public void Invoke(TSender sender, TArgs args)
         {
-            if (_handlers.Count < 1)
-            {
-                return;
-            }
-
-            var node = _handlers.First;
+            var node = head;
 
             while (node != null)
             {
-                node.Value.Invoke(sender, args);
+                node.Item.Invoke(sender, args);
                 node = node.Next;
             }
         }
@@ -119,24 +118,18 @@ namespace Nebulae.RimWorld
         /// </summary>
         public void Purge()
         {
-            if (_handlers.Count < 1)
-            {
-                return;
-            }
-
-            var node = _handlers.Last;
+            var node = tail;
 
             while (node != null)
             {
-                if (!node.Value.IsAlive)
+                if (!node.Item.IsAlive)
                 {
-                    _handlers.Remove(node);
+                    count--;
+                    PickUp(node);
                 }
 
-                node = node.Previous;
+                node = node.Prev;
             }
-
-            return;
         }
 
         /// <summary>
@@ -146,22 +139,24 @@ namespace Nebulae.RimWorld
         /// <returns>若成功移除，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool RemoveHandler(Delegate handler)
         {
-            if (_handlers.Count < 1 || handler is null)
+            if (handler is null)
             {
                 return false;
             }
 
-            var node = _handlers.Last;
+            var node = tail;
 
             while (node != null)
             {
-                if (node.Value.Equals(handler))
+                if (node.Item.Equals(handler))
                 {
-                    _handlers.Remove(node);
+                    count--;
+                    PickUp(node);
+
                     return true;
                 }
 
-                node = node.Previous;
+                node = node.Prev;
             }
 
             return false;
@@ -174,30 +169,29 @@ namespace Nebulae.RimWorld
         /// <returns>若成功移除，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool RemoveHandler(IWeakEventHandler<TSender, TArgs> handler)
         {
-            if (_handlers.Count < 1 || handler is null)
+            if (handler is null)
             {
                 return false;
             }
 
-            var node = _handlers.Last;
+            var node = tail;
 
             while (node != null)
             {
-                if (node.Value.Equals(handler))
+                if (node.Item.Equals(handler))
                 {
-                    _handlers.Remove(node);
+                    count--;
+                    PickUp(node);
+
                     return true;
                 }
 
-                node = node.Previous;
+                node = node.Prev;
             }
 
             return false;
         }
 
         #endregion
-
-
-        private readonly LinkedList<IWeakEventHandler<TSender, TArgs>> _handlers = new LinkedList<IWeakEventHandler<TSender, TArgs>>();
     }
 }

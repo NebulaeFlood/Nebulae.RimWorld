@@ -10,7 +10,7 @@ namespace Nebulae.RimWorld
     /// <typeparam name="TOwner">拥有源事件处理器的类型</typeparam>
     /// <typeparam name="TSender">处理器的 sender 参数类型</typeparam>
     /// <typeparam name="TArgs">处理器的 args 参数类型</typeparam>
-    public sealed class WeakEventHandler<TOwner, TSender, TArgs> : IEquatable<WeakEventHandler<TOwner, TSender, TArgs>>, IWeakEventHandler<TSender, TArgs>
+    internal sealed class WeakEventHandler<TOwner, TSender, TArgs> : IEquatable<WeakEventHandler<TOwner, TSender, TArgs>>, IWeakEventHandler<TSender, TArgs>
         where TOwner : class
         where TArgs : EventArgs
     {

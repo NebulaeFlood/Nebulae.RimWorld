@@ -121,11 +121,11 @@ namespace Nebulae.RimWorld
             }
 
             return (IWeakEventHandler<TSender, TArgs>)WeakEventHandlerCreators
-                .GetOrAdd(new Key(method.DeclaringType, typeof(TSender), typeof(TArgs)), CreateCreator)
+                .GetOrAdd(new Key(method.DeclaringType, typeof(TSender), typeof(TArgs)), CreateWeakEventHandlerCreator)
                 .Invoke(owner, method);
         }
 
-        private static Func<object, MethodInfo, object> CreateCreator(Key key)
+        private static Func<object, MethodInfo, object> CreateWeakEventHandlerCreator(Key key)
         {
             var targetExp = Expression.Parameter(typeof(object), "target");
             var methodExp = Expression.Parameter(typeof(MethodInfo), "method");
@@ -134,8 +134,7 @@ namespace Nebulae.RimWorld
                 Expression.Call(
                     typeof(WeakEventHandler<,,>).MakeGenericType(key.OwnerType, key.SenderType, key.ArgsType).GetMethod("Create", BindingFlags.NonPublic | BindingFlags.Static),
                     Expression.Convert(targetExp, key.OwnerType),
-                    methodExp
-                ),
+                    methodExp),
                 targetExp,
                 methodExp).Compile();
         }

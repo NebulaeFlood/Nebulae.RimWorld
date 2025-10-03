@@ -9,7 +9,7 @@ namespace Nebulae.RimWorld
     /// </summary>
     /// <typeparam name="TSender">处理器的 sender 参数类型</typeparam>
     /// <typeparam name="TArgs">处理器的 args 参数类型</typeparam>
-    public sealed class StaticEventHandler<TSender, TArgs> : IWeakEventHandler<TSender, TArgs>, IEquatable<StaticEventHandler<TSender, TArgs>>
+    internal sealed class StaticEventHandler<TSender, TArgs> : IWeakEventHandler<TSender, TArgs>, IEquatable<StaticEventHandler<TSender, TArgs>>
         where TArgs : EventArgs
     {
         /// <inheritdoc/>
