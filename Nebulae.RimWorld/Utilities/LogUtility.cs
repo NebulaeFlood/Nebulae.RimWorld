@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using Verse;
 
 namespace Nebulae.RimWorld.Utilities
@@ -31,6 +32,26 @@ namespace Nebulae.RimWorld.Utilities
                 return type.AsLog(type.Namespace);
             }
 
+            if (obj is MethodInfo method)
+            {
+                return method.Format();
+            }
+
+            if (obj is Delegate @delegate)
+            {
+                return @delegate.Method.Format();
+            }
+
+            if (obj is FieldInfo field)
+            {
+                return $"{field.DeclaringType.AsLog()}";
+            }
+
+            if (obj is PropertyInfo property)
+            {
+                return $"{property.DeclaringType.AsLog()}";
+            }
+
             return obj.ToString();
         }
 
@@ -43,7 +64,7 @@ namespace Nebulae.RimWorld.Utilities
         {
             if (type is null)
             {
-                throw new ArgumentNullException(nameof(type));
+                return $"{typeof(object)}.Null";
             }
 
             return type.AsLog(type.Namespace);
@@ -53,139 +74,207 @@ namespace Nebulae.RimWorld.Utilities
         /// 将 <paramref name="obj"/> 提交为日志
         /// </summary>
         /// <param name="obj">要提交为日志的对象</param>
-        public static void Dump(this object obj) => Log.Message(obj.AsLog());
+        public static void Dump(this object obj)
+        {
+#if DEBUG
+            var message = obj.AsLog();
+
+            Log.Message(message);
+            System.Diagnostics.Debug.WriteLine(message);
+#else
+            Log.Message(message);
+#endif
+        }
 
         /// <summary>
         /// 将 <paramref name="obj"/> 提交为日志
         /// </summary>
         /// <param name="obj">要提交为日志的对象</param>
         /// <param name="title">日志的标题</param>
-        public static void Dump(this object obj, string title) => Log.Message($"[{title}] {obj.AsLog()}");
+        public static void Dump(this object obj, string title)
+        {
+#if DEBUG
+            var message = $"[{title}] {obj.AsLog()}";
+
+            Log.Message(message);
+            System.Diagnostics.Debug.WriteLine(message);
+#else
+            Log.Message($"[{title}] {obj.AsLog()}");
+#endif
+        }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交错误
+        /// 以 <paramref name="subject"/> 为主语，提交错误
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="message">错误内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Error(this string logLabel, string message, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Error(this string subject, string message, string color = "3F48CCFF")
         {
-            Log.Error($"<color=#{color}>[{logLabel}]</color> {message}");
+            Log.Error($"<color=#{color}>[{subject}]</color> {message}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {message}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交错误
+        /// 以 <paramref name="subject"/> 为主语，提交错误
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="message">错误内容</param>
         /// <param name="additionalContent">附加内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Error(this string logLabel, string message, object additionalContent, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Error(this string subject, string message, object additionalContent, string color = "3F48CCFF")
         {
-            Log.Error($"<color=#{color}>[{logLabel}]</color> {message}--->\n {additionalContent.AsLog()}");
+            Log.Error($"<color=#{color}>[{subject}]</color> {message}--->\n {additionalContent.AsLog()}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {message}--->\n {additionalContent.AsLog()}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交错误
+        /// 以 <paramref name="subject"/> 为主语，提交错误
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="content">错误内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Error(this string logLabel, object content, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Error(this string subject, object content, string color = "3F48CCFF")
         {
-            Log.Error($"<color=#{color}>[{logLabel}]</color> {content.AsLog()}");
+            Log.Error($"<color=#{color}>[{subject}]</color> {content.AsLog()}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {content.AsLog()}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交错误
+        /// 以 <paramref name="subject"/> 为主语，提交错误
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="content">错误内容</param>
         /// <param name="additionalContent">附加内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Error(this string logLabel, object content, object additionalContent, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Error(this string subject, object content, object additionalContent, string color = "3F48CCFF")
         {
-            Log.Error($"<color=#{color}>[{logLabel}]</color> {content.AsLog()}--->\n {additionalContent.AsLog()}");
+            Log.Error($"<color=#{color}>[{subject}]</color> {content.AsLog()}--->\n {additionalContent.AsLog()}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {content.AsLog()}--->\n {additionalContent.AsLog()}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交日志
+        /// 以 <paramref name="subject"/> 为主语，提交日志
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="message">日志内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Message(this string logLabel, string message, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Message(this string subject, string message, string color = "3F48CCFF")
         {
-            Log.Message($"<color=#{color}>[{logLabel}]</color> {message}");
+            Log.Message($"<color=#{color}>[{subject}]</color> {message}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {message}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交日志
+        /// 以 <paramref name="subject"/> 为主语，提交日志
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="message">日志内容</param>
         /// <param name="additionalContent">附加内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Message(this string logLabel, string message, object additionalContent, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Message(this string subject, string message, object additionalContent, string color = "3F48CCFF")
         {
-            Log.Message($"<color=#{color}>[{logLabel}]</color> {message}--->\n {additionalContent.AsLog()}");
+            Log.Message($"<color=#{color}>[{subject}]</color> {message}--->\n {additionalContent.AsLog()}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {message}--->\n {additionalContent.AsLog()}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交日志
+        /// 以 <paramref name="subject"/> 为主语，提交日志
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="content">日志内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Message(this string logLabel, object content, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Message(this string subject, object content, string color = "3F48CCFF")
         {
-            Log.Message($"<color=#{color}>[{logLabel}]</color> {content.AsLog()}");
+            Log.Message($"<color=#{color}>[{subject}]</color> {content.AsLog()}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {content.AsLog()}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交日志
+        /// 以 <paramref name="subject"/> 为主语，提交日志
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="content">日志内容</param>
         /// <param name="additionalContent">附加内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Message(this string logLabel, object content, object additionalContent, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Message(this string subject, object content, object additionalContent, string color = "3F48CCFF")
         {
-            Log.Message($"<color=#{color}>[{logLabel}]</color> {content.AsLog()}--->\n {additionalContent.AsLog()}");
+            Log.Message($"<color=#{color}>[{subject}]</color> {content.AsLog()}--->\n {additionalContent.AsLog()}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {content.AsLog()}--->\n {additionalContent.AsLog()}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交成功信息
+        /// 以 <paramref name="subject"/> 为主语，提交成功信息
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="message">日志内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Succeed(this string logLabel, string message, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Succeed(this string subject, string message, string color = "3F48CCFF")
         {
-            Log.Message($"<color=#{color}>[{logLabel}]</color> <color=lime>{message}</color>");
+            Log.Message($"<color=#{color}>[{subject}]</color> <color=lime>{message}</color>");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {message}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交成功信息
+        /// 以 <paramref name="subject"/> 为主语，提交成功信息
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="message">日志内容</param>
         /// <param name="additionalContent">附加内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Succeed(this string logLabel, string message, object additionalContent, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Succeed(this string subject, string message, object additionalContent, string color = "3F48CCFF")
         {
-            Log.Message($"<color=#{color}>[{logLabel}]</color> <color=lime>{message}</color>--->\n {additionalContent.AsLog()}");
+            Log.Message($"<color=#{color}>[{subject}]</color> <color=lime>{message}</color>--->\n {additionalContent.AsLog()}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {message}--->\n {additionalContent.AsLog()}");
+#endif
         }
 
         /// <summary>
-        /// 以 <paramref name="logLabel"/> 为主语，提交警告
+        /// 以 <paramref name="subject"/> 为主语，提交警告
         /// </summary>
-        /// <param name="logLabel">主语</param>
+        /// <param name="subject">主语</param>
         /// <param name="message">警告内容</param>
-        /// <param name="color"><paramref name="logLabel"/> 要设置的颜色。格式详见 Unity 富文本。</param>
-        public static void Warning(this string logLabel, string message, string color = "3F48CCFF")
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Warning(this string subject, string message, string color = "3F48CCFF")
         {
-            Log.Warning($"<color=#{color}>[{logLabel}]</color> {message}");
+            Log.Warning($"<color=#{color}>[{subject}]</color> {message}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {message}");
+#endif
+        }
+
+        /// <summary>
+        /// 以 <paramref name="subject"/> 为主语，提交警告
+        /// </summary>
+        /// <param name="subject">主语</param>
+        /// <param name="message">警告内容</param>
+        /// <param name="additionalContent">附加内容</param>
+        /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        public static void Warning(this string subject, string message, object additionalContent, string color = "3F48CCFF")
+        {
+            Log.Warning($"<color=#{color}>[{subject}]</color> {message}--->\n {additionalContent.AsLog()}");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[{subject}] {message}--->\n {additionalContent.AsLog()}");
+#endif
         }
 
 
@@ -256,6 +345,14 @@ namespace Nebulae.RimWorld.Utilities
             }
 
             return $"{typeNamespace}.{type.Format()}";
+        }
+
+        private static string Format(this MethodInfo method)
+        {
+            var returnType = method.ReturnType;
+            var parameters = method.GetParameters();
+
+            return $"{method.ReturnType.AsLog()} {method.DeclaringType.AsLog()}.{method.Name}({string.Join(", ", parameters.Select(x => x.ParameterType.AsLog()))})";
         }
 
         #endregion
