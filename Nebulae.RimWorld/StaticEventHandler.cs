@@ -100,6 +100,13 @@ namespace Nebulae.RimWorld
         /// <inheritdoc/>
         public void Invoke(TSender sender, TArgs args) => _invocation(sender, args);
 
+        /// <inheritdoc/>
+        public bool TryGetOwner(out object owner)
+        {
+            owner = null;
+            return false;
+        }
+
         #endregion
 
 

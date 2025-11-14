@@ -21,5 +21,12 @@ namespace Nebulae.RimWorld
         /// <param name="sender">发起事件的对象</param>
         /// <param name="args">事件数据</param>
         void Invoke(TSender sender, TArgs args);
+
+        /// <summary>
+        /// 尝试获取拥有此事件处理器的对象
+        /// </summary>
+        /// <param name="owner">拥有此事件处理器的对象</param>
+        /// <returns>若 <paramref name="owner"/> 未被回收，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        bool TryGetOwner(out object owner);
     }
 }

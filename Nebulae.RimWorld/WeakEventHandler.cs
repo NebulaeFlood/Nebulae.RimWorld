@@ -136,6 +136,21 @@ namespace Nebulae.RimWorld
             }
         }
 
+        /// <inheritdoc/>
+        public bool TryGetOwner(out object owner)
+        {
+            var isAlive = _owner.TryGetTarget(out var directOwner);
+            owner = directOwner;
+            return isAlive;
+        }
+
+        /// <summary>
+        /// 尝试获取拥有此事件处理器的对象
+        /// </summary>
+        /// <param name="owner">拥有此事件处理器的对象</param>
+        /// <returns>若 <paramref name="owner"/> 未被回收，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool TryGetOwner(out TOwner owner) => _owner.TryGetTarget(out owner);
+
         #endregion
 
 
