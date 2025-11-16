@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Nebulae.RimWorld.Collections
 {
@@ -7,6 +9,8 @@ namespace Nebulae.RimWorld.Collections
     /// 简易双向列表基类
     /// </summary>
     /// <typeparam name="T">链表元素类型</typeparam>
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(RoughLinkedListDebugView))]
     public abstract class RoughLinkedListBase<T> : IEnumerable<T>, IReadOnlyCollection<T>
     {
         //------------------------------------------------------
@@ -459,5 +463,27 @@ namespace Nebulae.RimWorld.Collections
 
             #endregion
         }
+    }
+
+
+    internal sealed class RoughLinkedListDebugView
+    {
+        public RoughLinkedListDebugView(IEnumerable list)
+        {
+            _list = list;
+        }
+
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public object[] Items
+        {
+            get
+            {
+                return _list.Cast<object>().ToArray();
+            }
+        }
+
+
+        private readonly IEnumerable _list;
     }
 }
