@@ -51,10 +51,10 @@ namespace Nebulae.RimWorld.UI.Core.Data.Expressions
         #region Protected Methods
 
         /// <summary>
-        /// 将该表达式附加到依赖对象的指定依赖属性
+        /// 使该表达式依赖到 <paramref name="target"/> 的依赖属性
         /// </summary>
-        /// <param name="target">该表达式要附加到的依赖对象</param>
-        /// <param name="property">该表达式要附加到的依赖属性</param>
+        /// <param name="target">表达式依赖的对象</param>
+        /// <param name="property">表达式依赖的属性</param>
         protected void Attach(DependencyObject target, DependencyProperty property)
         {
             if (target is null)
@@ -71,10 +71,10 @@ namespace Nebulae.RimWorld.UI.Core.Data.Expressions
         }
 
         /// <summary>
-        /// 从依赖对象的指定依赖属性中移除该表达式
+        /// 移除该表达式对 <paramref name="target"/> 的依赖属性的依赖
         /// </summary>
-        /// <param name="target">要从中移除该表达式的依赖对象</param>
-        /// <param name="property">要从中移除该表达式的依赖属性</param>
+        /// <param name="target">移除表达式依赖的对象</param>
+        /// <param name="property">移除表达式依赖的属性</param>
         protected void Detach(DependencyObject target, DependencyProperty property)
         {
             if (target is null)
@@ -98,6 +98,20 @@ namespace Nebulae.RimWorld.UI.Core.Data.Expressions
         /// <returns>由该表达式计算得到的结果。</returns>
         /// <remarks>使用该方法时，不应使传入的 <paramref name="caller"/> 或 <paramref name="property"/> 为 <see langword="null"/>。</remarks>
         protected internal abstract object GetValue(DependencyObject caller, DependencyProperty property);
+
+        /// <summary>
+        /// 当该表达式成功依赖于 <paramref name="target"/> 的依赖属性时调用
+        /// </summary>
+        /// <param name="target">表达式依赖的对象</param>
+        /// <param name="property">表达式依赖的属性</param>
+        protected internal virtual void OnAttached(DependencyObject target, DependencyProperty property) { }
+
+        /// <summary>
+        /// 当该表达式失去对 <paramref name="target"/> 的依赖属性的依赖时调用
+        /// </summary>
+        /// <param name="target">移除表达式依赖的对象</param>
+        /// <param name="property">移除表达式依赖的属性</param>
+        protected internal virtual void OnDetached(DependencyObject target, DependencyProperty property) { }
 
         /// <summary>
         /// 更新该表达式

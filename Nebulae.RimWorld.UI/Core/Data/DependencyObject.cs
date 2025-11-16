@@ -242,6 +242,8 @@ namespace Nebulae.RimWorld.UI.Core.Data
             dependentList = new DependentList { expression };
 
             _dependentMaps[property] = dependentList;
+
+            expression.OnAttached(this, property);
         }
 
         internal void RemoveDependent(DependencyProperty property, Expression expression)
@@ -257,6 +259,8 @@ namespace Nebulae.RimWorld.UI.Core.Data
             {
                 _dependentMaps.Remove(property);
             }
+
+            expression.OnDetached(this, property);
         }
 
         internal object CoerceValue(DependencyProperty property, PropertyMetadata metadata, object value, out bool isCoerced)
