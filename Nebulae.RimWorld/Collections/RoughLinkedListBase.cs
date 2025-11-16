@@ -383,19 +383,12 @@ namespace Nebulae.RimWorld.Collections
         private class Enumerator : IEnumerator<T>
         {
             /// <summary>
-            /// 获取枚举器当前指向位置对应的集合元素
-            /// </summary>
-            public T Current => _currentValue;
-
-
-            /// <summary>
             /// 初始化 <see cref="Enumerator"/> 的新实例
             /// </summary>
             /// <param name="list">枚举器要枚举的 <see cref="RoughLinkedListBase{T}"/></param>
             public Enumerator(RoughLinkedListBase<T> list)
             {
                 _list = list;
-                _currentNode = _list.head;
             }
 
 
@@ -422,7 +415,20 @@ namespace Nebulae.RimWorld.Collections
             /// <returns>若成功后移，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
             public bool MoveNext()
             {
-                if (_currentNode is null || _currentNode.Next is null)
+                if (_currentNode is null)
+                {
+                    if (_list.count < 1)
+                    {
+                        return false;
+                    }
+
+                    _currentNode = _list.head;
+                    _currentValue = _currentNode.Item;
+
+                    return true;
+                }
+
+                if (_currentNode.Next is null)
                 {
                     return false;
                 }
@@ -442,10 +448,25 @@ namespace Nebulae.RimWorld.Collections
             #endregion
 
 
+            //------------------------------------------------------
+            //
+            //  IEnumerator
+            //
+            //------------------------------------------------------
+
+            #region IEnumerator
+
             /// <summary>
             /// 获取枚举器当前指向位置对应的集合元素
             /// </summary>
             object IEnumerator.Current => _currentValue;
+
+            /// <summary>
+            /// 获取枚举器当前指向位置对应的集合元素
+            /// </summary>
+            T IEnumerator<T>.Current => _currentValue;
+
+            #endregion
 
 
             //------------------------------------------------------
