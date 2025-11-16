@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Verse;
 
 namespace Nebulae.RimWorld.UI.Core.Data
 {
     /// <summary>
-    /// 依赖属性的值更改后的事件数据
+    /// 依赖属性值更改后的事件数据
     /// </summary>
-    public sealed class DependencyPropertyChangedEventArgs : EventArgs
+    public sealed class DependencyPropertyChangedEventArgs
     {
         //------------------------------------------------------
         //
@@ -16,92 +16,42 @@ namespace Nebulae.RimWorld.UI.Core.Data
         #region Public Fields
 
         /// <summary>
-        /// 属性的元数据
+        /// 值被更改的依赖属性
+        /// </summary>
+        public readonly DependencyProperty Property;
+
+        /// <summary>
+        /// 依赖属性的元数据
         /// </summary>
         public readonly PropertyMetadata Metadata;
 
         /// <summary>
-        /// 值被更改的属性
+        /// 依赖属性的新值
         /// </summary>
-        public readonly DependencyProperty Property;
+        public object NewValue;
+
+        /// <summary>
+        /// 依赖属性的旧值
+        /// </summary>
+        public object OldValue;
 
         #endregion
 
-
-        //------------------------------------------------------
-        //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
-        #region Public Properties
-
-        /// <summary>
-        /// 属性的新值
-        /// </summary>
-        public object NewValue => NewEntry.IsTemporary ? NewEntry.TemporaryValue : NewEntry.Value;
-
-        /// <summary>
-        /// 属性的旧值
-        /// </summary>
-        public object OldValue => OldEntry.IsTemporary ? OldEntry.TemporaryValue : OldEntry.Value;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Constructors
-        //
-        //------------------------------------------------------
-
-        #region Constructors
 
         /// <summary>
         /// 初始化 <see cref="DependencyPropertyChangedEventArgs"/> 的新实例
         /// </summary>
-        /// <param name="property">更改的属性</param>
-        /// <param name="metadata">属性元数据</param>
-        /// <param name="newEntry">新的有效项</param>
-        internal DependencyPropertyChangedEventArgs(DependencyProperty property, PropertyMetadata metadata, EffectiveValueEntry newEntry)
+        /// <param name="property">更改的依赖属性</param>
+        /// <param name="metadata">依赖属性元数据</param>
+        /// <param name="oldValue">旧的依赖属性值</param>
+        /// <param name="newValue">新的依赖属性值</param>
+        public DependencyPropertyChangedEventArgs(DependencyProperty property, PropertyMetadata metadata, object oldValue, object newValue)
         {
-            Metadata = metadata;
             Property = property;
-
-            OldEntry = new EffectiveValueEntry(metadata.defaultValue);
-            NewEntry = newEntry;
-        }
-
-        /// <summary>
-        /// 初始化 <see cref="DependencyPropertyChangedEventArgs"/> 的新实例
-        /// </summary>
-        /// <param name="property">更改的属性</param>
-        /// <param name="metadata">属性元数据</param>
-        /// <param name="oldEntry">旧的有效项</param>
-        /// <param name="newEntry">新的有效项</param>
-        internal DependencyPropertyChangedEventArgs(DependencyProperty property, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry newEntry)
-        {
             Metadata = metadata;
-            Property = property;
 
-            OldEntry = oldEntry;
-            NewEntry = newEntry;
+            OldValue = oldValue;
+            NewValue = newValue;
         }
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
-        //  Internal Fields
-        //
-        //------------------------------------------------------
-
-        #region Internal Fields
-
-        internal readonly EffectiveValueEntry NewEntry;
-        internal readonly EffectiveValueEntry OldEntry;
-
-        #endregion
     }
 }

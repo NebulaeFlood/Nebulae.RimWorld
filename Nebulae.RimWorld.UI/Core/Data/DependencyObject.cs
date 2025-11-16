@@ -1,36 +1,75 @@
-﻿using Nebulae.RimWorld.UI.Automation.Diagnostics;
-using Nebulae.RimWorld.UI.Core.Data.Bindings;
+﻿using Nebulae.RimWorld.UI.Core.Data.Expressions;
 using Nebulae.RimWorld.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 
 namespace Nebulae.RimWorld.UI.Core.Data
 {
     /// <summary>
     /// 依赖对象
     /// </summary>
-    [DebuggerStepThrough]
     public abstract class DependencyObject
     {
         //------------------------------------------------------
         //
-        //  Construstor
+        //  Public Fields
         //
         //------------------------------------------------------
 
-        #region Construstor
+        #region Public Fields
+
+        /// <summary>
+        /// 该 <see cref="DependencyObject"/> 的实际类型
+        /// </summary>
+        public readonly Type Type;
+
+        /// <summary>
+        /// 该 <see cref="DependencyObject"/> 的 CLR 类型包装器
+        /// </summary>
+        public DependencyObjectType DependencyObjectType;
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Public Properties
+        //
+        //------------------------------------------------------
+
+        #region Public Properties
+
+        /// <summary>
+        /// 获取 <see cref="DependencyObject"/> 的父级
+        /// </summary>
+        public DependencyObject Parent
+        {
+            get => parent;
+        }
+
+        /// <summary>
+        /// 获取 <see cref="DependencyObject"/> 的逻辑子元素集合
+        /// </summary>
+        /// <remarks>需保证返回的集合中不包含 <see langword="null"/>。</remarks>
+        public virtual IEnumerable<DependencyObject> LogicalChildren
+        {
+            get => Enumerable.Empty<DependencyObject>();
+        }
+
+        #endregion
+
 
         /// <summary>
         /// 为 <see cref="DependencyObject"/> 派生类实现基本初始化
         /// </summary>
-        protected DependencyObject()
+        /// <param name="type">该 <see cref="DependencyObject"/> 的实际类型</param>
+        /// <remarks><paramref name="type"/> 不应为 <see langword="null"/>。</remarks>
+        protected DependencyObject(Type type)
         {
-            Type = GetType();
-            DependencyType = DependencyObjectType.From(Type);
+            Type = type;
+            DependencyObjectType = DependencyObjectType.FromSystemTypeUnsafe(type);
         }
-
-        #endregion
 
 
         //------------------------------------------------------
@@ -42,11 +81,42 @@ namespace Nebulae.RimWorld.UI.Core.Data
         #region Public Methods
 
         /// <summary>
-        /// 获取依赖属性的值
+        /// 清除依赖属性的有效值
         /// </summary>
-        /// <param name="property">要获取值的依赖属性</param>
-        /// <returns>依赖属性的值</returns>
-        /// <exception cref="ArgumentNullException">当 <paramref name="property"/> 为 <see langword="null"/> 时发生。</exception>
+        /// <param name="property">要清除有效值的依赖属性</param>
+        /// <remarks>仅清除优先级为 <see cref="ValuePrecedence.Local"/> 的有效值。</remarks>
+        public void ClearValue(DependencyProperty property)
+        {
+            if (property is null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
+            updatableProperties.Remove(property);
+            ClearValueCommon(property, ValuePrecedence.Local);
+        }
+
+        /// <summary>
+        /// 清除依赖属性的有效值
+        /// </summary>
+        /// <param name="property">要清除有效值的依赖属性</param>
+        /// <param name="precedence">要清除的有效值的优先级</param>
+        public void ClearValue(DependencyProperty property, ValuePrecedence precedence)
+        {
+            if (property is null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
+            updatableProperties.Remove(property);
+            ClearValueCommon(property, precedence);
+        }
+
+        /// <summary>
+        /// 获取依赖属性的有效值
+        /// </summary>
+        /// <param name="property">要获取有效值的依赖属性</param>
+        /// <returns><paramref name="property"/> 的有效值。</returns>
         public object GetValue(DependencyProperty property)
         {
             if (property is null)
@@ -58,46 +128,35 @@ namespace Nebulae.RimWorld.UI.Core.Data
         }
 
         /// <summary>
-        /// 恢复依赖属性到临时状态前的值
+        /// 获取依赖属性的有效值
         /// </summary>
-        /// <param name="property">要恢复的依赖属性</param>
-        /// <exception cref="ArgumentNullException">当 <paramref name="property"/> 为 <see langword="null"/> 时发生。</exception>
-        public void RestoreValue(DependencyProperty property)
+        /// <param name="property">要获取有效值的依赖属性</param>
+        /// <param name="precedence">要获取的有效值的优先级</param>
+        /// <returns><paramref name="property"/> 在 <paramref name="precedence"/> 优先级下的有效值。</returns>
+        /// <remarks>当未设置在 <paramref name="precedence"/> 优先级下的有效值时，将返回默认值。</remarks>
+        public object GetValue(DependencyProperty property, ValuePrecedence precedence)
         {
             if (property is null)
             {
                 throw new ArgumentNullException(nameof(property));
             }
 
-            if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
+            switch (precedence)
             {
-                if (!oldEntry.IsTemporary)
-                {
-                    return;
-                }
-
-                if (Compare(oldEntry.TemporaryValue, oldEntry.Value, ForceValueStatus.Common, out var newEntry))
-                {
-                    return;
-                }
-
-                var args = new DependencyPropertyChangedEventArgs(
-                    property,
-                    property.GetMetadata(DependencyType),
-                    oldEntry,
-                    newEntry);
-
-                SetValueStraightly(args);
+                case ValuePrecedence.Default:
+                    return property[DependencyObjectType].DefaultValue;
+                case ValuePrecedence.Local:
+                    return GetValueCommon(property);
+                default:
+                    return GetValueDirectly(property, precedence);
             }
         }
 
         /// <summary>
-        /// 设置依赖属性的值
+        /// 设置依赖属性的有效值
         /// </summary>
-        /// <param name="property">要设置值的依赖属性</param>
-        /// <param name="value">要设置的值</param>
-        /// <exception cref="ArgumentNullException">当 <paramref name="property"/> 为 <see langword="null"/> 时发生。</exception>、
-        /// <remarks>将移除依赖属性的临时状态。</remarks>
+        /// <param name="property">要设置有效值的依赖属性</param>
+        /// <param name="value">要设置的有效值</param>
         public void SetValue(DependencyProperty property, object value)
         {
             if (property is null)
@@ -105,40 +164,63 @@ namespace Nebulae.RimWorld.UI.Core.Data
                 throw new ArgumentNullException(nameof(property));
             }
 
-            if (ReferenceEquals(DependencyProperty.UnsetValue, value))
+            if (value is Expression expression)
             {
-                return;
+                updatableProperties.Remove(property);
+
+                SetValueExpression(property, expression);
             }
+            else
+            {
+                property.ValidateValue(value);
+                updatableProperties.Remove(property);
 
-            value = ResolveValue(property, value, out var metadata);
-
-            SetValueCommon(property, metadata, value, ForceValueStatus.Common);
+                SetValueCommon(property, value);
+            }
         }
 
         /// <summary>
-        /// 临时地设置依赖属性的值
+        /// 设置依赖属性指定优先级的有效值
         /// </summary>
-        /// <param name="property">要设置值的依赖属性</param>
-        /// <param name="value">要设置的值</param>
-        /// <exception cref="ArgumentNullException">当 <paramref name="property"/> 为 <see langword="null"/> 时发生。</exception>
-        public void SetValueTemporarily(DependencyProperty property, object value)
+        /// <param name="property">要设置有效值的依赖属性</param>
+        /// <param name="value">要设置的有效值</param>
+        /// <param name="precedence">设置的有效值的优先级</param>
+        public void SetValue(DependencyProperty property, object value, ValuePrecedence precedence)
         {
             if (property is null)
             {
                 throw new ArgumentNullException(nameof(property));
             }
 
-            if (ReferenceEquals(DependencyProperty.UnsetValue, value))
+            if (value is Expression expression)
             {
+                updatableProperties.Remove(property);
+
+                SetValueExpression(property, expression);
                 return;
             }
 
-            value = ResolveValue(property, value, out var metadata);
+            property.ValidateValue(value);
+            updatableProperties.Remove(property);
 
-            SetValueCommon(property, metadata, value, ForceValueStatus.Temporary);
+            if (precedence is ValuePrecedence.Local)
+            {
+                SetValueCommon(property, value);
+            }
+            else
+            {
+                SetValueDirectly(property, value, precedence);
+            }
         }
 
         #endregion
+
+
+        /// <summary>
+        /// 当前对象的依赖属性的值发生变化时执行的方法
+        /// </summary>
+        /// <param name="args">有关属性更改的数据</param>
+        protected virtual void OnDependencyPropertyChanged(DependencyPropertyChangedEventArgs args) { }
 
 
         //------------------------------------------------------
@@ -149,59 +231,76 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
         #region Internal Methods
 
-        internal void SetValueByBinding(DependencyProperty property, object value)
+        internal void AddDependent(DependencyProperty property, Expression expression)
         {
-            if (property is null)
+            if (_dependentMaps.TryGetValue(property, out DependentList dependentList))
             {
-                throw new ArgumentNullException(nameof(property));
-            }
-
-            if (ReferenceEquals(DependencyProperty.UnsetValue, value))
-            {
+                dependentList.Add(expression);
                 return;
             }
 
-            value = ResolveValue(property, value, out var metadata);
+            dependentList = new DependentList { expression };
 
-            DependencyPropertyChangedEventArgs args;
-            EffectiveValueEntry newEntry;
-
-            if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
-            {
-                if (Compare(oldEntry, value, ForceValueStatus.Keep, out newEntry))
-                {
-                    return;
-                }
-            }
-            else if (Compare(metadata.defaultValue, value, ForceValueStatus.Keep, out newEntry))
-            {
-                return;
-            }
-
-            args = new DependencyPropertyChangedEventArgs(
-                property,
-                metadata,
-                newEntry);
-
-            SetValueStraightly(args);
+            _dependentMaps[property] = dependentList;
         }
 
-        #endregion
+        internal void RemoveDependent(DependencyProperty property, Expression expression)
+        {
+            if (!_dependentMaps.TryGetValue(property, out DependentList dependentList))
+            {
+                return;
+            }
 
+            dependentList.Remove(expression);
 
-        //------------------------------------------------------
-        //
-        //  Protected Method
-        //
-        //------------------------------------------------------
+            if (dependentList.IsEmpty)
+            {
+                _dependentMaps.Remove(property);
+            }
+        }
 
-        #region Protected Method
+        internal object CoerceValue(DependencyProperty property, PropertyMetadata metadata, object value, out bool isCoerced)
+        {
+            var coerceValueCallback = metadata.CoerceValueCallback;
 
-        /// <summary>
-        /// 当前对象的依赖属性的值发生变化时执行的方法
-        /// </summary>
-        /// <param name="args">有关属性更改的数据</param>
-        protected virtual void OnDependencyPropertyChanged(DependencyPropertyChangedEventArgs args) { }
+            if (coerceValueCallback is null)
+            {
+                isCoerced = false;
+                return value;
+            }
+
+            object coercedValue = coerceValueCallback.Invoke(this, value);
+
+            if (!Equals(coercedValue, value))
+            {
+                try
+                {
+                    property.ValidateValue(coercedValue);
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidOperationException($"Coerced value '{coercedValue.AsLog()}' of type '{coercedValue.GetType()}' is not valid for '{property}'.", e);
+                }
+
+                isCoerced = true;
+                return coercedValue;
+            }
+
+            isCoerced = false;
+            return value;
+        }
+
+        internal object GetBindingValue(DependencyProperty property)
+        {
+            if (_effectiveValues.TryGetValue(property, out DependencyValue values))
+            {
+                return values.GetValue();
+            }
+            else
+            {
+                return property[DependencyObjectType].DefaultValue;
+            }
+        }
 
         #endregion
 
@@ -214,158 +313,256 @@ namespace Nebulae.RimWorld.UI.Core.Data
 
         #region Private Methods
 
-        private static bool Compare(EffectiveValueEntry oldEntry, object newValue, ForceValueStatus forceStatus, out EffectiveValueEntry newEntry)
+        private void ClearValueCommon(DependencyProperty property, ValuePrecedence precedence)
         {
-            object oldValue;
-
-            if (forceStatus is ForceValueStatus.Common)
+            if (!_effectiveValues.TryGetValue(property, out DependencyValue values))
             {
-                oldValue = oldEntry.IsTemporary ? oldEntry.TemporaryValue : oldEntry.Value;
-                newEntry = new EffectiveValueEntry(newValue);
-
+                return;
             }
-            else if (forceStatus is ForceValueStatus.Keep)
-            {
 
-                if (oldEntry.IsTemporary)
+            PropertyMetadata metadata = values.Metadata;
+            object oldValue = values.GetValue(this, property);
+
+            values.RemoveValue(precedence);
+
+            if (values.IsEmpty)
+            {
+                if (!metadata.Inherits || parent is null)
                 {
-                    oldValue = oldEntry.TemporaryValue;
-                    newEntry = new EffectiveValueEntry(oldEntry.Value, newValue);
+                    values.SetValue(this, property, metadata.DefaultValue, ValuePrecedence.Default);
                 }
                 else
                 {
-                    oldValue = oldEntry.Value;
-                    newEntry = new EffectiveValueEntry(newValue);
+                    values.SetValue(this, property, parent.GetValueCommon(property), ValuePrecedence.Inherited);
                 }
-
             }
-            else
+
+            object newValue = values.GetValue(this, property);
+
+            if (!Equals(oldValue, newValue))
             {
-                oldValue = oldEntry.IsTemporary ? oldEntry.TemporaryValue : oldEntry.Value;
-                newEntry = new EffectiveValueEntry(oldEntry.Value, newValue);
+                NotifyPropertyChanged(new DependencyPropertyChangedEventArgs(
+                    property,
+                    values.Metadata,
+                    oldValue,
+                    newValue));
             }
-
-            return oldValue?.Equals(newValue) ?? newValue is null;
-        }
-
-        private static bool Compare(object oldValue, object newValue, ForceValueStatus forceStatus, out EffectiveValueEntry newEntry)
-        {
-            if (forceStatus is ForceValueStatus.Temporary)
-            {
-                newEntry = new EffectiveValueEntry(oldValue, newValue);
-            }
-            else
-            {
-                newEntry = new EffectiveValueEntry(newValue);
-            }
-
-            return oldValue?.Equals(newValue) ?? newValue is null;
         }
 
         private object GetValueCommon(DependencyProperty property)
         {
-            if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry valueEntry))
+            if (_effectiveValues.TryGetValue(property, out DependencyValue values))
             {
-                return valueEntry.IsTemporary ? valueEntry.TemporaryValue : valueEntry.Value;
+                return values.GetValue(this, property);
             }
 
-            return property.GetMetadata(DependencyType).defaultValue;
-        }
-
-        private object ResolveValue(DependencyProperty property, object value, out PropertyMetadata metadata)
-        {
-            if (!property.ValidateValue(value, out var exception))
+            if (property.IsDefaultMetadata)
             {
-                throw new InvalidOperationException($"Value '{value.AsLog()}' of type '{value.GetType()}' is not valid for '{property.OwnerType}.{property.Name}'.", exception);
+                return property.DefaultMetadata.DefaultValue;
             }
 
-            metadata = property.GetMetadata(DependencyType);
+            PropertyMetadata metadata = property[DependencyObjectType];
+            values = new DependencyValue(metadata);
 
-            if (metadata.coerceValueCallback is null)
+            if (!metadata.Inherits || parent is null)
             {
-                return value;
-            }
-
-            object coercedValue = metadata.coerceValueCallback.Invoke(this, value);
-
-            if (!coercedValue.Equals(value) && !property.ValidateValue(coercedValue, out exception))
-            {
-                throw new InvalidOperationException($"Coerced value '{coercedValue.AsLog()}' of type '{coercedValue.GetType()}' is not valid for '{property.OwnerType}.{property.Name}'.", exception);
-            }
-
-            return coercedValue;
-        }
-
-        private void SetValueCommon(DependencyProperty property, PropertyMetadata metadata, object newValue, ForceValueStatus valueStatus)
-        {
-            DependencyPropertyChangedEventArgs args;
-            EffectiveValueEntry newEntry;
-
-            if (_effectiveValues.TryGetValue(property, out EffectiveValueEntry oldEntry))
-            {
-                if (Compare(oldEntry, newValue, valueStatus, out newEntry))
-                {
-                    return;
-                }
+                values.SetValue(this, property, metadata.DefaultValue, ValuePrecedence.Default);
             }
             else
             {
-                if (Compare(metadata.defaultValue, newValue, valueStatus, out newEntry))
+                values.SetValue(this, property, parent.GetValueCommon(property), ValuePrecedence.Inherited);
+            }
+
+            _effectiveValues[property] = values;
+            return values.GetValue(this, property);
+        }
+
+        private object GetValueDirectly(DependencyProperty property, ValuePrecedence precedence)
+        {
+            if (_effectiveValues.TryGetValue(property, out DependencyValue values))
+            {
+                return values.GetValue(precedence);
+            }
+            else
+            {
+                return property[DependencyObjectType].DefaultValue;
+            }
+        }
+
+        private DependencyValue GetValueStore(DependencyProperty property)
+        {
+            if (_effectiveValues.TryGetValue(property, out DependencyValue values))
+            {
+                return values;
+            }
+
+            PropertyMetadata metadata = property[DependencyObjectType];
+            values = new DependencyValue(metadata);
+
+            if (property.IsDefaultMetadata || !metadata.Inherits || parent is null)
+            {
+                values.SetValue(this, property, metadata.DefaultValue, ValuePrecedence.Default);
+            }
+            else
+            {
+                values.SetValue(this, property, parent.GetValueCommon(property), ValuePrecedence.Inherited);
+            }
+
+            _effectiveValues[property] = values;
+            return values;
+        }
+
+        private void SetValueCommon(DependencyProperty property, object value)
+        {
+            DependencyValue values = GetValueStore(property);
+            object oldValue = values.GetValue(this, property);
+
+            if (values.Expression is null)
+            {
+                if (Equals(oldValue, value))
                 {
                     return;
                 }
+
+                values.SetValue(this, property, value, ValuePrecedence.Local);
+            }
+            else
+            {
+                if (values.Expression.Assignable)
+                {
+                    values.SetValue(this, property, value, ValuePrecedence.Cache);
+                }
+                else
+                {
+                    var expression = values.Expression;
+
+                    values.Expression = null;
+                    values.RemoveValue(ValuePrecedence.Cache);
+                    values.SetValue(this, property, value, ValuePrecedence.Local);
+
+                    RemoveDependent(property, expression);
+                }
             }
 
-            args = new DependencyPropertyChangedEventArgs(
-                property,
-                metadata,
-                newEntry);
+            object newValue = values.GetValue(this, property);
 
-            SetValueStraightly(args);
+            if (!Equals(oldValue, newValue))
+            {
+                NotifyPropertyChanged(new DependencyPropertyChangedEventArgs(
+                    property,
+                    values.Metadata,
+                    oldValue,
+                    newValue));
+            }
         }
 
-        private void SetValueStraightly(DependencyPropertyChangedEventArgs args)
+        private void SetValueDirectly(DependencyProperty property, object value, ValuePrecedence precedence)
         {
-            _effectiveValues[args.Property] = args.NewEntry;
+            DependencyValue values = GetValueStore(property);
+            object oldValue = values.GetValue(this, property);
 
-            args.Metadata.propertyChangedCallback?.Invoke(this, args);
+            if (Equals(oldValue, value))
+            {
+                return;
+            }
 
+            values.SetValue(this, property, value, precedence);
+
+            object newValue = values.GetValue(this, property);
+
+            if (!Equals(oldValue, newValue))
+            {
+                NotifyPropertyChanged(new DependencyPropertyChangedEventArgs(
+                    property,
+                    values.Metadata,
+                    oldValue,
+                    newValue));
+            }
+        }
+
+        private void SetValueExpression(DependencyProperty property, Expression newExpr)
+        {
+            DependencyValue values = GetValueStore(property);
+
+            if (values.Expression == newExpr)
+            {
+                return;
+            }
+
+            object oldValue = values.GetValue(this, property);
+
+            if (values.Expression != null)
+            {
+                var oldExpr = values.Expression;
+
+                values.Expression = null;
+                values.RemoveValue(ValuePrecedence.Cache);
+
+                RemoveDependent(property, oldExpr);
+            }
+
+            if (newExpr != Expression.Empty)
+            {
+                values.Expression = newExpr;
+
+                AddDependent(property, newExpr);
+            }
+
+            object newValue = values.GetValue(this, property);
+
+            if (!Equals(oldValue, newValue))
+            {
+                NotifyPropertyChanged(new DependencyPropertyChangedEventArgs(
+                    property,
+                    values.Metadata,
+                    oldValue,
+                    newValue));
+            }
+        }
+
+        private void NotifyPropertyChanged(DependencyPropertyChangedEventArgs args)
+        {
+            args.Metadata.PropertyChangedCallback?.Invoke(this, args);
             OnDependencyPropertyChanged(args);
-            PropertyBindings.Update(this, args);
+
+            if (_dependentMaps.TryGetValue(args.Property, out DependentList dependentList))
+            {
+                updatableProperties.Add(args.Property);
+                dependentList.Update(this, args.Property, args.NewValue);
+            }
+
+            if (args.Metadata.Inherits)
+            {
+                foreach (var child in LogicalChildren)
+                {
+                    if (!updatableProperties.Contains(args.Property))
+                    {
+                        return;
+                    }
+
+                    child.SetValueDirectly(args.Property, args.NewValue, ValuePrecedence.Inherited);
+                }
+            }
         }
 
         #endregion
 
 
+        internal DependencyObject parent;
+        internal readonly HashSet<DependencyProperty> updatableProperties = new HashSet<DependencyProperty>();
+
+
         //------------------------------------------------------
         //
-        //  Fields
+        //  Private Fields
         //
         //------------------------------------------------------
 
-        #region Fields
+        #region Private Fields
 
-        /// <summary>
-        /// 依赖对象当前的类型
-        /// </summary>
-        [DebugMember(int.MinValue)]
-        public readonly Type Type;
-
-
-        internal readonly DependencyObjectType DependencyType;
-        internal readonly DependencyPropertyBindings PropertyBindings = new DependencyPropertyBindings();
-
-
-        private readonly Dictionary<DependencyProperty, EffectiveValueEntry> _effectiveValues = new Dictionary<DependencyProperty, EffectiveValueEntry>();
+        private readonly Dictionary<DependencyProperty, DependencyValue> _effectiveValues = new Dictionary<DependencyProperty, DependencyValue>();
+        private readonly Dictionary<DependencyProperty, DependentList> _dependentMaps = new Dictionary<DependencyProperty, DependentList>();
 
         #endregion
-
-
-        private enum ForceValueStatus
-        {
-            Common,
-            Keep,
-            Temporary
-        }
     }
 }
