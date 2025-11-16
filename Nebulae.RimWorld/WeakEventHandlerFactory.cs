@@ -121,11 +121,11 @@ namespace Nebulae.RimWorld
             }
 
             return (IWeakEventHandler<TSender, TArgs>)WeakEventHandlerCreators
-                .GetOrAdd(new Key(method.DeclaringType, typeof(TSender), typeof(TArgs)), CreateWeakEventHandlerCreator)
+                .GetOrAdd(new CreatorKey(method.DeclaringType, typeof(TSender), typeof(TArgs)), CreateWeakEventHandlerCreator)
                 .Invoke(owner, method);
         }
 
-        private static Func<object, MethodInfo, object> CreateWeakEventHandlerCreator(Key key)
+        private static Func<object, MethodInfo, object> CreateWeakEventHandlerCreator(CreatorKey key)
         {
             var targetExp = Expression.Parameter(typeof(object), "target");
             var methodExp = Expression.Parameter(typeof(MethodInfo), "method");
@@ -153,10 +153,10 @@ namespace Nebulae.RimWorld
         #endregion
 
 
-        private static readonly ConcurrentDictionary<Key, Func<object, MethodInfo, object>> WeakEventHandlerCreators = new ConcurrentDictionary<Key, Func<object, MethodInfo, object>>();
+        private static readonly ConcurrentDictionary<CreatorKey, Func<object, MethodInfo, object>> WeakEventHandlerCreators = new ConcurrentDictionary<CreatorKey, Func<object, MethodInfo, object>>();
 
 
-        private readonly struct Key : IEquatable<Key>
+        private readonly struct CreatorKey : IEquatable<CreatorKey>
         {
             //------------------------------------------------------
             //
@@ -173,7 +173,7 @@ namespace Nebulae.RimWorld
             #endregion
 
 
-            public Key(Type ownerType, Type senderType, Type argsType)
+            public CreatorKey(Type ownerType, Type senderType, Type argsType)
             {
                 OwnerType = ownerType;
                 SenderType = senderType;
@@ -193,7 +193,7 @@ namespace Nebulae.RimWorld
 
             public override bool Equals(object obj)
             {
-                if (obj is Key other)
+                if (obj is CreatorKey other)
                 {
                     return OwnerType == other.OwnerType
                         && SenderType == other.SenderType
@@ -203,7 +203,7 @@ namespace Nebulae.RimWorld
                 return false;
             }
 
-            public bool Equals(Key other)
+            public bool Equals(CreatorKey other)
             {
                 return OwnerType == other.OwnerType
                     && SenderType == other.SenderType
