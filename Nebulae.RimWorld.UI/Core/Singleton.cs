@@ -10,10 +10,7 @@ namespace Nebulae.RimWorld.UI.Core
     /// 表示一个独一无二的对象
     /// </summary>
     /// <typeparam name="T">对象类型</typeparam>
-    /// <remarks>
-    /// 用于保证成员在 <see cref="OwnerType"/> 及其子类型中唯一。<para/>
-    /// 子类型需要在创建实例前使用 <see cref="Exist"/> 方法判断是否已经存在相同对象。
-    /// </remarks>
+    /// <remarks>派生自 <see cref="Singleton{T}"/> 的类型需要在创建实例前使用 <see cref="Exist"/> 方法判断是否已经存在相同对象。</remarks>
     [DebuggerStepThrough]
     public abstract class Singleton<T> : IEquatable<Singleton<T>> where T : Singleton<T>
     {
