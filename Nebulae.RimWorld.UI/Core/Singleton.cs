@@ -121,13 +121,19 @@ namespace Nebulae.RimWorld.UI.Core
         /// 获取当前对象的哈希代码
         /// </summary>
         /// <returns>当前对象的哈希代码。</returns>
-        public override sealed int GetHashCode() => Id;
+        public override sealed int GetHashCode()
+        {
+            return Id;
+        }
 
         /// <summary>
         /// 获取表示当前对象的字符串
         /// </summary>
         /// <returns>表示当前对象的字符串。</returns>
-        public override sealed string ToString() => $"{OwnerType.AsLog()}.{Name}";
+        public override sealed string ToString()
+        {
+            return $"{OwnerType.AsLog()}.{Name}";
+        }
 
         #endregion
 
@@ -160,11 +166,6 @@ namespace Nebulae.RimWorld.UI.Core
             #region Public Fields
 
             /// <summary>
-            /// 哈希值
-            /// </summary>
-            public readonly int HashCode;
-
-            /// <summary>
             /// 对象名称
             /// </summary>
             public readonly string Name;
@@ -184,7 +185,6 @@ namespace Nebulae.RimWorld.UI.Core
             /// <param name="ownerType">拥有对象的类型</param>
             public SingletonKey(string name, Type ownerType)
             {
-                HashCode = name.GetHashCode() ^ ownerType.GetHashCode();
                 Name = name;
                 OwnerType = ownerType;
             }
@@ -206,7 +206,7 @@ namespace Nebulae.RimWorld.UI.Core
             public override bool Equals(object obj)
             {
                 return obj is SingletonKey other
-                    && Name == other.Name
+                    && Name.Equals(other.Name)
                     && OwnerType == other.OwnerType;
             }
 
@@ -217,7 +217,7 @@ namespace Nebulae.RimWorld.UI.Core
             /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
             public bool Equals(SingletonKey other)
             {
-                return Name == other.Name
+                return Name.Equals(other.Name)
                     && OwnerType == other.OwnerType;
             }
 
@@ -225,13 +225,19 @@ namespace Nebulae.RimWorld.UI.Core
             /// 获取实例的哈希代码
             /// </summary>
             /// <returns>该实例的哈希代码。</returns>
-            public override int GetHashCode() => HashCode;
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Name, OwnerType);
+            }
 
             /// <summary>
             /// 获取表示当前对象的字符串
             /// </summary>
             /// <returns>表示当前对象的字符串。</returns>
-            public override string ToString() => $"{OwnerType}.{Name}";
+            public override string ToString()
+            {
+                return $"{OwnerType.AsLog()}.{Name}";
+            }
 
             #endregion
         }
