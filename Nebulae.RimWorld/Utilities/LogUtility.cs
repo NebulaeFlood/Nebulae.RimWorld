@@ -44,12 +44,12 @@ namespace Nebulae.RimWorld.Utilities
 
             if (obj is FieldInfo field)
             {
-                return $"{field.DeclaringType.AsLog()}";
+                return $"{field.DeclaringType.AsLog()}.{field.Name}";
             }
 
             if (obj is PropertyInfo property)
             {
-                return $"{property.DeclaringType.AsLog()}";
+                return $"{property.DeclaringType.AsLog()}.{property.Name}";
             }
 
             return obj.ToString();
