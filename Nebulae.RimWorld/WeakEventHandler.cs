@@ -91,7 +91,7 @@ namespace Nebulae.RimWorld
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(MethodInfo other)
         {
-            return !(other is null) && !other.IsStatic && _method.Equals(other);
+            return other is not null && !other.IsStatic && _method.Equals(other);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Nebulae.RimWorld
         public override int GetHashCode()
         {
             return _owner.TryGetTarget(out var owner)
-                ? owner.GetHashCode() ^ _method.GetHashCode()
+                ? HashCode.Combine(owner, _method)
                 : _method.GetHashCode();
         }
 
@@ -149,7 +149,10 @@ namespace Nebulae.RimWorld
         /// </summary>
         /// <param name="owner">拥有此事件处理器的对象</param>
         /// <returns>若 <paramref name="owner"/> 未被回收，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool TryGetOwner(out TOwner owner) => _owner.TryGetTarget(out owner);
+        public bool TryGetOwner(out TOwner owner)
+        {
+            return _owner.TryGetTarget(out owner);
+        }
 
         #endregion
 
@@ -166,7 +169,7 @@ namespace Nebulae.RimWorld
         }
 
 
-        private static readonly ConcurrentDictionary<MethodInfo, Action<TOwner, TSender, TArgs>> InvocationCache = new ConcurrentDictionary<MethodInfo, Action<TOwner, TSender, TArgs>>();
+        private static readonly ConcurrentDictionary<MethodInfo, Action<TOwner, TSender, TArgs>> InvocationCache = new();
 
 
         //------------------------------------------------------

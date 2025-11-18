@@ -107,7 +107,7 @@ namespace Nebulae.RimWorld.Utilities
 
         #region Private Static Fields
 
-        private static readonly LinkedList<IClock> Clocks = new LinkedList<IClock>();
+        private static readonly LinkedList<IClock> Clocks = new();
 
         private static int _intervalTick = 60;
 

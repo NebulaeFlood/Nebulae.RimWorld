@@ -99,7 +99,7 @@ namespace Nebulae.RimWorld.Collections
         /// <param name="item">要添加的元素</param>
         public virtual void Add(T item)
         {
-            if (item == null)
+            if (item is null)
             {
                 throw new ArgumentNullException(nameof(item));
             }
@@ -126,14 +126,14 @@ namespace Nebulae.RimWorld.Collections
         /// <returns>若在集合中找到 <paramref name="item"/>，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public virtual bool Contains(T item)
         {
-            if (item == null)
+            if (item is null)
             {
                 return false;
             }
 
             var node = head;
 
-            while (node != null)
+            while (node is not null)
             {
                 if (node.Item.Equals(item))
                 {
@@ -172,7 +172,7 @@ namespace Nebulae.RimWorld.Collections
 
             var node = head;
 
-            while (node != null)
+            while (node is not null)
             {
                 array[arrayIndex++] = node.Item;
                 node = node.Next;
@@ -192,7 +192,7 @@ namespace Nebulae.RimWorld.Collections
 
             var node = head;
 
-            while (node != null)
+            while (node is not null)
             {
                 action(node.Item);
                 node = node.Next;
@@ -212,7 +212,7 @@ namespace Nebulae.RimWorld.Collections
 
             var node = tail;
 
-            while (node != null)
+            while (node is not null)
             {
                 action(node.Item);
                 node = node.Prev;
@@ -226,14 +226,14 @@ namespace Nebulae.RimWorld.Collections
         /// <returns>若移除了指定元素，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public virtual bool Remove(T item)
         {
-            if (item == null)
+            if (item is not null)
             {
                 return false;
             }
 
             var node = head;
 
-            while (node != null)
+            while (node is not null)
             {
                 if (node.Item.Equals(item))
                 {
@@ -269,7 +269,7 @@ namespace Nebulae.RimWorld.Collections
                 array[index++] = node.Item;
                 node = node.Next;
             }
-            while (node != null);
+            while (node is not null);
 
             return array;
         }

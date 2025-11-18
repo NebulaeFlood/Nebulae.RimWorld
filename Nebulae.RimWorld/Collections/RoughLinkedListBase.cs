@@ -462,12 +462,12 @@ namespace Nebulae.RimWorld.Collections
             /// <summary>
             /// 获取枚举器当前指向位置对应的集合元素
             /// </summary>
-            object IEnumerator.Current => _currentValue;
+            readonly object IEnumerator.Current => _currentValue;
 
             /// <summary>
             /// 获取枚举器当前指向位置对应的集合元素
             /// </summary>
-            T IEnumerator<T>.Current => _currentValue;
+            readonly T IEnumerator<T>.Current => _currentValue;
 
             #endregion
 

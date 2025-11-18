@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nebulae.RimWorld.Utilities;
+using System;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -93,14 +94,14 @@ namespace Nebulae.RimWorld
             {
                 var stringBuilder = new StringBuilder();
 
-                stringBuilder.Append(parameters[0].ParameterType.FullName);
+                stringBuilder.Append(parameters[0].ParameterType.AsLog());
                 stringBuilder.Append(' ');
                 stringBuilder.Append(parameters[0].Name);
 
                 for (int i = 1; i < parameters.Length; i++)
                 {
                     stringBuilder.Append(',');
-                    stringBuilder.Append(parameters[i].ParameterType.FullName);
+                    stringBuilder.Append(parameters[i].ParameterType.AsLog());
                     stringBuilder.Append(' ');
                     stringBuilder.Append(parameters[i].Name);
                 }
@@ -153,7 +154,7 @@ namespace Nebulae.RimWorld
         #endregion
 
 
-        private static readonly ConcurrentDictionary<CreatorKey, Func<object, MethodInfo, object>> WeakEventHandlerCreators = new ConcurrentDictionary<CreatorKey, Func<object, MethodInfo, object>>();
+        private static readonly ConcurrentDictionary<CreatorKey, Func<object, MethodInfo, object>> WeakEventHandlerCreators = new();
 
 
         private readonly struct CreatorKey : IEquatable<CreatorKey>
@@ -178,8 +179,6 @@ namespace Nebulae.RimWorld
                 OwnerType = ownerType;
                 SenderType = senderType;
                 ArgsType = argsType;
-
-                _hashCode = ownerType.GetHashCode() ^ senderType.GetHashCode() ^ argsType.GetHashCode();
             }
 
 
@@ -210,12 +209,12 @@ namespace Nebulae.RimWorld
                     && ArgsType == other.ArgsType;
             }
 
-            public override int GetHashCode() => _hashCode;
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(OwnerType, SenderType, ArgsType);
+            }
 
             #endregion
-
-
-            private readonly int _hashCode;
         }
     }
 }

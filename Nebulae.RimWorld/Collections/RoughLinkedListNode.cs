@@ -107,7 +107,7 @@ namespace Nebulae.RimWorld.Collections
         /// <returns>若该节点位于 <paramref name="node"/> 之后，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool After(RoughLinkedListNode<T> node)
         {
-            while (node != null)
+            while (node is not null)
             {
                 if (this == node.Next)
                 {
@@ -127,7 +127,7 @@ namespace Nebulae.RimWorld.Collections
         /// <returns>若该节点位于 <paramref name="node"/> 之前，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Before(RoughLinkedListNode<T> node)
         {
-            while (node != null)
+            while (node is not null)
             {
                 if (this == node.Prev)
                 {

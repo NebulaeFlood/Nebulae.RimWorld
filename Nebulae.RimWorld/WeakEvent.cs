@@ -36,7 +36,8 @@ namespace Nebulae.RimWorld
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            InsertHandler(WeakEventHandlerFactory.Convert<TSender, TArgs>(handler));
+            InsertLast(WeakEventHandlerFactory.Convert<TSender, TArgs>(handler));
+            count++;
         }
 
         /// <summary>
@@ -50,7 +51,8 @@ namespace Nebulae.RimWorld
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            InsertHandler(WeakEventHandlerFactory.Convert(handler));
+            InsertLast(WeakEventHandlerFactory.Convert(handler));
+            count++;
         }
 
         /// <summary>
@@ -64,7 +66,8 @@ namespace Nebulae.RimWorld
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            InsertHandler(handler);
+            InsertLast(handler);
+            count++;
         }
 
         /// <summary>
@@ -79,7 +82,8 @@ namespace Nebulae.RimWorld
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            InsertHandler(WeakEventHandlerFactory.ConvertUnsafe<TSender, TArgs>(handler));
+            InsertLast(WeakEventHandlerFactory.ConvertUnsafe<TSender, TArgs>(handler));
+            count++;
         }
 
         /// <summary>
@@ -102,7 +106,7 @@ namespace Nebulae.RimWorld
         {
             var node = head;
 
-            while (node != null)
+            while (node is not null)
             {
                 node.Item.Invoke(sender, args);
                 node = node.Next;
@@ -116,12 +120,12 @@ namespace Nebulae.RimWorld
         {
             var node = tail;
 
-            while (node != null)
+            while (node is not null)
             {
                 if (!node.Item.IsAlive)
                 {
-                    count--;
                     PickUp(node);
+                    count--;
                 }
 
                 node = node.Prev;
@@ -142,12 +146,12 @@ namespace Nebulae.RimWorld
 
             var node = tail;
 
-            while (node != null)
+            while (node is not null)
             {
                 if (node.Item.Equals(handler))
                 {
-                    count--;
                     PickUp(node);
+                    count--;
 
                     return true;
                 }
@@ -172,12 +176,12 @@ namespace Nebulae.RimWorld
 
             var node = tail;
 
-            while (node != null)
+            while (node is not null)
             {
                 if (node.Item.Equals(handler))
                 {
-                    count--;
                     PickUp(node);
+                    count--;
 
                     return true;
                 }
@@ -189,13 +193,6 @@ namespace Nebulae.RimWorld
         }
 
         #endregion
-
-
-        private void InsertHandler(IWeakEventHandler<TSender, TArgs> handler)
-        {
-            count++;
-            InsertLast(handler);
-        }
 
 
         //------------------------------------------------------
@@ -218,7 +215,9 @@ namespace Nebulae.RimWorld
                 throw new ArgumentNullException(nameof(right));
             }
 
-            left.InsertHandler(WeakEventHandlerFactory.Convert<TSender, TArgs>(right));
+            left.InsertLast(WeakEventHandlerFactory.Convert<TSender, TArgs>(right));
+            left.count++;
+
             return left;
         }
 
@@ -234,7 +233,9 @@ namespace Nebulae.RimWorld
                 throw new ArgumentNullException(nameof(right));
             }
 
-            left.InsertHandler(WeakEventHandlerFactory.Convert(right));
+            left.InsertLast(WeakEventHandlerFactory.Convert(right));
+            left.count++;
+
             return left;
         }
 
@@ -250,7 +251,9 @@ namespace Nebulae.RimWorld
                 throw new ArgumentNullException(nameof(right));
             }
 
-            left.InsertHandler(right);
+            left.InsertLast(right);
+            left.count++;
+
             return left;
         }
 

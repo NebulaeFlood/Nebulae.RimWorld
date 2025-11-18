@@ -68,7 +68,7 @@ namespace Nebulae.RimWorld
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(Delegate other)
         {
-            return !(other is null) && _method.Equals(other.Method);
+            return other is not null && _method.Equals(other.Method);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Nebulae.RimWorld
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(MethodInfo other)
         {
-            return !(other is null) && _method.Equals(other);
+            return other is not null && _method.Equals(other);
         }
 
         /// <summary>
@@ -88,17 +88,23 @@ namespace Nebulae.RimWorld
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(StaticEventHandler<TSender, TArgs> other)
         {
-            return !(other is null) && _method.Equals(other._method);
+            return other is not null && _method.Equals(other._method);
         }
 
         /// <summary>
         /// 获取当前 <see cref="StaticEventHandler{TSender, TArgs}"/> 的哈希代码
         /// </summary>
         /// <returns>当前 <see cref="StaticEventHandler{TSender, TArgs}"/> 的哈希代码。</returns>
-        public override int GetHashCode() => _method.GetHashCode();
+        public override int GetHashCode()
+        {
+            return _method.GetHashCode();
+        }
 
         /// <inheritdoc/>
-        public void Invoke(TSender sender, TArgs args) => _invocation(sender, args);
+        public void Invoke(TSender sender, TArgs args)
+        {
+            _invocation(sender, args);
+        }
 
         /// <inheritdoc/>
         public bool TryGetOwner(out object owner)
@@ -116,7 +122,7 @@ namespace Nebulae.RimWorld
         }
 
 
-        private static readonly ConcurrentDictionary<MethodInfo, Action<TSender, TArgs>> InvocationCache = new ConcurrentDictionary<MethodInfo, Action<TSender, TArgs>>();
+        private static readonly ConcurrentDictionary<MethodInfo, Action<TSender, TArgs>> InvocationCache = new();
 
 
         //------------------------------------------------------
