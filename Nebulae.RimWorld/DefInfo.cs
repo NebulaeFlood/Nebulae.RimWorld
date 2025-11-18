@@ -12,7 +12,7 @@ namespace Nebulae.RimWorld
         /// <summary>
         /// 一个空的 <see cref="DefInfo{T}"/> 实例
         /// </summary>
-        public static readonly DefInfo<T> Empty = new DefInfo<T>();
+        public static readonly DefInfo<T> Empty = new DefInfo<T>(string.Empty);
 
 
         //------------------------------------------------------
@@ -26,20 +26,23 @@ namespace Nebulae.RimWorld
         /// <summary>
         /// <see cref="Verse.Def"/> 的实例
         /// </summary>
-        public T Def;
-
-        /// <summary>
-        /// <see cref="Def"/> 的 <see cref="Def.defName"/>
-        /// </summary>
-        public string DefName;
+        public readonly T Def;
 
         /// <summary>
         /// 包含 <see cref="Def"/> 的 Mod 是否已加载
         /// </summary>
-        public bool Loaded;
+        public readonly bool Loaded;
 
         #endregion
 
+
+        //------------------------------------------------------
+        //
+        //  Constructors
+        //
+        //------------------------------------------------------
+
+        #region Constructors
 
         /// <summary>
         /// 初始化 <see cref="DefInfo{T}"/> 的新实例
@@ -52,10 +55,29 @@ namespace Nebulae.RimWorld
                 throw new ArgumentNullException(nameof(def));
             }
 
+            _defName = def.defName;
+
             Def = def;
-            DefName = def.defName;
             Loaded = true;
         }
+
+        private DefInfo(T def, string defName)
+        {
+            _defName = defName;
+
+            Def = def;
+            Loaded = true;
+        }
+
+        private DefInfo(string defName)
+        {
+            _defName = defName;
+
+            Def = null;
+            Loaded = false;
+        }
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -92,15 +114,14 @@ namespace Nebulae.RimWorld
                 return info;
             }
 
-            if (string.IsNullOrEmpty(info.DefName))
+            if (string.IsNullOrEmpty(info._defName))
             {
                 return Empty;
             }
 
-            info.Def = DefDatabase<T>.GetNamedSilentFail(info.DefName);
-            info.Loaded = info.Def != null;
+            var def = DefDatabase<T>.GetNamedSilentFail(info._defName);
 
-            return info;
+            return def is null ? info : new DefInfo<T>(def, def.defName);
         }
 
         #endregion
@@ -119,7 +140,7 @@ namespace Nebulae.RimWorld
         /// </summary>
         public void ExposeData()
         {
-            Scribe_Values.Look(ref DefName, nameof(DefName), defaultValue: null);
+            Scribe_Values.Look(ref _defName, "DefName", defaultValue: string.Empty);
         }
 
         /// <summary>
@@ -127,9 +148,9 @@ namespace Nebulae.RimWorld
         /// </summary>
         /// <param name="obj">要判断的对象</param>
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
-            return obj is DefInfo<T> other && DefName == other.DefName;
+            return obj is DefInfo<T> other && _defName.Equals(other._defName);
         }
 
         /// <summary>
@@ -137,48 +158,50 @@ namespace Nebulae.RimWorld
         /// </summary>
         /// <param name="other">要判断的对象</param>
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool Equals(DefInfo<T> other)
+        public readonly bool Equals(DefInfo<T> other)
         {
-            return DefName == other.DefName; ;
+            return _defName == other._defName;
         }
 
         /// <summary>
         /// 获取当前 <see cref="DefInfo{T}"/> 的哈希代码
         /// </summary>
         /// <returns>当前 <see cref="DefInfo{T}"/> 的哈希代码。</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
-            return DefName.GetHashCode();
+            return _defName.GetHashCode();
         }
 
         /// <summary>
         /// 解析该 <see cref="DefInfo{T}"/>，并获取其对应的 <see cref="Def"/> 实例
         /// </summary>
         /// <returns>解析后的 <see cref="DefInfo{T}"/> 实例。</returns>
-        public DefInfo<T> Resolve()
+        public readonly DefInfo<T> Resolve()
         {
             if (Loaded)
             {
                 return this;
             }
 
-            if (string.IsNullOrEmpty(DefName))
+            if (string.IsNullOrEmpty(_defName))
             {
                 return Empty;
             }
 
-            Def = DefDatabase<T>.GetNamedSilentFail(DefName);
-            Loaded = Def != null;
+            var def = DefDatabase<T>.GetNamedSilentFail(_defName);
 
-            return this;
+            return def is null ? this : new DefInfo<T>(def, def.defName);
         }
 
         /// <summary>
         /// 获取当前 <see cref="DefInfo{T}"/> 的字符串表示形式
         /// </summary>
         /// <returns>当前 <see cref="DefInfo{T}"/> 的字符串表示形式。</returns>
-        public override string ToString() => DefName ?? "Empty";
+        public override readonly string ToString() => _defName ?? "Empty";
 
         #endregion
+
+
+        private string _defName;
     }
 }
