@@ -160,7 +160,7 @@ namespace Nebulae.RimWorld
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public readonly bool Equals(DefInfo<T> other)
         {
-            return _defName == other._defName;
+            return _defName.Equals(other._defName);
         }
 
         /// <summary>
