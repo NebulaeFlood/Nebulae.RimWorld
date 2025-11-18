@@ -51,14 +51,14 @@ namespace Nebulae.RimWorld.UI.Core
         public readonly Type DeclaringType;
 
         /// <summary>
+        /// 该成员是否可写
+        /// </summary>
+        public readonly bool IsReadonly;
+
+        /// <summary>
         /// 该成员是否为静态成员
         /// </summary>
         public readonly bool IsStatic;
-
-        /// <summary>
-        /// 该成员是否可写
-        /// </summary>
-        public readonly bool IsWritable;
 
         /// <summary>
         /// 该成员的元数据信息
@@ -97,7 +97,7 @@ namespace Nebulae.RimWorld.UI.Core
             DeclaringType = property.OwnerType;
 
             IsStatic = false;
-            IsWritable = true;
+            IsReadonly = true;
 
             Metadata = property;
             Name = property.Name;
@@ -110,7 +110,7 @@ namespace Nebulae.RimWorld.UI.Core
             DeclaringType = field.DeclaringType;
 
             IsStatic = field.IsStatic;
-            IsWritable = !field.IsInitOnly;
+            IsReadonly = field.IsInitOnly;
 
             Metadata = field;
             Name = field.Name;
@@ -123,7 +123,7 @@ namespace Nebulae.RimWorld.UI.Core
             DeclaringType = member.DeclaringType;
 
             IsStatic = member.GetGetMethod(true).IsStatic;
-            IsWritable = member.GetSetMethod(true) != null;
+            IsReadonly = member.GetSetMethod(true) is null;
 
             Metadata = member;
             Name = member.Name;

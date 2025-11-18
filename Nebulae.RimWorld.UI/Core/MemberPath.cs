@@ -224,6 +224,11 @@ namespace Nebulae.RimWorld.UI.Core
             }
             catch (Exception e)
             {
+                if (tail.Item.Info.IsReadonly)
+                {
+                    throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to path '{Path}' on the object '{target.AsLog()}' since the final member is read-only.");
+                }
+
                 throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to path '{Path}' on the object '{target.AsLog()}'.", e);
             }
         }
@@ -255,6 +260,11 @@ namespace Nebulae.RimWorld.UI.Core
                     {
                         throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to member '{member}' in path '{Path}' on the object '{target.AsLog()}'.", e);
                     }
+                }
+
+                if (tail.Item.Info.IsReadonly)
+                {
+                    throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to member '{member}' in path '{Path}' on the object '{target.AsLog()}' since it is read-only.");
                 }
 
                 throw new ArgumentException($"The given member '{member}' is not in the path '{Path}'.", nameof(member));
@@ -363,7 +373,7 @@ namespace Nebulae.RimWorld.UI.Core
                         break;
                     case PathMemberType.Field:
 
-                        emissions.Emit(OpCodes.Ldfld, (FieldInfo)memberInfo.Metadata);
+                        emissions.Emit(memberInfo.IsStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, (FieldInfo)memberInfo.Metadata);
 
                         break;
                     default:    // Property
@@ -400,94 +410,10 @@ namespace Nebulae.RimWorld.UI.Core
             var accessor = new DynamicMethod(dyanmicMethodPrefix + "GetValue", typeof(object), new Type[] { typeof(MemberPath), typeof(object) }, typeof(MemberPath), skipVisibility: true);
             var accessorIL = accessor.GetILGenerator();
 
-            if (_indexerCount > 0)
-            {
-                accessorIL.DeclareLocal(typeof(object[]));
-            }
-
             var memberInfo = member.Info;
 
-            if (memberInfo.IsWritable)
-            {
-                var modifier = new DynamicMethod(dyanmicMethodPrefix + "SetValue", null, new Type[] { typeof(MemberPath), typeof(object), typeof(object) }, typeof(MemberPath), skipVisibility: true);
-                var modifierIL = modifier.GetILGenerator();
 
-                if (_indexerCount > 0)
-                {
-                    modifierIL.DeclareLocal(typeof(object[]));
-                }
-
-                if (memberInfo.Type is PathMemberType.DependencyProperty)
-                {
-                    var castValue = emissions.Recall();
-                    var callGetValue = emissions.Recall();
-
-                    foreach (var emission in emissions)
-                    {
-                        emission.Emit(accessorIL);
-                        emission.Emit(modifierIL);
-                    }
-
-                    emissions.Save(callGetValue);
-                    emissions.Save(castValue);
-
-                    callGetValue.Emit(accessorIL);
-                    accessorIL.Emit(OpCodes.Ret);
-
-                    modifierIL.Emit(OpCodes.Ldarg_2);
-                    modifierIL.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectSetValueMethod);
-                    modifierIL.Emit(OpCodes.Ret);
-                }
-                else
-                {
-                    var loadValue = emissions.Recall();
-
-                    foreach (var emission in emissions)
-                    {
-                        emission.Emit(accessorIL);
-                        emission.Emit(modifierIL);
-                    }
-
-                    emissions.Save(loadValue);
-
-
-                    loadValue.Emit(accessorIL);
-
-                    if (memberInfo.ValueType.IsValueType)
-                    {
-                        accessorIL.Emit(OpCodes.Box, memberInfo.ValueType);
-                    }
-
-                    accessorIL.Emit(OpCodes.Ret);
-
-
-                    modifierIL.Emit(OpCodes.Ldarg_2);
-
-                    if (memberInfo.ValueType.IsValueType)
-                    {
-                        modifierIL.Emit(OpCodes.Unbox_Any, memberInfo.ValueType);
-                    }
-                    else if (memberInfo.ValueType != typeof(object))
-                    {
-                        modifierIL.Emit(OpCodes.Castclass, memberInfo.ValueType);
-                    }
-
-                    if (memberInfo.Type is PathMemberType.Field)
-                    {
-                        modifierIL.Emit(OpCodes.Stfld, (FieldInfo)memberInfo.Metadata);
-                    }
-                    else
-                    {
-                        // 属性和索引器都使用 PropertyInfo
-                        modifierIL.Emit(loadValue.OpCode, ((PropertyInfo)memberInfo.Metadata).GetSetMethod(true));
-                    }
-
-                    modifierIL.Emit(OpCodes.Ret);
-                }
-
-                member.modifier = (MemberModifier)modifier.CreateDelegate(typeof(MemberModifier));
-            }
-            else
+            if (memberInfo.IsReadonly)
             {
                 emissions.Emit(accessorIL);
 
@@ -497,9 +423,96 @@ namespace Nebulae.RimWorld.UI.Core
                 }
 
                 accessorIL.Emit(OpCodes.Ret);
+
+                if (_indexerCount > 0)
+                {
+                    accessorIL.DeclareLocal(typeof(object[]));
+                }
+
+                member.accessor = (MemberAccessor)accessor.CreateDelegate(typeof(MemberAccessor));
+                return;
+            }
+
+
+            var modifier = new DynamicMethod(dyanmicMethodPrefix + "SetValue", null, new Type[] { typeof(MemberPath), typeof(object), typeof(object) }, typeof(MemberPath), skipVisibility: true);
+            var modifierIL = modifier.GetILGenerator();
+
+            if (_indexerCount > 0)
+            {
+                accessorIL.DeclareLocal(typeof(object[]));
+                modifierIL.DeclareLocal(typeof(object[]));
+            }
+
+            if (memberInfo.Type is PathMemberType.DependencyProperty)
+            {
+                var castValue = emissions.Recall();
+                var callGetValue = emissions.Recall();
+
+                foreach (var emission in emissions)
+                {
+                    emission.Emit(accessorIL);
+                    emission.Emit(modifierIL);
+                }
+
+                emissions.Save(callGetValue);
+                emissions.Save(castValue);
+
+                callGetValue.Emit(accessorIL);
+                accessorIL.Emit(OpCodes.Ret);
+
+                modifierIL.Emit(OpCodes.Ldarg_2);
+                modifierIL.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectSetValueMethod);
+                modifierIL.Emit(OpCodes.Ret);
+            }
+            else
+            {
+                var loadValue = emissions.Recall();
+
+                foreach (var emission in emissions)
+                {
+                    emission.Emit(accessorIL);
+                    emission.Emit(modifierIL);
+                }
+
+                emissions.Save(loadValue);
+
+
+                loadValue.Emit(accessorIL);
+
+                if (memberInfo.ValueType.IsValueType)
+                {
+                    accessorIL.Emit(OpCodes.Box, memberInfo.ValueType);
+                }
+
+                accessorIL.Emit(OpCodes.Ret);
+
+
+                modifierIL.Emit(OpCodes.Ldarg_2);
+
+                if (memberInfo.ValueType.IsValueType)
+                {
+                    modifierIL.Emit(OpCodes.Unbox_Any, memberInfo.ValueType);
+                }
+                else if (memberInfo.ValueType != typeof(object))
+                {
+                    modifierIL.Emit(OpCodes.Castclass, memberInfo.ValueType);
+                }
+
+                if (memberInfo.Type is PathMemberType.Field)
+                {
+                    modifierIL.Emit(memberInfo.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, (FieldInfo)memberInfo.Metadata);
+                }
+                else
+                {
+                    // 属性和索引器都使用 PropertyInfo
+                    modifierIL.Emit(loadValue.OpCode, ((PropertyInfo)memberInfo.Metadata).GetSetMethod(true));
+                }
+
+                modifierIL.Emit(OpCodes.Ret);
             }
 
             member.accessor = (MemberAccessor)accessor.CreateDelegate(typeof(MemberAccessor));
+            member.modifier = (MemberModifier)modifier.CreateDelegate(typeof(MemberModifier));
         }
 
         private bool Match(IndexerParameter[] x, ParameterInfo[] y, out object[] arguments)
