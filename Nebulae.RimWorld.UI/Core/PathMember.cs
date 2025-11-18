@@ -19,28 +19,6 @@ namespace Nebulae.RimWorld.UI.Core
 
         //------------------------------------------------------
         //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
-        #region Public Properties
-
-        /// <summary>
-        /// 获取目标成员的访问器
-        /// </summary>
-        public MemberAccessor<object> Accessor => accessor;
-
-        /// <summary>
-        /// 获取目标成员的修改器
-        /// </summary>
-        /// <remarks>当 <see cref="Info"/> 的 <see cref="PathMemberInfo.IsWritable"/> 为 <see langword="false"/> 时，此属性为 <see langword="null"/>。</remarks>
-        public MemberModifier<object> Modifier => modifier;
-
-        #endregion
-
-
-        //------------------------------------------------------
-        //
         //  Constructors
         //
         //------------------------------------------------------
@@ -52,7 +30,7 @@ namespace Nebulae.RimWorld.UI.Core
             Info = info;
         }
 
-        internal PathMember(PathMemberInfo info, MemberAccessor<object> accessor, MemberModifier<object> modifier)
+        internal PathMember(PathMemberInfo info, MemberAccessor accessor, MemberModifier modifier)
         {
             Info = info;
 
@@ -91,35 +69,23 @@ namespace Nebulae.RimWorld.UI.Core
 
         #region Internal Fields
 
-        internal MemberAccessor<object> accessor;
-        internal MemberModifier<object> modifier;
+        internal MemberAccessor accessor;
+        internal MemberModifier modifier;
 
         #endregion
 
 
         //------------------------------------------------------
         //
-        //  Public Delegates
+        //  Internal Delegates
         //
         //------------------------------------------------------
 
-        #region Public Delegates
+        #region Internal Delegates
 
-        /// <summary>
-        /// 成员访问器
-        /// </summary>
-        /// <typeparam name="T">成员类型</typeparam>
-        /// <param name="target">拥有成员的对象</param>
-        /// <returns>目标成员的值。</returns>
-        public delegate T MemberAccessor<out T>(object target);
+        internal delegate object MemberAccessor(MemberPath path, object target);
 
-        /// <summary>
-        /// 成员修改器
-        /// </summary>
-        /// <typeparam name="T">成员类型</typeparam>
-        /// <param name="target">拥有成员的对象</param>
-        /// <param name="value">要设置的值</param>
-        public delegate void MemberModifier<in T>(object target, T value);
+        internal delegate void MemberModifier(MemberPath path, object target, object value);
 
         #endregion
     }

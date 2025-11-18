@@ -90,7 +90,7 @@ namespace Nebulae.RimWorld.UI.Core
             il.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectGetValueMethod);
             il.Emit(OpCodes.Ret);
 
-            var accessorDelegate = (MemberAccessor<object>)accessor.CreateDelegate(typeof(MemberAccessor<object>));
+            var accessorDelegate = (MemberAccessor)accessor.CreateDelegate(typeof(MemberAccessor));
 
 
             il = modifier.GetILGenerator();
@@ -102,7 +102,7 @@ namespace Nebulae.RimWorld.UI.Core
             il.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectSetValueMethod);
             il.Emit(OpCodes.Ret);
 
-            var modifierDelegate = (MemberModifier<object>)modifier.CreateDelegate(typeof(MemberModifier<object>));
+            var modifierDelegate = (MemberModifier)modifier.CreateDelegate(typeof(MemberModifier));
 
 
             var path = new MemberPath(property.Name) { count = 1 };
@@ -148,6 +148,117 @@ namespace Nebulae.RimWorld.UI.Core
             }
 
             return PathCache.GetOrAdd(new CacheKey(rootType, path, typeResolver.GetType()), new PathResolver(typeResolver).Resolve);
+        }
+
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Methods
+
+        /// <summary>
+        /// 通过路径从给定对象获取值
+        /// </summary>
+        /// <param name="target">要通过路径获取值的对象</param>
+        /// <returns>该路径通过 <paramref name="target"/> 获取的值。</returns>
+        public object GetValue(object target)
+        {
+            try
+            {
+                return tail.Item.accessor(this, target);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Cannot get the value of path '{Path}' from the object '{target.AsLog()}'.", e);
+            }
+        }
+
+        /// <summary>
+        /// 通过路径从给定对象获取指定成员的值
+        /// </summary>
+        /// <param name="target">要通过路径获取值的对象</param>
+        /// <param name="member">路径中的成员</param>
+        /// <returns>该路径通过 <paramref name="target"/> 获取的 <paramref name="member"/> 的值。</returns>
+        public object GetValue(object target, PathMember member)
+        {
+            try
+            {
+                return member.accessor(this, target);
+            }
+            catch (Exception e)
+            {
+                if (member is null)
+                {
+                    throw new ArgumentNullException(nameof(member));
+                }
+
+                var node = head;
+
+                while (node is not null)
+                {
+                    if (node.Item == member)
+                    {
+                        throw new InvalidOperationException($"Cannot get the value of member '{member}' in path '{Path}' from the object '{target.AsLog()}'.", e);
+                    }
+                }
+
+                throw new ArgumentException($"The given member '{member}' is not in the path '{Path}'.", nameof(member));
+            }
+        }
+
+        /// <summary>
+        /// 通过路径为给定对象设置值
+        /// </summary>
+        /// <param name="target">要通过路径设置值的对象</param>
+        /// <param name="value">要设置的值</param>
+        public void SetValue(object target, object value)
+        {
+            try
+            {
+                tail.Item.modifier(this, target, value);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to path '{Path}' on the object '{target.AsLog()}'.", e);
+            }
+        }
+
+        /// <summary>
+        /// 通过路径为给定对象设置指定成员的值
+        /// </summary>
+        /// <param name="target">要通过路径设置值的对象</param>
+        /// <param name="member">路径中的成员</param>
+        /// <param name="value">要设置的值</param>
+        public void SetValue(object target, PathMember member, object value)
+        {
+            try
+            {
+                member.modifier(this, target, value);
+            }
+            catch (Exception e)
+            {
+                if (member is null)
+                {
+                    throw new ArgumentNullException(nameof(member));
+                }
+
+                var node = head;
+
+                while (node is not null)
+                {
+                    if (node.Item == member)
+                    {
+                        throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to member '{member}' in path '{Path}' on the object '{target.AsLog()}'.", e);
+                    }
+                }
+
+                throw new ArgumentException($"The given member '{member}' is not in the path '{Path}'.", nameof(member));
+            }
         }
 
         #endregion
@@ -412,7 +523,7 @@ namespace Nebulae.RimWorld.UI.Core
                     modifierIL.Emit(OpCodes.Ret);
                 }
 
-                member.modifier = (MemberModifier<object>)modifier.CreateDelegate(typeof(MemberModifier<object>));
+                member.modifier = (MemberModifier)modifier.CreateDelegate(typeof(MemberModifier));
             }
             else
             {
@@ -426,7 +537,7 @@ namespace Nebulae.RimWorld.UI.Core
                 accessorIL.Emit(OpCodes.Ret);
             }
 
-            member.accessor = (MemberAccessor<object>)accessor.CreateDelegate(typeof(MemberAccessor<object>));
+            member.accessor = (MemberAccessor)accessor.CreateDelegate(typeof(MemberAccessor));
         }
 
         private bool Match(IndexerParameter[] x, ParameterInfo[] y, out object[] arguments)
