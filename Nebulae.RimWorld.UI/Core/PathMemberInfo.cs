@@ -177,7 +177,12 @@ namespace Nebulae.RimWorld.UI.Core
         /// <returns>表示当前对象的字符串。</returns>
         public override string ToString()
         {
-            return Type is PathMemberType.DependencyProperty ? $"({DeclaringType.AsLog()}.{Name})" : Name;
+            return Type switch
+            {
+                PathMemberType.DependencyProperty => $"({DeclaringType.AsLog()}.{Name})",
+                PathMemberType.Indexer => "[]",
+                _ => Name,
+            };
         }
 
         #endregion
