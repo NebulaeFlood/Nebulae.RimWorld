@@ -1,23 +1,13 @@
-﻿using HarmonyLib;
-using Nebulae.RimWorld.Collections;
+﻿using Nebulae.RimWorld.Collections;
 using Nebulae.RimWorld.UI.Core.Data;
 using Nebulae.RimWorld.UI.Core.Emit;
-using Nebulae.RimWorld.UI.Core.Services;
 using Nebulae.RimWorld.UI.Core.Ximl.Services;
 using Nebulae.RimWorld.Utilities;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.UIElements;
 using static Nebulae.RimWorld.UI.Core.PathMember;
-using static RimWorld.SectionLayer_GravshipHull;
 
 namespace Nebulae.RimWorld.UI.Core
 {
@@ -44,6 +34,16 @@ namespace Nebulae.RimWorld.UI.Core
         /// 获取路径中第一个成员
         /// </summary>
         public PathMember Head => head.Item;
+
+        /// <summary>
+        /// 获取一个值，该值指示路径是否始于静态成员
+        /// </summary>
+        public bool IsStatic => head.Item.Info.IsStatic;
+
+        /// <summary>
+        /// 获取声明根成员的类型
+        /// </summary>
+        public Type RootType => head.Item.Info.DeclaringType;
 
         /// <summary>
         /// 获取路径中最后一个成员
@@ -274,182 +274,148 @@ namespace Nebulae.RimWorld.UI.Core
 
         private void Compile()
         {
-            var curr = head;
             var emissions = new EmissionList();
 
-            if (_indexerCount > 0)
+            if (!head.Item.Info.IsStatic)
             {
                 emissions.Emit(OpCodes.Ldarg_1);
 
-                var firstMemberType = curr.Item.Info.ValueType;
+                var declaringType = head.Item.Info.DeclaringType;
 
-                if (firstMemberType.IsValueType)
+                if (declaringType.IsValueType)
                 {
-                    emissions.Emit(OpCodes.Unbox, firstMemberType);
+                    emissions.Emit(OpCodes.Unbox_Any, declaringType);
                 }
                 else
                 {
-                    emissions.Emit(OpCodes.Castclass, firstMemberType);
-                }
-
-
-                int indexerIndex = 0;
-
-                while (curr != null)
-                {
-                    var memberInfo = curr.Item.Info;
-
-                    switch (memberInfo.Type)
-                    {
-                        case PathMemberType.DependencyProperty:
-
-                            emissions.Emit(OpCodes.Ldsfld, ((DependencyProperty)memberInfo.Metadata).GetIdentifier());
-                            emissions.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectGetValueMethod);
-
-                            if (memberInfo.ValueType.IsValueType)
-                            {
-                                emissions.Emit(OpCodes.Unbox, memberInfo.ValueType);
-                            }
-                            else
-                            {
-                                emissions.Emit(OpCodes.Castclass, memberInfo.ValueType);
-                            }
-
-                            break;
-                        case PathMemberType.Indexer:
-
-                            var indexer = (PropertyInfo)memberInfo.Metadata;
-                            var parameterCount = _indexerParameters[indexerIndex].Length;
-
-                            for (int i = 0; i < parameterCount; i++)
-                            {
-                                emissions.Emit(OpCodes.Ldarg_0);
-                                emissions.Emit(OpCodes.Ldfld, IndexerParametersField);
-                                emissions.Emit(OpCodes.Ldc_I4, indexerIndex);
-                                emissions.Emit(OpCodes.Ldc_I4, i);
-                                emissions.Emit(OpCodes.Ldelem_Ref);
-                            }
-
-                            var indexerGetter = indexer.GetGetMethod(true);
-
-                            if (indexerGetter.IsVirtual)
-                            {
-                                emissions.Emit(OpCodes.Callvirt, indexerGetter);
-                            }
-                            else
-                            {
-                                emissions.Emit(OpCodes.Call, indexerGetter);
-                            }
-
-                            indexerIndex++;
-
-                            break;
-                        case PathMemberType.Field:
-
-                            emissions.Emit(OpCodes.Ldfld, (FieldInfo)memberInfo.Metadata);
-
-                            break;
-                        default:    // Property
-
-                            var propertyGetter = ((PropertyInfo)memberInfo.Metadata).GetGetMethod(true);
-
-                            if (propertyGetter.IsVirtual)
-                            {
-                                emissions.Emit(OpCodes.Callvirt, propertyGetter);
-                            }
-                            else
-                            {
-                                emissions.Emit(OpCodes.Call, propertyGetter);
-                            }
-
-                            break;
-                    }
-
-                    Initialize(curr.Item, emissions);
-
-                    curr = curr.Next;
+                    emissions.Emit(OpCodes.Castclass, declaringType);
                 }
             }
-            else
+
+            var curr = head;
+            int indexerIndex = 0;
+
+            while (curr is not null)
             {
-                emissions.Emit(OpCodes.Ldarg_0);
+                var memberInfo = curr.Item.Info;
 
-                var firstMemberType = curr.Item.Info.ValueType;
-
-                if (firstMemberType.IsValueType)
+                switch (memberInfo.Type)
                 {
-                    emissions.Emit(OpCodes.Unbox, firstMemberType);
-                }
-                else
-                {
-                    emissions.Emit(OpCodes.Castclass, firstMemberType);
-                }
+                    case PathMemberType.DependencyProperty:
 
+                        emissions.Emit(OpCodes.Ldsfld, ((DependencyProperty)memberInfo.Metadata).GetIdentifier());
+                        emissions.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectGetValueMethod);
 
-                while (curr != null)
-                {
-                    var memberInfo = curr.Item.Info;
+                        if (memberInfo.ValueType.IsValueType)
+                        {
+                            emissions.Emit(OpCodes.Unbox, memberInfo.ValueType);
+                        }
+                        else
+                        {
+                            emissions.Emit(OpCodes.Castclass, memberInfo.ValueType);
+                        }
 
-                    switch (memberInfo.Type)
-                    {
-                        case PathMemberType.DependencyProperty:
+                        break;
+                    case PathMemberType.Indexer:
 
-                            emissions.Emit(OpCodes.Ldsfld, ((DependencyProperty)memberInfo.Metadata).GetIdentifier());
-                            emissions.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectGetValueMethod);
+                        var indexer = (PropertyInfo)memberInfo.Metadata;
 
-                            if (memberInfo.ValueType.IsValueType)
+                        var parameters = _indexerParameters[indexerIndex];
+                        var parameterCount = parameters.Length;
+
+                        emissions.Emit(OpCodes.Ldarg_0);
+                        emissions.Emit(OpCodes.Ldfld, IndexerParametersField);
+                        emissions.Emit(OpCodes.Ldc_I4, indexerIndex);
+                        emissions.Emit(OpCodes.Ldelem_Ref);
+                        emissions.Emit(OpCodes.Stloc_0);
+
+                        for (int i = 0; i < parameterCount; i++)
+                        {
+                            emissions.Emit(OpCodes.Ldloc_0);
+                            emissions.Emit(OpCodes.Ldc_I4, i);
+                            emissions.Emit(OpCodes.Ldelem_Ref);
+
+                            var parameterType = parameters[i].GetType();
+
+                            if (parameterType.IsValueType)
                             {
-                                emissions.Emit(OpCodes.Unbox, memberInfo.ValueType);
+                                emissions.Emit(OpCodes.Unbox_Any, parameterType);
                             }
                             else
                             {
-                                emissions.Emit(OpCodes.Castclass, memberInfo.ValueType);
+                                emissions.Emit(OpCodes.Castclass, parameterType);
                             }
+                        }
 
-                            break;
-                        case PathMemberType.Indexer:
-                            throw new InvalidOperationException($"An illegal state has occurred, '{typeof(MemberPath).AsLog()}' has an indexer but no indexers were found while resolving the path '{Path}'.");
-                        case PathMemberType.Field:
+                        var indexerGetter = indexer.GetGetMethod(true);
 
-                            emissions.Emit(OpCodes.Ldfld, (FieldInfo)memberInfo.Metadata);
+                        if (indexerGetter.IsVirtual)
+                        {
+                            emissions.Emit(OpCodes.Callvirt, indexerGetter);
+                        }
+                        else
+                        {
+                            emissions.Emit(OpCodes.Call, indexerGetter);
+                        }
 
-                            break;
-                        default:    // Property
+                        indexerIndex++;
 
-                            var propertyGetter = ((PropertyInfo)memberInfo.Metadata).GetGetMethod(true);
+                        break;
+                    case PathMemberType.Field:
 
-                            if (propertyGetter.IsVirtual)
-                            {
-                                emissions.Emit(OpCodes.Callvirt, propertyGetter);
-                            }
-                            else
-                            {
-                                emissions.Emit(OpCodes.Call, propertyGetter);
-                            }
+                        emissions.Emit(OpCodes.Ldfld, (FieldInfo)memberInfo.Metadata);
 
-                            break;
-                    }
+                        break;
+                    default:    // Property
 
-                    Initialize(curr.Item, emissions);
+                        var propertyGetter = ((PropertyInfo)memberInfo.Metadata).GetGetMethod(true);
 
-                    curr = curr.Next;
+                        if (propertyGetter.IsVirtual)
+                        {
+                            emissions.Emit(OpCodes.Callvirt, propertyGetter);
+                        }
+                        else
+                        {
+                            emissions.Emit(OpCodes.Call, propertyGetter);
+                        }
+
+                        break;
                 }
+
+                Initialize(curr.Item, emissions);
+
+                curr = curr.Next;
+            }
+
+            if (_indexerCount > 0)
+            {
+                Array.Resize(ref _indexerParameters, _indexerCount);
             }
         }
 
         private void Initialize(PathMember member, EmissionList emissions)
         {
-            var dyanmicMethodPrefix = $"MemberPath.PathMember[{member.Info}].";
+            var dyanmicMethodPrefix = $"MemberPath[{Path}]<--{member.Info}.";
 
-            var accessor = new DynamicMethod(dyanmicMethodPrefix + "GetValue", typeof(object), new Type[] { typeof(object) }, true);
+            var accessor = new DynamicMethod(dyanmicMethodPrefix + "GetValue", typeof(object), new Type[] { typeof(MemberPath), typeof(object) }, typeof(MemberPath), skipVisibility: true);
             var accessorIL = accessor.GetILGenerator();
+
+            if (_indexerCount > 0)
+            {
+                accessorIL.DeclareLocal(typeof(object[]));
+            }
 
             var memberInfo = member.Info;
 
             if (memberInfo.IsWritable)
             {
-                var modifier = new DynamicMethod(dyanmicMethodPrefix + "SetValue", null, new Type[] { typeof(object), typeof(object) }, true);
+                var modifier = new DynamicMethod(dyanmicMethodPrefix + "SetValue", null, new Type[] { typeof(MemberPath), typeof(object), typeof(object) }, typeof(MemberPath), skipVisibility: true);
                 var modifierIL = modifier.GetILGenerator();
+
+                if (_indexerCount > 0)
+                {
+                    modifierIL.DeclareLocal(typeof(object[]));
+                }
 
                 if (memberInfo.Type is PathMemberType.DependencyProperty)
                 {
@@ -468,9 +434,7 @@ namespace Nebulae.RimWorld.UI.Core
                     callGetValue.Emit(accessorIL);
                     accessorIL.Emit(OpCodes.Ret);
 
-                    // 索引器数量大于 0 时，为了传递索引器参数，
-                    // 第一个参数是该 MemberPath 实例
-                    modifierIL.Emit(_indexerCount > 0 ? OpCodes.Ldarg_2 : OpCodes.Ldarg_1);
+                    modifierIL.Emit(OpCodes.Ldarg_2);
                     modifierIL.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectSetValueMethod);
                     modifierIL.Emit(OpCodes.Ret);
                 }
@@ -491,19 +455,17 @@ namespace Nebulae.RimWorld.UI.Core
 
                     if (memberInfo.ValueType.IsValueType)
                     {
-                        accessorIL.Emit(OpCodes.Box);
+                        accessorIL.Emit(OpCodes.Box, memberInfo.ValueType);
                     }
 
                     accessorIL.Emit(OpCodes.Ret);
 
 
-                    // 索引器数量大于 0 时，为了传递索引器参数，
-                    // 第一个参数是该 MemberPath 实例
-                    modifierIL.Emit(_indexerCount > 0 ? OpCodes.Ldarg_2 : OpCodes.Ldarg_1);
+                    modifierIL.Emit(OpCodes.Ldarg_2);
 
                     if (memberInfo.ValueType.IsValueType)
                     {
-                        modifierIL.Emit(OpCodes.Unbox, memberInfo.ValueType);
+                        modifierIL.Emit(OpCodes.Unbox_Any, memberInfo.ValueType);
                     }
                     else if (memberInfo.ValueType != typeof(object))
                     {
@@ -531,7 +493,7 @@ namespace Nebulae.RimWorld.UI.Core
 
                 if (memberInfo.ValueType.IsValueType)
                 {
-                    accessorIL.Emit(OpCodes.Box);
+                    accessorIL.Emit(OpCodes.Box, memberInfo.ValueType);
                 }
 
                 accessorIL.Emit(OpCodes.Ret);
@@ -622,8 +584,8 @@ namespace Nebulae.RimWorld.UI.Core
                         throw new InvalidOperationException($"Cannot resolve indexer from '{path}', the correct format of an indexer's arguments is 'Arg1, Arg2,...' or '(Type1) Arg1, (Type) Arg2,...'.");
                     }
 
-                    var typeName = parameter.Substring(1, front - 1);
-                    var valueStr = parameter.Substring(front + 1).Trim();
+                    var typeName = parameter[1..front];
+                    var valueStr = parameter[(front + 1)..].Trim();
 
                     parameters[i] = new IndexerParameter(typeResolver.Resolve(typeName), valueStr);
                 }
@@ -633,7 +595,9 @@ namespace Nebulae.RimWorld.UI.Core
                 }
             }
 
-            var properties = ownerType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            PropertyInfo[] properties = head is null
+                ? ownerType.GetProperties(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                : ownerType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             for (int i = properties.Length - 1; i >= 0; i--)
             {
@@ -651,8 +615,8 @@ namespace Nebulae.RimWorld.UI.Core
 
                     InsertLast(new PathMember(new PathMemberInfo(property, PathMemberType.Indexer)));
                     this.count++;
-                    _indexerCount++;
 
+                    _indexerCount++;
                     return;
                 }
             }
@@ -660,9 +624,11 @@ namespace Nebulae.RimWorld.UI.Core
             throw new InvalidOperationException($"Cannot find any specified non-static indexer in type '{ownerType.AsLog()}'.");
         }
 
-        private void ResolveMember(string path, Type ownerType, IXimlTypeResolver typeResolver)
+        private void ResolveMember(string path, Type ownerType)
         {
-            MemberInfo[] memberInfos = ownerType.GetMember(path, MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            MemberInfo[] memberInfos = head is null
+                ? ownerType.GetMember(path, MemberTypes.Field | MemberTypes.Property, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                : ownerType.GetMember(path, MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             if (memberInfos.Length < 1)
             {
@@ -707,7 +673,7 @@ namespace Nebulae.RimWorld.UI.Core
         #region Private Static Fields
 
         private static readonly FieldInfo IndexerParametersField = typeof(MemberPath).GetField(nameof(_indexerParameters), BindingFlags.Instance | BindingFlags.NonPublic);
-        private static readonly ConcurrentDictionary<CacheKey, MemberPath> PathCache = new ConcurrentDictionary<CacheKey, MemberPath>();
+        private static readonly ConcurrentDictionary<CacheKey, MemberPath> PathCache = new();
 
         #endregion
 
@@ -819,7 +785,7 @@ namespace Nebulae.RimWorld.UI.Core
 
                         try
                         {
-                            memberPath.ResolveAttachedProperty(path.Substring(back + 1, front - (1 + back)), TypeResolver);
+                            memberPath.ResolveAttachedProperty(path[(back + 1)..(front - 1)], TypeResolver);
                         }
                         catch (Exception e)
                         {
@@ -831,6 +797,20 @@ namespace Nebulae.RimWorld.UI.Core
                     // 解析索引器
                     else if (c is '[')
                     {
+                        if (back < front)
+                        {
+                            try
+                            {
+                                memberPath.ResolveMember(
+                                    path[back..front],
+                                    memberPath.count < 1 ? rootType : memberPath.tail.Item.Info.ValueType);
+                            }
+                            catch (Exception e)
+                            {
+                                throw new InvalidOperationException($"Cannot resolve the path '{path}'.", e);
+                            }
+                        }
+
                         back = front;
                         front = path.IndexOf(']', back);
 
@@ -842,7 +822,7 @@ namespace Nebulae.RimWorld.UI.Core
                         try
                         {
                             memberPath.ResolveIndexer(
-                                path.Substring(back + 1, front - (1 + back)),
+                                path[(back + 1)..front],
                                 memberPath.count < 1 ? rootType : memberPath.tail.Item.Info.ValueType,
                                 TypeResolver);
                         }
@@ -851,17 +831,16 @@ namespace Nebulae.RimWorld.UI.Core
                             throw new InvalidOperationException($"Cannot resolve the path '{path}'.", e);
                         }
 
-                        back = front + 1;
+                        back = front + 2;
                     }
                     // 解析成员
-                    else if (c is '.')
+                    else if (c is '.' && back < front)
                     {
                         try
                         {
                             memberPath.ResolveMember(
-                                path.Substring(back, front - back),
-                                memberPath.count < 1 ? rootType : memberPath.tail.Item.Info.ValueType,
-                                TypeResolver);
+                                path[back..front],
+                                memberPath.count < 1 ? rootType : memberPath.tail.Item.Info.ValueType);
                         }
                         catch (Exception e)
                         {
@@ -870,6 +849,25 @@ namespace Nebulae.RimWorld.UI.Core
 
                         back = front + 1;
                     }
+                }
+
+                if (back < length)
+                {
+                    try
+                    {
+                        memberPath.ResolveMember(
+                            path[back..length],
+                            memberPath.count < 1 ? rootType : memberPath.tail.Item.Info.ValueType);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new InvalidOperationException($"Cannot resolve the path '{path}'.", e);
+                    }
+                }
+
+                if (memberPath.count < 1)
+                {
+                    throw new NotSupportedException($"Cannot resolve the path '{path}'.");
                 }
 
                 memberPath.Compile();
