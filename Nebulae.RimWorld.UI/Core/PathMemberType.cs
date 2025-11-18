@@ -29,6 +29,11 @@ namespace Nebulae.RimWorld.UI.Core
         /// <summary>
         /// 节点是属性
         /// </summary>
-        Property
+        Property,
+
+        /// <summary>
+        /// 节点是目标对象本身
+        /// </summary>
+        Target
     }
 }

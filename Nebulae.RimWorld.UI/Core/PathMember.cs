@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Nebulae.RimWorld.UI.Core.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,7 +11,7 @@ namespace Nebulae.RimWorld.UI.Core
     /// <summary>
     /// 组成 <see cref="MemberPath"/> 的成员
     /// </summary>
-    public sealed class PathMember
+    public sealed class PathMember : IEquatable<PathMember>
     {
         /// <summary>
         /// 成员信息
@@ -17,28 +19,10 @@ namespace Nebulae.RimWorld.UI.Core
         public readonly PathMemberInfo Info;
 
 
-        //------------------------------------------------------
-        //
-        //  Constructors
-        //
-        //------------------------------------------------------
-
-        #region Constructors
-
         internal PathMember(PathMemberInfo info)
         {
             Info = info;
         }
-
-        internal PathMember(PathMemberInfo info, MemberAccessor accessor, MemberModifier modifier)
-        {
-            Info = info;
-
-            this.accessor = accessor;
-            this.modifier = modifier;
-        }
-
-        #endregion
 
 
         //------------------------------------------------------
@@ -48,6 +32,19 @@ namespace Nebulae.RimWorld.UI.Core
         //------------------------------------------------------
 
         #region Public Methods
+
+        /// <summary>
+        /// 判断指定对象是否等于当前对象
+        /// </summary>
+        /// <param name="other">要比较的对象</param>
+        /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool Equals(PathMember other)
+        {
+            // 由于 PathMember 只由 MamberPath 创建，
+            // 而相同路径的 MemberPath 使用同一个对象，
+            // 因此只需比较两个 PathMember 是否指向同一个对象即可。
+            return this == other;
+        }
 
         /// <summary>
         /// 获取表示当前对象的字符串

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 using static Nebulae.RimWorld.UI.Core.PathMember;
 
 namespace Nebulae.RimWorld.UI.Core
@@ -14,7 +15,7 @@ namespace Nebulae.RimWorld.UI.Core
     /// <summary>
     /// 成员路径
     /// </summary>
-    public sealed class MemberPath : RoughLinkedListBase<PathMember>
+    public sealed class MemberPath : RoughLinkedListBase<PathMember>, IEquatable<MemberPath>
     {
         /// <summary>
         /// 该 <see cref="MemberPath"/> 解析的路径字符串
@@ -31,9 +32,9 @@ namespace Nebulae.RimWorld.UI.Core
         #region Public Properties
 
         /// <summary>
-        /// 获取路径中第一个成员
+        /// 获取包含该路径第一个成员的节点
         /// </summary>
-        public PathMember Head => head.Item;
+        public RoughLinkedListNode<PathMember> Head => head;
 
         /// <summary>
         /// 获取一个值，该值指示路径是否始于静态成员
@@ -41,22 +42,48 @@ namespace Nebulae.RimWorld.UI.Core
         public bool IsStatic => head.Item.Info.IsStatic;
 
         /// <summary>
-        /// 获取声明根成员的类型
+        /// 获取一个值，该值是此路径的最后一个成员的类型
+        /// </summary>
+        public Type ResultType => tail.Item.Info.ValueType;
+
+        /// <summary>
+        /// 获取一个值，该值是声明此路径第一个成员的类型
         /// </summary>
         public Type RootType => head.Item.Info.DeclaringType;
 
         /// <summary>
-        /// 获取路径中最后一个成员
+        /// 获取包含该路径最后一个成员的节点
         /// </summary>
-        public PathMember Tail => tail.Item;
+        public RoughLinkedListNode<PathMember> Tail => tail;
 
         #endregion
 
+
+        //------------------------------------------------------
+        //
+        //  Constructors
+        //
+        //------------------------------------------------------
+
+        #region Constructors
+
+        static MemberPath()
+        {
+            var accessor = new DynamicMethod("MemberPath[]<--{Self}.GetValue", typeof(object), new Type[] { typeof(MemberPath), typeof(object) }, typeof(MemberPath), skipVisibility: true);
+            var accessorIL = accessor.GetILGenerator();
+
+            accessorIL.Emit(OpCodes.Ldarg_1);
+            accessorIL.Emit(OpCodes.Ret);
+
+            SelfAccessor = (MemberAccessor)accessor.CreateDelegate(typeof(MemberAccessor));
+        }
 
         private MemberPath(string path)
         {
             Path = path;
         }
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -105,10 +132,13 @@ namespace Nebulae.RimWorld.UI.Core
             var modifierDelegate = (MemberModifier)modifier.CreateDelegate(typeof(MemberModifier));
 
 
-            var path = new MemberPath(property.Name) { count = 1 };
-            path.InsertLast(new PathMember(new PathMemberInfo(property), accessorDelegate, modifierDelegate));
+            var memberPath = new MemberPath($"({property})");
+            var member = new PathMember(new PathMemberInfo(property)) { accessor = accessorDelegate, modifier = modifierDelegate };
 
-            return path;
+            memberPath.InsertLast(member);
+            memberPath.count++;
+
+            return memberPath;
         }
 
         /// <summary>
@@ -125,26 +155,20 @@ namespace Nebulae.RimWorld.UI.Core
                 throw new ArgumentNullException(nameof(rootType));
             }
 
-            if (path is null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
             if (typeResolver is null)
             {
                 throw new ArgumentNullException(nameof(typeResolver));
             }
 
-            int length = path.Length;
-
-            if (length < 1)
+            if (string.IsNullOrEmpty(path))
             {
-                throw new InvalidOperationException("Cannot resolve an empty path.");
-            }
+                var memberPath = new MemberPath("{Self}");
+                var member = new PathMember(new PathMemberInfo(typeof(object))) { accessor = SelfAccessor };
 
-            if (path[0] is '.')
-            {
-                throw new InvalidOperationException($"Cannot resolve the path '{path}' since it starts with '.'.");
+                memberPath.InsertLast(member);
+                memberPath.count++;
+
+                return memberPath;
             }
 
             return PathCache.GetOrAdd(new CacheKey(rootType, path, typeResolver.GetType()), new PathResolver(typeResolver).Resolve);
@@ -160,6 +184,55 @@ namespace Nebulae.RimWorld.UI.Core
         //------------------------------------------------------
 
         #region Public Methods
+
+        /// <summary>
+        /// 判断指定对象是否等于当前对象
+        /// </summary>
+        /// <param name="obj">要比较的对象</param>
+        /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is not MemberPath other)
+            {
+                return false;
+            }
+
+            if (head.Item.Info.DeclaringType != other.head.Item.Info.DeclaringType)
+            {
+                return false;
+            }
+
+            return Path.Equals(other.Path);
+        }
+
+        /// <summary>
+        /// 判断指定对象是否等于当前对象
+        /// </summary>
+        /// <param name="other">要比较的对象</param>
+        /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool Equals(MemberPath other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
+
+            if (head.Item.Info.DeclaringType != other.head.Item.Info.DeclaringType)
+            {
+                return false;
+            }
+
+            return Path.Equals(other.Path);
+        }
+
+        /// <summary>
+        /// 获取当前对象的哈希代码
+        /// </summary>
+        /// <returns>当前对象的哈希代码。</returns>
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(head.Item.Info.DeclaringType, Path);
+        }
 
         /// <summary>
         /// 通过路径从给定对象获取值
@@ -269,6 +342,29 @@ namespace Nebulae.RimWorld.UI.Core
 
                 throw new ArgumentException($"The given member '{member}' is not in the path '{Path}'.", nameof(member));
             }
+        }
+
+        /// <summary>
+        /// 获取表示当前对象的字符串
+        /// </summary>
+        /// <returns>表示当前对象的字符串。</returns>
+        public override string ToString()
+        {
+            if (count is 1)
+            {
+                return head.Item.Info.ToString();
+            }
+
+            var builder = new StringBuilder();
+            var node = head;
+
+            while (node is not null)
+            {
+                builder.Append(node.Item.Info.ToString()).Append('.');
+                node = node.Next;
+            }
+
+            return builder.ToString(0, builder.Length - 1);
         }
 
         #endregion
@@ -687,6 +783,7 @@ namespace Nebulae.RimWorld.UI.Core
 
         private static readonly FieldInfo IndexerParametersField = typeof(MemberPath).GetField(nameof(_indexerParameters), BindingFlags.Instance | BindingFlags.NonPublic);
         private static readonly ConcurrentDictionary<CacheKey, MemberPath> PathCache = new();
+        private static readonly MemberAccessor SelfAccessor;
 
         #endregion
 
@@ -779,7 +876,8 @@ namespace Nebulae.RimWorld.UI.Core
 
                 int back = 0;
                 int length = path.Length;
-                var memberPath = new MemberPath(path);
+
+                MemberPath memberPath = new MemberPath(path);
 
                 for (int front = 0; front < length; front++)
                 {

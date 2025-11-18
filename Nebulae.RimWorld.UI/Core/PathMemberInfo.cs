@@ -131,6 +131,18 @@ namespace Nebulae.RimWorld.UI.Core
             ValueType = member.PropertyType;
         }
 
+        internal PathMemberInfo(Type targetType)
+        {
+            DeclaringType = targetType.DeclaringType;
+
+            IsStatic = false;
+            IsReadonly = true;
+
+            Metadata = targetType;
+            Name = targetType.AsLog();
+            Type = PathMemberType.Target;
+        }
+
         #endregion
 
 
@@ -149,7 +161,9 @@ namespace Nebulae.RimWorld.UI.Core
         /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public override bool Equals(object obj)
         {
-            return obj is PathMemberInfo other ? Metadata.Equals(other.Metadata) : Metadata.Equals(obj);
+            return obj is PathMemberInfo other
+                ? (Type == other.Type && Metadata.Equals(other.Metadata))
+                : Metadata.Equals(obj);
         }
 
         /// <summary>
@@ -159,7 +173,12 @@ namespace Nebulae.RimWorld.UI.Core
         /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(PathMemberInfo other)
         {
-            return Metadata.Equals(other.Metadata);
+            if (other is null)
+            {
+                return false;
+            }
+
+            return Type == other.Type && Metadata.Equals(other.Metadata);
         }
 
         /// <summary>
@@ -179,8 +198,9 @@ namespace Nebulae.RimWorld.UI.Core
         {
             return Type switch
             {
-                PathMemberType.DependencyProperty => $"({DeclaringType.AsLog()}.{Name})",
+                PathMemberType.DependencyProperty => $"({Metadata})",
                 PathMemberType.Indexer => "[]",
+                PathMemberType.Target => "{Self}",
                 _ => Name,
             };
         }
