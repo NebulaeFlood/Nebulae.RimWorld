@@ -380,7 +380,7 @@ namespace Nebulae.RimWorld.Collections
         /// <summary>
         /// <see cref="RoughLinkedListBase{T}"/> 的枚举器
         /// </summary>
-        private class Enumerator : IEnumerator<T>
+        private struct Enumerator : IEnumerator<T>
         {
             /// <summary>
             /// 初始化 <see cref="Enumerator"/> 的新实例
@@ -389,6 +389,9 @@ namespace Nebulae.RimWorld.Collections
             public Enumerator(RoughLinkedListBase<T> list)
             {
                 _list = list;
+
+                _currentNode = null;
+                _currentValue = default;
             }
 
 
@@ -441,7 +444,7 @@ namespace Nebulae.RimWorld.Collections
 
             public void Reset()
             {
-                _currentNode = _list.head;
+                _currentNode = null;
                 _currentValue = default;
             }
 
