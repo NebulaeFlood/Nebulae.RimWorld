@@ -257,15 +257,12 @@ namespace Nebulae.RimWorld.UI.Core.Emit
                 return null;
             }
 
-            var node = tail;
+            var emission = tail.Item;
 
-            tail = node.Prev;
-            tail.Next = null;
-            node.Prev = null;
-
+            PickUp(tail);
             count--;
 
-            return node.Item;
+            return emission;
         }
 
         /// <summary>
