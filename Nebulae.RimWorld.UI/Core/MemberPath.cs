@@ -32,6 +32,11 @@ namespace Nebulae.RimWorld.UI.Core
         #region Public Properties
 
         /// <summary>
+        /// 获取该路径的第一个成员
+        /// </summary>
+        public PathMember First => head.Item;
+
+        /// <summary>
         /// 获取包含该路径第一个成员的节点
         /// </summary>
         public RoughLinkedListNode<PathMember> Head => head;
@@ -39,17 +44,22 @@ namespace Nebulae.RimWorld.UI.Core
         /// <summary>
         /// 获取一个值，该值指示路径是否始于静态成员
         /// </summary>
-        public bool IsStatic => head.Item.Info.IsStatic;
+        public bool IsStatic => head.Item.IsStatic;
+
+        /// <summary>
+        /// 获取该路径的最后一个成员
+        /// </summary>
+        public PathMember Last => tail.Item;
 
         /// <summary>
         /// 获取一个值，该值是此路径的最后一个成员的类型
         /// </summary>
-        public Type ResultType => tail.Item.Info.ValueType;
+        public Type ResultType => tail.Item.ValueType;
 
         /// <summary>
         /// 获取一个值，该值是声明此路径第一个成员的类型
         /// </summary>
-        public Type RootType => head.Item.Info.DeclaringType;
+        public Type RootType => head.Item.DeclaringType;
 
         /// <summary>
         /// 获取包含该路径最后一个成员的节点
@@ -114,7 +124,7 @@ namespace Nebulae.RimWorld.UI.Core
 
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Castclass, typeof(DependencyObject));
-            il.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectGetValueMethod);
+            il.Emit(OpCodes.Call, PathMember.DependencyObjectGetValueMethod);
             il.Emit(OpCodes.Ret);
 
             var accessorDelegate = (MemberAccessor)accessor.CreateDelegate(typeof(MemberAccessor));
@@ -126,14 +136,14 @@ namespace Nebulae.RimWorld.UI.Core
             il.Emit(OpCodes.Castclass, typeof(DependencyObject));
             il.Emit(OpCodes.Ldsfld, property.GetIdentifier());
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectSetValueMethod);
+            il.Emit(OpCodes.Call, PathMember.DependencyObjectSetValueMethod);
             il.Emit(OpCodes.Ret);
 
             var modifierDelegate = (MemberModifier)modifier.CreateDelegate(typeof(MemberModifier));
 
 
             var memberPath = new MemberPath($"({property})");
-            var member = new PathMember(new PathMemberInfo(property)) { accessor = accessorDelegate, modifier = modifierDelegate };
+            var member = new PathMember(property) { accessor = accessorDelegate, modifier = modifierDelegate };
 
             memberPath.InsertLast(member);
             memberPath.count++;
@@ -163,7 +173,7 @@ namespace Nebulae.RimWorld.UI.Core
             if (string.IsNullOrEmpty(path))
             {
                 var memberPath = new MemberPath("{Self}");
-                var member = new PathMember(new PathMemberInfo(typeof(object))) { accessor = SelfAccessor };
+                var member = new PathMember(rootType) { accessor = SelfAccessor };
 
                 memberPath.InsertLast(member);
                 memberPath.count++;
@@ -186,6 +196,88 @@ namespace Nebulae.RimWorld.UI.Core
         #region Public Methods
 
         /// <summary>
+        /// 判断该路径是否包含指定成员
+        /// </summary>
+        /// <param name="property">要判断的成员</param>
+        /// <returns>若该路径包含 <paramref name="property"/>，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool Contains(DependencyProperty property)
+        {
+            if (property is null)
+            {
+                return false;
+            }
+
+            var node = head;
+
+            while (node is not null)
+            {
+                if (node.Item.Type is PathMemberType.DependencyProperty && node.Item.Metadata == property)
+                {
+                    return true;
+                }
+
+                node = node.Next;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 判断该路径是否包含指定成员
+        /// </summary>
+        /// <param name="member">要判断的成员</param>
+        /// <returns>若该路径包含 <paramref name="member"/>，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool Contains(MemberInfo member)
+        {
+            if (member is null || member.MemberType is not MemberTypes.Field and not MemberTypes.Property)
+            {
+                return false;
+            }
+
+            var node = head;
+
+            while (node is not null)
+            {
+                if (node.Item.Type is PathMemberType.Field or PathMemberType.Property && member.Equals(node.Item.Metadata))
+                {
+                    return true;
+                }
+
+                node = node.Next;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 判断该路径是否包含指定成员
+        /// </summary>
+        /// <param name="declaringType">要判断的成员的声明类型</param>
+        /// <param name="memberName">>要判断的成员的名称</param>
+        /// <returns>若该路径包含指定成员，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool Contains(Type declaringType, string memberName)
+        {
+             if (declaringType is null || string.IsNullOrEmpty(memberName))
+            {
+                return false;
+            }
+
+            var node = head;
+
+            while (node is not null)
+            {
+                if (node.Item.DeclaringType == declaringType && node.Item.Name.Equals(memberName))
+                {
+                    return true;
+                }
+
+                node = node.Next;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 判断指定对象是否等于当前对象
         /// </summary>
         /// <param name="obj">要比较的对象</param>
@@ -197,7 +289,7 @@ namespace Nebulae.RimWorld.UI.Core
                 return false;
             }
 
-            if (head.Item.Info.DeclaringType != other.head.Item.Info.DeclaringType)
+            if (head.Item.DeclaringType != other.head.Item.DeclaringType)
             {
                 return false;
             }
@@ -217,7 +309,7 @@ namespace Nebulae.RimWorld.UI.Core
                 return false;
             }
 
-            if (head.Item.Info.DeclaringType != other.head.Item.Info.DeclaringType)
+            if (head.Item.DeclaringType != other.head.Item.DeclaringType)
             {
                 return false;
             }
@@ -231,7 +323,7 @@ namespace Nebulae.RimWorld.UI.Core
         /// <returns>当前对象的哈希代码。</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(head.Item.Info.DeclaringType, Path);
+            return HashCode.Combine(head.Item.DeclaringType, Path);
         }
 
         /// <summary>
@@ -259,29 +351,29 @@ namespace Nebulae.RimWorld.UI.Core
         /// <returns>该路径通过 <paramref name="target"/> 获取的 <paramref name="member"/> 的值。</returns>
         public object GetValue(object target, PathMember member)
         {
-            try
+            if (member is null)
             {
-                return member.accessor(this, target);
+                throw new ArgumentNullException(nameof(member));
             }
-            catch (Exception e)
+
+            var node = head;
+
+            while (node is not null)
             {
-                if (member is null)
+                if (node.Item == member)
                 {
-                    throw new ArgumentNullException(nameof(member));
-                }
-
-                var node = head;
-
-                while (node is not null)
-                {
-                    if (node.Item == member)
+                    try
                     {
-                        throw new InvalidOperationException($"Cannot get the value of member '{member}' in path '{Path}' from the object '{target.AsLog()}'.", e);
+                        return member.accessor(this, target);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new InvalidOperationException($"Cannot get the value of Member '{member}' in path '{Path}' from the object '{target.AsLog()}'.", e);
                     }
                 }
-
-                throw new ArgumentException($"The given member '{member}' is not in the path '{Path}'.", nameof(member));
             }
+
+            throw new ArgumentException($"The given Member '{member}' is not in the path '{Path}'.", nameof(member));
         }
 
         /// <summary>
@@ -291,17 +383,17 @@ namespace Nebulae.RimWorld.UI.Core
         /// <param name="value">要设置的值</param>
         public void SetValue(object target, object value)
         {
+            if (tail.Item.IsReadonly)
+            {
+                throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to path '{Path}' on the object '{target.AsLog()}' since the final Member is read-only.");
+            }
+
             try
             {
                 tail.Item.modifier(this, target, value);
             }
             catch (Exception e)
             {
-                if (tail.Item.Info.IsReadonly)
-                {
-                    throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to path '{Path}' on the object '{target.AsLog()}' since the final member is read-only.");
-                }
-
                 throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to path '{Path}' on the object '{target.AsLog()}'.", e);
             }
         }
@@ -314,34 +406,34 @@ namespace Nebulae.RimWorld.UI.Core
         /// <param name="value">要设置的值</param>
         public void SetValue(object target, PathMember member, object value)
         {
-            try
+            if (member is null)
             {
-                member.modifier(this, target, value);
+                throw new ArgumentNullException(nameof(member));
             }
-            catch (Exception e)
+
+            var node = head;
+
+            while (node is not null)
             {
-                if (member is null)
+                if (node.Item == member)
                 {
-                    throw new ArgumentNullException(nameof(member));
-                }
-
-                var node = head;
-
-                while (node is not null)
-                {
-                    if (node.Item == member)
+                    if (member.IsReadonly)
                     {
-                        throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to member '{member}' in path '{Path}' on the object '{target.AsLog()}'.", e);
+                        throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to Member '{member}' in path '{Path}' on the object '{target.AsLog()}' since it is read-only.");
+                    }
+
+                    try
+                    {
+                        member.modifier(this, target, value);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to Member '{member}' in path '{Path}' on the object '{target.AsLog()}'.", e);
                     }
                 }
-
-                if (tail.Item.Info.IsReadonly)
-                {
-                    throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to member '{member}' in path '{Path}' on the object '{target.AsLog()}' since it is read-only.");
-                }
-
-                throw new ArgumentException($"The given member '{member}' is not in the path '{Path}'.", nameof(member));
             }
+
+            throw new ArgumentException($"The given Member '{member}' is not in the path '{Path}'.", nameof(member));
         }
 
         /// <summary>
@@ -352,19 +444,28 @@ namespace Nebulae.RimWorld.UI.Core
         {
             if (count is 1)
             {
-                return head.Item.Info.ToString();
+                return head.Item.ToString();
             }
 
-            var builder = new StringBuilder();
+            var builder = new StringBuilder(Path.Length + 16);
             var node = head;
+
+            builder.Append(node.Item.ToString());
+
+            node = node.Next;
 
             while (node is not null)
             {
-                builder.Append(node.Item.Info.ToString()).Append('.');
+                if (node.Item.Type is not PathMemberType.Indexer)
+                {
+                    builder.Append('.');
+                }
+
+                builder.Append(node.Item.ToString());
                 node = node.Next;
             }
 
-            return builder.ToString(0, builder.Length - 1);
+            return builder.ToString();
         }
 
         #endregion
@@ -382,11 +483,11 @@ namespace Nebulae.RimWorld.UI.Core
         {
             var emissions = new EmissionList();
 
-            if (!head.Item.Info.IsStatic)
+            if (!head.Item.IsStatic)
             {
                 emissions.Emit(OpCodes.Ldarg_1);
 
-                var declaringType = head.Item.Info.DeclaringType;
+                var declaringType = head.Item.DeclaringType;
 
                 if (declaringType.IsValueType)
                 {
@@ -403,28 +504,28 @@ namespace Nebulae.RimWorld.UI.Core
 
             while (curr is not null)
             {
-                var memberInfo = curr.Item.Info;
+                var member = curr.Item;
 
-                switch (memberInfo.Type)
+                switch (member.Type)
                 {
                     case PathMemberType.DependencyProperty:
 
-                        emissions.Emit(OpCodes.Ldsfld, ((DependencyProperty)memberInfo.Metadata).GetIdentifier());
-                        emissions.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectGetValueMethod);
+                        emissions.Emit(OpCodes.Ldsfld, ((DependencyProperty)member.Metadata).GetIdentifier());
+                        emissions.Emit(OpCodes.Call, PathMember.DependencyObjectGetValueMethod);
 
-                        if (memberInfo.ValueType.IsValueType)
+                        if (member.ValueType.IsValueType)
                         {
-                            emissions.Emit(OpCodes.Unbox, memberInfo.ValueType);
+                            emissions.Emit(OpCodes.Unbox, member.ValueType);
                         }
                         else
                         {
-                            emissions.Emit(OpCodes.Castclass, memberInfo.ValueType);
+                            emissions.Emit(OpCodes.Castclass, member.ValueType);
                         }
 
                         break;
                     case PathMemberType.Indexer:
 
-                        var indexer = (PropertyInfo)memberInfo.Metadata;
+                        var indexer = (PropertyInfo)member.Metadata;
 
                         var parameters = _indexerParameters[indexerIndex];
                         var parameterCount = parameters.Length;
@@ -433,15 +534,13 @@ namespace Nebulae.RimWorld.UI.Core
                         emissions.Emit(OpCodes.Ldfld, IndexerParametersField);
                         emissions.Emit(OpCodes.Ldc_I4, indexerIndex);
                         emissions.Emit(OpCodes.Ldelem_Ref);
-                        emissions.Emit(OpCodes.Stloc_0);
 
-                        for (int i = 0; i < parameterCount; i++)
+                        if (parameterCount is 1)
                         {
-                            emissions.Emit(OpCodes.Ldloc_0);
-                            emissions.Emit(OpCodes.Ldc_I4, i);
+                            emissions.Emit(OpCodes.Ldc_I4_0);
                             emissions.Emit(OpCodes.Ldelem_Ref);
 
-                            var parameterType = parameters[i].GetType();
+                            var parameterType = parameters[0].GetType();
 
                             if (parameterType.IsValueType)
                             {
@@ -450,6 +549,28 @@ namespace Nebulae.RimWorld.UI.Core
                             else
                             {
                                 emissions.Emit(OpCodes.Castclass, parameterType);
+                            }
+                        }
+                        else
+                        {
+                            emissions.Emit(OpCodes.Stloc_0);
+
+                            for (int i = 0; i < parameterCount; i++)
+                            {
+                                emissions.Emit(OpCodes.Ldloc_0);
+                                emissions.Emit(OpCodes.Ldc_I4, i);
+                                emissions.Emit(OpCodes.Ldelem_Ref);
+
+                                var parameterType = parameters[i].GetType();
+
+                                if (parameterType.IsValueType)
+                                {
+                                    emissions.Emit(OpCodes.Unbox_Any, parameterType);
+                                }
+                                else
+                                {
+                                    emissions.Emit(OpCodes.Castclass, parameterType);
+                                }
                             }
                         }
 
@@ -469,12 +590,12 @@ namespace Nebulae.RimWorld.UI.Core
                         break;
                     case PathMemberType.Field:
 
-                        emissions.Emit(memberInfo.IsStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, (FieldInfo)memberInfo.Metadata);
+                        emissions.Emit(member.IsStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, (FieldInfo)member.Metadata);
 
                         break;
                     default:    // Property
 
-                        var propertyGetter = ((PropertyInfo)memberInfo.Metadata).GetGetMethod(true);
+                        var propertyGetter = ((PropertyInfo)member.Metadata).GetGetMethod(true);
 
                         if (propertyGetter.IsVirtual)
                         {
@@ -501,21 +622,18 @@ namespace Nebulae.RimWorld.UI.Core
 
         private void Initialize(PathMember member, EmissionList emissions)
         {
-            var dyanmicMethodPrefix = $"MemberPath[{Path}]<--{member.Info}.";
+            var dyanmicMethodPrefix = $"MemberPath[{Path}]<--{member}.";
 
             var accessor = new DynamicMethod(dyanmicMethodPrefix + "GetValue", typeof(object), new Type[] { typeof(MemberPath), typeof(object) }, typeof(MemberPath), skipVisibility: true);
             var accessorIL = accessor.GetILGenerator();
 
-            var memberInfo = member.Info;
-
-
-            if (memberInfo.IsReadonly)
+            if (member.IsReadonly)
             {
                 emissions.Emit(accessorIL);
 
-                if (memberInfo.ValueType.IsValueType)
+                if (member.ValueType.IsValueType)
                 {
-                    accessorIL.Emit(OpCodes.Box, memberInfo.ValueType);
+                    accessorIL.Emit(OpCodes.Box, member.ValueType);
                 }
 
                 accessorIL.Emit(OpCodes.Ret);
@@ -539,7 +657,7 @@ namespace Nebulae.RimWorld.UI.Core
                 modifierIL.DeclareLocal(typeof(object[]));
             }
 
-            if (memberInfo.Type is PathMemberType.DependencyProperty)
+            if (member.Type is PathMemberType.DependencyProperty)
             {
                 var castValue = emissions.Recall();
                 var callGetValue = emissions.Recall();
@@ -557,7 +675,7 @@ namespace Nebulae.RimWorld.UI.Core
                 accessorIL.Emit(OpCodes.Ret);
 
                 modifierIL.Emit(OpCodes.Ldarg_2);
-                modifierIL.Emit(OpCodes.Call, PathMemberInfo.DependencyObjectSetValueMethod);
+                modifierIL.Emit(OpCodes.Call, PathMember.DependencyObjectSetValueMethod);
                 modifierIL.Emit(OpCodes.Ret);
             }
             else
@@ -575,9 +693,9 @@ namespace Nebulae.RimWorld.UI.Core
 
                 loadValue.Emit(accessorIL);
 
-                if (memberInfo.ValueType.IsValueType)
+                if (member.ValueType.IsValueType)
                 {
-                    accessorIL.Emit(OpCodes.Box, memberInfo.ValueType);
+                    accessorIL.Emit(OpCodes.Box, member.ValueType);
                 }
 
                 accessorIL.Emit(OpCodes.Ret);
@@ -585,23 +703,23 @@ namespace Nebulae.RimWorld.UI.Core
 
                 modifierIL.Emit(OpCodes.Ldarg_2);
 
-                if (memberInfo.ValueType.IsValueType)
+                if (member.ValueType.IsValueType)
                 {
-                    modifierIL.Emit(OpCodes.Unbox_Any, memberInfo.ValueType);
+                    modifierIL.Emit(OpCodes.Unbox_Any, member.ValueType);
                 }
-                else if (memberInfo.ValueType != typeof(object))
+                else if (member.ValueType != typeof(object))
                 {
-                    modifierIL.Emit(OpCodes.Castclass, memberInfo.ValueType);
+                    modifierIL.Emit(OpCodes.Castclass, member.ValueType);
                 }
 
-                if (memberInfo.Type is PathMemberType.Field)
+                if (member.Type is PathMemberType.Field)
                 {
-                    modifierIL.Emit(memberInfo.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, (FieldInfo)memberInfo.Metadata);
+                    modifierIL.Emit(member.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, (FieldInfo)member.Metadata);
                 }
                 else
                 {
                     // 属性和索引器都使用 PropertyInfo
-                    modifierIL.Emit(loadValue.OpCode, ((PropertyInfo)memberInfo.Metadata).GetSetMethod(true));
+                    modifierIL.Emit(loadValue.OpCode, ((PropertyInfo)member.Metadata).GetSetMethod(true));
                 }
 
                 modifierIL.Emit(OpCodes.Ret);
@@ -659,7 +777,7 @@ namespace Nebulae.RimWorld.UI.Core
             var ownerType = typeResolver.Resolve(segments[0]);
             var property = DependencyProperty.Search(segments[1], ownerType);
 
-            InsertLast(new PathMember(new PathMemberInfo(property)));
+            InsertLast(new PathMember(property));
             count++;
         }
 
@@ -722,7 +840,7 @@ namespace Nebulae.RimWorld.UI.Core
 
                     _indexerParameters[_indexerCount] = arguments;
 
-                    InsertLast(new PathMember(new PathMemberInfo(property, PathMemberType.Indexer)));
+                    InsertLast(new PathMember(property, propertyParameters));
                     this.count++;
 
                     _indexerCount++;
@@ -741,7 +859,7 @@ namespace Nebulae.RimWorld.UI.Core
 
             if (memberInfos.Length < 1)
             {
-                throw new InvalidOperationException($"Cannot find any non-static member named '{path}' in type '{ownerType.AsLog()}'.");
+                throw new InvalidOperationException($"Cannot find any non-static Member named '{path}' in type '{ownerType.AsLog()}'.");
             }
 
             if (memberInfos.Length > 1)
@@ -753,17 +871,17 @@ namespace Nebulae.RimWorld.UI.Core
 
             if (memberInfo.MemberType is MemberTypes.Field)
             {
-                InsertLast(new PathMember(new PathMemberInfo((FieldInfo)memberInfo)));
+                InsertLast(new PathMember((FieldInfo)memberInfo));
             }
             else
             {
                 if (DependencyProperty.TrySearch(path, ownerType, out var property))
                 {
-                    InsertLast(new PathMember(new PathMemberInfo(property)));
+                    InsertLast(new PathMember(property));
                 }
                 else
                 {
-                    InsertLast(new PathMember(new PathMemberInfo((PropertyInfo)memberInfo, PathMemberType.Property)));
+                    InsertLast(new PathMember((PropertyInfo)memberInfo));
                 }
             }
 
@@ -914,7 +1032,7 @@ namespace Nebulae.RimWorld.UI.Core
                             {
                                 memberPath.ResolveMember(
                                     path[back..front],
-                                    memberPath.count < 1 ? rootType : memberPath.tail.Item.Info.ValueType);
+                                    memberPath.count < 1 ? rootType : memberPath.tail.Item.ValueType);
                             }
                             catch (Exception e)
                             {
@@ -934,7 +1052,7 @@ namespace Nebulae.RimWorld.UI.Core
                         {
                             memberPath.ResolveIndexer(
                                 path[(back + 1)..front],
-                                memberPath.count < 1 ? rootType : memberPath.tail.Item.Info.ValueType,
+                                memberPath.count < 1 ? rootType : memberPath.tail.Item.ValueType,
                                 TypeResolver);
                         }
                         catch (Exception e)
@@ -951,7 +1069,7 @@ namespace Nebulae.RimWorld.UI.Core
                         {
                             memberPath.ResolveMember(
                                 path[back..front],
-                                memberPath.count < 1 ? rootType : memberPath.tail.Item.Info.ValueType);
+                                memberPath.count < 1 ? rootType : memberPath.tail.Item.ValueType);
                         }
                         catch (Exception e)
                         {
@@ -968,7 +1086,7 @@ namespace Nebulae.RimWorld.UI.Core
                     {
                         memberPath.ResolveMember(
                             path[back..length],
-                            memberPath.count < 1 ? rootType : memberPath.tail.Item.Info.ValueType);
+                            memberPath.count < 1 ? rootType : memberPath.tail.Item.ValueType);
                     }
                     catch (Exception e)
                     {

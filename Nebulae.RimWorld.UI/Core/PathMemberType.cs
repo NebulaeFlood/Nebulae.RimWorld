@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Nebulae.RimWorld.UI.Core
 {
     /// <summary>
-    /// <see cref="PathMemberInfo"/> 的种类
+    /// <see cref="PathMember"/> 的种类
     /// </summary>
     public enum PathMemberType : byte
     {
