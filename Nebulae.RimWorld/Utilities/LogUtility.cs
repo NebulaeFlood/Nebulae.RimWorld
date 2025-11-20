@@ -349,10 +349,25 @@ namespace Nebulae.RimWorld.Utilities
 
         private static string Format(this MethodInfo method)
         {
-            var returnType = method.ReturnType;
             var parameters = method.GetParameters();
 
-            return $"{method.ReturnType.AsLog()} {method.DeclaringType.AsLog()}.{method.Name}({string.Join(", ", parameters.Select(x => x.ParameterType.AsLog()))})";
+            var parameterStrings = new string[parameters.Length];
+
+            for (int i = parameters.Length - 1; i >= 0; i--)
+            {
+                var parameter = parameters[i];
+
+                if (string.IsNullOrEmpty(parameter.Name))
+                {
+                    parameterStrings[i] = parameter.ParameterType.AsLog();
+                }
+                else
+                {
+                    parameterStrings[i] = $"{parameter.ParameterType.AsLog()} {parameter.Name}";
+                }
+            }
+
+            return $"{method.ReturnType.AsLog()} {method.DeclaringType.AsLog()}.{method.Name}({string.Join(", ", parameterStrings)})";
         }
 
         #endregion
