@@ -92,7 +92,7 @@ namespace Nebulae.RimWorld
         {
             if (parameters.Length > 0)
             {
-                var stringBuilder = new StringBuilder();
+                var stringBuilder = new StringBuilder(32);
 
                 stringBuilder.Append(parameters[0].ParameterType.AsLog());
                 stringBuilder.Append(' ');
