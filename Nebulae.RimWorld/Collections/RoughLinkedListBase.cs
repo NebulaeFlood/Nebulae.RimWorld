@@ -362,16 +362,8 @@ namespace Nebulae.RimWorld.Collections
 
         #region IEnumerable
 
-        /// <summary>
-        /// 获取循环访问集合的枚举器
-        /// </summary>
-        /// <returns>可用于循环访问集合的枚举器。</returns>
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(this);
 
-        /// <summary>
-        /// 获取循环访问集合的枚举器
-        /// </summary>
-        /// <returns>可用于循环访问集合的枚举器。</returns>
         IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
 
         #endregion
