@@ -383,7 +383,7 @@ namespace Nebulae.RimWorld.UI.Core
         /// <param name="value">要设置的值</param>
         public void SetValue(object target, object value)
         {
-            if (tail.Item.IsReadonly)
+            if (tail.Item.IsReadOnly)
             {
                 throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to path '{Path}' on the object '{target.AsLog()}' since the final Member is read-only.");
             }
@@ -417,7 +417,7 @@ namespace Nebulae.RimWorld.UI.Core
             {
                 if (node.Item == member)
                 {
-                    if (member.IsReadonly)
+                    if (member.IsReadOnly)
                     {
                         throw new InvalidOperationException($"Cannot set value '{value.AsLog()}' to Member '{member}' in path '{Path}' on the object '{target.AsLog()}' since it is read-only.");
                     }
@@ -627,7 +627,7 @@ namespace Nebulae.RimWorld.UI.Core
             var accessor = new DynamicMethod(dyanmicMethodPrefix + "GetValue", typeof(object), new Type[] { typeof(MemberPath), typeof(object) }, typeof(MemberPath), skipVisibility: true);
             var accessorIL = accessor.GetILGenerator();
 
-            if (member.IsReadonly)
+            if (member.IsReadOnly)
             {
                 emissions.Emit(accessorIL);
 

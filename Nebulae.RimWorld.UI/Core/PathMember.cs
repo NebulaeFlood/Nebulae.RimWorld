@@ -51,7 +51,7 @@ namespace Nebulae.RimWorld.UI.Core
         /// <summary>
         /// 该成员是否可写
         /// </summary>
-        public readonly bool IsReadonly;
+        public readonly bool IsReadOnly;
 
         /// <summary>
         /// 该成员是否为静态成员
@@ -95,7 +95,7 @@ namespace Nebulae.RimWorld.UI.Core
             DeclaringType = property.OwnerType;
 
             IsStatic = false;
-            IsReadonly = true;
+            IsReadOnly = true;
 
             Metadata = property;
             Name = property.Name;
@@ -108,7 +108,7 @@ namespace Nebulae.RimWorld.UI.Core
             DeclaringType = indexer.DeclaringType;
 
             IsStatic = indexer.GetGetMethod(true).IsStatic;
-            IsReadonly = indexer.GetSetMethod(true) is null;
+            IsReadOnly = indexer.GetSetMethod(true) is null;
 
             Metadata = indexer;
             Name = FormatIndexerSignatureUnsafe(parameters);
@@ -121,7 +121,7 @@ namespace Nebulae.RimWorld.UI.Core
             DeclaringType = field.DeclaringType;
 
             IsStatic = field.IsStatic;
-            IsReadonly = field.IsInitOnly;
+            IsReadOnly = field.IsInitOnly;
 
             Metadata = field;
             Name = field.Name;
@@ -134,7 +134,7 @@ namespace Nebulae.RimWorld.UI.Core
             DeclaringType = member.DeclaringType;
 
             IsStatic = member.GetGetMethod(true).IsStatic;
-            IsReadonly = member.GetSetMethod(true) is null;
+            IsReadOnly = member.GetSetMethod(true) is null;
 
             Metadata = member;
             Name = member.Name;
@@ -147,7 +147,7 @@ namespace Nebulae.RimWorld.UI.Core
             DeclaringType = targetType.DeclaringType;
 
             IsStatic = false;
-            IsReadonly = true;
+            IsReadOnly = true;
 
             Metadata = targetType;
             Name = targetType.AsLog();
