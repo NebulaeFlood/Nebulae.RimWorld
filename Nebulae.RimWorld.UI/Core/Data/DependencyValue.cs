@@ -125,8 +125,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
             {
                 if (node.Item.Precedence == precedence)
                 {
-                    count--;
-
                     PickUp(node);
                     return;
                 }
@@ -164,8 +162,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
         {
             if (head is null)
             {
-                count = 1;
-
                 InsertLast(new DependencyValueEntry(value, precedence, isRaw: false));
                 return;
             }
@@ -180,8 +176,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
                 }
                 else if (node.Item.Precedence < precedence)
                 {
-                    count++;
-
                     InsertBefore(node, new DependencyValueEntry(value, precedence, isRaw: false));
                     return;
                 }
@@ -193,7 +187,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
             }
             while (node != null);
 
-            count++;
             InsertLast(new DependencyValueEntry(value, precedence, isRaw: false));
         }
 
@@ -201,8 +194,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
         {
             if (head is null)
             {
-                count = 2;
-
                 InsertLast(new DependencyValueEntry(rawValue, precedence, isRaw: true));
                 InsertLast(new DependencyValueEntry(coercedValue, ValuePrecedence.Coercion, isRaw: false));
                 return;
@@ -214,8 +205,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
             }
             else
             {
-                count++;
-
                 InsertFirst(new DependencyValueEntry(coercedValue, ValuePrecedence.Coercion, isRaw: false));
             }
 
@@ -229,8 +218,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
                 }
                 else if (node.Item.Precedence < precedence)
                 {
-                    count++;
-
                     InsertBefore(node, new DependencyValueEntry(rawValue, precedence, isRaw: true));
                     return;
                 }
@@ -242,7 +229,6 @@ namespace Nebulae.RimWorld.UI.Core.Data
             }
             while (node != null);
 
-            count++;
             InsertLast(new DependencyValueEntry(rawValue, precedence, isRaw: true));
         }
 
