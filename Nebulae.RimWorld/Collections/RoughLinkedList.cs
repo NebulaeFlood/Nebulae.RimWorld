@@ -104,7 +104,6 @@ namespace Nebulae.RimWorld.Collections
                 throw new ArgumentNullException(nameof(item));
             }
 
-            count++;
             InsertLast(new RoughLinkedListNode<T>(item));
         }
 
@@ -237,7 +236,6 @@ namespace Nebulae.RimWorld.Collections
             {
                 if (node.Item.Equals(item))
                 {
-                    count--;
                     PickUp(node);
                     return true;
                 }

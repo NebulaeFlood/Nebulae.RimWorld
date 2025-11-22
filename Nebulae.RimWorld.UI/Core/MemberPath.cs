@@ -116,39 +116,22 @@ namespace Nebulae.RimWorld.UI.Core
                 throw new ArgumentNullException(nameof(property));
             }
 
-            var accessor = new DynamicMethod("GetValue", typeof(object), new Type[] { typeof(object) }, true);
-            var modifier = new DynamicMethod("SetValue", null, new Type[] { typeof(object), typeof(object) }, true);
+            return DependencyPropertyCache.GetOrAdd(property, ResolveCore);
+        }
 
+        /// <summary>
+        /// 解析成员路径
+        /// </summary>
+        /// <param name="member">成员信息</param>
+        /// <returns>由 <paramref name="member"/> 解析的 <see cref="MemberPath"/>。</returns>
+        public static MemberPath Resolve(MemberInfo member)
+        {
+            if (member is null)
+            {
+                throw new ArgumentNullException(nameof(member));
+            }
 
-            var il = accessor.GetILGenerator();
-
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Castclass, typeof(DependencyObject));
-            il.Emit(OpCodes.Call, PathMember.DependencyObjectGetValueMethod);
-            il.Emit(OpCodes.Ret);
-
-            var accessorDelegate = (MemberAccessor)accessor.CreateDelegate(typeof(MemberAccessor));
-
-
-            il = modifier.GetILGenerator();
-
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Castclass, typeof(DependencyObject));
-            il.Emit(OpCodes.Ldsfld, property.GetIdentifier());
-            il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Call, PathMember.DependencyObjectSetValueMethod);
-            il.Emit(OpCodes.Ret);
-
-            var modifierDelegate = (MemberModifier)modifier.CreateDelegate(typeof(MemberModifier));
-
-
-            var memberPath = new MemberPath($"({property})");
-            var member = new PathMember(property) { accessor = accessorDelegate, modifier = modifierDelegate };
-
-            memberPath.InsertLast(member);
-            memberPath.count++;
-
-            return memberPath;
+            return MemberCache.GetOrAdd(member, ResolveCore);
         }
 
         /// <summary>
@@ -176,12 +159,10 @@ namespace Nebulae.RimWorld.UI.Core
                 var member = new PathMember(rootType) { accessor = SelfAccessor };
 
                 memberPath.InsertLast(member);
-                memberPath.count++;
-
                 return memberPath;
             }
 
-            return PathCache.GetOrAdd(new CacheKey(rootType, path, typeResolver.GetType()), new PathResolver(typeResolver).Resolve);
+            return CommonCache.GetOrAdd(new CacheKey(rootType, path, typeResolver.GetType()), new PathResolver(typeResolver).Resolve);
         }
 
         #endregion
@@ -257,7 +238,7 @@ namespace Nebulae.RimWorld.UI.Core
         /// <returns>若该路径包含指定成员，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Contains(Type declaringType, string memberName)
         {
-             if (declaringType is null || string.IsNullOrEmpty(memberName))
+            if (declaringType is null || string.IsNullOrEmpty(memberName))
             {
                 return false;
             }
@@ -778,7 +759,6 @@ namespace Nebulae.RimWorld.UI.Core
             var property = DependencyProperty.Search(segments[1], ownerType);
 
             InsertLast(new PathMember(property));
-            count++;
         }
 
         private void ResolveIndexer(string path, Type ownerType, IXimlTypeResolver typeResolver)
@@ -841,7 +821,6 @@ namespace Nebulae.RimWorld.UI.Core
                     _indexerParameters[_indexerCount] = arguments;
 
                     InsertLast(new PathMember(property, propertyParameters));
-                    this.count++;
 
                     _indexerCount++;
                     return;
@@ -884,8 +863,86 @@ namespace Nebulae.RimWorld.UI.Core
                     InsertLast(new PathMember((PropertyInfo)memberInfo));
                 }
             }
+        }
 
-            count++;
+        #endregion
+
+
+        //------------------------------------------------------
+        //
+        //  Private Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Private Static Methods
+
+        private static MemberPath ResolveCore(DependencyProperty property)
+        {
+            var identifier = property.GetIdentifier();
+
+            var path = $"({property.OwnerType}.{property.Name})";
+            var dyanmicMethodPrefix = $"MemberPath[{path}]<--{path}.";
+
+            var accessor = new DynamicMethod(dyanmicMethodPrefix + "GetValue", typeof(object), new Type[] { typeof(object) }, true);
+            var modifier = new DynamicMethod(dyanmicMethodPrefix + "SetValue", null, new Type[] { typeof(object), typeof(object) }, true);
+
+
+            var il = accessor.GetILGenerator();
+
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Castclass, typeof(DependencyObject));
+            il.Emit(OpCodes.Ldsfld, identifier);
+            il.Emit(OpCodes.Call, PathMember.DependencyObjectGetValueMethod);
+            il.Emit(OpCodes.Ret);
+
+            var accessorDelegate = (MemberAccessor)accessor.CreateDelegate(typeof(MemberAccessor));
+
+
+            il = modifier.GetILGenerator();
+
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Castclass, typeof(DependencyObject));
+            il.Emit(OpCodes.Ldsfld, identifier);
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Call, PathMember.DependencyObjectSetValueMethod);
+            il.Emit(OpCodes.Ret);
+
+            var modifierDelegate = (MemberModifier)modifier.CreateDelegate(typeof(MemberModifier));
+
+
+            var memberPath = new MemberPath($"({property})");
+            var member = new PathMember(property) { accessor = accessorDelegate, modifier = modifierDelegate };
+
+            memberPath.InsertLast(member);
+            return memberPath;
+        }
+
+        private static MemberPath ResolveCore(MemberInfo member)
+        {
+            var memberPath = new MemberPath(member.Name);
+
+            if (member.MemberType is MemberTypes.Field)
+            {
+                memberPath.InsertLast(new PathMember((FieldInfo)member));
+            }
+            else if (member.MemberType is MemberTypes.Property)
+            {
+                var property = (PropertyInfo)member;
+
+                if (property.GetIndexParameters().Length > 0)
+                {
+                    throw new ArgumentException("Indexers are not supported.", nameof(member));
+                }
+
+                memberPath.InsertLast(new PathMember(property));
+            }
+            else
+            {
+                throw new ArgumentException("Member must be a field or property.", nameof(member));
+            }
+
+            memberPath.Compile();
+            return memberPath;
         }
 
         #endregion
@@ -900,8 +957,11 @@ namespace Nebulae.RimWorld.UI.Core
         #region Private Static Fields
 
         private static readonly FieldInfo IndexerParametersField = typeof(MemberPath).GetField(nameof(_indexerParameters), BindingFlags.Instance | BindingFlags.NonPublic);
-        private static readonly ConcurrentDictionary<CacheKey, MemberPath> PathCache = new();
         private static readonly MemberAccessor SelfAccessor;
+
+        private static readonly ConcurrentDictionary<CacheKey, MemberPath> CommonCache = new();
+        private static readonly ConcurrentDictionary<DependencyProperty, MemberPath> DependencyPropertyCache = new();
+        private static readonly ConcurrentDictionary<MemberInfo, MemberPath> MemberCache = new();
 
         #endregion
 

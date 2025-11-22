@@ -67,7 +67,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode)
         {
             InsertLast(new EmitWithOpCode(opCode));
-            count++;
         }
 
         /// <summary>
@@ -78,7 +77,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, LocalBuilder local)
         {
             InsertLast(new EmitWithLocal(opCode, local));
-            count++;
         }
 
         /// <summary>
@@ -89,7 +87,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, Type type)
         {
             InsertLast(new EmitWithType(opCode, type));
-            count++;
         }
 
         /// <summary>
@@ -100,7 +97,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, FieldInfo field)
         {
             InsertLast(new EmitWithField(opCode, field));
-            count++;
         }
 
         /// <summary>
@@ -111,7 +107,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, MethodInfo method)
         {
             InsertLast(new EmitWithMethod(opCode, method));
-            count++;
         }
 
         /// <summary>
@@ -122,7 +117,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, ConstructorInfo constructor)
         {
             InsertLast(new EmitWithConstructor(opCode, constructor));
-            count++;
         }
 
         /// <summary>
@@ -133,7 +127,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, Label label)
         {
             InsertLast(new EmitWithLabel(opCode, label));
-            count++;
         }
 
         /// <summary>
@@ -144,7 +137,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, Label[] labels)
         {
             InsertLast(new EmitWithLabels(opCode, labels));
-            count++;
         }
 
         /// <summary>
@@ -155,7 +147,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, byte arg)
         {
             InsertLast(new EmitWithByte(opCode, arg));
-            count++;
         }
 
         /// <summary>
@@ -166,7 +157,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, sbyte arg)
         {
             InsertLast(new EmitWithSByte(opCode, arg));
-            count++;
         }
 
         /// <summary>
@@ -177,7 +167,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, short arg)
         {
             InsertLast(new EmitWithInt16(opCode, arg));
-            count++;
         }
 
         /// <summary>
@@ -188,7 +177,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, int arg)
         {
             InsertLast(new EmitWithInt32(opCode, arg));
-            count++;
         }
 
         /// <summary>
@@ -199,7 +187,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, long arg)
         {
             InsertLast(new EmitWithInt64(opCode, arg));
-            count++;
         }
 
         /// <summary>
@@ -210,7 +197,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, float arg)
         {
             InsertLast(new EmitWithSingle(opCode, arg));
-            count++;
         }
 
         /// <summary>
@@ -221,7 +207,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, double arg)
         {
             InsertLast(new EmitWithDouble(opCode, arg));
-            count++;
         }
 
         /// <summary>
@@ -232,7 +217,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, string arg)
         {
             InsertLast(new EmitWithString(opCode, arg));
-            count++;
         }
 
         /// <summary>
@@ -243,7 +227,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
         public void Emit(OpCode opCode, SignatureHelper signature)
         {
             InsertLast(new EmitWithSignature(opCode, signature));
-            count++;
         }
 
         /// <summary>
@@ -260,8 +243,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
             var emission = tail.Item;
 
             PickUp(tail);
-            count--;
-
             return emission;
         }
 
@@ -277,7 +258,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
             }
 
             InsertLast(emission);
-            count++;
         }
 
         /// <summary>
@@ -300,7 +280,6 @@ namespace Nebulae.RimWorld.UI.Core.Emit
                 }
 
                 InsertLast(emission);
-                count++;
             }
         }
 

@@ -37,7 +37,6 @@ namespace Nebulae.RimWorld
             }
 
             InsertLast(WeakEventHandlerFactory.Convert<TSender, TArgs>(handler));
-            count++;
         }
 
         /// <summary>
@@ -52,7 +51,6 @@ namespace Nebulae.RimWorld
             }
 
             InsertLast(WeakEventHandlerFactory.Convert(handler));
-            count++;
         }
 
         /// <summary>
@@ -67,7 +65,6 @@ namespace Nebulae.RimWorld
             }
 
             InsertLast(handler);
-            count++;
         }
 
         /// <summary>
@@ -83,7 +80,6 @@ namespace Nebulae.RimWorld
             }
 
             InsertLast(WeakEventHandlerFactory.ConvertUnsafe<TSender, TArgs>(handler));
-            count++;
         }
 
         /// <summary>
@@ -125,7 +121,6 @@ namespace Nebulae.RimWorld
                 if (!node.Item.IsAlive)
                 {
                     PickUp(node);
-                    count--;
                 }
 
                 node = node.Prev;
@@ -151,8 +146,6 @@ namespace Nebulae.RimWorld
                 if (node.Item.Equals(handler))
                 {
                     PickUp(node);
-                    count--;
-
                     return true;
                 }
 
@@ -181,8 +174,6 @@ namespace Nebulae.RimWorld
                 if (node.Item.Equals(handler))
                 {
                     PickUp(node);
-                    count--;
-
                     return true;
                 }
 
@@ -216,8 +207,6 @@ namespace Nebulae.RimWorld
             }
 
             left.InsertLast(WeakEventHandlerFactory.Convert<TSender, TArgs>(right));
-            left.count++;
-
             return left;
         }
 
@@ -234,8 +223,6 @@ namespace Nebulae.RimWorld
             }
 
             left.InsertLast(WeakEventHandlerFactory.Convert(right));
-            left.count++;
-
             return left;
         }
 
@@ -252,8 +239,6 @@ namespace Nebulae.RimWorld
             }
 
             left.InsertLast(right);
-            left.count++;
-
             return left;
         }
 

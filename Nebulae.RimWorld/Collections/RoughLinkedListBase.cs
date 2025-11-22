@@ -11,7 +11,7 @@ namespace Nebulae.RimWorld.Collections
     /// <typeparam name="T">链表元素类型</typeparam>
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(RoughLinkedListDebugView))]
-    public abstract class RoughLinkedListBase<T> : IEnumerable<T>, IReadOnlyCollection<T>
+    public abstract class RoughLinkedListBase<T> : IEnumerable<T>
     {
         //------------------------------------------------------
         //
@@ -83,7 +83,6 @@ namespace Nebulae.RimWorld.Collections
         /// </summary>
         /// <param name="index">作为索引的节点</param>
         /// <param name="item">要插入的元素</param>
-        /// <remarks>该方法不修改 <see cref="count"/> 字段。</remarks>
         protected void InsertAfter(RoughLinkedListNode<T> index, T item)
         {
             var node = new RoughLinkedListNode<T>(index, item, index.Next);
@@ -98,6 +97,8 @@ namespace Nebulae.RimWorld.Collections
             }
 
             index.Next = node;
+
+            count++;
         }
 
         /// <summary>
@@ -105,11 +106,9 @@ namespace Nebulae.RimWorld.Collections
         /// </summary>
         /// <param name="index">作为索引的节点</param>
         /// <param name="node">要插入的节点</param>
-        /// <remarks>该方法不修改 <see cref="count"/> 字段。</remarks>
+        /// <remarks>需保证 <paramref name="node"/> 不在该链表中。</remarks>
         protected void InsertAfter(RoughLinkedListNode<T> index, RoughLinkedListNode<T> node)
         {
-            PickUp(node);
-
             if (index != tail)
             {
                 index.Next.Prev = node;
@@ -122,6 +121,8 @@ namespace Nebulae.RimWorld.Collections
 
             index.Next = node;
             node.Prev = index;
+
+            count++;
         }
 
         /// <summary>
@@ -129,7 +130,6 @@ namespace Nebulae.RimWorld.Collections
         /// </summary>
         /// <param name="index">作为索引的节点</param>
         /// <param name="item">要插入的元素</param>
-        /// <remarks>该方法不修改 <see cref="count"/> 字段。</remarks>
         protected void InsertBefore(RoughLinkedListNode<T> index, T item)
         {
             var node = new RoughLinkedListNode<T>(index.Prev, item, index);
@@ -144,6 +144,8 @@ namespace Nebulae.RimWorld.Collections
             }
 
             index.Prev = node;
+
+            count++;
         }
 
         /// <summary>
@@ -151,11 +153,9 @@ namespace Nebulae.RimWorld.Collections
         /// </summary>
         /// <param name="index">作为索引的节点</param>
         /// <param name="node">要插入的节点</param>
-        /// <remarks>该方法不修改 <see cref="count"/> 字段。</remarks>
+        /// <remarks>需保证 <paramref name="node"/> 不在该链表中。</remarks>
         protected void InsertBefore(RoughLinkedListNode<T> index, RoughLinkedListNode<T> node)
         {
-            PickUp(node);
-
             if (index != head)
             {
                 index.Prev.Next = node;
@@ -168,13 +168,14 @@ namespace Nebulae.RimWorld.Collections
 
             index.Prev = node;
             node.Next = index;
+
+            count++;
         }
 
         /// <summary>
         /// 将元素添加到链表的头部
         /// </summary>
         /// <param name="item">要添加的元素</param>
-        /// <remarks>该方法不修改 <see cref="count"/> 字段。</remarks>
         protected void InsertFirst(T item)
         {
             var node = new RoughLinkedListNode<T>(item, head);
@@ -189,6 +190,8 @@ namespace Nebulae.RimWorld.Collections
                 head.Prev = node;
                 head = node;
             }
+
+            count++;
         }
 
         /// <summary>
@@ -196,7 +199,6 @@ namespace Nebulae.RimWorld.Collections
         /// </summary>
         /// <param name="node">要添加的节点</param>
         /// <returns>添加到链表头部的节点。</returns>
-        /// <remarks>该方法不修改 <see cref="count"/> 字段。</remarks>
         protected void InsertFirst(RoughLinkedListNode<T> node)
         {
             if (head is null)
@@ -211,6 +213,8 @@ namespace Nebulae.RimWorld.Collections
                 head.Prev = node;
                 head = node;
             }
+
+            count++;
         }
 
         /// <summary>
@@ -218,7 +222,6 @@ namespace Nebulae.RimWorld.Collections
         /// </summary>
         /// <param name="item">要添加的元素</param>
         /// <returns>添加到链表尾部的节点。</returns>
-        /// <remarks>该方法不修改 <see cref="count"/> 字段。</remarks>
         protected void InsertLast(T item)
         {
             var node = new RoughLinkedListNode<T>(tail, item);
@@ -235,13 +238,14 @@ namespace Nebulae.RimWorld.Collections
                 tail.Next = node;
                 tail = node;
             }
+
+            count++;
         }
 
         /// <summary>
         /// 将节点添加到链表的尾部
         /// </summary>
         /// <param name="node">要添加的节点</param>
-        /// <remarks>该方法不修改 <see cref="count"/> 字段。</remarks>
         protected void InsertLast(RoughLinkedListNode<T> node)
         {
             if (tail is null)
@@ -256,6 +260,8 @@ namespace Nebulae.RimWorld.Collections
                 tail.Next = node;
                 tail = node;
             }
+
+            count++;
         }
 
         /// <summary>
@@ -326,7 +332,6 @@ namespace Nebulae.RimWorld.Collections
         /// 将节点从链表中移除
         /// </summary>
         /// <param name="node">要移除的节点</param>
-        /// <remarks>该方法不修改 <see cref="count"/> 字段。</remarks>
         protected void PickUp(RoughLinkedListNode<T> node)
         {
             if (head == node)
@@ -349,6 +354,8 @@ namespace Nebulae.RimWorld.Collections
 
             node.Prev = null;
             node.Next = null;
+
+            count--;
         }
 
         #endregion
@@ -374,6 +381,12 @@ namespace Nebulae.RimWorld.Collections
         /// </summary>
         private struct Enumerator : IEnumerator<T>
         {
+            /// <summary>
+            /// 获取枚举器当前指向位置对应的集合元素
+            /// </summary>
+            public readonly T Current => _currentValue;
+
+
             /// <summary>
             /// 初始化 <see cref="Enumerator"/> 的新实例
             /// </summary>
@@ -443,25 +456,10 @@ namespace Nebulae.RimWorld.Collections
             #endregion
 
 
-            //------------------------------------------------------
-            //
-            //  IEnumerator
-            //
-            //------------------------------------------------------
-
-            #region IEnumerator
-
             /// <summary>
             /// 获取枚举器当前指向位置对应的集合元素
             /// </summary>
             readonly object IEnumerator.Current => _currentValue;
-
-            /// <summary>
-            /// 获取枚举器当前指向位置对应的集合元素
-            /// </summary>
-            readonly T IEnumerator<T>.Current => _currentValue;
-
-            #endregion
 
 
             //------------------------------------------------------
