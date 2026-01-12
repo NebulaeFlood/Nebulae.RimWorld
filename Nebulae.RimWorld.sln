@@ -5,7 +5,7 @@ VisualStudioVersion = 17.12.35514.174
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nebulae.RimWorld", "Nebulae.RimWorld\Nebulae.RimWorld.csproj", "{C708D5A0-9A57-45D8-A666-943CD30206C9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6998DC62-DE80-4BD9-B11A-B5E8D3326EB0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Items", "Items", "{6998DC62-DE80-4BD9-B11A-B5E8D3326EB0}"
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
@@ -24,7 +24,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{E5
 		Nebulae.RimWorld.UI.nuspec = Nebulae.RimWorld.UI.nuspec
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nebulae.RimWorld.UI", "Nebulae.RimWorld.UI\Nebulae.RimWorld.UI.csproj", "{3AC4FAB0-29BB-423F-85E9-880E2B4E7E36}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Nebulae.Collections", "..\Nebulae\Nebulae.Shared\Nebulae.Collection\Nebulae.Collections.shproj", "{5A2D782B-4DF0-46DC-8DA3-AA23527F21F6}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Nebulae.Diagnostics", "..\Nebulae\Nebulae.Shared\Nebulae.Diagnostics\Nebulae.Diagnostics.shproj", "{00810A45-F644-48F7-AA3A-5A80CD7C5939}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Nebulae.Ximl", "..\Nebulae\Nebulae.Shared\Nebulae.Ximl\Nebulae.Ximl.shproj", "{14519DF9-AFC7-4E55-9773-A2A194782509}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Nebulae.RimWorld.UI", "Nebulae.RimWorld.UI\Nebulae.RimWorld.UI.shproj", "{30477556-E5C5-4EA4-9370-EDBA7DEAECD1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,15 +44,23 @@ Global
 		{C708D5A0-9A57-45D8-A666-943CD30206C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C708D5A0-9A57-45D8-A666-943CD30206C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C708D5A0-9A57-45D8-A666-943CD30206C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3AC4FAB0-29BB-423F-85E9-880E2B4E7E36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3AC4FAB0-29BB-423F-85E9-880E2B4E7E36}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3AC4FAB0-29BB-423F-85E9-880E2B4E7E36}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3AC4FAB0-29BB-423F-85E9-880E2B4E7E36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5A2D782B-4DF0-46DC-8DA3-AA23527F21F6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{00810A45-F644-48F7-AA3A-5A80CD7C5939} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{14519DF9-AFC7-4E55-9773-A2A194782509} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A5F75FC0-044F-4B9A-BF76-CD5E589A84AE}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Nebulae\Nebulae.Shared\Nebulae.Diagnostics\Nebulae.Diagnostics.projitems*{00810a45-f644-48f7-aa3a-5a80cd7c5939}*SharedItemsImports = 13
+		..\Nebulae\Nebulae.Shared\Nebulae.Ximl\Nebulae.Ximl.projitems*{14519df9-afc7-4e55-9773-a2a194782509}*SharedItemsImports = 13
+		Nebulae.RimWorld.UI\Nebulae.RimWorld.UI.projitems*{30477556-e5c5-4ea4-9370-edba7deaecd1}*SharedItemsImports = 13
+		..\Nebulae\Nebulae.Shared\Nebulae.Collection\Nebulae.Collections.projitems*{5a2d782b-4df0-46dc-8da3-aa23527f21f6}*SharedItemsImports = 13
+		Nebulae.RimWorld.UI\Nebulae.RimWorld.UI.projitems*{c708d5a0-9a57-45d8-a666-943cd30206c9}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

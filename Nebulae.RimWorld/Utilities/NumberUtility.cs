@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Nebulae.RimWorld.Utilities
 {
@@ -15,6 +16,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="min">数的最小值</param>
         /// <param name="max">数的最大值</param>
         /// <returns>限定后的数字。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Clamp<T>(this T value, T min, T max) where T : struct, IComparable<T>
         {
             if (value.CompareTo(min) < 0)
@@ -37,6 +39,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="min">范围的最小值</param>
         /// <param name="max">范围的最大值</param>
         /// <returns>数字是否在指定范围内。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool InRange<T>(this T value, T min, T max) where T : struct, IComparable<T>
         {
             return value.CompareTo(min) >= 0 && value.CompareTo(max) <= 0;

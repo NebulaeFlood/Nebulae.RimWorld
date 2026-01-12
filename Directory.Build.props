@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<LangVersion>10.0</LangVersion>
+		<LangVersion>9.0</LangVersion>
 
 		<Authors>NubulaeFlood</Authors>
 		<Description>A personal lib for RimWorld mods.</Description>
@@ -15,6 +15,10 @@
 		<RepositoryUrl>https://github.com/NebulaeFlood/Aether.RimWorld.Lib</RepositoryUrl>
 		<PackageTags>RimWorld Mod</PackageTags>
 		<Copyright>Copyright (c) 2024 NubulaeFlood</Copyright>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<DefineConstants>$(DefineConstants);TARGET_64BIT</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>

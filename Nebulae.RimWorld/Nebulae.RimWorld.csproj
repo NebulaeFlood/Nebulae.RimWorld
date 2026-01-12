@@ -2,14 +2,25 @@
 
 	<PropertyGroup>
 		<TargetFramework>net48</TargetFramework>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Utilities\HashUtility.cs" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Remove="sync.ffs_db" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Include="Utilities\HashUtility.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4566" />
 	</ItemGroup>
+
+	<Import Project="..\Nebulae.RimWorld.UI\Nebulae.RimWorld.UI.projitems" Label="Shared" />
 
 </Project>

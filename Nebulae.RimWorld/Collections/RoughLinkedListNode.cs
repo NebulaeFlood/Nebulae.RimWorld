@@ -1,12 +1,15 @@
-﻿using Nebulae.RimWorld.Utilities;
+using Nebulae.RimWorld.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Nebulae.RimWorld.Collections
 {
     /// <summary>
-    /// 由 <see cref="RoughLinkedListBase{T}"/> 实现的链表的节点
+    /// <see cref="RoughLinkedListBase{T}"/> 的节点
     /// </summary>
     /// <typeparam name="T">节点存储元素的类型</typeparam>
-    public sealed class RoughLinkedListNode<T>
+    public sealed class RoughLinkedListNode<T> : IEquatable<RoughLinkedListNode<T>>
     {
         //------------------------------------------------------
         //
@@ -138,6 +141,40 @@ namespace Nebulae.RimWorld.Collections
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 判断指定对象是否等于当前对象
+        /// </summary>
+        /// <param name="obj">要比较的对象</param>
+        /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public override bool Equals(object obj)
+        {
+            return obj is RoughLinkedListNode<T> other
+                && Prev == other.Prev
+                && Next == other.Next
+                && Equals(Item, other.Item);
+        }
+
+        /// <summary>
+        /// 判断指定对象是否等于当前对象
+        /// </summary>
+        /// <param name="other">要比较的对象</param>
+        /// <returns>若指定的对象等于当前对象，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        public bool Equals(RoughLinkedListNode<T> other)
+        {
+            return Prev == other.Prev
+                && Next == other.Next
+                && Equals(Item, other.Item);
+        }
+
+        /// <summary>
+        /// 获取当前对象的哈希代码
+        /// </summary>
+        /// <returns>当前对象的哈希代码。</returns>
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Prev, Item, Next);
         }
 
         /// <summary>

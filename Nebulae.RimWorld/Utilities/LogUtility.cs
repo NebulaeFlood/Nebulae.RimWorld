@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Verse;
 
 namespace Nebulae.RimWorld.Utilities
@@ -15,16 +16,17 @@ namespace Nebulae.RimWorld.Utilities
         /// </summary>
         /// <param name="obj">要转化为字符的对象</param>
         /// <returns>由 <paramref name="obj"/> 转化后的字符。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string AsLog(this object obj)
         {
             if (obj is null)
             {
-                return $"{typeof(object)}.Null";
+                return "Null";
             }
 
             if (obj is string str && str.Length < 1)
             {
-                return $"{typeof(string)}.Empty";
+                return "System.String.Empty";
             }
 
             if (obj is Type type)
@@ -32,24 +34,21 @@ namespace Nebulae.RimWorld.Utilities
                 return type.AsLog(type.Namespace);
             }
 
+            if (obj is Delegate @delegate)
+            {
+                var delegateType = @delegate.GetType();
+                return $"{delegateType.AsLog(delegateType.Namespace)}({@delegate.Method.Format()})";
+            }
+
             if (obj is MethodInfo method)
             {
                 return method.Format();
             }
 
-            if (obj is Delegate @delegate)
+            if (obj is MemberInfo member)
             {
-                return @delegate.Method.Format();
-            }
-
-            if (obj is FieldInfo field)
-            {
-                return $"{field.DeclaringType.AsLog()}.{field.Name}";
-            }
-
-            if (obj is PropertyInfo property)
-            {
-                return $"{property.DeclaringType.AsLog()}.{property.Name}";
+                var declaringType = member.DeclaringType;
+                return $"{declaringType.AsLog(declaringType.Namespace)}.{member.Name}";
             }
 
             return obj.ToString();
@@ -60,20 +59,73 @@ namespace Nebulae.RimWorld.Utilities
         /// </summary>
         /// <param name="type">要转化为字符的对象</param>
         /// <returns>由 <paramref name="type"/> 转化后的字符。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string AsLog(this Type type)
         {
             if (type is null)
             {
-                return $"{typeof(object)}.Null";
+                return "Unknown";
             }
 
             return type.AsLog(type.Namespace);
         }
 
         /// <summary>
+        /// 将 <paramref name="delegate"/> 转化为日志字符
+        /// </summary>
+        /// <param name="delegate">要转化为字符的对象</param>
+        /// <returns>由 <paramref name="delegate"/> 转化后的字符。</returns>
+        public static string AsLog(this Delegate @delegate)
+        {
+            if (@delegate is null)
+            {
+                return $"{typeof(object)}.Null";
+            }
+
+            var delegateType = @delegate.GetType();
+
+            return $"{delegateType.AsLog(delegateType.Namespace)}({@delegate.Method.Format()})";
+        }
+
+        /// <summary>
+        /// 将 <paramref name="method"/> 转化为日志字符
+        /// </summary>
+        /// <param name="method">要转化为字符的对象</param>
+        /// <returns>由 <paramref name="method"/> 转化后的字符。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string AsLog(this MethodInfo method)
+        {
+            if (method is null)
+            {
+                return $"{typeof(object)}.Null";
+            }
+
+            return method.Format();
+        }
+
+        /// <summary>
+        /// 将 <paramref name="field"/> 转化为日志字符
+        /// </summary>
+        /// <param name="field">要转化为字符的对象</param>
+        /// <returns>由 <paramref name="field"/> 转化后的字符。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string AsLog(this MemberInfo field)
+        {
+            if (field is null)
+            {
+                return $"{typeof(object)}.Null";
+            }
+
+            var declaringType = field.DeclaringType;
+
+            return $"{declaringType.AsLog(declaringType.Namespace)}.{field.Name}";
+        }
+
+        /// <summary>
         /// 将 <paramref name="obj"/> 提交为日志
         /// </summary>
         /// <param name="obj">要提交为日志的对象</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Dump(this object obj)
         {
 #if DEBUG
@@ -82,7 +134,7 @@ namespace Nebulae.RimWorld.Utilities
             Log.Message(message);
             System.Diagnostics.Debug.WriteLine(message);
 #else
-            Log.Message(message);
+            Log.Message(obj.AsLog());
 #endif
         }
 
@@ -91,6 +143,7 @@ namespace Nebulae.RimWorld.Utilities
         /// </summary>
         /// <param name="obj">要提交为日志的对象</param>
         /// <param name="title">日志的标题</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Dump(this object obj, string title)
         {
 #if DEBUG
@@ -109,6 +162,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="subject">主语</param>
         /// <param name="message">错误内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Error(this string subject, string message, string color = "3F48CCFF")
         {
             Log.Error($"<color=#{color}>[{subject}]</color> {message}");
@@ -124,6 +178,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="message">错误内容</param>
         /// <param name="additionalContent">附加内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Error(this string subject, string message, object additionalContent, string color = "3F48CCFF")
         {
             Log.Error($"<color=#{color}>[{subject}]</color> {message}--->\n {additionalContent.AsLog()}");
@@ -138,6 +193,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="subject">主语</param>
         /// <param name="content">错误内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Error(this string subject, object content, string color = "3F48CCFF")
         {
             Log.Error($"<color=#{color}>[{subject}]</color> {content.AsLog()}");
@@ -153,6 +209,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="content">错误内容</param>
         /// <param name="additionalContent">附加内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Error(this string subject, object content, object additionalContent, string color = "3F48CCFF")
         {
             Log.Error($"<color=#{color}>[{subject}]</color> {content.AsLog()}--->\n {additionalContent.AsLog()}");
@@ -167,6 +224,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="subject">主语</param>
         /// <param name="message">日志内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Message(this string subject, string message, string color = "3F48CCFF")
         {
             Log.Message($"<color=#{color}>[{subject}]</color> {message}");
@@ -182,6 +240,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="message">日志内容</param>
         /// <param name="additionalContent">附加内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Message(this string subject, string message, object additionalContent, string color = "3F48CCFF")
         {
             Log.Message($"<color=#{color}>[{subject}]</color> {message}--->\n {additionalContent.AsLog()}");
@@ -196,6 +255,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="subject">主语</param>
         /// <param name="content">日志内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Message(this string subject, object content, string color = "3F48CCFF")
         {
             Log.Message($"<color=#{color}>[{subject}]</color> {content.AsLog()}");
@@ -211,6 +271,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="content">日志内容</param>
         /// <param name="additionalContent">附加内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Message(this string subject, object content, object additionalContent, string color = "3F48CCFF")
         {
             Log.Message($"<color=#{color}>[{subject}]</color> {content.AsLog()}--->\n {additionalContent.AsLog()}");
@@ -225,6 +286,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="subject">主语</param>
         /// <param name="message">日志内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Succeed(this string subject, string message, string color = "3F48CCFF")
         {
             Log.Message($"<color=#{color}>[{subject}]</color> <color=lime>{message}</color>");
@@ -240,6 +302,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="message">日志内容</param>
         /// <param name="additionalContent">附加内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Succeed(this string subject, string message, object additionalContent, string color = "3F48CCFF")
         {
             Log.Message($"<color=#{color}>[{subject}]</color> <color=lime>{message}</color>--->\n {additionalContent.AsLog()}");
@@ -254,6 +317,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="subject">主语</param>
         /// <param name="message">警告内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Warning(this string subject, string message, string color = "3F48CCFF")
         {
             Log.Warning($"<color=#{color}>[{subject}]</color> {message}");
@@ -269,6 +333,7 @@ namespace Nebulae.RimWorld.Utilities
         /// <param name="message">警告内容</param>
         /// <param name="additionalContent">附加内容</param>
         /// <param name="color"><paramref name="subject"/> 要设置的颜色。格式详见 Unity 富文本。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Warning(this string subject, string message, object additionalContent, string color = "3F48CCFF")
         {
             Log.Warning($"<color=#{color}>[{subject}]</color> {message}--->\n {additionalContent.AsLog()}");

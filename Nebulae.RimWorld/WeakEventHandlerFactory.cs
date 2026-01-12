@@ -1,4 +1,4 @@
-﻿using Nebulae.RimWorld.Utilities;
+using Nebulae.RimWorld.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
@@ -192,14 +192,10 @@ namespace Nebulae.RimWorld
 
             public override bool Equals(object obj)
             {
-                if (obj is CreatorKey other)
-                {
-                    return OwnerType == other.OwnerType
-                        && SenderType == other.SenderType
+                return obj is CreatorKey other
+                    && OwnerType == other.OwnerType
+                    && SenderType == other.SenderType
                         && ArgsType == other.ArgsType;
-                }
-
-                return false;
             }
 
             public bool Equals(CreatorKey other)

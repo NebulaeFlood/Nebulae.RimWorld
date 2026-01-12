@@ -54,10 +54,34 @@ namespace Nebulae.RimWorld.Utilities
         }
 
 
+        //------------------------------------------------------
+        //
+        //  Public Static Methods
+        //
+        //------------------------------------------------------
+
+        #region Public Static Methods
+
         /// <summary>
         /// 将指定对象添加至 Tick 队列
         /// </summary>
         /// <param name="clock">要添加到 Tick 队列的对象</param>
+        public static void Start(this IClock clock)
+        {
+            if (clock is null || Clocks.Contains(clock))
+            {
+                return;
+            }
+
+            clock.OnStarted();
+            Clocks.AddLast(clock);
+        }
+
+        /// <summary>
+        /// 将指定对象添加至 Tick 队列
+        /// </summary>
+        /// <param name="clock">要添加到 Tick 队列的对象</param>
+        [Obsolete("Use Start instead.")]
         public static void StartTick(this IClock clock)
         {
             if (clock is null || Clocks.Contains(clock))
@@ -73,6 +97,24 @@ namespace Nebulae.RimWorld.Utilities
         /// 将指定对象移出 Tick 队列
         /// </summary>
         /// <param name="clock">要从 Tick 队列移出的对象</param>
+        public static void Stop(this IClock clock)
+        {
+            if (clock is null)
+            {
+                return;
+            }
+
+            if (Clocks.Remove(clock))
+            {
+                clock.OnStopped();
+            }
+        }
+
+        /// <summary>
+        /// 将指定对象移出 Tick 队列
+        /// </summary>
+        /// <param name="clock">要从 Tick 队列移出的对象</param>
+        [Obsolete("Use Stop instead.")]
         public static void StopTick(this IClock clock)
         {
             if (clock is null)
@@ -86,7 +128,6 @@ namespace Nebulae.RimWorld.Utilities
             }
         }
 
-
         /// <summary>
         /// 计算剩余的刻数，并判断是否小于零
         /// </summary>
@@ -97,6 +138,8 @@ namespace Nebulae.RimWorld.Utilities
             ticksLeft -= _intervalTick;
             return ticksLeft < 0;
         }
+
+        #endregion
 
 
         //------------------------------------------------------
@@ -112,7 +155,6 @@ namespace Nebulae.RimWorld.Utilities
         private static int _intervalTick = 60;
 
         #endregion
-
 
 
         private sealed class GameComponent_TickHelper : GameComponent

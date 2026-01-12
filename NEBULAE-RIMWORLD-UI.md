@@ -1,5 +1,7 @@
 # Nebulae.RimWorld
 
+Use XIML (Extensible Ingame UI Markup Language) to build RimWorld game UI.
+
 ## Known Issues
 
 - Since change using language will not happen offen and many people use [Hugslib](https://github.com/UnlimitedHugs/RimworldHugsLib/) witch restart game, so I removed the feaure that respawn setting windows to fit current language.

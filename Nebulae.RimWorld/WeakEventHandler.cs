@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Nebulae.RimWorld
 {
@@ -76,12 +77,10 @@ namespace Nebulae.RimWorld
                 return false;
             }
 
-            var otherMethod = other.Method;
+            _owner.TryGetTarget(out var owner);
 
-            return !otherMethod.IsStatic
-                && otherMethod.Equals(_method)
-                && _owner.TryGetTarget(out var owner)
-                && ReferenceEquals(owner, other.Target);
+            return owner == other.Target
+                && _method.Equals(other.Method);
         }
 
         /// <summary>
@@ -91,7 +90,8 @@ namespace Nebulae.RimWorld
         /// <returns>若二者等效，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public bool Equals(MethodInfo other)
         {
-            return other is not null && !other.IsStatic && _method.Equals(other);
+            return other is not null
+                && _method.Equals(other);
         }
 
         /// <summary>
@@ -106,14 +106,13 @@ namespace Nebulae.RimWorld
                 return false;
             }
 
-            if (!ReferenceEquals(_invocation, other._invocation))
+            if (_owner.TryGetTarget(out var owner) != other._owner.TryGetTarget(out var otherOwner))
             {
                 return false;
             }
 
-            return _owner.TryGetTarget(out var owner)
-                && other._owner.TryGetTarget(out var otherOwner)
-                && ReferenceEquals(owner, otherOwner);
+            return owner == otherOwner
+                && _method.Equals(other._method);
         }
 
         /// <summary>
@@ -122,9 +121,8 @@ namespace Nebulae.RimWorld
         /// <returns>当前 <see cref="WeakEventHandler{TOwner, TSender, TArgs}"/> 的哈希代码。</returns>
         public override int GetHashCode()
         {
-            return _owner.TryGetTarget(out var owner)
-                ? HashCode.Combine(owner, _method)
-                : _method.GetHashCode();
+            _owner.TryGetTarget(out var owner);
+            return HashCode.Combine(owner, _method);
         }
 
         /// <inheritdoc/>
@@ -142,16 +140,6 @@ namespace Nebulae.RimWorld
             var isAlive = _owner.TryGetTarget(out var directOwner);
             owner = directOwner;
             return isAlive;
-        }
-
-        /// <summary>
-        /// 尝试获取拥有此事件处理器的对象
-        /// </summary>
-        /// <param name="owner">拥有此事件处理器的对象</param>
-        /// <returns>若 <paramref name="owner"/> 未被回收，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
-        public bool TryGetOwner(out TOwner owner)
-        {
-            return _owner.TryGetTarget(out owner);
         }
 
         #endregion

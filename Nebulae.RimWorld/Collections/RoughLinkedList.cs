@@ -25,27 +25,27 @@ namespace Nebulae.RimWorld.Collections
         #region Public Properties
 
         /// <summary>
-        /// 获取该集合的第一个元素
+        /// 获取该链表的第一个元素
         /// </summary>
         public T First => head is null ? default : head.Item;
 
         /// <summary>
-        /// 获取该集合的第一个节点
+        /// 获取该链表的第一个节点
         /// </summary>
         public RoughLinkedListNode<T> Head => head;
 
         /// <summary>
-        /// 获取一个值，该值指示此集合是否为只读集合
+        /// 获取一个值，该值指示此链表是否为只读链表
         /// </summary>
         public bool IsReadOnly => false;
 
         /// <summary>
-        /// 获取该集合的最后一个元素
+        /// 获取该链表的最后一个元素
         /// </summary>
         public T Last => tail is null ? default : tail.Item;
 
         /// <summary>
-        /// 获取该集合的最后一个节点
+        /// 获取该链表的最后一个节点
         /// </summary>
         public RoughLinkedListNode<T> Tail => tail;
 
@@ -94,7 +94,7 @@ namespace Nebulae.RimWorld.Collections
         #region Public Methods
 
         /// <summary>
-        /// 将元素添加到集合的尾部
+        /// 将元素添加到链表的尾部
         /// </summary>
         /// <param name="item">要添加的元素</param>
         public virtual void Add(T item)
@@ -108,7 +108,7 @@ namespace Nebulae.RimWorld.Collections
         }
 
         /// <summary>
-        /// 从集合中移除所有元素
+        /// 从链表中移除所有元素
         /// </summary>
         public virtual void Clear()
         {
@@ -119,10 +119,10 @@ namespace Nebulae.RimWorld.Collections
         }
 
         /// <summary>
-        /// 确定指定元素是否包含在集合中
+        /// 确定指定元素是否包含在链表中
         /// </summary>
         /// <param name="item">要查找的元素</param>
-        /// <returns>若在集合中找到 <paramref name="item"/>，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
+        /// <returns>若在链表中找到 <paramref name="item"/>，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
         public virtual bool Contains(T item)
         {
             if (item is null)
@@ -146,9 +146,9 @@ namespace Nebulae.RimWorld.Collections
         }
 
         /// <summary>
-        /// 从目标数组的指定索引处开始，复制集合内的元素
+        /// 从目标数组的指定索引处开始，复制链表内的元素
         /// </summary>
-        /// <param name="array">接收集合内元素的数组</param>
+        /// <param name="array">接收链表内元素的数组</param>
         /// <param name="arrayIndex">开始复制的索引</param>
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -179,7 +179,7 @@ namespace Nebulae.RimWorld.Collections
         }
 
         /// <summary>
-        /// 对集合中的每个元素执行指定操作
+        /// 对链表中的每个元素执行指定操作
         /// </summary>
         /// <param name="action">要执行的操作</param>
         public void ForEach(Action<T> action)
@@ -199,7 +199,7 @@ namespace Nebulae.RimWorld.Collections
         }
 
         /// <summary>
-        /// 以倒序对集合中的每个元素执行指定操作
+        /// 以倒序对链表中的每个元素执行指定操作
         /// </summary>
         /// <param name="action">要执行的操作</param>
         public void ForEachReverse(Action<T> action)
@@ -219,7 +219,7 @@ namespace Nebulae.RimWorld.Collections
         }
 
         /// <summary>
-        /// 将指定元素从集合中移除
+        /// 将指定元素从链表中移除
         /// </summary>
         /// <param name="item">要移除的元素</param>
         /// <returns>若移除了指定元素，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
@@ -247,9 +247,9 @@ namespace Nebulae.RimWorld.Collections
         }
 
         /// <summary>
-        /// 将集合的元素复制到新数组中
+        /// 将链表的元素复制到新数组中
         /// </summary>
-        /// <returns>一个包含该集合中元素的数组。</returns>
+        /// <returns>一个包含该链表中元素的数组。</returns>
         public T[] ToArray()
         {
             if (count < 1)

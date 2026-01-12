@@ -48,16 +48,22 @@ namespace Nebulae.RimWorld.Collections
         #region Public Properties
 
         /// <summary>
-        /// 获取该集合中包含元素的数量
+        /// 获取该链表中包含元素的数量
         /// </summary>
         public int Count => count;
 
         /// <summary>
-        /// 获取一个值，该值指示此集合是否不包含任何元素
+        /// 获取一个值，该值指示此链表是否不包含任何元素
         /// </summary>
         public bool IsEmpty => head is null;
 
         #endregion
+
+
+        /// <summary>
+        /// 为 <see cref="RoughLinkedListBase{T}"/> 派生类实现基本初始化
+        /// </summary>
+        protected RoughLinkedListBase() { }
 
 
         /// <summary>
@@ -376,21 +382,11 @@ namespace Nebulae.RimWorld.Collections
         #endregion
 
 
-        /// <summary>
-        /// <see cref="RoughLinkedListBase{T}"/> 的枚举器
-        /// </summary>
         private struct Enumerator : IEnumerator<T>
         {
-            /// <summary>
-            /// 获取枚举器当前指向位置对应的集合元素
-            /// </summary>
             public readonly T Current => _currentValue;
 
 
-            /// <summary>
-            /// 初始化 <see cref="Enumerator"/> 的新实例
-            /// </summary>
-            /// <param name="list">枚举器要枚举的 <see cref="RoughLinkedListBase{T}"/></param>
             public Enumerator(RoughLinkedListBase<T> list)
             {
                 _list = list;
@@ -408,19 +404,12 @@ namespace Nebulae.RimWorld.Collections
 
             #region Public Methods
 
-            /// <summary>
-            /// 释放该枚举器占用的资源
-            /// </summary>
             public void Dispose()
             {
                 _currentNode = null;
                 _currentValue = default;
             }
 
-            /// <summary>
-            /// 将枚举器指向集合的位置后移一位
-            /// </summary>
-            /// <returns>若成功后移，返回 <see langword="true"/>；反之则返回 <see langword="false"/>。</returns>
             public bool MoveNext()
             {
                 if (_currentNode is null)
@@ -456,9 +445,6 @@ namespace Nebulae.RimWorld.Collections
             #endregion
 
 
-            /// <summary>
-            /// 获取枚举器当前指向位置对应的集合元素
-            /// </summary>
             readonly object IEnumerator.Current => _currentValue;
 
 
