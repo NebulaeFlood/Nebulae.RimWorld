@@ -1,0 +1,3 @@
+[submodule "libs/Nebulae"]
+	path = libs/Nebulae
+	url = https://github.com/NebulaeFlood/Nebulae
