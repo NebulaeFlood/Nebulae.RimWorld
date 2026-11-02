@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+#if !RIMWORLD_1_7
 using UnityEngine.UIElements;
+#endif
 
 namespace Nebulae.RimWorld.UI.Core.Events
 {

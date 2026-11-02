@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+#if !RIMWORLD_1_7
 using UnityEngine.UIElements;
+#endif
 using Verse;
 
 namespace Nebulae.RimWorld.UI.Utilities

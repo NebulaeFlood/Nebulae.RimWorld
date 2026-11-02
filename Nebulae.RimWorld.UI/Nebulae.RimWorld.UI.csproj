@@ -4,6 +4,10 @@
 		<TargetFramework>net48</TargetFramework>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(RimWorldVersion)' == '1.7'">
+		<DefineConstants>$(DefineConstants);RIMWORLD_1_7</DefineConstants>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<None Remove="sync.ffs_db" />
 	</ItemGroup>
