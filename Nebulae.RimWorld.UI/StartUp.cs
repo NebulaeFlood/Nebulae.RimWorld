@@ -114,6 +114,11 @@ namespace Nebulae.RimWorld.UI
 
             _startUpQuests.Add(new Task(LoadDefaultConverters));
 
+#if RIMWORLD_1_7
+            // CallAll runs in the game's post-load callback on the main thread.
+            // Run the quests there too: UI initialization may load Unity textures.
+            _startUpQuests.ForEach(x => x.RunSynchronously(TaskScheduler.Default));
+#else
             var mre = new ManualResetEvent(false);
 
             async void FinishQuestsAsync()
@@ -129,6 +134,7 @@ namespace Nebulae.RimWorld.UI
             Task.Run(FinishQuestsAsync);
 
             mre.WaitOne();
+#endif
 
             _startUpQuests.Clear();
             _startUpQuests = null;
